@@ -12,7 +12,7 @@ amqp==5.1.1
     # via kombu
 aniso8601==9.0.1
     # via flask-restx
-api-entreprise==3.2.2
+api-entreprise==3.2.3
     # via -r requirements.in
 attrs==23.1.0
     # via jsonschema

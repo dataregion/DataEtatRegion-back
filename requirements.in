@@ -43,4 +43,4 @@ openpyxl~=3.1.2
 xlrd~=2.0
 odfpy~=1.4.1
 
-api-entreprise >= 3.2.2
+api-entreprise >= 3.2.3
