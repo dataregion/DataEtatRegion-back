@@ -16,9 +16,12 @@ def _map(siret: Siret, etablissement: DonneesEtablissement):
     raison_sociale = etablissement.unite_legale.personne_morale_attributs.raison_sociale
     adresse = etablissement.adresse_postale_legere
 
+    personne_phy_denomination = etablissement.unite_legale.personne_physique_attributs.denomination
+    denomination = raison_sociale if raison_sociale is not None else personne_phy_denomination
+
     siret.categorie_juridique = categorie_juridique
     siret.code_commune = code_commune
-    siret.denomination = raison_sociale
+    siret.denomination = denomination
     siret.adresse = adresse
 
 def _api():
