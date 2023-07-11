@@ -364,7 +364,7 @@ def import_line_ademe(self, line_ademe: str, tech_info_list: list):
     new_ademe.file_import_lineno = tech_info.lineno
 
     logger.info(
-        f'[IMPORT][ADEME] Tentative ligne Ademe referece decision {new_ademe.reference_decision}, beneficiaire {new_ademe.siret_beneficiaire}')
+        f'[IMPORT][ADEME] Tentative ligne Ademe reference decision {new_ademe.reference_decision}, beneficiaire {new_ademe.siret_beneficiaire}')
 
     # SIRET Attribuant
     check_siret(new_ademe.siret_attribuant)

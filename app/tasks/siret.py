@@ -9,7 +9,7 @@ from app.clients.entreprise import  LimitHitError
 
 from app.utilities.bucketting import which_bucket
 
-__all__= ('update_one_fifth_of_sirets',)
+__all__= ('update_one_fifth_of_sirets','update_all_siret_task',)
 
 logger = logging.getLogger()
 celery = celeryapp.celery
