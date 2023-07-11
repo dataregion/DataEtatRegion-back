@@ -18,8 +18,8 @@ celery = celeryapp.celery
 def update_one_fifth_of_sirets(self, which_fifth: int):
 
     buckets_size = 5
-    if which_fifth < 1 or which_fifth > buckets_size:
-        raise ValueError(f"which_fifth is {which_fifth}. It should be [1, {buckets_size}]")
+    if which_fifth < 0 or which_fifth > buckets_size:
+        raise ValueError(f"which_fifth is {which_fifth}. It should be [0, {buckets_size}]")
 
     stmt = db.select(Siret.code).order_by(Siret.id)
     codes = db.session.execute(stmt).scalars()
