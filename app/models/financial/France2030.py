@@ -29,6 +29,12 @@ class France2030(FinancialData, db.Model):
     siret = Column(String, db.ForeignKey('ref_siret.code'), nullable=True)
     code_nomenclature = Column(String, db.ForeignKey('nomenclature_france_2030.code'), nullable=True)
 
-
+    @staticmethod
+    def get_columns_files():
+        return ['date_dpm', 'operateur', 'procedure',
+                'nom_projet', 'nom_beneficiaire', 'siret', 'typologie',
+                'regions', 'localisation_geo', 'acteur_emergent', 'nom_strategie',
+                'code_nomenclature', 'nomemclature', 'montant_subvention',
+                'montant_avance_remboursable', 'montant_aide']
 
 
