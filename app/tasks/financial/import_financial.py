@@ -1,7 +1,5 @@
 import datetime
 import shutil
-from collections import namedtuple
-import json
 from celery import current_task, subtask
 from flask import current_app
 from sqlalchemy import delete, update
@@ -48,13 +46,13 @@ def import_file_ae_financial(self, fichier, source_region: str, annee: int, forc
 
     move_folder = current_app.config['UPLOAD_FOLDER'] + "/save/"
     try:
-        data_chorus_chunk = pandas.read_csv(fichier, sep=",", skiprows=8, names=FinancialAe.get_columns_files_ae(),
+        data_chunk = pandas.read_csv(fichier, sep=",", skiprows=8, names=FinancialAe.get_columns_files_ae(),
                                       dtype={'programme': str, 'n_ej': str, 'n_poste_ej': int,
                                              'fournisseur_titulaire': str,
                                              'siret': str}, chunksize=1000)
         series = pandas.Series({ f'{FinancialAe.annee.key}' : annee, f'{FinancialAe.source_region.key}': source_region})
 
-        for chunk in data_chorus_chunk:
+        for chunk in data_chunk:
             for index, line in chunk.iterrows():
                 _send_subtask_financial_ae(line.append(series).to_json(), index, force_update)
 
@@ -67,7 +65,7 @@ def import_file_ae_financial(self, fichier, source_region: str, annee: int, forc
 
         return True
     except Exception as e:
-        logger.exception(f"[IMPORT][FINANCIAL][AE] Error lors de l'import du fichier {fichier} chorus")
+        logger.exception(f"[IMPORT][FINANCIAL][AE] Error lors de l'import du fichier {fichier}")
         raise e
 
 
@@ -105,14 +103,14 @@ def import_file_cp_financial(self, fichier, source_region: str, annee: int):
 
     try:
         current_taskid = current_task.request.id
-        data_chorus_chunk = pandas.read_csv(fichier, sep=",", skiprows=8, names=FinancialCp.get_columns_files_cp(),
+        data_chunk = pandas.read_csv(fichier, sep=",", skiprows=8, names=FinancialCp.get_columns_files_cp(),
                                       dtype={'programme': str, 'n_ej': str, 'n_poste_ej': str, 'n_dp': str,
                                              'fournisseur_paye': str,
                                              'siret': str}, chunksize=1000)
         _delete_cp(annee, source_region)
 
         i = 0
-        for chunk in data_chorus_chunk:
+        for chunk in data_chunk:
             for index, line in chunk.iterrows():
                 i += 1
                 tech_info = LineImportTechInfo(current_taskid, i)
@@ -128,7 +126,7 @@ def import_file_cp_financial(self, fichier, source_region: str, annee: int):
         logger.info('[IMPORT][FINANCIAL][CP] End')
         return True
     except Exception as e:
-        logger.exception(f"[IMPORT][FINANCIAL][CP] Error lors de l'import du fichier {fichier} chorus")
+        logger.exception(f"[IMPORT][FINANCIAL][CP] Error lors de l'import du fichier {fichier}")
         raise e
 
 
@@ -141,7 +139,7 @@ def _check_ref(model, code):
             db.session.add(instance)
             db.session.commit()
         except Exception as e:  # The actual exception depends on the specific database so we catch all exceptions. This is similar to the official documentation: https://docs.sqlalchemy.org/en/latest/orm/session_transaction.html
-            logger.exception(f"[IMPORT][CHORUS] Error sur ajout ref {model.__tablename__} code {code}")
+            logger.exception(f"[IMPORT][REF] Error sur ajout ref {model.__tablename__} code {code}")
             raise e
 
 
@@ -151,7 +149,7 @@ def _check_insert_update_financial(financial_ae: FinancialData | None, line,forc
     :param force_update:
     :return: True -> Objet à créer
              False -> rien à faire
-             Instance chorus -> Objet à update
+             Instance FINANCIAL -> Objet à update
     '''
 
     if financial_ae:
@@ -209,7 +207,7 @@ def import_line_financial_ae(self, dict_financial: str, index: int, force_update
                                                   n_poste_ej=line[FinancialAe.n_poste_ej.key]).one_or_none()
         financial_instance = _check_insert_update_financial(financial_ae_instance,line, force_update)
     except sqlalchemy.exc.OperationalError as o:
-        logger.exception(f"[IMPORT][CHORUS] Erreur index {index} sur le check ligne chorus")
+        logger.exception(f"[IMPORT][FINANCIAL][AE] Erreur index {index} sur le check ligne")
         raise FinancialException(o) from o
 
 
@@ -228,7 +226,7 @@ def import_line_financial_ae(self, dict_financial: str, index: int, force_update
         # SIRET
         check_siret(new_ae.siret)
 
-        # CHORUS
+        # FINANCIAL_AE
         new_financial_ae = None
         if financial_instance == True:
             new_financial_ae = _insert_financial_data(new_ae)
