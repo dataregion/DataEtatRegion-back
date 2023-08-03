@@ -1,6 +1,6 @@
 import os
 import re
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pytest
 from werkzeug.datastructures import FileStorage
@@ -28,7 +28,7 @@ def test_import_file_cp_with_file_ae():
         with pytest.raises(InvalidFile):
             import_cp(FileStorage(f), "35", 2023)
 
-def test_import_file_cp_ok(app,test_db):
+def test_import_file_cp_ok( app,test_db):
     filename = os.path.abspath(os.getcwd()) + '/data/chorus/financial_cp.csv'
     with patch('app.tasks.financial.import_financial.import_file_cp_financial', return_value=None):  # ne pas supprimer le fichier de tests :)
         with open(filename, 'rb') as f:

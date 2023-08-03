@@ -20,7 +20,6 @@ from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.services.siret import check_siret
 from app.tasks import limiter_queue
 
-from collections import namedtuple
 import pandas
 import json
 import requests
@@ -28,9 +27,8 @@ import tempfile
 
 import os
 
-from app.tasks.financial import logger
+from app.tasks.financial import logger, LineImportTechInfo
 from app.tasks.financial.errors import _handle_exception_import
-
 
 @limiter_queue(queue_name='line')
 def _send_subtask_financial_ae(line, index, force_update):
@@ -69,7 +67,6 @@ def import_file_ae_financial(self, fichier, source_region: str, annee: int, forc
         raise e
 
 
-LineImportTechInfo = namedtuple('LineImportTechInfo', ['file_import_taskid', 'lineno'])
 
 
 @limiter_queue(queue_name='line')
@@ -307,7 +304,7 @@ def import_file_ademe_from_website(self, url: str):
             if chunk:
                 temp_file.write(chunk)
         
-        logger.info(f"Fichier téléchargé. Import...")
+        logger.info("Fichier téléchargé. Import...")
         _send_subtask_ademe_file(temp_file.name)
 
 
@@ -315,35 +312,40 @@ def import_file_ademe_from_website(self, url: str):
 def import_file_ademe(self, fichier: str):
     # get file
     logger.info(f'[IMPORT][ADEME] Start for file {fichier}')
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
+    move_folder = current_app.config['UPLOAD_FOLDER'] + "/save/"
+
     try:
-        with open(fichier, 'r') as f:
+        current_taskid = current_task.request.id
+        data_ademe_chunk = pandas.read_csv(
+            fichier, sep=",", header=0,
+            dtype={'pourcentageSubvention':float, 'idBeneficiaire': str,'idAttribuant':str, "notificationUE": str },
+            chunksize=1000
+        )
 
-            current_taskid = current_task.request.id
-            columns = pandas.read_csv(f, header=0).columns.tolist()
-            f.seek(0)
+        _delete_ademe()
 
-            data_ademe_chunk = pandas.read_csv(
-                fichier, sep=",", skiprows=1, names=columns,
-                dtype={'pourcentageSubvention':float, 'idBeneficiaire': str,'idAttribuant':str, "notificationUE": str },
-                chunksize=1000
-            )
+        i = 0
+        for chunk in data_ademe_chunk:
+            for _,ademe_data in chunk.iterrows():
+                i += 1
+                tech_info = LineImportTechInfo(current_taskid, i)
+                _send_subtask_ademe(ademe_data.to_json(), tech_info)
 
-            _delete_ademe()
 
-            i = 0
-            for chunk in data_ademe_chunk:
-                for _,ademe_data in chunk.iterrows():
-                    i += 1
-                    tech_info = LineImportTechInfo(current_taskid, i)
-                    _send_subtask_ademe(ademe_data.to_json(), tech_info)
+        move_folder = os.path.join(move_folder,timestamp)
+        if not os.path.exists(move_folder):
+            os.makedirs(move_folder)
+        logger.info(f'[IMPORT][ADEME] Save file {fichier} in {move_folder}')
 
-            logger.info('[IMPORT][ADEME] End')
-            return True
+        shutil.move(fichier, move_folder)
+        logger.info('[IMPORT][ADEME] End')
+
+        return True
     except Exception as e:
         logger.exception(f"[IMPORT][ADEME] Error lors de l'import du fichier ademe: {fichier}")
         raise e
-    finally:
-        os.remove(fichier)
 
 
 @celery.task(bind=True, name='import_line_ademe')
