@@ -43,6 +43,8 @@ def upgrade():
     sa.Column('montant_aide', sa.Float(), nullable=True),
     sa.Column('siret', sa.String(), nullable=True),
     sa.Column('code_nomenclature', sa.String(), nullable=True),
+    sa.Column('file_import_taskid', sa.String(length=255), nullable=True),
+    sa.Column('file_import_lineno', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['code_nomenclature'], ['nomenclature_france_2030.code'], ),
