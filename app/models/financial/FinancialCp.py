@@ -73,7 +73,7 @@ class FinancialCp(FinancialData, db.Model):
         if (key == 'n_ej' or key == 'n_poste_ej') and value == '#' :
             value = None
 
-        if (key == "date_base_dp" or key == "date_derniere_operation_dp") and  isinstance(value, str) :
+        if (key == "date_base_dp" or key == "date_derniere_operation_dp") and isinstance(value, str) :
             if value == '#':
                 value = None
             else:
