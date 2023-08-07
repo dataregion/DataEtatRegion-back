@@ -13,12 +13,12 @@ def test_wrap_all_to_ex():
     with pytest.raises(CustomEx) as excinfo:
         raising_custom_ex()
     assert excinfo.value.__cause__ is None, (
-        "Le décorateur ne doit pas wrapper "
-        "l'exception en paramètre si elle est soulevée dans le code client"
+        "Le décorateur ne doit pas wrapper " "l'exception en paramètre si elle est soulevée dans le code client"
     )
 
     with pytest.raises(Exception) as excinfo:
-        wrap_all_ex_to(CustomEx()) # XXX: on accepte seulement une classe
+        wrap_all_ex_to(CustomEx())  # XXX: on accepte seulement une classe
+
 
 class CustomEx(Exception):
     pass
