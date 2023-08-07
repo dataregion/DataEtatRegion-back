@@ -10,8 +10,8 @@ from app.services.financial_data import import_ae
 
 def test_import_import_file_ae_file_not_allowed():
     # DO
-    with open(os.path.abspath(os.getcwd()) + '/data/chorus/errors/sample.pdf', 'rb') as f:
-        with pytest.raises(FileNotAllowedException, match=r'pas au format \{\'csv\'\}$'):
+    with open(os.path.abspath(os.getcwd()) + "/data/chorus/errors/sample.pdf", "rb") as f:
+        with pytest.raises(FileNotAllowedException, match=r"pas au format \{\'csv\'\}$"):
             import_ae(FileStorage(f), "35", 2023, False)
 
     with open(os.path.abspath(os.getcwd()) + "/data/chorus/errors/sample.csv", "rb") as f:
