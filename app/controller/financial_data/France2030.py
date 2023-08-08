@@ -12,8 +12,8 @@ from app.models.financial.Ademe import AdemeSchema
 from app.services.authentication.connected_user import ConnectedUser
 from app.services.financial_data import import_ademe, search_ademe, get_ademe
 
-api = Namespace(name="Ademe", path='/',
-                description='Api de gestion des données ADEME')
+api = Namespace(name="France2030", path='/',
+                description='Api de gestion des données France 2030')
 
 auth = current_app.extensions['auth']
 

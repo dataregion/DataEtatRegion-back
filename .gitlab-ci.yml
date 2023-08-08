@@ -1,10 +1,10 @@
 stages:
-  - test
+  - 🧪 test
   - 🔨 build
   - 🐣 deploy
 
 run_tests:
-  stage: test
+  stage: 🧪 test
   image: python:3.11.1-slim
   before_script:
     - python --version
@@ -19,6 +19,18 @@ run_tests:
     paths:
       - tests/coverage.xml
 
+
+run_black:
+  stage: 🧪 test
+  image: pyfound/black:23.7.0
+  only:
+    - develop
+    - /^chore.*$/
+    - /^feature.*$/
+    - /^fix.*$/
+    - /^hotfix.*$/
+  script:
+    - black --check .
 
 
 .deploy-integ:
