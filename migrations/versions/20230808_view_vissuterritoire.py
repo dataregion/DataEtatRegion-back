@@ -64,7 +64,7 @@ def upgrade():
                    (annee, programme, categorie_juridique, code_commune, montant_cp);"""
     op.execute(index_m_view_cp)
 
-    m_view_montant_par_niveau_annee_programme = """CREATE MATERIALIZED VIEW montant_par_niveau_bop_annee_type AS 
+    m_view_montant_par_niveau_annee_programme = """CREATE MATERIALIZED VIEW m_montant_par_niveau_bop_annee_type AS 
               SELECT 
                 SUM(montant_cp) as montant_cp,
                 (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = fcp.programme
@@ -114,14 +114,17 @@ def upgrade():
             GROUP BY annee, programme, categorie_juridique, code_epci;"""
 
     op.execute(m_view_montant_par_niveau_annee_programme)
+
+    ## creation de la même vu non materialisé pour les besoins de nocodb
+    op.execute("CREATE OR REPLACE VIEW montant_par_niveau_bop_annee_type AS SELECT * FROM public.m_montant_par_niveau_bop_annee_type;")
     # ### end Alembic commands ###
 
 
 def downgrade():
+    op.execute("DROP VIEW montant_par_niveau_bop_annee_type")
     op.execute("DROP MATERIALIZED  VIEW financial_cp_summary_by_commune")
     op.execute("DROP MATERIALIZED  VIEW financial_ae_summary_by_commune")
-    op.execute("DROP MATERIALIZED  VIEW montant_par_niveau_bop_annee_type")
-
+    op.execute("DROP MATERIALIZED  VIEW m_montant_par_niveau_bop_annee_type")
 
 
 def _drop_old_view():
