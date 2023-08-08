@@ -1,6 +1,7 @@
 from functools import wraps
 from unittest.mock import patch
 
+
 # MOCK du accept_token
 def mock_accept_token(*args, **kwargs):
     def wrapper(view_func):
@@ -13,4 +14,4 @@ def mock_accept_token(*args, **kwargs):
     return wrapper
 
 
-patch('flask_pyoidc.OIDCAuthentication.token_auth', mock_accept_token).start()
+patch("flask_pyoidc.OIDCAuthentication.token_auth", mock_accept_token).start()
