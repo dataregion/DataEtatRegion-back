@@ -37,9 +37,6 @@ def create_celery_app(_app =None) -> Celery:
         'update_all_*': {
             'queue': 'file'
         },
-        'update_one_fifth_of_sirets': {
-            'queue': 'file'
-        },
         'share_*': {
             'queue': 'line'
         },
@@ -48,6 +45,12 @@ def create_celery_app(_app =None) -> Celery:
         },
         'update_siret_*': {
             'queue': 'line'
+        },
+        'update_one_fifth_of_sirets': {
+            'queue': 'file'
+        },
+        'visuterritoire_maj_materialized_view': {
+            'queue': 'file'
         },
     }]
 
