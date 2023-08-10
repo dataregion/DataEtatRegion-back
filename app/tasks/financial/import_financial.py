@@ -1,7 +1,5 @@
 import datetime
 import shutil
-from collections import namedtuple
-import json
 from celery import current_task, subtask
 from flask import current_app
 from sqlalchemy import delete, update
@@ -22,7 +20,6 @@ from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.services.siret import check_siret
 from app.tasks import limiter_queue
 
-from collections import namedtuple
 import pandas
 import json
 import requests
@@ -30,9 +27,8 @@ import tempfile
 
 import os
 
-from app.tasks.financial import logger
+from app.tasks.financial import logger, LineImportTechInfo
 from app.tasks.financial.errors import _handle_exception_import
-
 
 @limiter_queue(queue_name='line')
 def _send_subtask_financial_ae(line, index, force_update):
@@ -48,13 +44,13 @@ def import_file_ae_financial(self, fichier, source_region: str, annee: int, forc
 
     move_folder = current_app.config['UPLOAD_FOLDER'] + "/save/"
     try:
-        data_chorus_chunk = pandas.read_csv(fichier, sep=",", skiprows=8, names=FinancialAe.get_columns_files_ae(),
+        data_chunk = pandas.read_csv(fichier, sep=",", skiprows=8, names=FinancialAe.get_columns_files_ae(),
                                       dtype={'programme': str, 'n_ej': str, 'n_poste_ej': int,
                                              'fournisseur_titulaire': str,
                                              'siret': str}, chunksize=1000)
         series = pandas.Series({ f'{FinancialAe.annee.key}' : annee, f'{FinancialAe.source_region.key}': source_region})
 
-        for chunk in data_chorus_chunk:
+        for chunk in data_chunk:
             for index, line in chunk.iterrows():
                 _send_subtask_financial_ae(line.append(series).to_json(), index, force_update)
 
@@ -67,11 +63,10 @@ def import_file_ae_financial(self, fichier, source_region: str, annee: int, forc
 
         return True
     except Exception as e:
-        logger.exception(f"[IMPORT][FINANCIAL][AE] Error lors de l'import du fichier {fichier} chorus")
+        logger.exception(f"[IMPORT][FINANCIAL][AE] Error lors de l'import du fichier {fichier}")
         raise e
 
 
-LineImportTechInfo = namedtuple('LineImportTechInfo', ['file_import_taskid', 'lineno'])
 
 
 @limiter_queue(queue_name='line')
@@ -105,14 +100,14 @@ def import_file_cp_financial(self, fichier, source_region: str, annee: int):
 
     try:
         current_taskid = current_task.request.id
-        data_chorus_chunk = pandas.read_csv(fichier, sep=",", skiprows=8, names=FinancialCp.get_columns_files_cp(),
+        data_chunk = pandas.read_csv(fichier, sep=",", skiprows=8, names=FinancialCp.get_columns_files_cp(),
                                       dtype={'programme': str, 'n_ej': str, 'n_poste_ej': str, 'n_dp': str,
                                              'fournisseur_paye': str,
                                              'siret': str}, chunksize=1000)
         _delete_cp(annee, source_region)
 
         i = 0
-        for chunk in data_chorus_chunk:
+        for chunk in data_chunk:
             for index, line in chunk.iterrows():
                 i += 1
                 tech_info = LineImportTechInfo(current_taskid, i)
@@ -128,7 +123,7 @@ def import_file_cp_financial(self, fichier, source_region: str, annee: int):
         logger.info('[IMPORT][FINANCIAL][CP] End')
         return True
     except Exception as e:
-        logger.exception(f"[IMPORT][FINANCIAL][CP] Error lors de l'import du fichier {fichier} chorus")
+        logger.exception(f"[IMPORT][FINANCIAL][CP] Error lors de l'import du fichier {fichier}")
         raise e
 
 
@@ -141,7 +136,7 @@ def _check_ref(model, code):
             db.session.add(instance)
             db.session.commit()
         except Exception as e:  # The actual exception depends on the specific database so we catch all exceptions. This is similar to the official documentation: https://docs.sqlalchemy.org/en/latest/orm/session_transaction.html
-            logger.exception(f"[IMPORT][CHORUS] Error sur ajout ref {model.__tablename__} code {code}")
+            logger.exception(f"[IMPORT][REF] Error sur ajout ref {model.__tablename__} code {code}")
             raise e
 
 
@@ -151,7 +146,7 @@ def _check_insert_update_financial(financial_ae: FinancialData | None, line,forc
     :param force_update:
     :return: True -> Objet à créer
              False -> rien à faire
-             Instance chorus -> Objet à update
+             Instance FINANCIAL -> Objet à update
     '''
 
     if financial_ae:
@@ -209,7 +204,7 @@ def import_line_financial_ae(self, dict_financial: str, index: int, force_update
                                                   n_poste_ej=line[FinancialAe.n_poste_ej.key]).one_or_none()
         financial_instance = _check_insert_update_financial(financial_ae_instance,line, force_update)
     except sqlalchemy.exc.OperationalError as o:
-        logger.exception(f"[IMPORT][CHORUS] Erreur index {index} sur le check ligne chorus")
+        logger.exception(f"[IMPORT][FINANCIAL][AE] Erreur index {index} sur le check ligne")
         raise FinancialException(o) from o
 
 
@@ -228,7 +223,7 @@ def import_line_financial_ae(self, dict_financial: str, index: int, force_update
         # SIRET
         check_siret(new_ae.siret)
 
-        # CHORUS
+        # FINANCIAL_AE
         new_financial_ae = None
         if financial_instance == True:
             new_financial_ae = _insert_financial_data(new_ae)
@@ -309,7 +304,7 @@ def import_file_ademe_from_website(self, url: str):
             if chunk:
                 temp_file.write(chunk)
         
-        logger.info(f"Fichier téléchargé. Import...")
+        logger.info("Fichier téléchargé. Import...")
         _send_subtask_ademe_file(temp_file.name)
 
 
@@ -317,35 +312,40 @@ def import_file_ademe_from_website(self, url: str):
 def import_file_ademe(self, fichier: str):
     # get file
     logger.info(f'[IMPORT][ADEME] Start for file {fichier}')
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
+    move_folder = current_app.config['UPLOAD_FOLDER'] + "/save/"
+
     try:
-        with open(fichier, 'r') as f:
+        current_taskid = current_task.request.id
+        data_ademe_chunk = pandas.read_csv(
+            fichier, sep=",", header=0,
+            dtype={'pourcentageSubvention':float, 'idBeneficiaire': str,'idAttribuant':str, "notificationUE": str },
+            chunksize=1000
+        )
 
-            current_taskid = current_task.request.id
-            columns = pandas.read_csv(f, header=0).columns.tolist()
-            f.seek(0)
+        _delete_ademe()
 
-            data_ademe_chunk = pandas.read_csv(
-                fichier, sep=",", skiprows=1, names=columns,
-                dtype={'pourcentageSubvention':float, 'idBeneficiaire': str,'idAttribuant':str, "notificationUE": str },
-                chunksize=1000
-            )
+        i = 0
+        for chunk in data_ademe_chunk:
+            for _,ademe_data in chunk.iterrows():
+                i += 1
+                tech_info = LineImportTechInfo(current_taskid, i)
+                _send_subtask_ademe(ademe_data.to_json(), tech_info)
 
-            _delete_ademe()
 
-            i = 0
-            for chunk in data_ademe_chunk:
-                for _,ademe_data in chunk.iterrows():
-                    i += 1
-                    tech_info = LineImportTechInfo(current_taskid, i)
-                    _send_subtask_ademe(ademe_data.to_json(), tech_info)
+        move_folder = os.path.join(move_folder,timestamp)
+        if not os.path.exists(move_folder):
+            os.makedirs(move_folder)
+        logger.info(f'[IMPORT][ADEME] Save file {fichier} in {move_folder}')
 
-            logger.info('[IMPORT][ADEME] End')
-            return True
+        shutil.move(fichier, move_folder)
+        logger.info('[IMPORT][ADEME] End')
+
+        return True
     except Exception as e:
         logger.exception(f"[IMPORT][ADEME] Error lors de l'import du fichier ademe: {fichier}")
         raise e
-    finally:
-        os.remove(fichier)
 
 
 @celery.task(bind=True, name='import_line_ademe')

@@ -1,5 +1,5 @@
 """
-Controller permettant de mettre à jours certains référentiels des données Chorus à partir d'un fichier 'calculette
+Controller permettant de mettre à jours certains référentiels des données fiancières à partir d'un fichier 'calculette
 
 """
 from flask import current_app, request, jsonify, g

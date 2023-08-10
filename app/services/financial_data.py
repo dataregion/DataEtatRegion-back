@@ -1,10 +1,7 @@
 import logging
-import os
-import tempfile
 import pandas
-from flask import current_app
-from werkzeug.utils import secure_filename
-from sqlalchemy.orm import selectinload, contains_eager
+
+from sqlalchemy.orm import contains_eager
 
 from app import db
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
@@ -21,11 +18,11 @@ from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.models.refs.siret import Siret
 from app.services import BuilderStatementFinancial
 from app.services.code_geo import BuilderCodeGeo
-from app.services.file_service import allowed_file
+from app.services.file_service import check_file_and_save
 
 
 def import_ae(file_ae, source_region:str, annee: int, force_update: bool, username=""):
-    save_path = _check_file_and_save(file_ae)
+    save_path = check_file_and_save(file_ae)
 
     _check_file(save_path, FinancialAe.get_columns_files_ae())
     source_region = _sanitize_source_region(source_region)
@@ -39,7 +36,7 @@ def import_ae(file_ae, source_region:str, annee: int, force_update: bool, userna
 
 
 def import_cp(file_cp, source_region:str, annee: int, username=""):
-    save_path = _check_file_and_save(file_cp)
+    save_path = check_file_and_save(file_cp)
 
     _check_file(save_path, FinancialCp.get_columns_files_cp())
     source_region = _sanitize_source_region(source_region)
@@ -51,9 +48,19 @@ def import_cp(file_cp, source_region:str, annee: int, username=""):
     db.session.commit()
     return task
 
+def import_france_2030(file_france, username=""):
+    save_path = check_file_and_save(file_france, allowed_extensions={'xlsx'})
+
+    logging.info(f'[IMPORT FRANCE 2030] Récupération du fichier {save_path}')
+    from app.tasks.financial.import_france_2030 import import_file_france_2030
+    task = import_file_france_2030.delay(str(save_path))
+    db.session.add(AuditUpdateData(username=username, filename=file_france.filename, data_type=DataType.FRANCE_2030))
+    db.session.commit()
+    return task
+
 
 def import_ademe(file_ademe, username=""):
-    save_path = _check_file_and_save(file_ademe)
+    save_path = check_file_and_save(file_ademe)
 
     logging.info(f'[IMPORT ADEME] Récupération du fichier {save_path}')
     from app.tasks.financial.import_financial import import_file_ademe
@@ -134,27 +141,7 @@ def search_financial_data_ae(
     return page_result
 
 
-def _check_file_and_save(file) -> str:
-    if file.filename == '':
-        raise InvalidFile(message="Pas de fichier")
-
-    if file and allowed_file(file.filename):
-
-        filename = secure_filename(file.filename)
-        if 'UPLOAD_FOLDER' in current_app.config:
-            save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-        else:
-            save_path = os.path.join(tempfile.gettempdir(), filename)
-        file.save(save_path)
-        return save_path
-    else:
-        logging.error(f'[IMPORT FINANCIAL] Fichier refusé {file.filename}')
-        raise FileNotAllowedException(message='le fichier n\'est pas un csv')
-
-
-
 def _check_file(fichier, columns_name):
-
     try:
         check_column = pandas.read_csv(fichier, sep=",", skiprows=8, nrows=5)
     except Exception:
