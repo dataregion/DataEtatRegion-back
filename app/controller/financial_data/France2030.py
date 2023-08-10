@@ -1,6 +1,5 @@
 from flask import jsonify, current_app, request
 from flask_restx import Namespace, Resource, reqparse
-from marshmallow_jsonschema import JSONSchema
 from werkzeug.datastructures import FileStorage
 
 from app.controller.Decorators import check_permission
@@ -8,9 +7,8 @@ from app.controller.financial_data import check_file_import
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
-from app.models.financial.Ademe import AdemeSchema
 from app.services.authentication.connected_user import ConnectedUser
-from app.services.financial_data import import_ademe, search_ademe, get_ademe
+from app.services.financial_data import import_france_2030
 
 api = Namespace(name="France2030", path='/',
                 description='Api de gestion des données France 2030')
@@ -41,7 +39,7 @@ class France2030Import(Resource):
 
         file_ademe = request.files['fichier']
 
-        task = import_ademe(file_ademe, user.username)
+        task = import_france_2030(file_ademe, user.username)
         return jsonify({"status": f'Fichier récupéré. Demande d`import des  données ADEME en cours (taches asynchrone id = {task.id}'})
 
     @api.expect(parser_get)
