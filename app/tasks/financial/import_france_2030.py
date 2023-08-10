@@ -28,7 +28,8 @@ def import_file_france_2030(self, fichier: str, sheet_name: str = "Liste des pro
         skiprows = 3
         while True:
             # noinspection PyTypeChecker
-            df_chunk = pandas.read_excel(fichier, skiprows=skiprows, sheet_name=sheet_name, usecols="B:Q", names=France2030.get_columns_files(),
+            df_chunk = pandas.read_excel(fichier, skiprows=skiprows, sheet_name=sheet_name,
+                                         names=France2030.get_columns_files(),
                                dtype={'montant_subvention': float, 'montant_avance_remboursable': float,
                                       'montant_aide': float, 'siret': str}, nrows=1000)
 

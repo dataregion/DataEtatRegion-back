@@ -52,7 +52,7 @@ def import_file_ae_financial(self, fichier, source_region: str, annee: int, forc
 
         for chunk in data_chunk:
             for index, line in chunk.iterrows():
-                _send_subtask_financial_ae(line.append(series).to_json(), index, force_update)
+                _send_subtask_financial_ae(pandas.concat([line,series]).to_json(), index, force_update)
 
         move_folder = os.path.join(move_folder,timestamp)
         if not os.path.exists(move_folder):
