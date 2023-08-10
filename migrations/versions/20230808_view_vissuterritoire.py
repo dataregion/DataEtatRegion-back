@@ -9,7 +9,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "cf35dd89ce53"
-down_revision = "d1a470f3416f"
+down_revision = "72cb30957126"
 branch_labels = None
 depends_on = None
 
@@ -121,10 +121,10 @@ def upgrade():
 
 
 def downgrade():
-    op.execute("DROP VIEW montant_par_niveau_bop_annee_type")
+    op.execute("DROP VIEW IF EXISTS montant_par_niveau_bop_annee_type")
+    op.execute("DROP MATERIALIZED  VIEW m_montant_par_niveau_bop_annee_type")
     op.execute("DROP MATERIALIZED  VIEW financial_cp_summary_by_commune")
     op.execute("DROP MATERIALIZED  VIEW financial_ae_summary_by_commune")
-    op.execute("DROP MATERIALIZED  VIEW m_montant_par_niveau_bop_annee_type")
 
 
 def _drop_old_view():
