@@ -6,9 +6,9 @@ CODE_UNKNOWN = "UNKNOWN"
 CODE_CALL_FAILED = "REMOTE_CALL_FAILED"
 CODE_LIMIT_HIT = "LIMIT_HIT"
 
+
 @dataclass
 class Error(metaclass=_InstrumentForFlaskRestx):
-
     code: str
     """Code de l'erreur"""
 

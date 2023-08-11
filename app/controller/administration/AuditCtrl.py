@@ -1,6 +1,5 @@
-
 import sqlalchemy
-from flask import  current_app
+from flask import current_app
 
 from flask_restx import Namespace, Resource, fields
 from marshmallow_jsonschema import JSONSchema
@@ -17,44 +16,48 @@ from app.models.common.QueryParam import QueryParam
 from app.models.enums.DataType import DataType
 from app.models.enums.AccountRole import AccountRole
 
-api = Namespace(name="audit", path='/audit',
-                description='API de récupération des audits')
+api = Namespace(name="audit", path="/audit", description="API de récupération des audits")
 
 parser_get = get_pagination_parser(default_limit=5)
 
-auth = current_app.extensions['auth']
+auth = current_app.extensions["auth"]
 
 schema_many = AuditUpdateDataSchema(many=True)
 
-model_json = JSONSchema().dump(schema_many)['definitions']['AuditUpdateDataSchema']
-model_single_api = api.schema_model('AuditUpdateDataSchema', model_json)
-pagination_model = api.schema_model('Pagination', Pagination.definition_jsonschema)
+model_json = JSONSchema().dump(schema_many)["definitions"]["AuditUpdateDataSchema"]
+model_single_api = api.schema_model("AuditUpdateDataSchema", model_json)
+pagination_model = api.schema_model("Pagination", Pagination.definition_jsonschema)
 
-pagination_with_model = api.model('AuditUpdateDataSchemaPagination', {
-    'items': fields.List(fields.Nested(model_single_api)),
-    'pageInfo': fields.Nested(pagination_model)
-})
+pagination_with_model = api.model(
+    "AuditUpdateDataSchemaPagination",
+    {"items": fields.List(fields.Nested(model_single_api)), "pageInfo": fields.Nested(pagination_model)},
+)
+
 
 @api.errorhandler(KeyError)
 def handle_type_not_exist(e):
     return ErrorController("Type inconnue").to_json(), 400
 
 
-@api.route('/<type>')
-@api.doc(params={'type': str([e.value for e in DataType])})
+@api.route("/<type>")
+@api.doc(params={"type": str([e.value for e in DataType])})
 @api.doc(model=pagination_with_model)
 class Audit(Resource):
-    @api.response(200, 'List of update data')
+    @api.response(200, "List of update data")
     @api.doc(security="Bearer")
     @api.expect(parser_get)
-    @auth.token_auth('default', scopes_required=['openid'])
-    @api.response(204, 'No Result')
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.response(204, "No Result")
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     def get(self, type: DataType):
         query_param = QueryParam(parser_get)
         enum_type = DataType[type]
 
-        stmt = db.select(AuditUpdateData).where( (AuditUpdateData.data_type == enum_type.name)).order_by(AuditUpdateData.date.desc())
+        stmt = (
+            db.select(AuditUpdateData)
+            .where((AuditUpdateData.data_type == enum_type.name))
+            .order_by(AuditUpdateData.date.desc())
+        )
         page_result = db.paginate(stmt, per_page=query_param.limit, page=query_param.page_number, error_out=False)
 
         if page_result.items == []:
@@ -63,26 +66,25 @@ class Audit(Resource):
         schema_many = AuditUpdateDataSchema(many=True)
         result = schema_many.dump(page_result.items)
 
-        return {'items': result,
-                'pageInfo': Pagination(page_result.total, page_result.page, page_result.per_page).to_json()}, 200
+        return {
+            "items": result,
+            "pageInfo": Pagination(page_result.total, page_result.page, page_result.per_page).to_json(),
+        }, 200
 
 
-@api.route('/<type>/last')
+@api.route("/<type>/last")
 class AuditLastImport(Resource):
-
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
-    @api.marshal_with(api.model("date-last-import",{'date': fields.DateTime}), code=200)
+    @api.marshal_with(api.model("date-last-import", {"date": fields.DateTime}), code=200)
     def get(self, type: DataType):
-
-        enum_type =  DataType[type]
+        enum_type = DataType[type]
 
         stmt = db.select(sqlalchemy.sql.functions.max(AuditUpdateData.date)).where(
-            AuditUpdateData.data_type == enum_type.name)
+            AuditUpdateData.data_type == enum_type.name
+        )
         result = db.session.execute(stmt).scalar_one()
         if result is None:
             raise NoResultFound()
 
-        return {"date": result.isoformat() }, 200
-
-
+        return {"date": result.isoformat()}, 200

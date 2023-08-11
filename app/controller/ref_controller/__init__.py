@@ -5,6 +5,7 @@ from app.controller.ref_controller.RefController import build_ref_controller
 from app.controller.ref_controller.RefCrte import api as crte_api
 from app.controller.ref_controller.RefLocalisationInterministerielle import api as api_loc_interministerielle
 from app.models.refs.arrondissement import Arrondissement
+
 # models
 from app.models.refs.centre_couts import CentreCouts
 from app.models.refs.code_programme import CodeProgramme
@@ -15,56 +16,71 @@ from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.controller.ref_controller.LoginController import api as api_auth
 from app.models.refs.siret import Siret
 
-api_ref = Blueprint('api_ref', __name__)
+api_ref = Blueprint("api_ref", __name__)
 
 authorizations = {"Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}}
 
-api = Api(api_ref, doc='/doc', prefix="/api/v1", description="API de récupérations des référentiels de Budget",
-          title="Référentiel Budget",
-          authorizations=authorizations)
+api = Api(
+    api_ref,
+    doc="/doc",
+    prefix="/api/v1",
+    description="API de récupérations des référentiels de Budget",
+    title="Référentiel Budget",
+    authorizations=authorizations,
+)
 
-api_domaine = build_ref_controller(DomaineFonctionnel,
-                                   Namespace(name="Domaine Fonctionnel", path='/domaine-fonct',
-                                             description='API referentiels des Domaine'),
-                                   )
+api_domaine = build_ref_controller(
+    DomaineFonctionnel,
+    Namespace(name="Domaine Fonctionnel", path="/domaine-fonct", description="API referentiels des Domaine"),
+)
 
-api_centre_cout = build_ref_controller(CentreCouts,
-                                       Namespace(name="Centre couts", path='/centre-couts',
-                                                 description='API referentiels des Centre de couts'),
-                                       cond_opt=(CentreCouts.code_postal,)
-                                       )
+api_centre_cout = build_ref_controller(
+    CentreCouts,
+    Namespace(name="Centre couts", path="/centre-couts", description="API referentiels des Centre de couts"),
+    cond_opt=(CentreCouts.code_postal,),
+)
 
-api_groupe_marchandise = build_ref_controller(GroupeMarchandise,
-                                  Namespace(name="Groupe Marchandise", path='/groupe-marchandise',
-                                            description='API referentiels des groupes de marchandises'),
-                                  cond_opt=(GroupeMarchandise.domaine, GroupeMarchandise.segment,)
-                                  )
+api_groupe_marchandise = build_ref_controller(
+    GroupeMarchandise,
+    Namespace(
+        name="Groupe Marchandise",
+        path="/groupe-marchandise",
+        description="API referentiels des groupes de marchandises",
+    ),
+    cond_opt=(
+        GroupeMarchandise.domaine,
+        GroupeMarchandise.segment,
+    ),
+)
 
-api_bop = build_ref_controller(CodeProgramme,
-                               Namespace(name="Code Programme", path='/programme',
-                                         description='API referentiels des codes programmes')
-                               )
+api_bop = build_ref_controller(
+    CodeProgramme,
+    Namespace(name="Code Programme", path="/programme", description="API referentiels des codes programmes"),
+)
 
-api_ref_programmation = build_ref_controller(ReferentielProgrammation,
-                               Namespace(name="Referentiel Programmation", path='/ref-programmation',
-                                         description='API referentiels des referentiel de programmation')
-                               )
+api_ref_programmation = build_ref_controller(
+    ReferentielProgrammation,
+    Namespace(
+        name="Referentiel Programmation",
+        path="/ref-programmation",
+        description="API referentiels des referentiel de programmation",
+    ),
+)
 
-api_ref_ministere = build_ref_controller(Ministere,
-                               Namespace(name="Ministere", path='/ministere',
-                                         description='API referentiels des ministères')
-                               )
+api_ref_ministere = build_ref_controller(
+    Ministere, Namespace(name="Ministere", path="/ministere", description="API referentiels des ministères")
+)
 
-api_ref_arrondissement = build_ref_controller(Arrondissement,
-                               Namespace(name="Arrondissement", path='/arrondissement',
-                                         description='API referentiels des arrondissements')
-                               )
+api_ref_arrondissement = build_ref_controller(
+    Arrondissement,
+    Namespace(name="Arrondissement", path="/arrondissement", description="API referentiels des arrondissements"),
+)
 
-api_ref_beneficiaire = build_ref_controller(Siret,
-                               Namespace(name="Beneficiaire", path='/beneficiaire',
-                                         description='API pour rechercher les beneficiares (siret)'),
-                                         cond_opt=(Siret.denomination,)
-                               )
+api_ref_beneficiaire = build_ref_controller(
+    Siret,
+    Namespace(name="Beneficiaire", path="/beneficiaire", description="API pour rechercher les beneficiares (siret)"),
+    cond_opt=(Siret.denomination,),
+)
 
 
 api.add_namespace(api_auth)

@@ -18,10 +18,10 @@ def check_permission(permissions):
     Returns:
         inner_wrapper (function): The decorated function, which checks if the user has the specified permission before executing it.
     """
+
     def wrapper(func):
         @wraps(func)
         def inner_wrapper(*args, **kwargs):
-
             user = ConnectedUser.from_current_token_identity()
 
             if isinstance(permissions, AccountRole):
@@ -30,7 +30,7 @@ def check_permission(permissions):
                 permissions_to_check = permissions
             else:
                 raise TypeError("permissions should be an AccountRole or a list of AccountRole")
-            
+
             if user.roles is None:
                 return _unauthorized_response()
 
@@ -41,17 +41,21 @@ def check_permission(permissions):
             return _unauthorized_response()
 
         return inner_wrapper
+
     return wrapper
+
 
 def _unauthorized_response():
     response_body = ErrorController("Vous n`avez pas les droits").to_json()
-    return response_body, 403, {'WWW-Authenticate': 'Bearer'}
+    return response_body, 403, {"WWW-Authenticate": "Bearer"}
+
 
 def retry_on_exception(max_retry):
     """
     A decorator to retry a function call in case of exceptions.
     :param max_retry: Maximum number of retries.
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -63,5 +67,7 @@ def retry_on_exception(max_retry):
                     retry_count += 1
                     if retry_count == max_retry:
                         raise e
+
         return wrapper
+
     return decorator

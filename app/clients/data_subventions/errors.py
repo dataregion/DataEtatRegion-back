@@ -1,12 +1,15 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class CallErrorDescription:
     code: str
     description: str | None
 
+
 class ApiDataSubventionException(Exception):
     pass
+
 
 class CallError(ApiDataSubventionException):
     """Erreur survenue lors de l'appel à l'API"""

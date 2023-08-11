@@ -2,7 +2,8 @@ import functools
 
 from requests import HTTPError, Response
 
-from .errors import CallError,CallErrorDescription
+from .errors import CallError, CallErrorDescription
+
 
 def _handle_httperror(response: Response):
     code = response.status_code
@@ -21,5 +22,5 @@ def _handle_response_in_error(f):
         except HTTPError as e:
             response: Response = e.response
             _handle_httperror(response)
-    
+
     return inner
