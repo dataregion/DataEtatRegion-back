@@ -1,1 +1,1 @@
-__all__ = ('Preference',)
+__all__ = ("Preference",)

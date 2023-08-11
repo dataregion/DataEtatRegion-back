@@ -16,15 +16,17 @@ from ..models.refs.referentiel_programmation import ReferentielProgrammation
 from ..models.refs.siret import Siret
 from ..models.refs.theme import Theme
 
-__all__ = ('BadCodeGeoException', 'BuilderStatementFinancial')
+__all__ = ("BadCodeGeoException", "BuilderStatementFinancial")
 
-class BuilderStatementFinancial():
+
+class BuilderStatementFinancial:
     """
     Classe permettant de construire une requête pour récupérer des données à partir de la table FinancialAe.
     """
+
     _stmt: Select = None
 
-    def __init__(self, stmt = None):
+    def __init__(self, stmt=None):
         self._stmt = stmt
 
     def select_ae(self):
@@ -33,16 +35,17 @@ class BuilderStatementFinancial():
 
         :return: L'instance courante de BuilderStatementFinancialAe.
         """
-        self._stmt = db.select(Ae) \
-            .options(db.defer(Ae.source_region),
-                     db.defer(Ae.groupe_marchandise),
-                     db.defer(Ae.compte_budgetaire),
-                     selectinload(Ae.montant_ae).load_only(MontantAe.montant),
-                     selectinload(Ae.financial_cp).load_only(Cp.montant, Cp.date_derniere_operation_dp),
-                     db.defer(Ae.contrat_etat_region))
+        self._stmt = db.select(Ae).options(
+            db.defer(Ae.source_region),
+            db.defer(Ae.groupe_marchandise),
+            db.defer(Ae.compte_budgetaire),
+            selectinload(Ae.montant_ae).load_only(MontantAe.montant),
+            selectinload(Ae.financial_cp).load_only(Cp.montant, Cp.date_derniere_operation_dp),
+            db.defer(Ae.contrat_etat_region),
+        )
         return self
 
-    def join_filter_programme_theme(self, code_programme: list = None, theme: list= None):
+    def join_filter_programme_theme(self, code_programme: list = None, theme: list = None):
         """
         Effectue des jointures avec les tables CodeProgramme et Theme en fonction des codes de programme et des thèmes fournis.
 
@@ -52,10 +55,12 @@ class BuilderStatementFinancial():
         """
         if code_programme is not None:
             self._stmt = self._stmt.join(Ae.ref_programme.and_(CodeProgramme.code.in_(code_programme))).join(
-                CodeProgramme.theme_r, isouter=True)
+                CodeProgramme.theme_r, isouter=True
+            )
         elif theme is not None:
             self._stmt = self._stmt.join(Ae.ref_programme).join(
-                CodeProgramme.theme_r.and_(Theme.label.in_(theme)), isouter=True)
+                CodeProgramme.theme_r.and_(Theme.label.in_(theme)), isouter=True
+            )
         else:
             self._stmt = self._stmt.join(Ae.ref_programme).join(CodeProgramme.theme_r, isouter=True)
 
@@ -70,8 +75,9 @@ class BuilderStatementFinancial():
         :param siret: Une liste de SIRET.
         :return: L'instance courante de BuilderStatementFinancialAe.
         """
-        self._stmt = self._stmt.join(
-            Ae.ref_siret.and_(Siret.code.in_(siret))) if siret is not None else self._stmt.join(Siret)
+        self._stmt = (
+            self._stmt.join(Ae.ref_siret.and_(Siret.code.in_(siret))) if siret is not None else self._stmt.join(Siret)
+        )
         self._stmt = self._stmt.join(Siret.ref_categorie_juridique)
         return self
 
@@ -85,7 +91,7 @@ class BuilderStatementFinancial():
             self._stmt = self._stmt.where(Ae.annee.in_(annee))
         return self
 
-    def where_ej(self, n_ej:str, n_poste_ej: int):
+    def where_ej(self, n_ej: str, n_poste_ej: int):
         """
         Ajoute une condition Where pour filter sur le poste_ej et numéro ej
         :param n_ej: le numéro EJ
@@ -97,13 +103,13 @@ class BuilderStatementFinancial():
             self._stmt = self._stmt.where(Ae.n_ej == n_ej).where(Ae.n_poste_ej == n_poste_ej)
         return self
 
-    def by_ae_id(self, id:int):
+    def by_ae_id(self, id: int):
         """
         Sélection uniquement selon l'id technique
         :param id: l'identifiant technique
         :return: L'instance courante de BuilderStatementFinancialAe.
         """
-        if id is not None :
+        if id is not None:
             self._stmt = self._stmt.where(Ae.id == id)
         return self
 
@@ -131,26 +137,29 @@ class BuilderStatementFinancial():
                 case TypeCodeGeo.DEPARTEMENT:
                     subquery = subquery.where(Commune.code_departement.in_(list_code_geo)).subquery()
                     self._stmt = self._stmt.where(
-                        Commune.code_departement.in_(list_code_geo) | Ae.localisation_interministerielle.in_(
-                            subquery))
+                        Commune.code_departement.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
+                    )
                 case TypeCodeGeo.EPCI:
                     subquery = subquery.where(Commune.code_epci.in_(list_code_geo)).subquery()
                     self._stmt = self._stmt.where(
-                        Commune.code_epci.in_(list_code_geo) | Ae.localisation_interministerielle.in_(
-                            subquery))
+                        Commune.code_epci.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
+                    )
                 case TypeCodeGeo.CRTE:
                     subquery = subquery.where(Commune.code_crte.in_(list_code_geo)).subquery()
                     self._stmt = self._stmt.where(
-                        Commune.code_crte.in_(list_code_geo) | Ae.localisation_interministerielle.in_(
-                            subquery))
+                        Commune.code_crte.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
+                    )
                 case TypeCodeGeo.ARRONDISSEMENT:
                     subquery = subquery.where(Commune.code_arrondissement.in_(list_code_geo)).subquery()
-                    self._stmt = self._stmt.where(Commune.code_arrondissement.in_(
-                        list_code_geo) | Ae.localisation_interministerielle.in_(subquery))
+                    self._stmt = self._stmt.where(
+                        Commune.code_arrondissement.in_(list_code_geo)
+                        | Ae.localisation_interministerielle.in_(subquery)
+                    )
                 case _:
                     subquery = subquery.where(Commune.code.in_(list_code_geo)).subquery()
                     self._stmt = self._stmt.where(
-                        Commune.code.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery))
+                        Commune.code.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
+                    )
 
         return self
 
@@ -179,7 +188,6 @@ class BuilderStatementFinancial():
 
         return self
 
-
     def options_select_load(self):
         """
         Ajoute les options de sélection et de chargement des colonnes pour la requête.
@@ -187,13 +195,19 @@ class BuilderStatementFinancial():
         :return: L'instance courante de BuilderStatementFinancialAe.
         """
         self._stmt = self._stmt.options(
-            contains_eager(Ae.ref_programme).load_only(CodeProgramme.label).contains_eager(
-                CodeProgramme.theme_r).load_only(Theme.label),
+            contains_eager(Ae.ref_programme)
+            .load_only(CodeProgramme.label)
+            .contains_eager(CodeProgramme.theme_r)
+            .load_only(Theme.label),
             contains_eager(Ae.ref_ref_programmation).load_only(ReferentielProgrammation.label),
             contains_eager(Ae.ref_domaine_fonctionnel).load_only(DomaineFonctionnel.label),
-            contains_eager(Ae.ref_siret).load_only(Siret.code, Siret.denomination).contains_eager(
-                Siret.ref_commune).load_only(Commune.label_commune, Commune.code),
-            contains_eager(Ae.ref_siret).contains_eager(Siret.ref_categorie_juridique).load_only(CategorieJuridique.type)
+            contains_eager(Ae.ref_siret)
+            .load_only(Siret.code, Siret.denomination)
+            .contains_eager(Siret.ref_commune)
+            .load_only(Commune.label_commune, Commune.code),
+            contains_eager(Ae.ref_siret)
+            .contains_eager(Siret.ref_categorie_juridique)
+            .load_only(CategorieJuridique.type),
         )
         return self
 

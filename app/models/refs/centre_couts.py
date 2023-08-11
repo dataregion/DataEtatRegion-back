@@ -5,9 +5,10 @@ from sqlalchemy import Column
 
 from app.models.common.Audit import Audit
 
+
 class CentreCouts(Audit, db.Model):
-    __table_args__ = {'extend_existing': True}
-    __tablename__ = 'ref_centre_couts'
+    __table_args__ = {"extend_existing": True}
+    __tablename__ = "ref_centre_couts"
     id: int = db.Column(db.Integer, primary_key=True)
     code: str = Column(String, unique=True, nullable=False)
     label: str = Column(String)
@@ -20,7 +21,8 @@ class CentreCouts(Audit, db.Model):
             value = value[5:]
         super().__setattr__(key, value)
 
+
 class CentreCoutsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = CentreCouts
-        exclude = ('id',) + CentreCouts.exclude_schema()
+        exclude = ("id",) + CentreCouts.exclude_schema()

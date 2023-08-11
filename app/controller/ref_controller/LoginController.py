@@ -8,19 +8,16 @@ from keycloak import KeycloakAuthenticationError
 
 from app.clients.keycloack.factory import make_or_get_keycloack_openid, KeycloakConfigurationException
 
-api = Namespace(name="Auth Controller", path='/auth',
-                description="API de récupération de jeton d'authentification")
+api = Namespace(name="Auth Controller", path="/auth", description="API de récupération de jeton d'authentification")
 
 
+login_fields = api.model("Login", {"email": fields.String(required=True), "password": fields.String(required=True)})
 
-login_fields = api.model('Login', {
-    'email': fields.String(required=True),
-    'password': fields.String(required=True)
-})
-@api.route('/login')
+
+@api.route("/login")
 class Login(Resource):
-    @api.response(200, 'Success')
-    @api.expect(login_fields,validate=True)
+    @api.response(200, "Success")
+    @api.expect(login_fields, validate=True)
     def post(self):
         body = request.data
 
@@ -28,7 +25,7 @@ class Login(Resource):
         logging.info(f"[LOGIN] Login user {param['email']}")
         try:
             client = make_or_get_keycloack_openid()
-            token =  client.token(param['email'],param['password'])
+            token = client.token(param["email"], param["password"])
             return f"{token['token_type']} {token['access_token']}", 200
         except KeycloakConfigurationException as admin_exception:
             return abort(message=admin_exception.message, code=HTTPStatus.INTERNAL_SERVER_ERROR)

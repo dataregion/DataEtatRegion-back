@@ -1,1 +1,1 @@
-__all__ = ('Audit','Pagination','QueryParam')
+__all__ = ("Audit", "Pagination", "QueryParam")

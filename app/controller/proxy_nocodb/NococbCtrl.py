@@ -12,68 +12,68 @@ from nocodb.nocodb import NocoDBProject, APIToken
 from app.controller.Decorators import retry_on_exception
 
 args_get = reqparse.RequestParser()
-args_get.add_argument('sort', type=str, required=False, help="Champ à trier")
-args_get.add_argument('fields', type=str, required=False, help="Liste des champs à remonter")
-args_get.add_argument('where', type=str, required=False, help="Filtre nocodb sur la table")
-args_get.add_argument('limit', type=int, required=False, help="Limit de résultat (max 1000), 20 par défaut")
-args_get.add_argument('offset', type=int, required=False, help="Limit de résultat (max 1000), 20 par défaut")
+args_get.add_argument("sort", type=str, required=False, help="Champ à trier")
+args_get.add_argument("fields", type=str, required=False, help="Liste des champs à remonter")
+args_get.add_argument("where", type=str, required=False, help="Filtre nocodb sur la table")
+args_get.add_argument("limit", type=int, required=False, help="Limit de résultat (max 1000), 20 par défaut")
+args_get.add_argument("offset", type=int, required=False, help="Limit de résultat (max 1000), 20 par défaut")
 
 
-api = Namespace(name="nocodb", path='/',
-                description='API passe plats nocodb')
+api = Namespace(name="nocodb", path="/", description="API passe plats nocodb")
 
-auth = current_app.extensions['auth']
+auth = current_app.extensions["auth"]
 
-@api.route('/<table>/<views>')
+
+@api.route("/<table>/<views>")
 class NocoDb(Resource):
     @api.expect(args_get)
-    @api.response(200, 'Success')
+    @api.response(200, "Success")
     @api.doc(security="Bearer")
-    @auth.token_auth('default', scopes_required=['openid'])
-    @retry_on_exception(max_retry=3) # Ajout du décorateur ici
+    @auth.token_auth("default", scopes_required=["openid"])
+    @retry_on_exception(max_retry=3)  # Ajout du décorateur ici
     def get(self, table, views):
         # le nom du projet correspond au nom du blueprint
         project = request.blueprint
         client = build_client(project)
 
         params = request.args
-        logging.debug(f'[NOCODB] get {table} {views} with params {params}')
+        logging.debug(f"[NOCODB] get {table} {views} with params {params}")
         try:
-            table_rows = client.table_row_list(NocoDBProject("noco", project), f'{table}/views/{views}', params=params)
-            if ('msg' in table_rows):
+            table_rows = client.table_row_list(NocoDBProject("noco", project), f"{table}/views/{views}", params=params)
+            if "msg" in table_rows:
                 logging.error(f'[NOCODB] Erreur sur la réponse {table_rows["msg"]}')
                 return table_rows, 400
             else:
-                logging.debug('[NOCODB] return response')
+                logging.debug("[NOCODB] return response")
                 return table_rows, 200
-        except requests.exceptions.JSONDecodeError as e :
-            logging.exception('[NOCODB] Error JSOnDecodeError')
+        except requests.exceptions.JSONDecodeError as e:
+            logging.exception("[NOCODB] Error JSOnDecodeError")
             raise e
 
 
-@api.route('/<table>/<views>/csv')
+@api.route("/<table>/<views>/csv")
 @api.expect(args_get)
 class ExportCsv(Resource):
-    @api.response(200, 'Success')
+    @api.response(200, "Success")
     @api.doc(security="Bearer")
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     def get(self, table, views):
         project = request.blueprint
         client = build_client(project)
         params = request.args
-        logging.debug(f'[NOCODB] get CSV {table} {views} where {params}')
+        logging.debug(f"[NOCODB] get CSV {table} {views} where {params}")
 
-        table_rows = client.table_row_list(NocoDBProject("noco", project), f'{table}/views/{views}', params=params)
-        if ('msg' in table_rows):
+        table_rows = client.table_row_list(NocoDBProject("noco", project), f"{table}/views/{views}", params=params)
+        if "msg" in table_rows:
             logging.error(f'[NOCODB] Erreur sur la réponse {table_rows["msg"]}')
             return table_rows, 400
-        else :
-            logging.debug('[NOCODB] return response')
-            data = table_rows['list']
+        else:
+            logging.debug("[NOCODB] return response")
+            data = table_rows["list"]
             # on met à plat les données
-            df = pandas.json_normalize(data, sep='_', max_level=1)
+            df = pandas.json_normalize(data, sep="_", max_level=1)
             # supression des colonnes les identifiant technique contenant _Id
-            df = df[df.columns.drop(list(df.filter(regex='_Id')))]
+            df = df[df.columns.drop(list(df.filter(regex="_Id")))]
             my_csv_string = df.to_csv(index=False)
 
             output = io.StringIO()
@@ -81,34 +81,33 @@ class ExportCsv(Resource):
             response = make_response(output.getvalue())
             response.headers["Content-Disposition"] = "attachment; filename=test.csv"
             response.headers["Content-type"] = "text/csv"
-            logging.debug('[NOCODB] return response csv')
+            logging.debug("[NOCODB] return response csv")
             return response
 
 
-@api.route('/')
+@api.route("/")
 class HealthCheck(Resource):
-    @api.response(200, 'Success')
+    @api.response(200, "Success")
     def get(self):
         project = request.blueprint
-        logging.debug('[NOCODB] HealthCheck')
+        logging.debug("[NOCODB] HealthCheck")
         build_client(project)
         return 200
 
 
-
 @functools.cache
 def build_client(project) -> NocoDBRequestsClient:
-    '''
+    """
     Construit le client nocodb
     :param project: nom du projet
     :return:
-    '''
-    uri = current_app.config['NOCODB_URL']
-    token = current_app.config['NOCODB_PROJECT'][project]
+    """
+    uri = current_app.config["NOCODB_URL"]
+    token = current_app.config["NOCODB_PROJECT"][project]
 
-    if token is None :
+    if token is None:
         abort(403, f"Information manquante pour le projet {project}")
-    try :
+    try:
         return NocoDBRequestsClient(APIToken(token), uri)
     except Exception as clientException:
         logging.error(clientException)

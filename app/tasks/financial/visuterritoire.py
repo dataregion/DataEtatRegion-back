@@ -1,4 +1,3 @@
-
 from . import logger
 
 from celery import Celery
@@ -8,9 +7,8 @@ from sqlalchemy import text
 celery: Celery = celeryapp.celery
 
 
-@celery.task(bind=True, name='visuterritoire_maj_materialized_view')
+@celery.task(bind=True, name="visuterritoire_maj_materialized_view")
 def refresh_materialized_views(self):
-
     refresh_request = text(
         "refresh materialized view financial_ae_summary_by_commune;"
         "refresh materialized view financial_cp_summary_by_commune;"

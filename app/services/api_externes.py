@@ -7,25 +7,26 @@ from app.models.apis_externes.subvention import InfoApiSubvention
 
 import logging
 
+
 def _siren(siret: str):
     return siret[0:9]
 
+
 class ApisExternesService:
     """Service qui construit les informations provenant des API externes"""
-    
+
     def __init__(self) -> None:
         self.api_entreprise = get_or_make_api_entreprise()
         self.api_subvention = get_or_make_app_api_subventions_client()
         self.api_demarche_simplifie = get_or_make_api_demarche_simplifie()
-    
+
     def subvention(self, siret: str):
         subventions = self.api_subvention.get_subventions_pour_etablissement(siret)
         contacts = self.api_subvention.get_representants_legaux_pour_etablissement(siret)
 
         return InfoApiSubvention(subventions=subventions, contacts=contacts)
-    
-    def entreprise(self, siret: str) -> InfoApiEntreprise:
 
+    def entreprise(self, siret: str) -> InfoApiEntreprise:
         siren = _siren(siret)
         donnees_etab = self.api_entreprise.donnees_etablissement(siret)
 
@@ -63,16 +64,12 @@ class ApisExternesService:
 
         return InfoApiEntreprise(
             donnees_etablissement=donnees_etab,
-
             tva_indispo=tva_indispo,
             tva=tva,
-
             chiffre_d_affaires_indispo=ca_indispo,
             chiffre_d_affaires=ca,
-
             certifications_rge_indispo=rge_indispo,
             certifications_rge=rge,
-
             certification_qualibat_indispo=qualibat_indispo,
-            certification_qualibat=qualibat
+            certification_qualibat=qualibat,
         )
