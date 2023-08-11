@@ -17,6 +17,5 @@ exclude = '''
     | venv11
     | migrations
     | config
-    | app
 )
 '''
