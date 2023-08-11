@@ -89,6 +89,8 @@ def _get_queue(queue_name: str):
     return queue
 
 from .financial.import_financial import *
+from .financial.import_france_2030 import *
+from .financial.visuterritoire import *
 from .import_refs_tasks import *
 from .management_tasks import *
 from .refs import *
