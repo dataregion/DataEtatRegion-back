@@ -1,7 +1,7 @@
 from celery import Celery
 from kombu import Queue
 
-CELERY_TASK_LIST = ["app.tasks"]
+CELERY_TASK_LIST = ["app.tasks", "app.tasks.tags"]
 
 db_session = None
 celery: Celery = None
@@ -39,6 +39,7 @@ def create_celery_app(_app=None) -> Celery:
             "share_*": {"queue": "line"},
             "import_line_*": {"queue": "line"},
             "update_siret_*": {"queue": "line"},
+            "apply_tags_*": {"queue": "line"},
             "update_one_fifth_of_sirets": {"queue": "file"},
             "visuterritoire_maj_materialized_view": {"queue": "file"},
         }

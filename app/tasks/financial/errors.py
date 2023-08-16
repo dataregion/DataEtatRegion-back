@@ -1,6 +1,5 @@
 from functools import wraps
 from api_entreprise import LimitHitError
-import sqlalchemy
 
 from app.tasks.financial import logger
 from app.tasks.management_tasks import sqlalchemy

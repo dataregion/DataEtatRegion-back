@@ -4,7 +4,6 @@ import time
 from functools import wraps
 from tenacity import retry, stop_after_attempt
 
-from flask import current_app
 from app import celeryapp
 
 logger = logging.getLogger()
@@ -107,5 +106,4 @@ from .financial.visuterritoire import *
 from .import_refs_tasks import *
 from .management_tasks import *
 from .refs import *
-
 from .siret import *
