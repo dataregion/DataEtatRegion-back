@@ -38,9 +38,18 @@ def upgrade():
            GROUP BY fce.id, rc.id, rcj.type;"""
     op.execute(m_view_ae)
 
-    index_m_view_ae = """CREATE INDEX idx_groupby_montant_ae ON financial_ae_summary_by_commune 
+    index_m_view_ae_commune = """CREATE INDEX idx_groupby_montant_ae_commune ON financial_ae_summary_by_commune 
                        (annee, programme, categorie_juridique, code_commune, montant_ae);"""
-    op.execute(index_m_view_ae)
+    index_m_view_ae_epci = """CREATE INDEX idx_groupby_montant_ae_epci ON financial_ae_summary_by_commune 
+                          (annee, programme, categorie_juridique, code_epci, montant_ae);"""
+    index_m_view_ae_departement = """CREATE INDEX idx_groupby_montant_ae_departement ON financial_ae_summary_by_commune 
+                              (annee, programme, categorie_juridique, code_departement, montant_ae);"""
+    index_m_view_ae_crte = """CREATE INDEX idx_groupby_montant_ae_crte ON financial_ae_summary_by_commune 
+                              (annee, programme, categorie_juridique, code_crte, montant_ae);"""
+    op.execute(index_m_view_ae_commune)
+    op.execute(index_m_view_ae_departement)
+    op.execute(index_m_view_ae_epci)
+    op.execute(index_m_view_ae_crte)
 
     m_view_cp = """CREATE MATERIALIZED VIEW financial_cp_summary_by_commune AS 
                SELECT 
@@ -60,71 +69,97 @@ def upgrade():
                WHERE rc.code IS NOT NULL """
     op.execute(m_view_cp)
 
-    index_m_view_cp = """ CREATE INDEX idx_groupby_montant_cp ON financial_cp_summary_by_commune 
+    index_m_view_cp_commune = """ CREATE INDEX idx_groupby_montant_cp_commune ON financial_cp_summary_by_commune 
                    (annee, programme, categorie_juridique, code_commune, montant_cp);"""
-    op.execute(index_m_view_cp)
+    index_m_view_cp_epci = """ CREATE INDEX idx_groupby_montant_cp_epci ON financial_cp_summary_by_commune 
+                       (annee, programme, categorie_juridique, code_epci, montant_cp);"""
+    index_m_view_cp_departement = """ CREATE INDEX idx_groupby_montant_cp__departement ON financial_cp_summary_by_commune 
+                       (annee, programme, categorie_juridique, code_departement, montant_cp);"""
+    index_m_view_cp_crte = """ CREATE INDEX idx_groupby_montant_cp_crte ON financial_cp_summary_by_commune 
+                       (annee, programme, categorie_juridique, code_crte, montant_cp);"""
+    op.execute(index_m_view_cp_commune)
+    op.execute(index_m_view_cp_departement)
+    op.execute(index_m_view_cp_crte)
+    op.execute(index_m_view_cp_epci)
+
+    # creattion d'une vue regroupant toutes les combinaisons possibles des annee/bop/categorie_juridique/commune
+    m_summary_annee_geo_type_bop = """CREATE MATERIALIZED VIEW m_summary_annee_geo_type_bop AS 
+            SELECT distinct annee, programme,code_commune,code_departement,code_crte,code_epci,categorie_juridique
+            from public.financial_cp_summary_by_commune
+            UNION 
+            SELECT distinct annee, programme,code_commune,code_departement,code_crte,code_epci,categorie_juridique
+            from public.financial_ae_summary_by_commune   
+                """
+    op.execute(m_summary_annee_geo_type_bop)
 
     m_view_montant_par_niveau_annee_programme = """CREATE MATERIALIZED VIEW m_montant_par_niveau_bop_annee_type AS 
               SELECT 
-                SUM(montant_cp) as montant_cp,
-                (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = fcp.programme
-                and fce.annee = fcp.annee AND fce.code_commune = fcp.code_commune and fce.categorie_juridique = fcp.categorie_juridique) as montant_ae,
+                (SELECT SUM(fcp.montant_cp) FROM financial_cp_summary_by_commune fcp WHERE fcp.programme = s.programme
+						  and fcp.annee=s.annee AND fcp.code_commune = s.code_commune and fcp.categorie_juridique = s.categorie_juridique) as montant_cp,
+                (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = s.programme
+                and fce.annee = s.annee AND fce.code_commune = s.code_commune and fce.categorie_juridique = s.categorie_juridique) as montant_ae,
                 'commune' as niveau,
                 annee,
                 programme,
                 code_commune as code,
                 categorie_juridique as type
-            FROM financial_cp_summary_by_commune fcp
+            FROM m_summary_annee_geo_type_bop s
             GROUP BY annee, programme, categorie_juridique, code_commune
             UNION
              SELECT 
-                SUM(montant_cp) as montant_cp,
-                (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = fcp.programme
-                and fce.annee = fcp.annee AND fce.code_departement = fcp.code_departement and fce.categorie_juridique = fcp.categorie_juridique) as montant_ae,
+                (SELECT SUM(fcp.montant_cp) FROM financial_cp_summary_by_commune fcp WHERE fcp.programme = s.programme
+						  and fcp.annee=s.annee AND fcp.code_departement = s.code_departement and fcp.categorie_juridique = s.categorie_juridique) as montant_cp,
+                (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = s.programme
+                and fce.annee = s.annee AND fce.code_departement = s.code_departement and fce.categorie_juridique = s.categorie_juridique) as montant_ae,
                 'departement' as niveau,
                 annee,
                 programme,
                 code_departement as code,
                 categorie_juridique as type
-            FROM financial_cp_summary_by_commune fcp
+            FROM  m_summary_annee_geo_type_bop s
             GROUP BY annee, programme, categorie_juridique, code_departement
             UNION
              SELECT 
-                SUM(montant_cp) as montant_cp,
-                (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = fcp.programme
-                and fce.annee = fcp.annee AND fce.code_crte = fcp.code_crte and fce.categorie_juridique = fcp.categorie_juridique) as montant_ae,
+                (SELECT SUM(fcp.montant_cp) FROM financial_cp_summary_by_commune fcp WHERE fcp.programme = s.programme
+						  and fcp.annee=s.annee AND fcp.code_crte = s.code_crte and fcp.categorie_juridique = s.categorie_juridique) as montant_cp,
+                (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = s.programme
+                    and fce.annee = s.annee AND fce.code_crte = s.code_crte and fce.categorie_juridique = s.categorie_juridique) as montant_ae,
                 'crte' as niveau,
                 annee,
                 programme,
                 code_crte as code,
                 categorie_juridique as type
-            FROM financial_cp_summary_by_commune fcp
+            FROM  m_summary_annee_geo_type_bop s
             GROUP BY annee, programme, categorie_juridique, code_crte
             UNION
              SELECT 
-                SUM(montant_cp) as montant_cp,
-               (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = fcp.programme
-                and fce.annee = fcp.annee AND fce.code_epci = fcp.code_epci and fce.categorie_juridique = fcp.categorie_juridique) as montant_ae,
+                (SELECT SUM(fcp.montant_cp) FROM financial_cp_summary_by_commune fcp WHERE fcp.programme = s.programme
+						  and fcp.annee=s.annee AND fcp.code_epci = s.code_epci and fcp.categorie_juridique = s.categorie_juridique) as montant_cp,
+                (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = s.programme
+                    and fce.annee = s.annee AND fce.code_epci = s.code_epci and fce.categorie_juridique = s.categorie_juridique) as montant_ae,
                 'epci' as niveau,
                 annee,
                 programme,
                 code_epci as code,
                 categorie_juridique as type
-            FROM financial_cp_summary_by_commune fcp
+            FROM m_summary_annee_geo_type_bop s
             GROUP BY annee, programme, categorie_juridique, code_epci;"""
 
     op.execute(m_view_montant_par_niveau_annee_programme)
 
     ## creation de la même vu non materialisé pour les besoins de nocodb
-    op.execute("CREATE OR REPLACE VIEW montant_par_niveau_bop_annee_type AS SELECT * FROM public.m_montant_par_niveau_bop_annee_type;")
+    op.execute(
+        "CREATE OR REPLACE VIEW montant_par_niveau_bop_annee_type AS SELECT * FROM public.m_montant_par_niveau_bop_annee_type;"
+    )
     # ### end Alembic commands ###
 
 
 def downgrade():
-    op.execute("DROP VIEW IF EXISTS montant_par_niveau_bop_annee_type")
-    op.execute("DROP MATERIALIZED  VIEW m_montant_par_niveau_bop_annee_type")
-    op.execute("DROP MATERIALIZED  VIEW financial_cp_summary_by_commune")
-    op.execute("DROP MATERIALIZED  VIEW financial_ae_summary_by_commune")
+    op.execute("DROP VIEW montant_par_niveau_bop_annee_type")
+    op.execute("DROP MATERIALIZED VIEW m_summary_annee_geo_type_bop CASCADE")
+    op.execute("DROP MATERIALIZED VIEW financial_cp_summary_by_commune CASCADE")
+    op.execute("DROP MATERIALIZED VIEW financial_ae_summary_by_commune CASCADE")
+    op.execute("DROP MATERIALIZED VIEW m_montant_par_niveau_bop_annee_type CASCADE")
 
 
 def _drop_old_view():
@@ -132,4 +167,3 @@ def _drop_old_view():
     op.execute("DROP VIEW IF EXISTS public.montant_par_commune_type")
     op.execute("DROP VIEW IF EXISTS public.montant_par_commune_type_theme")
     op.execute("DROP VIEW IF EXISTS public.montant_par_commune")
-
