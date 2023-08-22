@@ -29,16 +29,27 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('type')
     )
+
     op.create_table('tag_association',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('tag_id', sa.Integer(), nullable=False),
-    sa.Column('association_id', sa.Integer(), nullable=False),
-    sa.Column('table_association_name', sa.String(length=255), nullable=False),
     sa.Column('auto_applied', sa.Boolean(), nullable=False, default=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
+
+    sa.Column('ademe', sa.Integer(), nullable=True),
+    sa.Column('financial_ae', sa.Integer(), nullable=True),
+
+    sa.ForeignKeyConstraint(['financial_ae'], ['financial_ae.id']),
+    sa.ForeignKeyConstraint(['ademe'], ['ademe.id']),
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], ),
     sa.PrimaryKeyConstraint('id')
+    )
+
+    op.create_check_constraint(
+        'line_fks_xor',
+        table_name='tag_association',
+        condition='num_nonnulls(ademe, financial_ae) = 1'
     )
 
 
