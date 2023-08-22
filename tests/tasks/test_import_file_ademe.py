@@ -1,7 +1,6 @@
 import os
 from datetime import date
 from unittest.mock import patch, call, ANY, MagicMock
-import json
 
 from app.models.financial.Ademe import Ademe
 from app.models.refs.siret import Siret
