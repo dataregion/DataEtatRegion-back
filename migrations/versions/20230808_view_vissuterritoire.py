@@ -95,9 +95,11 @@ def upgrade():
     m_view_montant_par_niveau_annee_programme = """CREATE MATERIALIZED VIEW m_montant_par_niveau_bop_annee_type AS 
               SELECT 
                 (SELECT SUM(fcp.montant_cp) FROM financial_cp_summary_by_commune fcp WHERE fcp.programme = s.programme
-						  and fcp.annee=s.annee AND fcp.code_commune = s.code_commune and fcp.categorie_juridique = s.categorie_juridique) as montant_cp,
+						  and fcp.annee=s.annee AND fcp.code_commune = s.code_commune 
+						  and (fcp.categorie_juridique = s.categorie_juridique OR (fcp.categorie_juridique is null and s.categorie_juridique is null))) as montant_cp,
                 (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = s.programme
-                and fce.annee = s.annee AND fce.code_commune = s.code_commune and fce.categorie_juridique = s.categorie_juridique) as montant_ae,
+                        and fce.annee = s.annee AND fce.code_commune = s.code_commune 
+                        and (fce.categorie_juridique = s.categorie_juridique OR (fce.categorie_juridique is null and s.categorie_juridique is null))) as montant_ae,
                 'commune' as niveau,
                 annee,
                 programme,
@@ -108,9 +110,11 @@ def upgrade():
             UNION
              SELECT 
                 (SELECT SUM(fcp.montant_cp) FROM financial_cp_summary_by_commune fcp WHERE fcp.programme = s.programme
-						  and fcp.annee=s.annee AND fcp.code_departement = s.code_departement and fcp.categorie_juridique = s.categorie_juridique) as montant_cp,
+						  and fcp.annee=s.annee AND fcp.code_departement = s.code_departement 
+						  and (fcp.categorie_juridique = s.categorie_juridique OR (fcp.categorie_juridique is null and s.categorie_juridique is null))) as montant_cp,
                 (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = s.programme
-                and fce.annee = s.annee AND fce.code_departement = s.code_departement and fce.categorie_juridique = s.categorie_juridique) as montant_ae,
+                    and fce.annee = s.annee AND fce.code_departement = s.code_departement 
+                    and (fce.categorie_juridique = s.categorie_juridique OR (fce.categorie_juridique is null and s.categorie_juridique is null))) as montant_ae,
                 'departement' as niveau,
                 annee,
                 programme,
@@ -121,9 +125,11 @@ def upgrade():
             UNION
              SELECT 
                 (SELECT SUM(fcp.montant_cp) FROM financial_cp_summary_by_commune fcp WHERE fcp.programme = s.programme
-						  and fcp.annee=s.annee AND fcp.code_crte = s.code_crte and fcp.categorie_juridique = s.categorie_juridique) as montant_cp,
+						  and fcp.annee=s.annee AND fcp.code_crte = s.code_crte 
+						  and (fcp.categorie_juridique = s.categorie_juridique OR (fcp.categorie_juridique is null and s.categorie_juridique is null))) as montant_cp,
                 (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = s.programme
-                    and fce.annee = s.annee AND fce.code_crte = s.code_crte and fce.categorie_juridique = s.categorie_juridique) as montant_ae,
+                    and fce.annee = s.annee AND fce.code_crte = s.code_crte 
+                    and  (fce.categorie_juridique = s.categorie_juridique OR (fce.categorie_juridique is null and s.categorie_juridique is null))) as montant_ae,
                 'crte' as niveau,
                 annee,
                 programme,
@@ -134,9 +140,11 @@ def upgrade():
             UNION
              SELECT 
                 (SELECT SUM(fcp.montant_cp) FROM financial_cp_summary_by_commune fcp WHERE fcp.programme = s.programme
-						  and fcp.annee=s.annee AND fcp.code_epci = s.code_epci and fcp.categorie_juridique = s.categorie_juridique) as montant_cp,
+						  and fcp.annee=s.annee AND fcp.code_epci = s.code_epci 
+						  and (fcp.categorie_juridique = s.categorie_juridique OR (fcp.categorie_juridique is null and s.categorie_juridique is null))) as montant_cp,
                 (SELECT SUM(fce.montant_ae) FROM financial_ae_summary_by_commune fce WHERE fce.programme = s.programme
-                    and fce.annee = s.annee AND fce.code_epci = s.code_epci and fce.categorie_juridique = s.categorie_juridique) as montant_ae,
+                    and fce.annee = s.annee AND fce.code_epci = s.code_epci 
+                    and  (fce.categorie_juridique = s.categorie_juridique OR (fce.categorie_juridique is null and s.categorie_juridique is null))) as montant_ae,
                 'epci' as niveau,
                 annee,
                 programme,
