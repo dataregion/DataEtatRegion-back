@@ -31,8 +31,8 @@ def add_data(test_db):
         }
         test_db.session.add(CodeProgramme(**bop))
         data.append(bop)
-    test_db.session.commit()
-    return data
+    yield data
+    test_db.session.rollback()
 
 
 def test_bop_by_code(test_client, add_data):

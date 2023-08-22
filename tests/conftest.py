@@ -1,5 +1,6 @@
 import os
 import pytest
+
 from app import create_app_base, db
 
 file_path = os.path.abspath(os.getcwd()) + "\database.db"
@@ -34,7 +35,7 @@ def test_client(app):
     return app.test_client()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="package")
 def test_db(app, request):
     with app.app_context():
         db.create_all()

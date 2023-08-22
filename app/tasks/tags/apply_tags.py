@@ -12,13 +12,13 @@ LOGGER = logging.getLogger()
 
 
 @celery.task(bind=True, name="apply_tags_fond_vert")
-def apply_tags_fond_vert(self, tag_id: int, tag_type: str, tag_value: str | None):
+def apply_tags_fond_vert(self, tag_id: int, _tag_type: str, _tag_value: str | None):
     """
     Applique les tags Fond Vert
     :param self:
     :param tag_id: l'id du tag dans la table du referentiel
-    :param tag_type: le nom du type tag
-    :param tag_value: la valeur du tag
+    :param _tag_type: le nom du type tag
+    :param _tag_value: la valeur du tag
     :return:
     """
 
