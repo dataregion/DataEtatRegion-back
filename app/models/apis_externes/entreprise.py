@@ -12,9 +12,11 @@ from api_entreprise import (
     CertificationQualibat,
 )
 
+
 @dataclass
 class InfoApiEntreprise(metaclass=_InstrumentForFlaskRestx):
     """Informations qui proviennent de l'API entreprise"""
+
     donnees_etablissement: DonneesEtablissement
 
     """En cas d'erreur de l'API entreprise en requêtant la TVA"""

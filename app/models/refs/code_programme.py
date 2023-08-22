@@ -7,20 +7,20 @@ from app import db, ma
 from app.models.common.Audit import Audit
 
 
-class CodeProgramme(Audit,db.Model):
-    __tablename__ = 'ref_code_programme'
+class CodeProgramme(Audit, db.Model):
+    __tablename__ = "ref_code_programme"
     id = db.Column(db.Integer, primary_key=True)
     code: str = Column(String, unique=True, nullable=False)
     # FK
-    code_ministere: str = Column(String, db.ForeignKey('ref_ministere.code'), nullable=True)
-    theme: int = Column(db.Integer, db.ForeignKey('ref_theme.id'), nullable=True)
+    code_ministere: str = Column(String, db.ForeignKey("ref_ministere.code"), nullable=True)
+    theme: int = Column(db.Integer, db.ForeignKey("ref_theme.id"), nullable=True)
 
     label: str = Column(String)
     description: str = Column(Text)
 
-    theme_r = relationship("Theme",uselist=False, lazy="select")
+    theme_r = relationship("Theme", uselist=False, lazy="select")
     # permet de remonter uniquement le label
-    label_theme = association_proxy('theme_r', 'label')
+    label_theme = association_proxy("theme_r", "label")
 
     def __setattr__(self, key, value):
         """
@@ -45,11 +45,16 @@ class CodeProgramme(Audit,db.Model):
             value = value[1:]  # Remove the first character
         super().__setattr__(key, value)
 
+
 class CodeProgrammeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = CodeProgramme
         include_fk = True
-        exclude = ('id','theme','theme_r',) + CodeProgramme.exclude_schema()
+        exclude = (
+            "id",
+            "theme",
+            "theme_r",
+        ) + CodeProgramme.exclude_schema()
 
     label_theme = fields.String()
     label = fields.String()

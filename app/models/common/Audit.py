@@ -10,6 +10,7 @@ class Audit(object):
             - created_at : Column(DateTime) : The date and time the object was created.
             - updated_at : Column(DateTime) : The date and time the object was last updated.
     """
+
     @declared_attr
     def created_at(cls):
         return deferred(Column(DateTime, default=datetime.datetime.utcnow))
@@ -20,4 +21,4 @@ class Audit(object):
 
     @staticmethod
     def exclude_schema():
-        return ('created_at','updated_at')
+        return ("created_at", "updated_at")

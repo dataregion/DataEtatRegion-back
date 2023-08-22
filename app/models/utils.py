@@ -62,8 +62,7 @@ class _InstrumentForFlaskRestx(_AddMarshmallowSchema):
                 )
 
             models = {
-                name: api.schema_model(name, json_schema)
-                for name, json_schema in definitions_json_schemas.items()
+                name: api.schema_model(name, json_schema) for name, json_schema in definitions_json_schemas.items()
             }
             return models
 

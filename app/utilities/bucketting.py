@@ -17,5 +17,5 @@ def which_bucket(value: int, n: int) -> int:
 
         if rest == 0:
             return candidate
-    
+
     return 0

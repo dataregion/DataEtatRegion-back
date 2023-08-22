@@ -22,43 +22,73 @@ from app.controller.utils.ControllerUtils import get_origin_referrer
 from app.models.preference.Preference import Preference, PreferenceSchema, PreferenceFormSchema, Share
 from app.services.authentication.connected_user import ConnectedUser
 
-api = Namespace(name="preferences", path='/users/preferences',
-                description='API de gestion des préférences utilisateurs')
-auth = current_app.extensions['auth']
+api = Namespace(
+    name="preferences", path="/users/preferences", description="API de gestion des préférences utilisateurs"
+)
+auth = current_app.extensions["auth"]
 
-preference = api.model('CreateUpdatePreference', {
-    'name': fields.String(required=True, description='Name of the preference'),
-    'uuid': fields.String(required=False, description='Uuid of the preference for update'),
-    'filters':  fields.Wildcard(fields.Raw, description="JSON object representing the user's filter"),
-    'shares': fields.List(fields.Nested( api.model('shares', {
-        'shared_username_email': fields.String(required=True, description="Courriel d'un utilisateur"),
-    }), required = False), required = False)
-})
+preference = api.model(
+    "CreateUpdatePreference",
+    {
+        "name": fields.String(required=True, description="Name of the preference"),
+        "uuid": fields.String(required=False, description="Uuid of the preference for update"),
+        "filters": fields.Wildcard(fields.Raw, description="JSON object representing the user's filter"),
+        "shares": fields.List(
+            fields.Nested(
+                api.model(
+                    "shares",
+                    {
+                        "shared_username_email": fields.String(required=True, description="Courriel d'un utilisateur"),
+                    },
+                ),
+                required=False,
+            ),
+            required=False,
+        ),
+    },
+)
 
-preference_get  = api.model('Preference', {
-    'name': fields.String(required=True, description='Name of the preference'),
-    'username': fields.String(required = True, description='Creator of the preference'),
-    'uuid': fields.String(required=True, description='Uuid of the preference'),
-    'filters':  fields.Wildcard(fields.Raw, description="JSON object representing the user's filter"),
-    'shares': fields.List(fields.Nested( api.model('shares', {
-        'shared_username_email': fields.String(required=True, description="Courriel d'un utilisateur"),
-    }), required = False), required = False)
-})
+preference_get = api.model(
+    "Preference",
+    {
+        "name": fields.String(required=True, description="Name of the preference"),
+        "username": fields.String(required=True, description="Creator of the preference"),
+        "uuid": fields.String(required=True, description="Uuid of the preference"),
+        "filters": fields.Wildcard(fields.Raw, description="JSON object representing the user's filter"),
+        "shares": fields.List(
+            fields.Nested(
+                api.model(
+                    "shares",
+                    {
+                        "shared_username_email": fields.String(required=True, description="Courriel d'un utilisateur"),
+                    },
+                ),
+                required=False,
+            ),
+            required=False,
+        ),
+    },
+)
 
-list_preference_get = api.model('Preference_Share', {
-    'create_by_user' : fields.List(fields.Nested(preference_get)),
-    'shared_with_user': fields.List(fields.Nested(preference_get))
-})
+list_preference_get = api.model(
+    "Preference_Share",
+    {
+        "create_by_user": fields.List(fields.Nested(preference_get)),
+        "shared_with_user": fields.List(fields.Nested(preference_get)),
+    },
+)
 
-@api.route('')
+
+@api.route("")
 class PreferenceUsers(Resource):
     """
     Resource for managing users.
     """
-    @api.response(200, 'The preference created', preference)
+
+    @api.response(200, "The preference created", preference)
     @api.doc(security="Bearer")
     @api.expect(preference)
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     def post(self):
         """
         Create a new preference for the current user
@@ -66,9 +96,10 @@ class PreferenceUsers(Resource):
         user = ConnectedUser.from_current_token_identity()
 
         from app.tasks.management_tasks import share_filter_user
+
         logging.debug("[PREFERENCE][CTRL] Post users prefs")
         json_data = request.get_json()
-        json_data['username'] = user.username
+        json_data["username"] = user.username
 
         schema_create_validation = PreferenceFormSchema()
         try:
@@ -78,11 +109,17 @@ class PreferenceUsers(Resource):
             return {"message": "Invalid", "details": err.messages}, 400
 
         # on retire les shares pour soit même.
-        shares = list(filter(lambda d: d['shared_username_email'] != json_data['username'], data['shares']))
+        shares = list(filter(lambda d: d["shared_username_email"] != json_data["username"], data["shares"]))
 
         share_list = [Share(**share) for share in shares]
         application = get_origin_referrer(request)
-        pref = Preference(username = data['username'], name = data['name'], options = data['options'], filters = data['filters'], application_host=application)
+        pref = Preference(
+            username=data["username"],
+            name=data["name"],
+            options=data["options"],
+            filters=data["filters"],
+            application_host=application,
+        )
         pref.shares = share_list
 
         try:
@@ -90,17 +127,17 @@ class PreferenceUsers(Resource):
             logging.info(f'[PREFERENCE][CTRL] Adding preference for user {json_data["username"]}')
             db.session.commit()
 
-            if (len(pref.shares) > 0) :
+            if len(pref.shares) > 0:
                 share_filter_user.delay(str(pref.uuid), application)
         except Exception as e:
             logging.error("[PREFERENCE][CTRL] Error when saving preference", e)
-            return abort(message= "Error when saving preference", code=HTTPStatus.BAD_REQUEST)
+            return abort(message="Error when saving preference", code=HTTPStatus.BAD_REQUEST)
 
-        return  PreferenceSchema().dump(pref)
+        return PreferenceSchema().dump(pref)
 
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
-    @api.response(200, "List of the user's preferences", [list_preference_get] )
+    @api.response(200, "List of the user's preferences", [list_preference_get])
     def get(self):
         """
         Retrieve the list
@@ -110,19 +147,28 @@ class PreferenceUsers(Resource):
         application = get_origin_referrer(request)
         logging.debug(f"get users prefs {application}")
 
-        list_pref = Preference.query.options(lazyload(Preference.shares)).filter_by(username=user.username,application_host=application).order_by(
-            Preference.id).all()
-        list_pref_shared = Preference.query.join(Share).filter(Share.shared_username_email == user.username, Preference.application_host==application).distinct(Preference.id).all()
+        list_pref = (
+            Preference.query.options(lazyload(Preference.shares))
+            .filter_by(username=user.username, application_host=application)
+            .order_by(Preference.id)
+            .all()
+        )
+        list_pref_shared = (
+            Preference.query.join(Share)
+            .filter(Share.shared_username_email == user.username, Preference.application_host == application)
+            .distinct(Preference.id)
+            .all()
+        )
 
         schema = PreferenceSchema(many=True)
         create_by_user = schema.dump(list_pref)
         shared_with_user = schema.dump(list_pref_shared)
-        return { 'create_by_user': create_by_user, 'shared_with_user' :shared_with_user} ,200
+        return {"create_by_user": create_by_user, "shared_with_user": shared_with_user}, 200
 
-@api.route('/<uuid>')
+
+@api.route("/<uuid>")
 class CrudPreferenceUsers(Resource):
-
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     @api.response(200, "Success if delete")
     def delete(self, uuid):
@@ -133,7 +179,9 @@ class CrudPreferenceUsers(Resource):
         user = ConnectedUser.from_current_token_identity()
 
         application = get_origin_referrer(request)
-        preference = Preference.query.filter(cast(Preference.uuid, sqlalchemy.String)==uuid, Preference.application_host==application).one()
+        preference = Preference.query.filter(
+            cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_host == application
+        ).one()
 
         if preference.username != user.username:
             return abort(message="Vous n'avez pas les droits de supprimer cette préférence", code=HTTPStatus.FORBIDDEN)
@@ -144,9 +192,11 @@ class CrudPreferenceUsers(Resource):
             return "Success", 200
         except Exception as e:
             logging.error(f"[PREFERENCE][CTRL] Error when delete preference {uuid} {application}", e)
-            return abort(message=f"Error when delete preference on application {application}", code=HTTPStatus.BAD_REQUEST)
+            return abort(
+                message=f"Error when delete preference on application {application}", code=HTTPStatus.BAD_REQUEST
+            )
 
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     @api.expect(preference)
     @api.response(200, "Success if delete")
@@ -159,7 +209,9 @@ class CrudPreferenceUsers(Resource):
         user = ConnectedUser.from_current_token_identity()
 
         application = get_origin_referrer(request)
-        preference_to_save = Preference.query.filter(cast(Preference.uuid, sqlalchemy.String)==uuid, Preference.application_host==application).one()
+        preference_to_save = Preference.query.filter(
+            cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_host == application
+        ).one()
 
         if preference_to_save.username != user.username:
             return abort(message="Vous n'avez pas les droits de modifier cette préférence", code=HTTPStatus.FORBIDDEN)
@@ -167,7 +219,7 @@ class CrudPreferenceUsers(Resource):
         json_data = request.get_json()
 
         # filter the shares list to exclude the current user
-        shares = list(filter(lambda d: d['shared_username_email'] != user.username, json_data['shares']))
+        shares = list(filter(lambda d: d["shared_username_email"] != user.username, json_data["shares"]))
         # create a list of Share objects from the filtered shares
         new_share_list = [Share(**share) for share in shares]
         # initialize a list to store the final shares to save
@@ -191,13 +243,14 @@ class CrudPreferenceUsers(Resource):
                 shares_to_save.append(new_share)
 
         # set the final shares for the preference to save
-        preference_to_save.shares = shares_to_save + [s for s in preference_to_save.shares if
-                                                      s.shared_username_email not in to_delete]
+        preference_to_save.shares = shares_to_save + [
+            s for s in preference_to_save.shares if s.shared_username_email not in to_delete
+        ]
 
-        preference_to_save.name = json_data['name']
+        preference_to_save.name = json_data["name"]
         try:
             db.session.commit()
-            if (len(preference_to_save.shares) >  0) :
+            if len(preference_to_save.shares) > 0:
                 # send task async
                 share_filter_user.delay(str(preference_to_save.uuid), application)
             return "Success", 200
@@ -205,8 +258,7 @@ class CrudPreferenceUsers(Resource):
             logging.error(f"[PREFERENCE][CTRL] Error when delete preference {uuid}", e)
             return abort(message="Error when delete preference", code=HTTPStatus.BAD_REQUEST)
 
-
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     @api.response(200, "User preference", preference_get)
     def get(self, uuid):
@@ -216,33 +268,32 @@ class CrudPreferenceUsers(Resource):
         logging.debug(f"Get users prefs {uuid}")
 
         application = get_origin_referrer(request)
-        preference = Preference.query.filter(cast(Preference.uuid, sqlalchemy.String) == uuid,
-                                             Preference.application_host == application).one()
+        preference = Preference.query.filter(
+            cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_host == application
+        ).one()
 
         schema = PreferenceSchema()
         result = schema.dump(preference)
-        try :
+        try:
             preference.nombre_utilisation += 1
             preference.dernier_acces = datetime.datetime.utcnow()
             db.session.commit()
         except Exception as e:
             logging.warning(f"[PREFERENCE][CTRL] Error when update count usage preference {uuid}", e)
 
-        return result,200
+        return result, 200
 
 
-parser_search =  reqparse.RequestParser()
+parser_search = reqparse.RequestParser()
 parser_search.add_argument("username", type=str, required=True, help="Username")
 
 
-
-@api.route('/search-user')
+@api.route("/search-user")
 class UsersSearch(Resource):
-
-    @api.response(200, 'Search user by email/username for sharing')
+    @api.response(200, "Search user by email/username for sharing")
     @api.doc(security="Bearer")
     @api.expect(parser_search)
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     def get(self):
         """
         Search users by userName
@@ -250,13 +301,13 @@ class UsersSearch(Resource):
         p_args = parser_search.parse_args()
         search_username = p_args.get("username")
 
-        if search_username is None or len(search_username)  < 4:
-            return {'users': []}, 200
+        if search_username is None or len(search_username) < 4:
+            return {"users": []}, 200
         try:
             keycloak_admin = make_or_get_keycloack_admin()
-            query = {'briefRepresentation': True, 'enabled':True, 'search': search_username}
+            query = {"briefRepresentation": True, "enabled": True, "search": search_username}
             users = keycloak_admin.get_users(query)
 
-            return [{'username': user['username']} for user in users], 200
+            return [{"username": user["username"]} for user in users], 200
         except KeycloakConfigurationException as admin_exception:
             return admin_exception.message, 400

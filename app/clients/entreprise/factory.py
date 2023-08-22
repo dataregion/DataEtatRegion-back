@@ -6,6 +6,7 @@ from api_entreprise import ApiEntreprise, ContextInfo, Config
 
 from .ratelimiter import _make_rate_limiter
 
+
 def make_api_entreprise() -> ApiEntreprise:
     """Fabrique un client API pour l'api entreprise
 

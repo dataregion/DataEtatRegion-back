@@ -16,7 +16,7 @@ class KeycloakConfigurationException(Exception):
         super().__init__(self.message)
 
 
-def make_keycloack_admin() -> KeycloakAdmin :
+def make_keycloack_admin() -> KeycloakAdmin:
     """Builds a KeycloakAdmin client using the Flask app's configuration.
 
     Returns:
@@ -25,21 +25,19 @@ def make_keycloack_admin() -> KeycloakAdmin :
     Raises:
         KeycloakAdminException: If the Flask app's configuration is missing required values.
     """
-    if 'KEYCLOAK_ADMIN' not in current_app.config:
+    if "KEYCLOAK_ADMIN" not in current_app.config:
         raise KeycloakConfigurationException()
 
-    config = current_app.config['KEYCLOAK_ADMIN']
-    if 'URL' not in config or 'SECRET_KEY' not in config or 'REALM' not in config:
+    config = current_app.config["KEYCLOAK_ADMIN"]
+    if "URL" not in config or "SECRET_KEY" not in config or "REALM" not in config:
         raise KeycloakConfigurationException()
 
-    return KeycloakAdmin(server_url=config['URL'],
-                         realm_name=config['REALM'],
-                         client_secret_key=config['SECRET_KEY'])
+    return KeycloakAdmin(server_url=config["URL"], realm_name=config["REALM"], client_secret_key=config["SECRET_KEY"])
+
 
 @functools.cache
 def make_or_get_keycloack_admin() -> KeycloakAdmin:
     return make_keycloack_admin()
-
 
 
 def make_keycloack_openid() -> KeycloakOpenID:
@@ -51,17 +49,20 @@ def make_keycloack_openid() -> KeycloakOpenID:
     Raises:
         KeycloakAdminException: If the Flask app's configuration is missing required values.
     """
-    if 'KEYCLOAK_OPENID' not in current_app.config:
+    if "KEYCLOAK_OPENID" not in current_app.config:
         raise KeycloakConfigurationException()
 
-    config = current_app.config['KEYCLOAK_OPENID']
-    if 'URL' not in config or 'SECRET_KEY' not in config or 'REALM' not in config or 'CLIENT_ID' not in config:
+    config = current_app.config["KEYCLOAK_OPENID"]
+    if "URL" not in config or "SECRET_KEY" not in config or "REALM" not in config or "CLIENT_ID" not in config:
         raise KeycloakConfigurationException()
 
-    return KeycloakOpenID(server_url=config['URL'],
-                         realm_name=config['REALM'],
-                          client_id=config['CLIENT_ID'],
-                         client_secret_key=config['SECRET_KEY'])
+    return KeycloakOpenID(
+        server_url=config["URL"],
+        realm_name=config["REALM"],
+        client_id=config["CLIENT_ID"],
+        client_secret_key=config["SECRET_KEY"],
+    )
+
 
 @functools.cache
 def make_or_get_keycloack_openid() -> KeycloakOpenID:

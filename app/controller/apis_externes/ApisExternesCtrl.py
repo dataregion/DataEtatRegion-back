@@ -19,7 +19,7 @@ api = Namespace(
     description="Controlleur qui construit les données via les APIs externes (api entreprise, data_subvention etc..)",
 )
 
-auth: OIDCAuthentication = current_app.extensions['auth'] 
+auth: OIDCAuthentication = current_app.extensions["auth"]
 
 service = ApisExternesService()
 
@@ -48,7 +48,7 @@ def _document_error_responses(api: Namespace):
 
 @api.route("/info-subvention/<siret>")
 class InfoSubventionCtrl(Resource):
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     @api.response(200, "Success", model=InfoApiSubvention.schema_model(api))
     @_document_error_responses(api)
@@ -60,29 +60,26 @@ class InfoSubventionCtrl(Resource):
         return json
 
 
-parser_ds = api.model('query', {
-    'operationName': fields.String(required=True),
-    'query': fields.String,
-    'variables': fields.Raw(required=False)
-})
+parser_ds = api.model(
+    "query",
+    {"operationName": fields.String(required=True), "query": fields.String, "variables": fields.Raw(required=False)},
+)
 
 
 @api.route("/demarche-simplifie")
 class DemarcheSimplifie(Resource):
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     @api.expect(parser_ds)
     @_document_error_responses(api)
-    @cache.cached(timeout=300, make_cache_key= make_cache)
+    @cache.cached(timeout=300, make_cache_key=make_cache)
     def post(self):
         return service.api_demarche_simplifie.do_post(request.get_data())
 
 
-
-
 @api.route("/info-entreprise/<siret>")
 class InfoEntrepriseCtrl(Resource):
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     @api.response(
         200,
