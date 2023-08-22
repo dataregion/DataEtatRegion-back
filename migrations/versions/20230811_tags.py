@@ -45,6 +45,11 @@ def upgrade():
     sa.ForeignKeyConstraint(['tag_id'], ['tags.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_check_constraint(
+        'line_fks_xor',
+        table_name='tag_association',
+        condition='num_nonnulls(ademe, financial_ae) = 1'
+    )
 
     op.create_check_constraint(
         'line_fks_xor',
