@@ -3,6 +3,9 @@ from functools import wraps
 from flask import Blueprint, request
 from flask_restx import Api, reqparse, inputs
 from werkzeug.datastructures import FileStorage
+from app.controller.financial_data.schema_model import (
+    register_tags_schemamodel,
+)
 
 from app.controller.utils.Error import ErrorController
 from app.exceptions.exceptions import DataRegatException, BadRequestDataRegateNum
@@ -79,6 +82,9 @@ api = Api(
     title="API Data transform",
     authorizations=authorizations,
 )
+
+model_tags_single_api = register_tags_schemamodel(api)
+
 api.add_namespace(api_ae)
 api.add_namespace(api_cp)
 api.add_namespace(api_ademe)

@@ -1,11 +1,11 @@
-from flask import jsonify, current_app, request, g
+from flask import jsonify, current_app, request
 from flask_restx import Namespace, Resource
-from marshmallow_jsonschema import JSONSchema
 from flask_pyoidc import OIDCAuthentication
 
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
 from app.controller.financial_data import check_param_source_annee_import, parser_import, check_file_import
+from app.controller.financial_data.schema_model import register_financial_ae_schemamodel
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
@@ -16,6 +16,8 @@ from app.services.code_geo import BadCodeGeoException
 from app.services.financial_data import import_ae, search_financial_data_ae, get_financial_ae
 
 api = Namespace(name="Engagement", path="/", description="Api de  gestion des AE des données financières de l'état")
+
+model_financial_ae_single_api = register_financial_ae_schemamodel(api)
 
 auth: OIDCAuthentication = current_app.extensions["auth"]
 
@@ -111,13 +113,8 @@ class FinancialAe(Resource):
         }, 200
 
 
-schema = FinancialAeSchema()
-model_json = JSONSchema().dump(schema)["definitions"]["FinancialAeSchema"]
-model_single_api = api.schema_model("FinancialAe", model_json)
-
-
 @api.route("/ae/<id>")
-@api.doc(model=model_single_api)
+@api.doc(model=model_financial_ae_single_api)
 class GetFinancialAe(Resource):
     """
     Récupére les infos d'engagements en fonction de son identifiant technique

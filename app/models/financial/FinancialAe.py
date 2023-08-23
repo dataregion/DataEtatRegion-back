@@ -4,7 +4,6 @@ from datetime import datetime
 from dataclasses import dataclass
 
 from marshmallow import fields
-from marshmallow_sqlalchemy import auto_field
 from sqlalchemy import Column, String, ForeignKey, Integer, DateTime, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -12,8 +11,8 @@ from sqlalchemy.orm import relationship
 from app import db, ma
 from app.models.financial import FinancialData, json_type_object_code_label
 from app.models.financial.MontantFinancialAe import MontantFinancialAe
-from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.models.refs.siret import Siret
+from app.models.tags.Tags import TagsSchema
 
 COLUMN_MONTANT_NAME = "montant"
 
@@ -50,6 +49,7 @@ class FinancialAe(FinancialData, db.Model):
     contrat_etat_region: str = Column(String(255))
     annee: int = Column(Integer, nullable=False)  # annee de l'AE chorus
 
+    tags = relationship("Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True)
     montant_ae = relationship("MontantFinancialAe", uselist=True, lazy="select")
     financial_cp = relationship("FinancialCp", uselist=True, lazy="select")
     ref_programme = relationship("CodeProgramme", lazy="select")
@@ -285,6 +285,7 @@ class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
             "financial_cp",
         )
 
+    tags = fields.List(fields.Nested(TagsSchema))
     montant_ae = fields.Float(attribute="montant_ae_total")
     montant_cp = fields.Float()
     date_cp = fields.String()

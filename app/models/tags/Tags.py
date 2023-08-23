@@ -42,4 +42,4 @@ class TagAssociation(Audit, db.Model):
 class TagsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Tags
-        exclude = ("id",) + Tags.exclude_schema()
+        exclude = ("id",) + Tags.exclude_schema() + ("enable_rules_auto",)
