@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 import pytest
-from ..tags import *
+from . import *  # necessaire pour utiliser la fixture dans le init
 from app.tasks.tags.update_all_tags import update_all_tags
 
 

@@ -5,7 +5,7 @@ from app.tasks.import_refs_tasks import import_refs_task
 
 
 @patch("app.tasks.import_refs_tasks.subtask")
-def test_import_refs_groupe_marchandise_pce(mock_subtask, test_db):
+def test_import_refs_groupe_marchandise_pce(mock_subtask):
     import_refs_task(
         os.path.abspath(os.getcwd()) + "/data/Calculette_Chorus_test.xlsx",
         "GroupeMarchandise",

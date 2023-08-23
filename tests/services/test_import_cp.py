@@ -28,7 +28,7 @@ def test_import_file_cp_with_file_ae():
             import_cp(FileStorage(f), "35", 2023)
 
 
-def test_import_file_cp_ok(app, test_db):
+def test_import_file_cp_ok(app, database, session):
     filename = os.path.abspath(os.getcwd()) + "/data/chorus/financial_cp.csv"
     with patch(
         "app.tasks.financial.import_financial.import_file_cp_financial", return_value=None
@@ -37,6 +37,7 @@ def test_import_file_cp_ok(app, test_db):
             import_cp(FileStorage(f), "35", 2023)
 
     # ASSERT
-    with app.app_context():
-        r = AuditUpdateData.query.filter_by(data_type=DataType.FINANCIAL_DATA_CP.name).one()
-        assert r.filename == filename
+    r = session.execute(
+        database.select(AuditUpdateData).where(AuditUpdateData.data_type == DataType.FINANCIAL_DATA_CP.name)
+    ).scalar_one_or_none()
+    assert r.filename == filename

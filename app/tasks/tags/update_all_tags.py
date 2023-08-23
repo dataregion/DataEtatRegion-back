@@ -30,6 +30,6 @@ def update_all_tags(self):
         value = tag.value.lower().translate(translator) if tag.value is not None else None
         subtask_name = f"apply_tags_{type}" if value is None else f"apply_tags_{type}_{value}"
         LOGGER.debug(f"[TAGS ]envoi subtask {subtask_name}")
-        subtask(subtask_name).delay(tag.id, tag.type, tag.value)
+        subtask(subtask_name).delay(tag.type, tag.value)
 
     LOGGER.info("[TAGS] End Application des tags")

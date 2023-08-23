@@ -162,6 +162,9 @@ class FinancialAe(FinancialData, db.Model):
         if self.source_region is not None and new_financial[FinancialAe.source_region.key] != self.source_region:
             return False
 
+        if COLUMN_MONTANT_NAME not in new_financial:
+            return False
+
         nouveau_montant = (
             float(new_financial[COLUMN_MONTANT_NAME].replace(",", "."))
             if isinstance(new_financial[COLUMN_MONTANT_NAME], str)

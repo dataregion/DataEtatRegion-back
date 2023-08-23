@@ -2,6 +2,7 @@ import json
 import os
 from unittest.mock import patch, call
 
+from app import db
 from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.ministere import Ministere
 from app.tasks.import_refs_tasks import import_refs_task
@@ -42,7 +43,7 @@ def test_import_refs_code_programme(mock_subtask):
 
 
 @patch("app.tasks.import_refs_tasks.subtask")
-def test_import_refs_ministere(mock_subtask, app):
+def test_import_refs_ministere(mock_subtask):
     import_refs_task(
         os.path.abspath(os.getcwd()) + "/data/Calculette_Chorus_test.xlsx",
         "Ministere",
@@ -65,7 +66,7 @@ def test_import_refs_ministere(mock_subtask, app):
     )
 
 
-def test_import_insert_code_programme_line(app, test_db):
+def test_import_insert_code_programme_line(session):
     import_line_one_ref_default(
         "CodeProgramme",
         json.dumps({"code": "0185", "label": "Diplomatie culturelle et d'influence", "code_ministere": "MIN01"}),
@@ -73,30 +74,28 @@ def test_import_insert_code_programme_line(app, test_db):
     import_line_one_ref_default(
         "CodeProgramme", json.dumps({"code_ministere": "MIN01", "code": "151", "label": "TEST"})
     )
-    with app.app_context():
-        d_to_update = CodeProgramme.query.filter_by(code="185").one()
-        assert d_to_update.label == "Diplomatie culturelle et d'influence"
+    d_to_update = session.execute(db.select(CodeProgramme).filter_by(code="185")).scalar_one_or_none()
+    assert d_to_update.label == "Diplomatie culturelle et d'influence"
 
-        d_to_update = CodeProgramme.query.filter_by(code="151").one()
-        assert d_to_update.label == "TEST"
+    d_to_update = session.execute(db.select(CodeProgramme).filter_by(code="151")).scalar_one_or_none()
+    assert d_to_update.label == "TEST"
 
 
-def test_update_code_programme(app, test_db):
+def test_update_code_programme(session):
     # GIVEN
     bop = {
         "code": "754",
     }
     ministere = {"code": "MIN09", "label": "label MIN09"}
-    test_db.session.add(Ministere(**ministere))
-    test_db.session.add(CodeProgramme(**bop))
-    test_db.session.commit()
+    session.add(Ministere(**ministere))
+    session.add(CodeProgramme(**bop))
+    session.commit()
 
     # DO
     import_line_one_ref_default(
         "CodeProgramme", '{"code_ministere":"MIN09","code":"0754","label":"Contribution collectivites territoriales"}'
     )
 
-    with app.app_context():
-        d_to_update = CodeProgramme.query.filter_by(code="754").one()
-        assert d_to_update.code_ministere == "MIN09"
-        assert d_to_update.label == "Contribution collectivites territoriales"
+    d_to_update = session.execute(db.select(CodeProgramme).filter_by(code="754")).scalar_one_or_none()
+    assert d_to_update.code_ministere == "MIN09"
+    assert d_to_update.label == "Contribution collectivites territoriales"
