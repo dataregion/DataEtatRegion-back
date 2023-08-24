@@ -22,7 +22,9 @@ class Tags(Audit, db.Model):
 class TagAssociation(Audit, db.Model):
     __tablename__ = "tag_association"
     __table_args__ = (
-        CheckConstraint( 'true' , name='line_fks_xor'), # XXX: voir les scripts de migration our la vraie definition de contrainte
+        CheckConstraint(
+            "true", name="line_fks_xor"
+        ),  # XXX: voir les scripts de migration our la vraie definition de contrainte
     )
 
     id = db.Column(Integer, primary_key=True)
