@@ -5,6 +5,7 @@ from werkzeug.datastructures import FileStorage
 
 from app.controller.Decorators import check_permission
 from app.controller.financial_data import check_file_import
+from app.controller.financial_data.schema_model import register_ademe_schemamodel
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
@@ -12,7 +13,10 @@ from app.models.financial.Ademe import AdemeSchema
 from app.services.authentication.connected_user import ConnectedUser
 from app.services.financial_data import import_ademe, search_ademe, get_ademe
 
+
 api = Namespace(name="Ademe", path="/", description="Api de gestion des données ADEME")
+
+model_ademe_single_api = register_ademe_schemamodel(api)
 
 auth = current_app.extensions["auth"]
 
@@ -32,11 +36,6 @@ parser_get.add_argument("annee", type=int, action="split", help="L'année compta
 
 parser_import_file = reqparse.RequestParser()
 parser_import_file.add_argument("fichier", type=FileStorage, help="fichier à importer", location="files", required=True)
-
-
-schema = AdemeSchema()
-model_json = JSONSchema().dump(schema)["definitions"]["AdemeSchema"]
-model_single_api = api.schema_model("Ademe", model_json)
 
 
 @api.route("/ademe")
@@ -84,7 +83,7 @@ class AdemeImport(Resource):
 
 
 @api.route("/ademe/<id>")
-@api.doc(model=model_single_api)
+@api.doc(model=model_ademe_single_api)
 class GetAdemeByid(Resource):
     """
     Récupére les infos d'une dépense ADEME

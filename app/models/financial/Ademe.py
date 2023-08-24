@@ -8,6 +8,7 @@ from sqlalchemy.orm import relationship
 from app import db, ma
 from app.models.financial import FinancialData, json_type_object_code_label
 from app.models.refs.siret import Siret
+from app.models.tags.Tags import TagsSchema
 
 __all__ = ("Ademe", "AdemeSchema")
 
@@ -35,6 +36,8 @@ class Ademe(FinancialData, db.Model):
 
     ref_siret_attribuant = relationship("Siret", lazy="select", foreign_keys=[siret_attribuant])
     ref_siret_beneficiaire = relationship("Siret", lazy="select", foreign_keys=[siret_beneficiaire])
+
+    tags = relationship("Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True)
 
     # Données techniques
     file_import_taskid = Column(String(255))
@@ -110,5 +113,6 @@ class AdemeSchema(ma.SQLAlchemyAutoSchema):
         model = Ademe
         exclude = ("updated_at", "created_at", "ref_siret_attribuant")
 
+    tags = fields.List(fields.Nested(TagsSchema))
     siret_beneficiaire = SiretField(attribute="siret_beneficiaire")
     commune = CommuneField(attribute="ref_siret_beneficiaire")
