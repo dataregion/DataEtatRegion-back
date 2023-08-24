@@ -4,12 +4,13 @@ from app import db
 from app.models.tags.Tags import TagAssociation, Tags
 
 
-def select_ae_have_tags():
+def select_ae_have_tags(tag_id):
     """
-    Retourne la selection d'ae qui ont déjà au moins un tag
+    Retourne la selection d'ae qui ont déjà au moins un tag tag_id appliqué
+    :param tag_id: l'id du tag
     :return:
     """
-    return db.select(TagAssociation.financial_ae).distinct()
+    return db.select(TagAssociation.financial_ae).where(TagAssociation.tag_id == tag_id).distinct()
 
 
 def select_tag(tag_type: str, tag_value: str | None = None) -> Tags:
