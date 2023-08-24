@@ -4,8 +4,6 @@
 #
 #    pip-compile --resolver=backtracking
 #
---extra-index-url https://repository.csm.ovh/repository/pypi-group/simple
-
 alembic==1.11.2
     # via flask-migrate
 amqp==5.1.1
@@ -14,10 +12,8 @@ aniso8601==9.0.1
     # via flask-restx
 annotated-types==0.5.0
     # via pydantic
-api-entreprise==3.3.3
+api-entreprise==3.3.4
     # via -r requirements.in
-async-timeout==4.0.2
-    # via redis
 attrs==23.1.0
     # via
     #   jsonschema
@@ -35,9 +31,7 @@ celery==5.3.1
 certifi==2023.7.22
     # via requests
 cffi==1.15.1
-    # via
-    #   cryptography
-    #   gevent
+    # via cryptography
 charset-normalizer==3.2.0
     # via requests
 click==8.1.6
@@ -53,8 +47,6 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-colorama==0.4.6
-    # via click
 cryptography==41.0.3
     # via oic
 defusedxml==0.7.1
@@ -267,7 +259,6 @@ tzdata==2023.3
     # via
     #   celery
     #   pandas
-    #   psycopg
 urllib3==2.0.4
     # via requests
 uuid==1.30
