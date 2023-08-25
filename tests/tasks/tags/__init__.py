@@ -1,4 +1,4 @@
-__all__ = ("TAG_FOND_VERT", "TAG_DISABLE_AUTO", "TAG_RELANCE", "TAG_DUMMY")
+__all__ = ("TAG_FOND_VERT", "TAG_DISABLE_AUTO", "TAG_RELANCE", "TAG_DUMMY", "TAG_DETR")
 
 TAG_FOND_VERT = {
     "type": "Fond vert",
@@ -18,6 +18,13 @@ TAG_RELANCE = {
     "type": "relance",
     "value": None,
     "description": "relance",
+    "enable_rules_auto": True,
+}
+
+TAG_DETR = {
+    "type": "DETR",
+    "value": None,
+    "description": "detr",
     "enable_rules_auto": True,
 }
 

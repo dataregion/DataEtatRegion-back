@@ -6,6 +6,7 @@ from app.models.financial.FinancialAe import FinancialAe as Ae
 from app.models.tags.Tags import TagAssociation, Tags
 from . import select_ae_have_tags, select_tag
 from ...models.refs.code_programme import CodeProgramme
+from ...models.refs.referentiel_programmation import ReferentielProgrammation
 
 celery = celeryapp.celery
 LOGGER = logging.getLogger()
@@ -40,7 +41,7 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None):
     :param _tag_value: la valeur du tag
     :return:
     """
-    LOGGER.info("[TAGS][Relance] Application auto du tags fond vert")
+    LOGGER.info("[TAGS][Relance] Application auto du tags relance")
     tag = select_tag(tag_type)
     LOGGER.debug(f"[TAGS][{tag.type}] Récupération du tag relance id : {tag.id}")
 
@@ -57,6 +58,32 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None):
     apply_task.apply_tags_ae(Ae.programme.in_(list_programme))
 
 
+@celery.task(bind=True, name="apply_tags_detr")
+def apply_tags_detr(self, tag_type: str, _tag_value: str | None):
+    """
+    Applique le tag DETR
+    :param self:
+    :param tag_type: le nom du type tag
+    :param _tag_value: la valeur du tag
+    :return:
+    """
+    LOGGER.info("[TAGS][DETR] Application auto du tags DETR")
+    tag = select_tag(tag_type)
+    LOGGER.debug(f"[TAGS][{tag.type}] Récupération du tag DETR id : {tag.id}")
+
+    stmt_ref_programmation = (
+        db.select(ReferentielProgrammation.code).where(ReferentielProgrammation.label.ilike("detr")).distinct()
+    )
+    list_ref_programmation = []
+    for ref_progammation in db.session.execute(stmt_ref_programmation).fetchall():
+        list_ref_programmation.append(ref_progammation.code)
+
+    LOGGER.debug(f"[TAGS][{tag.type}] Récupération des ref programmation DETR")
+
+    apply_task = ApplyTags(tag)
+    apply_task.apply_tags_ae(Ae.referentiel_programmation.in_(list_ref_programmation))
+
+
 @dataclasses.dataclass
 class ApplyTags:
     tag: Tags
@@ -69,15 +96,13 @@ class ApplyTags:
         :return:
         """
         stmt_ae = db.select(Ae.id).where(whereclause).where(Ae.id.not_in(select_ae_have_tags(self.tag.id)))
+        ae_ids = [row[0] for row in db.session.execute(stmt_ae).all()]
 
-        if db.session.execute(
-            stmt_ae
-        ).all():  # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
-            db.session.execute(
-                db.insert(TagAssociation).values(
-                    [{"tag_id": self.tag.id, "financial_ae": stmt_ae, "auto_applied": True}]
-                )
-            )
+        if (
+            ae_ids
+        ):  # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
+            for ae_id in ae_ids:
+                db.session.add(TagAssociation(financial_ae=ae_id, tag=self.tag, auto_applied=True))
             db.session.commit()
             LOGGER.info(f"[TAGS][{self.tag.type}] Fin application auto du tags")
         else:

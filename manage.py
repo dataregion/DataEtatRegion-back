@@ -10,4 +10,7 @@ from app import create_app_base
 app_flask = create_app_base()
 
 if __name__ == "__main__":
-    app_flask.run()
+    # app_flask.run()
+    from app.tasks.tags import update_all_tags
+
+    update_all_tags()
