@@ -1,3 +1,4 @@
+import dataclasses
 from typing import List
 
 from sqlalchemy import CheckConstraint, Column, String, Integer, UniqueConstraint, ForeignKey, Boolean, Text
@@ -19,6 +20,7 @@ class Tags(Audit, db.Model):
     UniqueConstraint("type", "value", name="unique_tags")
 
 
+@dataclasses.dataclass
 class TagAssociation(Audit, db.Model):
     __tablename__ = "tag_association"
     __table_args__ = (
