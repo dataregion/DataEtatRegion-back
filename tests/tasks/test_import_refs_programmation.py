@@ -9,7 +9,7 @@ from app.tasks.refs import import_line_one_ref_default
 
 
 @patch("app.tasks.import_refs_tasks.subtask")
-def test_import_refs_programme_financement(mock_subtask, test_db):
+def test_import_refs_programme_financement(mock_subtask):
     import_refs_task(
         os.path.abspath(os.getcwd()) + "/data/Calculette_Chorus_test.xlsx",
         "ReferentielProgrammation",
@@ -35,7 +35,7 @@ def test_import_refs_programme_financement(mock_subtask, test_db):
     )
 
 
-def test_import_line_ref_with_attribute_error(app):
+def test_import_line_ref_with_attribute_error():
     # Given
     code = "123"
     row = json.dumps({"code": code, "name": "Test", "description": "toto"})
@@ -44,7 +44,7 @@ def test_import_line_ref_with_attribute_error(app):
         import_line_one_ref_default("ReferentielProgrammation", row)
 
 
-def test_import_new_line_programme_financement(app):
+def test_import_new_line_programme_financement(database, session):
     # Given
     code = "00001123"
     row = json.dumps({"code": code, "label": "Test", "description": "test description"})
@@ -52,8 +52,7 @@ def test_import_new_line_programme_financement(app):
     import_line_one_ref_default("ReferentielProgrammation", row)
 
     # Then
-    with app.app_context():
-        r = ReferentielProgrammation.query.filter_by(code=code).one()
-        assert r.code == code
-        assert r.label == "Test"
-        assert r.description == "test description"
+    r = session.execute(database.select(ReferentielProgrammation).filter_by(code=code)).scalar_one_or_none()
+    assert r.code == code
+    assert r.label == "Test"
+    assert r.description == "test description"

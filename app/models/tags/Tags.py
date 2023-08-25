@@ -10,7 +10,7 @@ from app.models.common.Audit import Audit
 class Tags(Audit, db.Model):
     __tablename__ = "tags"
     id = db.Column(Integer, primary_key=True)
-    type: str = Column(String(255), unique=True, nullable=False)
+    type: str = Column(String(255), nullable=False)
     value: str = Column(String(255))
     description: str = Column(Text, nullable=True)
     enable_rules_auto: bool = Column(Boolean, nullable=False, default=False)

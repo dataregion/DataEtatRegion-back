@@ -10,15 +10,14 @@ from flask_migrate import Migrate
 from flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ProviderMetadata, ClientMetadata
 from werkzeug.middleware.proxy_fix import ProxyFix
-from flask_sqlalchemy import SQLAlchemy
 
 from app import celeryapp, mailapp
 
 from flask_cors import CORS
 
+from app.database import db
 
 # TODO déplacer en extensions
-db = SQLAlchemy()
 ma = Marshmallow()
 cache = Cache()
 

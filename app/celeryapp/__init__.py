@@ -1,7 +1,7 @@
 from celery import Celery
 from kombu import Queue
 
-CELERY_TASK_LIST = ["app.tasks", "app.tasks.tags"]
+CELERY_TASK_LIST = ["app.tasks.tags"]
 
 db_session = None
 celery: Celery = None

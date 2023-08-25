@@ -9,7 +9,7 @@ from app.tasks.refs import import_line_one_ref_default
 
 
 @patch("app.tasks.import_refs_tasks.subtask")
-def test_import_refs_centre_cout(mock_subtask, test_db):
+def test_import_refs_centre_cout(mock_subtask):
     import_refs_task(
         os.path.abspath(os.getcwd()) + "/data/centre_cout.xlsx",
         "CentreCouts",
@@ -39,7 +39,7 @@ def test_import_refs_centre_cout(mock_subtask, test_db):
     )
 
 
-def test_import_line_ref_with_attribute_error(app):
+def test_import_line_ref_with_attribute_error():
     # Given
     code = "3070ATE012"
     row = json.dumps({"code": code, "description": "Centre de cout mutualise", "labeld": "PRF0ATE012"})
@@ -48,7 +48,7 @@ def test_import_line_ref_with_attribute_error(app):
         import_line_one_ref_default(cls="CentreCouts", data=row)
 
 
-def test_import_new_line_centre_cout(app):
+def test_import_new_line_centre_cout(database):
     # Given
     code = "00001123"
     row = json.dumps(
@@ -64,10 +64,9 @@ def test_import_new_line_centre_cout(app):
     import_line_one_ref_default(model_name="CentreCouts", data=row)
 
     # Then
-    with app.app_context():
-        r = CentreCouts.query.filter_by(code=code).one()
-        assert r.code == code
-        assert r.label == "PRF0ATE012"
-        assert r.description == "Centre de cout mutualise"
-        assert r.code_postal == "75001"
-        assert r.ville == "PARIS"
+    r = database.session.execute(database.select(CentreCouts).filter_by(code=code)).scalar_one_or_none()
+    assert r.code == code
+    assert r.label == "PRF0ATE012"
+    assert r.description == "Centre de cout mutualise"
+    assert r.code_postal == "75001"
+    assert r.ville == "PARIS"
