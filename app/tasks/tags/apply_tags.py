@@ -1,9 +1,6 @@
 import dataclasses
 import logging
 
-from sqlalchemy import BooleanClauseList
-from sqlalchemy.orm import load_only
-
 from app import celeryapp, db
 from app.models.financial.FinancialAe import FinancialAe as Ae
 from app.models.tags.Tags import TagAssociation, Tags
@@ -12,6 +9,9 @@ from ...models.refs.code_programme import CodeProgramme
 
 celery = celeryapp.celery
 LOGGER = logging.getLogger()
+
+
+__all__ = ("apply_tags_fond_vert", "apply_tags_relance")
 
 
 @celery.task(bind=True, name="apply_tags_fond_vert")

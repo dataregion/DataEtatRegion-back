@@ -1,7 +1,5 @@
-__all__ = ("update_all_tags", "apply_tags")
-
-from app import db
 from app.models.tags.Tags import TagAssociation, Tags
+from ... import db
 
 
 def select_ae_have_tags(tag_id):
@@ -22,3 +20,7 @@ def select_tag(tag_type: str, tag_value: str | None = None) -> Tags:
     le Tag
     """
     return db.session.execute(db.select(Tags).where(Tags.type == tag_type).where(Tags.value == tag_value)).scalar_one()
+
+
+from .apply_tags import *
+from .update_all_tags import *

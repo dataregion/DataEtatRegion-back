@@ -9,6 +9,8 @@ from app.models.tags.Tags import Tags
 celery = celeryapp.celery
 LOGGER = logging.getLogger()
 
+__all__ = ("update_all_tags",)
+
 
 @celery.task(bind=True, name="update_all_tags")
 def update_all_tags(self):
