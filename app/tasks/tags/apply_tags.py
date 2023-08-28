@@ -1,10 +1,8 @@
-import dataclasses
 import logging
 
 from app import celeryapp, db
 from app.models.financial.FinancialAe import FinancialAe as Ae
-from app.models.tags.Tags import TagAssociation, Tags
-from . import select_ae_have_tags, select_tag
+from . import select_tag, ApplyTags
 from ...models.refs.code_programme import CodeProgramme
 from ...models.refs.referentiel_programmation import ReferentielProgrammation
 
@@ -12,7 +10,7 @@ celery = celeryapp.celery
 LOGGER = logging.getLogger()
 
 
-__all__ = ("apply_tags_fond_vert", "apply_tags_relance")
+__all__ = ("apply_tags_fond_vert", "apply_tags_relance", "apply_tags_detr", "apply_tags_cper_2015_20")
 
 
 @celery.task(bind=True, name="apply_tags_fond_vert")
@@ -84,26 +82,35 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None):
     apply_task.apply_tags_ae(Ae.referentiel_programmation.in_(list_ref_programmation))
 
 
-@dataclasses.dataclass
-class ApplyTags:
-    tag: Tags
+@celery.task(bind=True, name="apply_tags_cper_2015_20")
+def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None):
+    """
+    Applique le tag CEPR (Contrat plan Etat Region) entre 2015 et 2020
+    :param self:
+    :param tag_type:
+    :param tag_value:
+    :return:
+    """
+    LOGGER.info("[TAGS][CPER] Application auto du tags CPER 2015-20")
+    tag = select_tag(tag_type, tag_value)
+    LOGGER.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
 
-    def apply_tags_ae(self, whereclause):
-        """
-        Applique un tag sur les Financial AE retournée par le statement passé en paramètre
-        :param tag: le tag à appliquer
-        :param where_clause: le filtrage
-        :return:
-        """
-        stmt_ae = db.select(Ae.id).where(whereclause).where(Ae.id.not_in(select_ae_have_tags(self.tag.id)))
-        ae_ids = [row[0] for row in db.session.execute(stmt_ae).all()]
+    apply_task = ApplyTags(tag)
+    apply_task.apply_tags_ae((Ae.contrat_etat_region != "#") & (Ae.annee >= 2015) & (Ae.annee <= 2020))
 
-        if (
-            ae_ids
-        ):  # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
-            for ae_id in ae_ids:
-                db.session.add(TagAssociation(financial_ae=ae_id, tag=self.tag, auto_applied=True))
-            db.session.commit()
-            LOGGER.info(f"[TAGS][{self.tag.type}] Fin application auto du tags")
-        else:
-            LOGGER.info(f"[TAGS][{self.tag.type}] Aucune nouvelle association détecté")
+
+@celery.task(bind=True, name="apply_tags_cepr_2021_27")
+def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None):
+    """
+    Applique le tag CEPR (Contrat plan Etat Region) entre 2021 et 2027
+    :param self:
+    :param tag_type:
+    :param tag_value:
+    :return:
+    """
+    LOGGER.info("[TAGS][CPER] Application auto du tags CPER 2021-27")
+    tag = select_tag(tag_type, tag_value)
+    LOGGER.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
+
+    apply_task = ApplyTags(tag)
+    apply_task.apply_tags_ae((Ae.contrat_etat_region != "#") & (Ae.annee >= 2021) & (Ae.annee <= 2027))

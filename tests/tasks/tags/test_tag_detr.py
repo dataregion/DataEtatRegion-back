@@ -105,7 +105,6 @@ def test_apply_detr_no_tag(insert_two_financial_ae_for_tag_detr, tag_detr):
     )
     assert tag_assocations[0].ademe is None and tag_assocations[1].ademe is None
     assert tag_assocations[0].auto_applied == True and tag_assocations[1].auto_applied == True
-    # il s'agit bien de l'id de l'AE code programme 380
 
 
 def test_should_not_apply_tag_if_already_present(database, session, tag_detr, insert_two_financial_ae_for_tag_detr):
