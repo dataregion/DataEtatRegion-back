@@ -11,6 +11,6 @@ app_flask = create_app_base()
 
 if __name__ == "__main__":
     # app_flask.run()
-    from app.tasks.tags import update_all_tags
+    from app.tasks.tags import apply_tags_cper_2015_20
 
-    update_all_tags()
+    apply_tags_cper_2015_20("CPER", "2015-20")
