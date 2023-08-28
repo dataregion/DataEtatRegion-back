@@ -37,6 +37,8 @@ parser_get.add_argument("annee", type=int, action="split", help="L'année compta
 parser_import_file = reqparse.RequestParser()
 parser_import_file.add_argument("fichier", type=FileStorage, help="fichier à importer", location="files", required=True)
 
+parser_get.add_argument("tags", type=str, action="split", help="Le(s) tag(s) à inclure", required=False)
+
 
 @api.route("/ademe")
 class AdemeImport(Resource):
