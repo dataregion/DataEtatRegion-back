@@ -3,6 +3,7 @@ from flask_restx import Api, Namespace
 
 from app.controller.ref_controller.RefController import build_ref_controller
 from app.controller.ref_controller.RefCrte import api as crte_api
+from app.controller.ref_controller.RefTags import api as api_tags
 from app.controller.ref_controller.RefLocalisationInterministerielle import api as api_loc_interministerielle
 from app.models.refs.arrondissement import Arrondissement
 
@@ -95,3 +96,4 @@ api.add_namespace(api_groupe_marchandise)
 api.add_namespace(crte_api)
 api.add_namespace(api_ref_arrondissement)
 api.add_namespace(api_ref_beneficiaire)
+api.add_namespace(api_tags)
