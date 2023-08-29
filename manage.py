@@ -10,7 +10,4 @@ from app import create_app_base
 app_flask = create_app_base()
 
 if __name__ == "__main__":
-    # app_flask.run()
-    from app.tasks.tags import apply_tags_cper_2015_20
-
-    apply_tags_cper_2015_20("CPER", "2015-20")
+    app_flask.run()
