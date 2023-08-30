@@ -28,6 +28,7 @@ run_black:
     - /^chore.*$/
     - /^feature.*$/
     - /^fix.*$/
+    - /^bugfix.*$/
     - /^hotfix.*$/
   script:
     - black --check .
@@ -65,6 +66,7 @@ docker-build-snapshot:
     - /^chore.*$/
     - /^feature.*$/
     - /^fix.*$/
+    - /^bugfix.*$/
     - /^hotfix.*$/
   variables:
     IMAGE: "${REGISTRY}nocode/data-transform/${CI_COMMIT_REF_SLUG}"
@@ -100,6 +102,7 @@ deploy-integ-snapshot:
     - /^feature.*$/
     - /^hotfix.*$/
     - /^fix.*$/
+    - /^bugfix.*$/
   when: manual
   before_script:
     - export VERSION="/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA:0:8}-snapshot"
