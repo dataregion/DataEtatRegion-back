@@ -27,11 +27,15 @@ def import_line_ref_localisation_interministerielle(data: str, **kwargs):
         db.select(LocalisationInterministerielle).where(LocalisationInterministerielle.code == check_loc_inter.code)
     ).scalar_one_or_none()
 
-    stmt_find_commune = (
-        db.select(Commune)
-        .where((func.upper(Commune.label_commune) == func.upper(row["commune"])))
-        .where(Commune.code_departement == row["code_departement"])
-    )
+    if check_loc_inter.niveau == "COMMUNE":
+        code_commune = check_loc_inter.code[-5:]
+        stmt_find_commune = db.select(Commune).where(Commune.code == code_commune)
+    else:
+        stmt_find_commune = (
+            db.select(Commune)
+            .where((func.upper(Commune.label_commune) == func.upper(row["commune"])))
+            .where(Commune.code_departement == row["code_departement"])
+        )
     commune = db.session.execute(stmt_find_commune).scalar_one_or_none()
     if not instance:
         if commune is not None:
