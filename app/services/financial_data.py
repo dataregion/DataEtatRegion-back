@@ -1,7 +1,7 @@
 import logging
 import pandas
 
-from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm import contains_eager, selectinload
 
 from app import db
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
@@ -99,6 +99,7 @@ def search_ademe(siret_beneficiaire: list = None, code_geo: list = None, annee: 
         contains_eager(Ademe.ref_siret_beneficiaire)
         .contains_eager(Siret.ref_categorie_juridique)
         .load_only(CategorieJuridique.type),
+        selectinload(Ademe.tags),
     )
     query = (
         query.join(Ademe.ref_siret_beneficiaire.and_(Siret.code.in_(siret_beneficiaire)))
