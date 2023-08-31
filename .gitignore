@@ -18,3 +18,5 @@
 /test.py
 /tests/settings.db
 /tests/meta_audit.db
+/tests/*.csv
+/tests/.coverage

@@ -14,7 +14,7 @@ from app.services.financial_data import import_cp
 def test_import_import_file_cp_file_not_allowed():
     # DO
     with open(os.path.abspath(os.getcwd()) + "/data/chorus/errors/sample.pdf", "rb") as f:
-        with pytest.raises(FileNotAllowedException, match=re.escape("[FileNotAllowed] le fichier n'est pas un csv")):
+        with pytest.raises(FileNotAllowedException, match=r"pas au format \{\'csv\'\}$"):
             import_cp(FileStorage(f), "35", 2023)
 
     with open(os.path.abspath(os.getcwd()) + "/data/chorus/errors/sample.csv", "rb") as f:
@@ -28,7 +28,7 @@ def test_import_file_cp_with_file_ae():
             import_cp(FileStorage(f), "35", 2023)
 
 
-def test_import_file_cp_ok(app, test_db):
+def test_import_file_cp_ok(app, database, session):
     filename = os.path.abspath(os.getcwd()) + "/data/chorus/financial_cp.csv"
     with patch(
         "app.tasks.financial.import_financial.import_file_cp_financial", return_value=None
@@ -37,6 +37,7 @@ def test_import_file_cp_ok(app, test_db):
             import_cp(FileStorage(f), "35", 2023)
 
     # ASSERT
-    with app.app_context():
-        r = AuditUpdateData.query.filter_by(data_type=DataType.FINANCIAL_DATA_CP).one()
-        assert r.filename == filename
+    r = session.execute(
+        database.select(AuditUpdateData).where(AuditUpdateData.data_type == DataType.FINANCIAL_DATA_CP.name)
+    ).scalar_one_or_none()
+    assert r.filename == filename

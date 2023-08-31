@@ -10,6 +10,7 @@ from app.models.refs.siret import Siret
 
 logger = logging.getLogger(__name__)
 
+
 def _map(siret: Siret, etablissement: DonneesEtablissement):
     categorie_juridique = etablissement.unite_legale.forme_juridique.code
     code_commune = etablissement.adresse.code_commune
@@ -24,6 +25,7 @@ def _map(siret: Siret, etablissement: DonneesEtablissement):
     siret.denomination = denomination
     siret.adresse = adresse
 
+
 def _api():
     return get_or_make_api_entreprise()
 
@@ -34,7 +36,7 @@ def check_siret(siret):
     Raises:
         LimitHitError: Si le ratelimiter de l'API entreprise est déclenché
     """
-    if siret is not None :
+    if siret is not None:
         logger.info(f"[SIRET] Début check siret {siret}")
         siret_entity = update_siret_from_api_entreprise(siret, insert_only=True)
         if siret_entity.code_commune is not None:
@@ -43,17 +45,20 @@ def check_siret(siret):
         try:
             db.session.add(siret_entity)
             db.session.commit()
-        except Exception as e:  # The actual exception depends on the specific database so we catch all exceptions. This is similar to the official documentation: https://docs.sqlalchemy.org/en/latest/orm/session_transaction.html
+        except (
+            Exception
+        ) as e:  # The actual exception depends on the specific database so we catch all exceptions. This is similar to the official documentation: https://docs.sqlalchemy.org/en/latest/orm/session_transaction.html
             logger.exception(f"[SIRET] Error sur ajout Siret {siret}")
             raise e
 
         logger.info(f"[SIRET] Siret {siret} ajouté")
 
+
 def __check_commune(code):
     instance = db.session.query(Commune).filter_by(code=code).one_or_none()
     if not instance:
-        logger.info('[IMPORT][COMMUNE] Ajout commune %s', code)
-        commune = Commune(code = code)
+        logger.info("[IMPORT][COMMUNE] Ajout commune %s", code)
+        commune = Commune(code=code)
         try:
             commune = _maj_one_commune(commune)
             db.session.add(commune)
@@ -61,34 +66,32 @@ def __check_commune(code):
         except Exception:
             logger.exception(f"[IMPORT][CHORUS] Error sur ajout commune {code}")
 
+
 def _maj_one_commune(commune: Commune):
     """
     Lance la MAj d'une communce
     :param commune:
     :return:
     """
-    try :
+    try:
         apigeo = get_info_commune(commune)
-        commune.label_commune = apigeo['nom']
-        if 'epci' in apigeo:
-            commune.code_epci = apigeo['epci']['code']
-            commune.label_epci = apigeo['epci']['nom']
-        if 'region' in apigeo:
-            commune.code_region = apigeo['region']['code']
-            commune.label_region = apigeo['region']['nom']
-        if 'departement' in apigeo:
-            commune.code_departement = apigeo['departement']['code']
-            commune.label_departement = apigeo['departement']['nom']
+        commune.label_commune = apigeo["nom"]
+        if "epci" in apigeo:
+            commune.code_epci = apigeo["epci"]["code"]
+            commune.label_epci = apigeo["epci"]["nom"]
+        if "region" in apigeo:
+            commune.code_region = apigeo["region"]["code"]
+            commune.label_region = apigeo["region"]["nom"]
+        if "departement" in apigeo:
+            commune.code_departement = apigeo["departement"]["code"]
+            commune.label_departement = apigeo["departement"]["nom"]
         return commune
     except ApiGeoException:
         logger.info(f"[MAJ COMMUNE] Commune {commune.code} non trouvé via API")
-        return  commune
+        return commune
 
 
-
-
-
-def update_siret_from_api_entreprise(code: str, insert_only = False):
+def update_siret_from_api_entreprise(code: str, insert_only=False):
     """Met à jour le siret donné via une requête à l'API entreprise
 
     Args:
@@ -98,10 +101,7 @@ def update_siret_from_api_entreprise(code: str, insert_only = False):
     Raises:
         LimitHitError: si le ratelimiter de l'API est plein.
     """
-    logger.info(
-        f"[SERVICE][SIRET] Mise à jour du siret {code} "
-        "avec les informations de l'API entreprise"
-    )
+    logger.info(f"[SERVICE][SIRET] Mise à jour du siret {code} " "avec les informations de l'API entreprise")
     siret = db.session.query(Siret).filter_by(code=str(code)).one_or_none()
     if siret is not None and insert_only:
         logger.debug(f"Le siret {code} existe déjà. On ne met pas à jour les données")
@@ -115,10 +115,10 @@ def update_siret_from_api_entreprise(code: str, insert_only = False):
         if etablissement is None:
             logger.warning(f"Aucune information sur l'entreprise via API entreprise pour le siret {code}")
             return siret
-    except ApiError :
+    except ApiError:
         logger.exception(f"Error api entreprise {code}")
         return siret
-    
+
     _map(siret, etablissement)
 
     return siret

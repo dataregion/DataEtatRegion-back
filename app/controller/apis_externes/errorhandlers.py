@@ -22,10 +22,7 @@ from app.clients.data_subventions import CallError as ApiSubventionCallError
 def handle_api_subvention_call_error(error: ApiSubventionCallError):
     """Lorsqu'une erreur lors d'un appel à l'API subvention est survenue"""
 
-    logger.error(
-        f"[API EXTERNES][CTRL] "
-        "Une erreur lors de l'appel à l'API subvention est survenue"
-    )
+    logger.error(f"[API EXTERNES][CTRL] " "Une erreur lors de l'appel à l'API subvention est survenue")
 
     desc = error.call_error_description
     message = (
@@ -62,9 +59,7 @@ def handle_limit_hit(error: LimitHitError):
 def handle_api_entreprise_error(error: ApiEntrepriseError):
     """Lorsqu'une erreur lors de l'appel à l'API entreprise est survenue"""
 
-    logger.error(
-        f"[API EXTERNES][CTRL] Une erreur lors de l'appel à l'API entreprise est survenue"
-    )
+    logger.error(f"[API EXTERNES][CTRL] Une erreur lors de l'appel à l'API entreprise est survenue")
 
     err = ApiError(
         code=CODE_CALL_FAILED,

@@ -12,7 +12,7 @@ from app.models.common.Audit import Audit
 
 @dataclasses.dataclass
 class DomaineFonctionnel(Audit, db.Model):
-    __tablename__ = 'ref_domaine_fonctionnel'
+    __tablename__ = "ref_domaine_fonctionnel"
     id = db.Column(db.Integer, primary_key=True)
     code: str = Column(String, unique=True, nullable=False)
     label: str = Column(String)
@@ -24,9 +24,9 @@ class DomaineFonctionnel(Audit, db.Model):
         Retourne le code programme associé
         :return:
         """
-        if (self.code and type(self.code) == str) :
+        if self.code and type(self.code) == str:
             matches = re.search(r"^(\d{4})(-)?", self.code)
-            if (matches is not None) :
+            if matches is not None:
                 return matches.group(1)[1:]
         return None
 
@@ -34,7 +34,7 @@ class DomaineFonctionnel(Audit, db.Model):
 class DomaineFonctionnelSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = DomaineFonctionnel
-        exclude = ('id',) + DomaineFonctionnel.exclude_schema()
+        exclude = ("id",) + DomaineFonctionnel.exclude_schema()
 
     code_programme = fields.String()
     label = fields.String()

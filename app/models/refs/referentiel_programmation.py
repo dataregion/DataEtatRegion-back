@@ -8,8 +8,8 @@ from app import db, ma
 from app.models.common.Audit import Audit
 
 
-class ReferentielProgrammation(Audit,db.Model):
-    __tablename__ = 'ref_programmation'
+class ReferentielProgrammation(Audit, db.Model):
+    __tablename__ = "ref_programmation"
     id = db.Column(db.Integer, primary_key=True)
     code: str = Column(String, unique=True, nullable=False)
     label: str = Column(String)
@@ -21,9 +21,9 @@ class ReferentielProgrammation(Audit,db.Model):
         Retourne le code programme associé
         :return:
         """
-        if (self.code and type(self.code) == str) :
+        if self.code and type(self.code) == str:
             matches = re.search(r"^(\d{4})(.*)", self.code)
-            if (matches is not None) :
+            if matches is not None:
                 return matches.group(1)[1:]
         return None
 
@@ -31,7 +31,7 @@ class ReferentielProgrammation(Audit,db.Model):
 class ReferentielProgrammationSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ReferentielProgrammation
-        exclude = ('id',) + ReferentielProgrammation.exclude_schema()
+        exclude = ("id",) + ReferentielProgrammation.exclude_schema()
 
     label = fields.String()
     description = fields.String()

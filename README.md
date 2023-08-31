@@ -63,14 +63,15 @@ cp config/oidc_template.yml config/oidc.yml
 
 ```bash
 pip install pip-tools
+# Pour mettre à jour les dépendances épinglées
 pip-compile --resolver=backtracking && pip-compile --resolver=backtracking dev-requirements.in
-pip-sync requirements.txt dev-requirements.txt
+pip install -r requirements.txt -r dev-requirements.txt
 ```
 
 ## Mode Api
 
 ```bash
-FLASK_APP="app:create_app_api" flask run  --host "0.0.0.0"
+$ FLASK_APP="app:create_app_api" flask run  --host "0.0.0.0"
 ```
 
 # Utilisation

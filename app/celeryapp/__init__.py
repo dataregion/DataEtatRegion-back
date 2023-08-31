@@ -1,13 +1,13 @@
 from celery import Celery
 from kombu import Queue
 
-CELERY_TASK_LIST = ['app.tasks']
+CELERY_TASK_LIST = ["app.tasks.tags"]
 
 db_session = None
 celery: Celery = None
 
 
-def create_celery_app(_app =None) -> Celery:
+def create_celery_app(_app=None) -> Celery:
     """
     Create a new Celery object and tie together the Celery config to the app's config.
 
@@ -20,36 +20,30 @@ def create_celery_app(_app =None) -> Celery:
     # if os.environ.get('NEW_RELIC_CELERY_ENABLED') == 'True':
     #     _app.initialize('celery')
 
-    celery = Celery(_app.import_name,
-                    backend=_app.config['result_backend'] if 'result_backend' in _app.config else None,
-                    broker=_app.config['CELERY_BROKER_URL'] if 'CELERY_BROKER_URL' in _app.config else None,
-                    include=CELERY_TASK_LIST)
+    celery = Celery(
+        _app.import_name,
+        backend=_app.config["result_backend"] if "result_backend" in _app.config else None,
+        broker=_app.config["CELERY_BROKER_URL"] if "CELERY_BROKER_URL" in _app.config else None,
+        include=CELERY_TASK_LIST,
+    )
     celery.conf.update(_app.config)
     celery.conf.task_queues = (
-        Queue('file'),
-        Queue('line'),
+        Queue("file"),
+        Queue("line"),
     )
 
-    celery.conf.task_routes = [{
-        'import_file_*': {
-            'queue': 'file'
-        },
-        'update_all_*': {
-            'queue': 'file'
-        },
-        'update_one_fifth_of_sirets': {
-            'queue': 'file'
-        },
-        'share_*': {
-            'queue': 'line'
-        },
-        'import_line_*': {
-            'queue': 'line'
-        },
-        'update_siret_*': {
-            'queue': 'line'
-        },
-    }]
+    celery.conf.task_routes = [
+        {
+            "import_file_*": {"queue": "file"},
+            "update_all_*": {"queue": "file"},
+            "share_*": {"queue": "line"},
+            "import_line_*": {"queue": "line"},
+            "update_siret_*": {"queue": "line"},
+            "apply_tags_*": {"queue": "line"},
+            "update_one_fifth_of_sirets": {"queue": "file"},
+            "visuterritoire_maj_materialized_view": {"queue": "file"},
+        }
+    ]
 
     TaskBase = celery.Task
 
@@ -62,4 +56,3 @@ def create_celery_app(_app =None) -> Celery:
 
     celery.Task = ContextTask
     return celery
-

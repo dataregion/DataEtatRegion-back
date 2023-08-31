@@ -1,5 +1,3 @@
---extra-index-url https://repository.csm.ovh/repository/pypi-group/simple
-
 flask ~= 2.3
 flask-pyoidc ~= 3.14
 flask-migrate~=4.0
@@ -26,7 +24,7 @@ psycopg~=3.1
 psycopg-binary~=3.1
 
 pyyaml~=6.0
-pandas~=1.5
+pandas~=2.0
 
 requests~=2.31
 pyrate-limiter~=2.10
@@ -43,4 +41,4 @@ openpyxl~=3.1.2
 xlrd~=2.0
 odfpy~=1.4.1
 
-api-entreprise >= 3.3.3
+api-entreprise >= 3.3.4

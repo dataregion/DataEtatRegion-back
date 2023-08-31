@@ -1,5 +1,6 @@
 import os
 import pytest
+
 from app import create_app_base, db
 
 file_path = os.path.abspath(os.getcwd()) + "\database.db"
@@ -12,7 +13,7 @@ extra_config = {
         "audit": "sqlite:///" + audit_path,
     },
     "SQLALCHEMY_DATABASE_URI": "sqlite:///" + file_path,
-    "SQLALCHEMY_BINDS" "SECRET_KEY": "secret",
+    "SECRET_KEY": "secret",
     "OIDC_CLIENT_SECRETS": "ser",
     "TESTING": True,
     "SERVER_NAME": "localhost",
@@ -21,7 +22,6 @@ extra_config = {
 
 
 test_app = create_app_base(extra_config_settings=extra_config)
-test_app.app_context().push()
 
 
 @pytest.fixture(scope="session")
@@ -30,19 +30,55 @@ def app():
 
 
 @pytest.fixture(scope="session")
+def connections(app):
+    with app.app_context():
+        engine = db.engines[None]
+        engine_settings = db.engines["settings"]
+        engine_audit = db.engines["audit"]
+        connections = {
+            "database": engine.connect(),
+            "settings": engine_settings.connect(),
+            "audit": engine_audit.connect(),
+        }
+
+        yield connections
+
+        connections["database"].close()
+        connections["settings"].close()
+        connections["audit"].close()
+        # fermerture des connections et des bases
+        db.session.close()
+        engine.dispose()
+        engine_settings.dispose()
+        engine_audit.dispose()
+        os.remove(file_path)
+        os.remove(audit_path)
+        os.remove(settings_path)
+
+
+@pytest.fixture(scope="session")
 def test_client(app):
     return app.test_client()
 
 
-@pytest.fixture(scope="module")
-def test_db(app, request):
+@pytest.fixture(scope="session")
+def database(app, connections, request):
     with app.app_context():
         db.create_all()
+    return db
+
+
+@pytest.fixture(autouse=True)
+def session(connections, database, request):
+    """retourne la session à la base de données principale"""
+
+    session = db.session
+    session.begin_nested()
 
     def teardown():
-        with app.app_context():
-            # Supprimer toutes les tables après les tests
-            db.drop_all()
+        session.expire_all()
+        session.close_all()
+        session.rollback()
 
     request.addfinalizer(teardown)
-    return db
+    return session

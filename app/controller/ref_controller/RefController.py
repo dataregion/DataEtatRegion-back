@@ -10,11 +10,12 @@ from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.common.QueryParam import QueryParam
 
-auth = current_app.extensions['auth']
+auth = current_app.extensions["auth"]
 
 
-
-def build_ref_controller(cls, namespace: Namespace, help_query="Recherche sur le code et le label", cond_opt: tuple=None):
+def build_ref_controller(
+    cls, namespace: Namespace, help_query="Recherche sur le code et le label", cond_opt: tuple = None
+):
     """
     Construit dynamiquement des endpoint pour un referentiel
     L'api contient un endpoint de recherche paginé, et une endpoint pour retourner un objet par son code
@@ -32,29 +33,28 @@ def build_ref_controller(cls, namespace: Namespace, help_query="Recherche sur le
     module_name = cls().__class__.__module__
     schema = getattr(sys.modules[module_name], f"{cls.__name__}Schema")
 
-
     parser_get = get_pagination_parser()
-    parser_get.add_argument('query', type=str, required=False, help=help_query)
+    parser_get.add_argument("query", type=str, required=False, help=help_query)
 
     schema_many = schema(many=True)
 
-    model_json = JSONSchema().dump(schema_many)['definitions'][schema.__name__]
+    model_json = JSONSchema().dump(schema_many)["definitions"][schema.__name__]
     model_single_api = api.schema_model(cls.__name__, model_json)
-    pagination_model = api.schema_model('Pagination',Pagination.definition_jsonschema)
+    pagination_model = api.schema_model("Pagination", Pagination.definition_jsonschema)
 
-    pagination_with_model = api.model(f'{cls.__name__}Pagination', {
-        'items': fields.List(fields.Nested(model_single_api)),
-        'pageInfo': fields.Nested(pagination_model)
-    })
+    pagination_with_model = api.model(
+        f"{cls.__name__}Pagination",
+        {"items": fields.List(fields.Nested(model_single_api)), "pageInfo": fields.Nested(pagination_model)},
+    )
 
-    @api.route('')
+    @api.route("")
     @api.doc(model=pagination_with_model)
     class RefControllerList(Resource):
-        @auth.token_auth('default', scopes_required=['openid'])
+        @auth.token_auth("default", scopes_required=["openid"])
         @api.doc(security="Bearer")
         @api.expect(parser_get)
-        @api.response(200, 'Success', pagination_with_model)
-        @api.response(204, 'No Result')
+        @api.response(200, "Success", pagination_with_model)
+        @api.response(204, "No Result")
         def get(self):
             query_param = QueryParam(parser_get)
             if query_param.is_query_search():
@@ -70,15 +70,17 @@ def build_ref_controller(cls, namespace: Namespace, help_query="Recherche sur le
 
             result = schema_many.dump(page_result.items)
 
-            return {'items': result,
-                    'pageInfo': Pagination(page_result.total, page_result.page, page_result.per_page).to_json()}, 200
+            return {
+                "items": result,
+                "pageInfo": Pagination(page_result.total, page_result.page, page_result.per_page).to_json(),
+            }, 200
 
-    @api.route('/<code>')
+    @api.route("/<code>")
     @api.doc(model=model_single_api)
     class RefByCode(Resource):
-        @auth.token_auth('default', scopes_required=['openid'])
+        @auth.token_auth("default", scopes_required=["openid"])
         @api.doc(security="Bearer")
-        @api.response(200, 'Success', model_single_api)
+        @api.response(200, "Success", model_single_api)
         def get(self, code):
             try:
                 result = db.session.execute(db.select(cls).filter_by(code=code)).scalar_one()
@@ -87,12 +89,11 @@ def build_ref_controller(cls, namespace: Namespace, help_query="Recherche sur le
                 return result, 200
             except NoResultFound:
                 return "", 404
+
     return api
 
 
-
-
-def _build_where_clause(cls,query_param: QueryParam, cond_opt: tuple):
+def _build_where_clause(cls, query_param: QueryParam, cond_opt: tuple):
     """
     Construit dynamiquement la clause where de la query de recherche
     :param cls:     l'instance de la clase
@@ -103,7 +104,7 @@ def _build_where_clause(cls,query_param: QueryParam, cond_opt: tuple):
     like = query_param.get_search_like_param()
 
     where_clause = cls.code.ilike(like)
-    if hasattr(cls, 'label'):
+    if hasattr(cls, "label"):
         where_clause = where_clause | cls.label.ilike(like)
 
     if cond_opt is not None:
@@ -111,15 +112,3 @@ def _build_where_clause(cls,query_param: QueryParam, cond_opt: tuple):
             where_clause = where_clause | cond.ilike(like)
 
     return where_clause
-
-
-
-
-
-
-
-
-
-
-
-

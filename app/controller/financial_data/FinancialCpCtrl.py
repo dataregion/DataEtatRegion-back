@@ -7,16 +7,17 @@ from app.models.enums.AccountRole import AccountRole
 from app.services.authentication.connected_user import ConnectedUser
 from app.services.financial_data import import_cp
 
-api = Namespace(name="Crédit de paiement", path='/',
-                description='Api de  gestion des CP des données financières de l\'état')
+api = Namespace(
+    name="Crédit de paiement", path="/", description="Api de  gestion des CP des données financières de l'état"
+)
 
-auth = current_app.extensions['auth']
+auth = current_app.extensions["auth"]
 
-@api.route('/cp')
+
+@api.route("/cp")
 class FinancialCpImport(Resource):
-
     @api.expect(parser_import)
-    @auth.token_auth('default', scopes_required=['openid'])
+    @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     @check_param_source_annee_import()
     @check_file_import()
@@ -29,8 +30,12 @@ class FinancialCpImport(Resource):
         user = ConnectedUser.from_current_token_identity()
 
         data = request.form
-        file_cp = request.files['fichier']
+        file_cp = request.files["fichier"]
 
         source_region = user.current_region
-        task = import_cp(file_cp,source_region,int(data['annee']), user.username)
-        return jsonify({"status": f'Fichier récupéré. Demande d`import des engaments des données fiancières de l\'état en cours (taches asynchrone id = {task.id}'})
+        task = import_cp(file_cp, source_region, int(data["annee"]), user.username)
+        return jsonify(
+            {
+                "status": f"Fichier récupéré. Demande d`import des engaments des données fiancières de l'état en cours (taches asynchrone id = {task.id}"
+            }
+        )

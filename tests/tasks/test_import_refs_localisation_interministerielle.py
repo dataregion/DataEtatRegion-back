@@ -4,32 +4,35 @@ from unittest.mock import patch, call
 
 import pytest
 
+from app import db
 from app.models.refs.commune import Commune
 from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_ref_localisation_interministerielle
 
 
-@pytest.fixture(scope="module")
-def add_comune_belley(test_db):
+@pytest.fixture(scope="function")
+def add_comune_belley(database):
     commune_belley = Commune(**{"code": "01034", "label_commune": "Belley", "code_departement": "01"})
-    test_db.session.add(commune_belley)
-    test_db.session.commit()
-    test_db.session.flush()
-    return commune_belley
+    database.session.add(commune_belley)
+    database.session.commit()
+    yield commune_belley
+    database.session.execute(database.delete(Commune))
+    database.session.commit()
 
 
-@pytest.fixture(scope="module")
-def add_comune_angers(test_db):
+@pytest.fixture(scope="function")
+def add_comune_angers(database):
     commune = Commune(**{"code": "0000", "label_commune": "Angers", "code_departement": "49"})
-    test_db.session.add(commune)
-    test_db.session.commit()
-    test_db.session.flush()
-    return commune
+    database.session.add(commune)
+    database.session.commit()
+    yield commune
+    database.session.execute(database.delete(Commune))
+    database.session.commit()
 
 
 @patch("app.tasks.import_refs_tasks.subtask")
-def test_import_refs_localisation_interministerielle(mock_subtask, test_db):
+def test_import_refs_localisation_interministerielle(mock_subtask):
     import_refs_task(
         os.path.abspath(os.getcwd()) + "/data/LOC_INTERMIN_20230126.csv",
         "LocalisationInterministerielle",
@@ -50,7 +53,7 @@ def test_import_refs_localisation_interministerielle(mock_subtask, test_db):
     )
 
 
-def test_import_insert_localisation(app, test_db, add_comune_belley):
+def test_import_insert_localisation(database, session, add_comune_belley):
     import_line_ref_localisation_interministerielle(
         data=json.dumps(
             {
@@ -64,16 +67,17 @@ def test_import_insert_localisation(app, test_db, add_comune_belley):
             }
         )
     )
-    with app.app_context():
-        d_to_update = LocalisationInterministerielle.query.filter_by(code="B100000").one()
-        assert d_to_update.commune.label_commune == "Belley"
-        assert d_to_update.commune_id == add_comune_belley.id
-        assert d_to_update.site == "CASERNE MAJOR SOLER"
-        assert d_to_update.niveau == "NATIONAL"
-        assert d_to_update.code_parent == "S120594"
+    d_to_update = session.execute(
+        database.select(LocalisationInterministerielle).filter_by(code="B100000")
+    ).scalar_one_or_none()
+    assert d_to_update.commune.label_commune == "Belley"
+    assert d_to_update.commune_id == add_comune_belley.id
+    assert d_to_update.site == "CASERNE MAJOR SOLER"
+    assert d_to_update.niveau == "NATIONAL"
+    assert d_to_update.code_parent == "S120594"
 
 
-def test_import_insert_localisation_inter_exist(app, test_db, add_comune_belley, add_comune_angers):
+def test_import_insert_localisation_inter_exist(app, database, add_comune_belley, add_comune_angers):
     # WHEN Insert loc inter à Belley
 
     loc = LocalisationInterministerielle(
@@ -84,8 +88,8 @@ def test_import_insert_localisation_inter_exist(app, test_db, add_comune_belley,
         }
     )
     loc.commune = add_comune_belley
-    test_db.session.add(loc)
-    test_db.session.commit()
+    database.session.add(loc)
+    database.session.commit()
 
     # DO
     import_line_ref_localisation_interministerielle(
@@ -102,11 +106,38 @@ def test_import_insert_localisation_inter_exist(app, test_db, add_comune_belley,
         )
     )
 
-    # ASSERT
-    with app.app_context():
-        d_to_update = LocalisationInterministerielle.query.filter_by(code=loc.code).one()
+    with app.app_context():  # necessaire dans le contexte de l'app flask pour
+        d_to_update = database.session.execute(
+            database.select(LocalisationInterministerielle).filter_by(code=loc.code)
+        ).scalar_one_or_none()
         assert d_to_update.commune.label_commune == "Angers"
         assert d_to_update.commune_id == add_comune_angers.id
         assert d_to_update.site == "CASERNE SOLER"
         assert d_to_update.niveau == "NATIONAL"
         assert d_to_update.code_parent == "XXXX"
+
+
+def test_import_insert_localisation_interministerielle_niveau_commune(database, session, add_comune_belley):
+    # DO
+    import_line_ref_localisation_interministerielle(
+        data=json.dumps(
+            {
+                "code": "N8401034",
+                "niveau": "COMMUNE",
+                "code_departement": None,
+                "commune": None,
+                "site": "site commune",
+                "code_parent": "N84",
+                "label": "test",
+            }
+        )
+    )
+    # ASSERT
+    d_to_update = session.execute(
+        database.select(LocalisationInterministerielle).filter_by(code="N8401034")
+    ).scalar_one_or_none()
+
+    assert d_to_update.commune.label_commune == "Belley"
+    assert d_to_update.commune_id == add_comune_belley.id
+    assert d_to_update.niveau == "COMMUNE"
+    assert d_to_update.code_parent == "N84"
