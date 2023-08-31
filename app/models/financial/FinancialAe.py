@@ -9,7 +9,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from app import db, ma
-from app.models.financial import FinancialData, json_type_object_code_label
+from app.models.financial import FinancialData, CommonField, CommuneField
 from app.models.financial.MontantFinancialAe import MontantFinancialAe
 from app.models.refs.siret import Siret
 from app.models.tags.Tags import TagsSchema
@@ -54,6 +54,7 @@ class FinancialAe(FinancialData, db.Model):
     financial_cp = relationship("FinancialCp", uselist=True, lazy="select")
     ref_programme = relationship("CodeProgramme", lazy="select")
     ref_domaine_fonctionnel = relationship("DomaineFonctionnel", lazy="select")
+    ref_groupe_marchandise = relationship("GroupeMarchandise", lazy="select")
     ref_ref_programmation = relationship("ReferentielProgrammation", lazy="select")
     ref_siret = relationship("Siret", lazy="select")
     ref_localisation_interministerielle = relationship("LocalisationInterministerielle", lazy="select")
@@ -201,23 +202,8 @@ class FinancialAe(FinancialData, db.Model):
         ]
 
 
-class CommuneField(fields.Field):
-    """Field Commune"""
-
-    def _jsonschema_type_mapping(self):
-        return json_type_object_code_label()
-
-    def _serialize(self, value: Siret, attr, obj, **kwargs):
-        if value is None:
-            return {}
-        return {"label": value.ref_commune.label_commune, "code": value.ref_commune.code}
-
-
-class ReferentielField(fields.Field):
+class ReferentielField(CommonField):
     """Field Ref programmation"""
-
-    def _jsonschema_type_mapping(self):
-        return json_type_object_code_label()
 
     def _serialize(self, code: String, attr, obj: FinancialAe, **kwargs):
         if code is None:
@@ -225,16 +211,22 @@ class ReferentielField(fields.Field):
         return {"label": obj.ref_ref_programmation.label, "code": code}
 
 
-class DomaineField(fields.Field):
+class DomaineField(CommonField):
     """Field Domaine fonctionnel"""
-
-    def _jsonschema_type_mapping(self):
-        return json_type_object_code_label()
 
     def _serialize(self, code: String, attr, obj: FinancialAe, **kwargs):
         if code is None:
             return {}
         return {"label": obj.ref_domaine_fonctionnel.label, "code": code}
+
+
+class GroupeMarchandiseField(CommonField):
+    """Field Groupe marchandise"""
+
+    def _serialize(self, code: String, attr, obj: FinancialAe, **kwargs):
+        if code is None:
+            return {}
+        return {"label": obj.ref_groupe_marchandise.label, "code": code}
 
 
 class ProgrammeField(fields.Field):
@@ -279,7 +271,6 @@ class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = FinancialAe
         exclude = (
-            "groupe_marchandise",
             "updated_at",
             "created_at",
             "source_region",
@@ -295,6 +286,7 @@ class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
     commune = CommuneField(attribute="ref_siret")
     domaine_fonctionnel = DomaineField(attribute="domaine_fonctionnel")
     referentiel_programmation = ReferentielField()
+    groupe_marchandise = GroupeMarchandiseField(attribute="groupe_marchandise")
     programme = ProgrammeField()
     n_ej = fields.String()
     n_poste_ej = fields.Integer()

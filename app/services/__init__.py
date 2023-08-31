@@ -11,6 +11,7 @@ from app.models.financial.MontantFinancialAe import MontantFinancialAe as Montan
 from app.models.financial.FinancialCp import FinancialCp as Cp
 from ..models.refs.commune import Commune
 from ..models.refs.domaine_fonctionnel import DomaineFonctionnel
+from ..models.refs.groupe_marchandise import GroupeMarchandise
 from ..models.refs.localisation_interministerielle import LocalisationInterministerielle
 from ..models.refs.referentiel_programmation import ReferentielProgrammation
 from ..models.refs.siret import Siret
@@ -37,7 +38,6 @@ class BuilderStatementFinancial:
         """
         self._stmt = db.select(Ae).options(
             db.defer(Ae.source_region),
-            db.defer(Ae.groupe_marchandise),
             db.defer(Ae.compte_budgetaire),
             selectinload(Ae.montant_ae).load_only(MontantAe.montant),
             selectinload(Ae.financial_cp).load_only(Cp.montant, Cp.date_derniere_operation_dp),
@@ -67,6 +67,7 @@ class BuilderStatementFinancial:
 
         self._stmt = self._stmt.join(Ae.ref_ref_programmation)
         self._stmt = self._stmt.join(Ae.ref_domaine_fonctionnel)
+        self._stmt = self._stmt.join(Ae.ref_groupe_marchandise)
         return self
 
     def join_filter_siret(self, siret: list = None):
@@ -201,6 +202,7 @@ class BuilderStatementFinancial:
             .contains_eager(CodeProgramme.theme_r)
             .load_only(Theme.label),
             contains_eager(Ae.ref_ref_programmation).load_only(ReferentielProgrammation.label),
+            contains_eager(Ae.ref_groupe_marchandise).load_only(GroupeMarchandise.label),
             contains_eager(Ae.ref_domaine_fonctionnel).load_only(DomaineFonctionnel.label),
             contains_eager(Ae.ref_siret)
             .load_only(Siret.code, Siret.denomination)

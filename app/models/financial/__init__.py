@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from app.models.common.Audit import Audit
+from marshmallow import fields
 
 __all__ = (
     "FinancialData",
@@ -7,9 +8,10 @@ __all__ = (
     "FinancialCp",
     "FinancialAe",
     "Ademe",
-    "json_type_object_code_label",
     "France2030",
 )
+
+from app.models.refs.siret import Siret
 
 
 class FinancialData(Audit):
@@ -56,9 +58,19 @@ class FinancialData(Audit):
         return value
 
 
-def json_type_object_code_label():
-    """
-    Retourne un jsonchema object contenant code et label
-    :return:
-    """
-    return {"type": "object", "properties": {"label": {"type": "string"}, "code": {"type": "string"}}}
+class CommonField(fields.Field):
+    def _jsonschema_type_mapping(self):
+        """
+        Retourne un jsonchema object contenant code et label
+        :return:
+        """
+        return {"type": "object", "properties": {"label": {"type": "string"}, "code": {"type": "string"}}}
+
+
+class CommuneField(CommonField):
+    """Field Commune"""
+
+    def _serialize(self, value: Siret, attr, obj, **kwargs):
+        if value is None:
+            return {}
+        return {"label": value.ref_commune.label_commune, "code": value.ref_commune.code}

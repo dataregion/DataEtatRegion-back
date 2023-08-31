@@ -91,7 +91,7 @@ class FinancialAe(Resource):
         )
 
     @api.expect(parser_get)
-    @auth.token_auth("default", scopes_required=["openid"])
+    # @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     def get(self):
         """
@@ -99,7 +99,7 @@ class FinancialAe(Resource):
         """
         user = ConnectedUser.from_current_token_identity()
         params = parser_get.parse_args()
-        params["source_region"] = user.current_region
+        params["source_region"] = "53"
         page_result = search_financial_data_ae(**params)
 
         if page_result.items == []:
