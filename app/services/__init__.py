@@ -68,6 +68,7 @@ class BuilderStatementFinancial:
         self._stmt = self._stmt.join(Ae.ref_ref_programmation)
         self._stmt = self._stmt.join(Ae.ref_domaine_fonctionnel)
         self._stmt = self._stmt.join(Ae.ref_groupe_marchandise)
+        self._stmt = self._stmt.join(Ae.ref_localisation_interministerielle)
         return self
 
     def join_filter_siret(self, siret: list = None):
@@ -204,6 +205,10 @@ class BuilderStatementFinancial:
             contains_eager(Ae.ref_ref_programmation).load_only(ReferentielProgrammation.label),
             contains_eager(Ae.ref_groupe_marchandise).load_only(GroupeMarchandise.label),
             contains_eager(Ae.ref_domaine_fonctionnel).load_only(DomaineFonctionnel.label),
+            contains_eager(Ae.ref_localisation_interministerielle)
+            .load_only(LocalisationInterministerielle.label)
+            .contains_eager(LocalisationInterministerielle.commune)
+            .load_only(Commune.label_commune, Commune.code),
             contains_eager(Ae.ref_siret)
             .load_only(Siret.code, Siret.denomination)
             .contains_eager(Siret.ref_commune)

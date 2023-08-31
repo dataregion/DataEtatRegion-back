@@ -99,7 +99,7 @@ class FinancialAe(Resource):
         """
         user = ConnectedUser.from_current_token_identity()
         params = parser_get.parse_args()
-        params["source_region"] = "53"
+        params["source_region"] = user.current_region
         page_result = search_financial_data_ae(**params)
 
         if page_result.items == []:

@@ -267,6 +267,36 @@ class SiretField(fields.Field):
         }
 
 
+class LocalisationInterministerielleField(fields.Field):
+    """Field Localisation interministerielle"""
+
+    def _jsonschema_type_mapping(self):
+        return {
+            "type": "object",
+            "properties": {
+                "code": {"type": "string"},
+                "label": {"type": "string"},
+                "commune": {"type": "object", "nullable": True},
+            },
+        }
+
+    def _serialize(self, code: String, attr, obj: FinancialAe, **kwargs):
+        if code is None:
+            return {}
+
+        if obj.ref_localisation_interministerielle.commune is None:
+            return {"code": code, "label": obj.ref_localisation_interministerielle.label}
+
+        return {
+            "code": code,
+            "label": obj.ref_localisation_interministerielle.label,
+            "commune": {
+                "label": obj.ref_localisation_interministerielle.commune.label_commune,
+                "code": obj.ref_localisation_interministerielle.commune.code,
+            },
+        }
+
+
 class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = FinancialAe
@@ -287,6 +317,7 @@ class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
     domaine_fonctionnel = DomaineField(attribute="domaine_fonctionnel")
     referentiel_programmation = ReferentielField()
     groupe_marchandise = GroupeMarchandiseField(attribute="groupe_marchandise")
+    localisation_interministerielle = LocalisationInterministerielleField(attribute="localisation_interministerielle")
     programme = ProgrammeField()
     n_ej = fields.String()
     n_poste_ej = fields.Integer()
