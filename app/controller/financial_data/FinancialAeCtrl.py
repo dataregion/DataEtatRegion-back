@@ -91,7 +91,7 @@ class FinancialAe(Resource):
         )
 
     @api.expect(parser_get)
-    # @auth.token_auth("default", scopes_required=["openid"])
+    @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     def get(self):
         """
