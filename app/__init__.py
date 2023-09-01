@@ -142,6 +142,7 @@ def _expose_endpoint(app: Flask):
         from app.controller.ref_controller import api_ref
         from app.controller.apis_externes import api_apis_externes
         from app.controller.task_management import api_task
+        from app.controller.ui_controller import api_ui
         from app.controller.proxy_nocodb import mount_blueprint  # pour éviter les import circulaire avec oidc
 
         app.register_blueprint(api_financial, url_prefix="/financial-data")
@@ -149,6 +150,7 @@ def _expose_endpoint(app: Flask):
         app.register_blueprint(api_ref, url_prefix="/budget")
         app.register_blueprint(api_apis_externes, url_prefix="/apis-externes")
         app.register_blueprint(api_task, url_prefix="/task-management")
+        app.register_blueprint(api_ui, url_prefix="/ui")
 
         if "NOCODB_PROJECT" in app.config:
             for project in app.config["NOCODB_PROJECT"].items():
