@@ -38,3 +38,15 @@ class InvalidFile(DataRegatException):
         self.message = message
         self.name = name
         super().__init__(f"[{self.name}] {self.message}")
+
+
+class ConfigurationException(DataRegatException):
+    """Exception raised when configuration is missing.
+
+    Attributes:
+        configuration_key (str): The configuration key
+    """
+
+    def __init__(self, configuration_key: str):
+        self.message = f"Configuration for {configuration_key} missing"
+        super().__init__(self.message)
