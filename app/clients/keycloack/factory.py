@@ -3,17 +3,18 @@ import functools
 from flask import current_app
 from keycloak import KeycloakAdmin, KeycloakOpenID
 
+from app.exceptions.exceptions import ConfigurationException
 
-class KeycloakConfigurationException(Exception):
+
+class KeycloakConfigurationException(ConfigurationException):
     """Exception raised when there is an error building the KeycloakAdmin client.
 
     Attributes:
         message (str): The message describing the error.
     """
 
-    def __init__(self, message="Configuration for Keyloak missing"):
-        self.message = message
-        super().__init__(self.message)
+    def __init__(self):
+        super().__init__(configuration_key="Keycloak")
 
 
 def make_keycloack_admin() -> KeycloakAdmin:
