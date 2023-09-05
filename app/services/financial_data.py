@@ -166,7 +166,7 @@ def search_financial_data_ae(
 
     if code_geo is not None:
         (type_geo, list_code_geo) = BuilderCodeGeo().build_list_code_geo(code_geo)
-        query_ae.where_geo_ae(type_geo, list_code_geo)
+        query_ae.where_geo_ae(type_geo, list_code_geo, source_region)
     else:
         query_ae.join_commune()
 
