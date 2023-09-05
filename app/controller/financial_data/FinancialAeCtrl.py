@@ -9,7 +9,7 @@ from app.controller.financial_data.schema_model import register_financial_ae_sch
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
-from app.models.financial.FinancialAe import FinancialAeSchema
+from app.models.financial.FinancialAe import FinancialAeSchema, FinancialAeWithCpSchema
 from app.services.authentication.connected_user import ConnectedUser
 from app.services.authentication.exceptions import InvalidTokenError, NoCurrentRegion
 from app.services.code_geo import BadCodeGeoException
@@ -130,6 +130,6 @@ class GetFinancialAe(Resource):
         if result is None:
             return "", 204
 
-        financial_ae = FinancialAeSchema().dump(result)
+        financial_ae = FinancialAeWithCpSchema().dump(result)
 
         return financial_ae, 200

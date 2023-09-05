@@ -83,6 +83,7 @@ def get_financial_ae(id: int) -> FinancialAe:
         .join_filter_siret()
         .join_filter_programme_theme()
         .join_commune()
+        .join_financial_cp()
         .by_ae_id(id)
         .options_select_load()
     )
@@ -162,6 +163,7 @@ def search_financial_data_ae(
         .select_ae()
         .join_filter_siret(siret_beneficiaire)
         .join_filter_programme_theme(code_programme, theme)
+        .join_financial_cp()
     )
 
     if code_geo is not None:

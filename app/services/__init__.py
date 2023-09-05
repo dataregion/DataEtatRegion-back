@@ -71,6 +71,17 @@ class BuilderStatementFinancial:
         self._stmt = self._stmt.join(Ae.ref_localisation_interministerielle)
         return self
 
+    def join_financial_cp(self):
+        """
+        Effectue des jointures avec les tables CodeProgramme et Theme en fonction des codes de programme et des thèmes fournis.
+
+        :param code_programme: Une liste de codes de programme.
+        :param theme: Une liste de thèmes.
+        :return: L'instance courante de BuilderStatementFinancialAe.
+        """
+        self._stmt = self._stmt.join(Ae.financial_cp);
+        return self
+
     def join_filter_siret(self, siret: list = None):
         """
         Effectue une jointure avec la table Siret en fonction des SIRET fournis.
