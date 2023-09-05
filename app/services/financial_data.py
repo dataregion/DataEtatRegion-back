@@ -91,6 +91,12 @@ def get_financial_ae(id: int) -> FinancialAe:
     return result
 
 
+def get_annees_ae():
+    return db.session.execute(
+        db.text("SELECT ARRAY(SELECT DISTINCT annee FROM public.financial_ae)")
+    ).scalar_one_or_none()
+
+
 def search_ademe(
     siret_beneficiaire: list = None,
     code_geo: list = None,

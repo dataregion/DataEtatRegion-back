@@ -13,7 +13,7 @@ from app.models.financial.FinancialAe import FinancialAeSchema
 from app.services.authentication.connected_user import ConnectedUser
 from app.services.authentication.exceptions import InvalidTokenError, NoCurrentRegion
 from app.services.code_geo import BadCodeGeoException
-from app.services.financial_data import import_ae, search_financial_data_ae, get_financial_ae
+from app.services.financial_data import import_ae, search_financial_data_ae, get_financial_ae, get_annees_ae
 
 api = Namespace(name="Engagement", path="/", description="Api de  gestion des AE des données financières de l'état")
 
@@ -133,3 +133,19 @@ class GetFinancialAe(Resource):
         financial_ae = FinancialAeSchema().dump(result)
 
         return financial_ae, 200
+
+
+@api.route("/ae/annees")
+class GetYears(Resource):
+    """
+    Récupére la liste de toutes les années pour lesquelles on a des montants (engagés ou payés)
+    :return:
+    """
+
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def get(self):
+        annees = get_annees_ae()
+        if annees is None:
+            return "", 204
+        return annees, 200
