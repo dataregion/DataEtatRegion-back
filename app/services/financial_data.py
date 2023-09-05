@@ -136,7 +136,9 @@ def search_ademe(
         query_ademe.where_custom(db.func.extract("year", Ademe.date_convention).in_(annee))
 
     if tags is not None:
-        query_ademe.where_custom(Ademe.tags.any(Tags.type.in_(tags)))
+        _tags = map(_sanitize_tag_fullname_for_db, tags)
+        fullnamein = Tags.fullname.in_(_tags)
+        query_ademe.where_custom(Ademe.tags.any(fullnamein))
 
     page_result = query_ademe.do_paginate(limit, page_number)
     return page_result
@@ -187,7 +189,9 @@ def search_financial_data_ae(
         query_ae.where_custom(FinancialAe.source_region == source_region)
 
     if tags is not None:
-        query_ae.where_custom(FinancialAe.tags.any(Tags.type.in_(tags)))
+        _tags = map(_sanitize_tag_fullname_for_db, tags)
+        fullnamein = Tags.fullname.in_(_tags)
+        query_ae.where_custom(FinancialAe.tags.any(fullnamein))
 
     page_result = query_ae.where_annee(annee).options_select_load().do_paginate(limit, page_number)
     return page_result
@@ -223,3 +227,10 @@ def _check_file(fichier, columns_name):
 
 def _sanitize_source_region(source_region):
     return source_region.lstrip("0")
+
+
+def _sanitize_tag_fullname_for_db(tag: str):
+    """Convertit les noms de tags reçu de l'API en fullname"""
+    if not ":" in tag:
+        return tag + ":"
+    return tag

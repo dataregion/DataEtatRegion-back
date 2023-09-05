@@ -1,8 +1,9 @@
 import dataclasses
 from typing import List
 
-from sqlalchemy import CheckConstraint, Column, String, Integer, UniqueConstraint, ForeignKey, Boolean, Text
+from sqlalchemy import CheckConstraint, Column, String, Integer, UniqueConstraint, ForeignKey, Boolean, Text, func
 from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from app import db, ma
 from app.models.common.Audit import Audit
@@ -18,6 +19,13 @@ class Tags(Audit, db.Model):
 
     associations: Mapped[List["TagAssociation"]] = relationship(cascade="all, delete", back_populates="tag")
     UniqueConstraint("type", "value", name="unique_tags")
+
+    @hybrid_property
+    def fullname(self):
+        """
+        Nom complet du tag, ie. 'type:value' ou 'type:'
+        """
+        return self.type + ":" + func.coalesce(self.value, "")
 
 
 @dataclasses.dataclass
