@@ -79,7 +79,7 @@ class BuilderStatementFinancial:
         :param theme: Une liste de thèmes.
         :return: L'instance courante de BuilderStatementFinancialAe.
         """
-        self._stmt = self._stmt.join(Ae.financial_cp);
+        self._stmt = self._stmt.join(Ae.financial_cp)
         return self
 
     def join_filter_siret(self, siret: list = None):

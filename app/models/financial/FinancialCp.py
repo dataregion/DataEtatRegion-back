@@ -109,6 +109,7 @@ class FinancialCp(FinancialData, db.Model):
             "montant",
         ]
 
+
 class FinancialCpSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = FinancialCp
