@@ -1,4 +1,4 @@
-from sqlalchemy import Select
+from sqlalchemy import Select, or_
 from sqlalchemy.orm import selectinload, contains_eager
 
 from .code_geo import BadCodeGeoException
@@ -124,12 +124,13 @@ class BuilderStatementFinancial:
         self._stmt = self._stmt.join(Siret.ref_commune)
         return self
 
-    def where_geo_ae(self, type_geo: TypeCodeGeo, list_code_geo: list):
+    def where_geo_ae(self, type_geo: TypeCodeGeo, list_code_geo: list, source_region: str):
         """
         Ajoute une condition WHERE pour filtrer par géolocalisation sur les engagements
 
         :param type_geo: Le type de géolocalisation (TypeCodeGeo).
         :param list_code_geo: Une liste de codes géographiques.
+        :param source_region: la source region
         :return: L'instance courante de BuilderStatementFinancialAe.
         """
         if list_code_geo is not None:
@@ -138,7 +139,13 @@ class BuilderStatementFinancial:
             subquery = db.select(LocalisationInterministerielle.code).join(LocalisationInterministerielle.commune)
             match type_geo:
                 case TypeCodeGeo.DEPARTEMENT:
-                    subquery = subquery.where(Commune.code_departement.in_(list_code_geo)).subquery()
+                    prefix_code_inter = f"N{source_region}"
+                    where_clause = []
+                    for code_geo in list_code_geo:
+                        where_clause.append(
+                            LocalisationInterministerielle.code.ilike(f"{prefix_code_inter}{code_geo}%")
+                        )
+                    subquery = subquery.where(or_(*where_clause)).subquery()
                     self._stmt = self._stmt.where(
                         Commune.code_departement.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
                     )
