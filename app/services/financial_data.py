@@ -16,6 +16,7 @@ from app.models.refs.commune import Commune
 from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.models.refs.siret import Siret
+from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
 from app.services.code_geo import BuilderCodeGeo
 from app.services.file_service import check_file_and_save
@@ -90,7 +91,14 @@ def get_financial_ae(id: int) -> FinancialAe:
     return result
 
 
-def search_ademe(siret_beneficiaire: list = None, code_geo: list = None, annee: list = None, page_number=1, limit=500):
+def search_ademe(
+    siret_beneficiaire: list = None,
+    code_geo: list = None,
+    annee: list = None,
+    tags: list[str] = None,
+    page_number=1,
+    limit=500,
+):
     query = db.select(Ademe).options(
         contains_eager(Ademe.ref_siret_beneficiaire)
         .load_only(Siret.code, Siret.denomination)
@@ -120,6 +128,9 @@ def search_ademe(siret_beneficiaire: list = None, code_geo: list = None, annee: 
     if annee is not None:
         query_ademe.where_custom(db.func.extract("year", Ademe.date_convention).in_(annee))
 
+    if tags is not None:
+        query_ademe.where_custom(Ademe.tags.any(Tags.type.in_(tags)))
+
     page_result = query_ademe.do_paginate(limit, page_number)
     return page_result
 
@@ -140,12 +151,13 @@ def search_financial_data_ae(
     referentiel_programmation: list = None,
     source_region: str = None,
     code_geo: list = None,
+    tags: list[str] = None,
     page_number=1,
     limit=500,
 ):
     source_region = _sanitize_source_region(source_region)
 
-    query_siret = (
+    query_ae = (
         BuilderStatementFinancial()
         .select_ae()
         .join_filter_siret(siret_beneficiaire)
@@ -154,20 +166,23 @@ def search_financial_data_ae(
 
     if code_geo is not None:
         (type_geo, list_code_geo) = BuilderCodeGeo().build_list_code_geo(code_geo)
-        query_siret.where_geo_ae(type_geo, list_code_geo)
+        query_ae.where_geo_ae(type_geo, list_code_geo)
     else:
-        query_siret.join_commune()
+        query_ae.join_commune()
 
     if domaine_fonctionnel is not None:
-        query_siret.where_custom(DomaineFonctionnel.code.in_(domaine_fonctionnel))
+        query_ae.where_custom(DomaineFonctionnel.code.in_(domaine_fonctionnel))
 
     if referentiel_programmation is not None:
-        query_siret.where_custom(ReferentielProgrammation.code.in_(referentiel_programmation))
+        query_ae.where_custom(ReferentielProgrammation.code.in_(referentiel_programmation))
 
     if source_region is not None:
-        query_siret.where_custom(FinancialAe.source_region == source_region)
+        query_ae.where_custom(FinancialAe.source_region == source_region)
 
-    page_result = query_siret.where_annee(annee).options_select_load().do_paginate(limit, page_number)
+    if tags is not None:
+        query_ae.where_custom(FinancialAe.tags.any(Tags.type.in_(tags)))
+
+    page_result = query_ae.where_annee(annee).options_select_load().do_paginate(limit, page_number)
     return page_result
 
 

@@ -42,6 +42,7 @@ parser_get.add_argument("domaine_fonctionnel", type=str, action="split", help="L
 parser_get.add_argument(
     "referentiel_programmation", type=str, action="split", help="Le(s) code(s) du référentiel de programmation."
 )
+parser_get.add_argument("tags", type=str, action="split", help="Le(s) tag(s) à inclure", required=False)
 
 
 @api.errorhandler(BadCodeGeoException)
@@ -86,7 +87,7 @@ class FinancialAe(Resource):
         task = import_ae(file_ae, source_region, int(data["annee"]), force_update, user.username)
         return jsonify(
             {
-                "status": f"Fichier récupéré. Demande d`import des engaments des données fiancières de l'état en cours (taches asynchrone id = {task.id}"
+                "status": f"Fichier récupéré. Demande d`import des engaments des données fiancières de l'état en cours (taches asynchrone id = {task.id})"
             }
         )
 
