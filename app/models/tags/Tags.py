@@ -47,5 +47,4 @@ class TagsSchema(ma.SQLAlchemyAutoSchema):
         exclude = (
             "id",
             "enable_rules_auto",
-            "description",
         ) + Tags.exclude_schema()
