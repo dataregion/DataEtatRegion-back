@@ -40,6 +40,8 @@ class CodeGeo:
 
         elif self.code_geo.lower().startswith("crte-"):
             return TypeCodeGeo.CRTE
+        elif self.code_geo.lower().startswith("qp"):
+            return TypeCodeGeo.QPV
         elif self.code_geo == "2A" or self.code_geo == "2B":  # cas specifique corse
             return TypeCodeGeo.DEPARTEMENT
 
