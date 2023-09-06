@@ -83,6 +83,7 @@ def get_financial_ae(id: int) -> FinancialAe:
         .join_filter_siret()
         .join_filter_programme_theme()
         .join_commune()
+        .join_financial_cp()
         .by_ae_id(id)
         .options_select_load()
     )
