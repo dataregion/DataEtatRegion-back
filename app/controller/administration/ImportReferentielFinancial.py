@@ -4,6 +4,7 @@ Controller permettant de mettre à jours certains référentiels des données fi
 """
 from flask import current_app, request, jsonify, g
 from flask_restx import Namespace, Resource, reqparse
+from flask_restx._http import HTTPStatus
 from werkzeug.datastructures import FileStorage
 
 from app.controller.Decorators import check_permission
@@ -36,4 +37,4 @@ class TaskRunImportRef(Resource):
             import_ref_calculette(file_ref, user.username)
             return jsonify({"status": "Fichier récupéré. Demande d`import du referentiel en cours"})
         except FileNotAllowedException as e:
-            return {"status": e.message}, 400
+            return {"status": e.message}, HTTPStatus.BAD_REQUEST

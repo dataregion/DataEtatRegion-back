@@ -1,5 +1,6 @@
 from flask import jsonify, current_app, request
 from flask_restx import Namespace, Resource, reqparse
+from flask_restx._http import HTTPStatus
 from werkzeug.datastructures import FileStorage
 
 from app.controller.Decorators import check_permission
@@ -52,4 +53,4 @@ class France2030Import(Resource):
         Retourne les lignes de financement France 2030
         """
         # TODO
-        return {"items": [], "pageInfo": Pagination(0, 1, 0).to_json()}, 200
+        return {"items": [], "pageInfo": Pagination(0, 1, 0).to_json()}, HTTPStatus.OK

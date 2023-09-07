@@ -1,6 +1,7 @@
 from flask import jsonify, current_app, request
 from flask_restx import Namespace, Resource
 from flask_pyoidc import OIDCAuthentication
+from flask_restx._http import HTTPStatus
 
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
@@ -53,17 +54,17 @@ parser_get.add_argument("tags", type=str, action="split", help="Le(s) tag(s) à 
 
 @api.errorhandler(BadCodeGeoException)
 def handle_error_input_parameter(e: BadCodeGeoException):
-    return ErrorController(e.message).to_json(), 400
+    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.errorhandler(NoCurrentRegion)
 def handle_invalid_token(e: NoCurrentRegion):
-    return ErrorController("Aucune region n'est associée à l'utilisateur.").to_json(), 400
+    return ErrorController("Aucune region n'est associée à l'utilisateur.").to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.errorhandler(InvalidTokenError)
 def handle_invalid_token(e: InvalidTokenError):
-    return ErrorController("Token invalide.").to_json(), 400
+    return ErrorController("Token invalide.").to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.route("/ae")
@@ -117,7 +118,7 @@ class FinancialAe(Resource):
         return {
             "items": result,
             "pageInfo": Pagination(page_result.total, page_result.page, page_result.per_page).to_json(),
-        }, 200
+        }, HTTPStatus.OK
 
 
 @api.route("/ae/<id>")
@@ -134,11 +135,11 @@ class GetFinancialAe(Resource):
         result = get_financial_ae(int(id))
 
         if result is None:
-            return "", 204
+            return "", HTTPStatus.NO_CONTENT
 
         financial_ae = FinancialAeSchema().dump(result)
 
-        return financial_ae, 200
+        return financial_ae, HTTPStatus.OK
 
 
 @api.route("/ae/<id>/cp")
@@ -174,5 +175,5 @@ class GetYears(Resource):
     def get(self):
         annees = get_annees_ae()
         if annees is None:
-            return "", 204
-        return annees, 200
+            return "", HTTPStatus.NO_CONTENT
+        return annees, HTTPStatus.OK

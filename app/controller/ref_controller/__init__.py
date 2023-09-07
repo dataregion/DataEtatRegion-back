@@ -15,7 +15,7 @@ from app.models.refs.groupe_marchandise import GroupeMarchandise
 from app.models.refs.ministere import Ministere
 from app.models.refs.qpv import Qpv
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
-from app.controller.ref_controller.LoginController import api as api_auth
+from app.controller.utils.LoginController import api as api_auth
 from app.models.refs.siret import Siret
 
 api_ref = Blueprint("api_ref", __name__)

@@ -1,5 +1,6 @@
 from flask import current_app
 from flask_restx import Namespace, Resource
+from flask_restx._http import HTTPStatus
 
 from app import db
 from app.controller.ref_controller import build_ref_controller
@@ -44,11 +45,11 @@ class RefLocalisationByCodeParent(Resource):
         page_result = db.paginate(stmt, per_page=query_param.limit, page=query_param.page_number, error_out=False)
 
         if page_result.items == []:
-            return "", 204
+            return "", HTTPStatus.NO_CONTENT
 
         result = LocalisationInterministerielleSchema(many=True).dump(page_result.items)
 
         return {
             "items": result,
             "pageInfo": Pagination(page_result.total, page_result.page, page_result.per_page).to_json(),
-        }, 200
+        }, HTTPStatus.OK
