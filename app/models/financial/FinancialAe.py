@@ -324,31 +324,3 @@ class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
     n_poste_ej = fields.Integer()
     annee = fields.Integer()
     siret = SiretField()
-
-
-class FinancialAeWithCpSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = FinancialAe
-        exclude = (
-            "updated_at",
-            "created_at",
-            "source_region",
-            "compte_budgetaire",
-            "contrat_etat_region",
-        )
-
-    tags = fields.List(fields.Nested(TagsSchema))
-    montant_ae = fields.Float(attribute="montant_ae_total")
-    montant_cp = fields.Float()
-    date_cp = fields.String()
-    commune = CommuneField(attribute="ref_siret")
-    domaine_fonctionnel = DomaineField(attribute="domaine_fonctionnel")
-    referentiel_programmation = ReferentielField()
-    groupe_marchandise = GroupeMarchandiseField(attribute="groupe_marchandise")
-    localisation_interministerielle = LocalisationInterministerielleField(attribute="localisation_interministerielle")
-    programme = ProgrammeField()
-    n_ej = fields.String()
-    n_poste_ej = fields.Integer()
-    annee = fields.Integer()
-    siret = SiretField()
-    financial_cp = fields.List(fields.Nested(FinancialCpSchema))

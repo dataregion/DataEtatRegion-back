@@ -256,3 +256,40 @@ class BuilderStatementFinancial:
         :return:
         """
         return db.session.execute(self._stmt).scalar_one_or_none()
+
+
+class BuilderStatementFinancialCp:
+    """
+    Classe permettant de construire une requête pour récupérer des données à partir de la table FinancialCp.
+    """
+
+    _stmt: Select = None
+
+    def __init__(self, stmt=None):
+        self._stmt = stmt
+
+    def select_cp(self):
+        """
+        Spécifie la table pour la requête.
+
+        :return: L'instance courante de BuilderStatementFinancialCp.
+        """
+        self._stmt = db.select(Cp)
+        return self
+
+    def by_ae_id(self, id: int):
+        """
+        Sélection uniquement selon l'id de l'ae
+        :param id: l'identifiant de l'ae associée
+        :return: L'instance courante de BuilderStatementFinancialCp.
+        """
+        if id is not None:
+            self._stmt = self._stmt.where(Cp.id_ae == id)
+        return self
+
+    def do_all(self):
+        """
+        Effectue la recherche et retourne tous les résultats
+        :return:
+        """
+        return db.session.execute(self._stmt).scalars()
