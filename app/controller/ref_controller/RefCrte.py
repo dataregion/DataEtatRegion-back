@@ -1,5 +1,6 @@
 from flask import current_app
 from flask_restx import Namespace, Resource, reqparse, fields
+from flask_restx._http import HTTPStatus
 from sqlalchemy import text, bindparam
 
 from app import db
@@ -49,4 +50,4 @@ class RefCrte(Resource):
         with db.engine.connect() as conn:
             result = conn.execute(sql_execute).all()
 
-        return [{"nom": row[0], "code": row[1]} for row in result], 200
+        return [{"nom": row[0], "code": row[1]} for row in result], HTTPStatus.OK

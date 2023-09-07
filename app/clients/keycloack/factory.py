@@ -54,14 +54,14 @@ def make_keycloack_openid() -> KeycloakOpenID:
         raise KeycloakConfigurationException()
 
     config = current_app.config["KEYCLOAK_OPENID"]
-    if "URL" not in config or "SECRET_KEY" not in config or "REALM" not in config or "CLIENT_ID" not in config:
+    if "URL" not in config or "REALM" not in config or "CLIENT_ID" not in config:
         raise KeycloakConfigurationException()
 
     return KeycloakOpenID(
         server_url=config["URL"],
         realm_name=config["REALM"],
         client_id=config["CLIENT_ID"],
-        client_secret_key=config["SECRET_KEY"],
+        client_secret_key=config["SECRET_KEY"] if "SECRET_KEY" in config else None,
     )
 
 

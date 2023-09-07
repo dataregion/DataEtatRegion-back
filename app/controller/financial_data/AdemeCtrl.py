@@ -1,5 +1,6 @@
 from flask import jsonify, current_app, request, g
 from flask_restx import Namespace, Resource, reqparse
+from flask_restx._http import HTTPStatus
 from marshmallow_jsonschema import JSONSchema
 from werkzeug.datastructures import FileStorage
 
@@ -81,7 +82,7 @@ class AdemeImport(Resource):
         return {
             "items": result,
             "pageInfo": Pagination(page_result.total, page_result.page, page_result.per_page).to_json(),
-        }, 200
+        }, HTTPStatus.OK
 
 
 @api.route("/ademe/<id>")
@@ -98,8 +99,8 @@ class GetAdemeByid(Resource):
         result = get_ademe(int(id))
 
         if result is None:
-            return "", 204
+            return "", HTTPStatus.NO_CONTENT
 
         financial_ae = AdemeSchema().dump(result)
 
-        return financial_ae, 200
+        return financial_ae, HTTPStatus.OK

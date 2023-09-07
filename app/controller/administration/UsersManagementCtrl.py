@@ -80,7 +80,7 @@ class UsersManagement(Resource):
         return {
             "users": users_to_return,
             "pageInfo": Pagination(users.__len__(), page_number, users_to_return.__len__()).to_json(),
-        }, 200
+        }, HTTPStatus.OK
 
 
 @api.route("/<uuid>")
