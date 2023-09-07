@@ -93,10 +93,7 @@ def get_financial_ae(id: int) -> FinancialAe:
 
 
 def get_financial_cp_of_ae(id: int):
-    query_select = BuilderStatementFinancialCp().select_cp().by_ae_id(id)
-
-    result = query_select.do_all()
-    return result
+    return BuilderStatementFinancialCp().select_cp().by_ae_id(id).do_all()
 
 
 def get_annees_ae():

@@ -260,7 +260,7 @@ class BuilderStatementFinancial:
 
 class BuilderStatementFinancialCp:
     """
-    Classe permettant de construire une requête pour récupérer des données à partir de la table FinancialAe.
+    Classe permettant de construire une requête pour récupérer des données à partir de la table FinancialCp.
     """
 
     _stmt: Select = None
@@ -270,18 +270,18 @@ class BuilderStatementFinancialCp:
 
     def select_cp(self):
         """
-        Spécifie la table et les options de sélection pour la requête.
+        Spécifie la table pour la requête.
 
-        :return: L'instance courante de BuilderStatementFinancialAe.
+        :return: L'instance courante de BuilderStatementFinancialCp.
         """
         self._stmt = db.select(Cp)
         return self
 
     def by_ae_id(self, id: int):
         """
-        Sélection uniquement selon l'id technique
-        :param id: l'identifiant technique
-        :return: L'instance courante de BuilderStatementFinancialAe.
+        Sélection uniquement selon l'id de l'ae
+        :param id: l'identifiant de l'ae associée
+        :return: L'instance courante de BuilderStatementFinancialCp.
         """
         if id is not None:
             self._stmt = self._stmt.where(Cp.id_ae == id)
