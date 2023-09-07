@@ -18,6 +18,7 @@ from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.models.refs.siret import Siret
 from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
+from app.services import BuilderStatementFinancialCp
 from app.services.code_geo import BuilderCodeGeo
 from app.services.file_service import check_file_and_save
 
@@ -83,12 +84,18 @@ def get_financial_ae(id: int) -> FinancialAe:
         .join_filter_siret()
         .join_filter_programme_theme()
         .join_commune()
-        .join_financial_cp()
         .by_ae_id(id)
         .options_select_load()
     )
 
     result = query_select.do_single()
+    return result
+
+
+def get_financial_cp_of_ae(id: int):
+    query_select = BuilderStatementFinancialCp().select_cp().by_ae_id(id)
+
+    result = query_select.do_all()
     return result
 
 

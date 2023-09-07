@@ -9,11 +9,17 @@ from app.controller.financial_data.schema_model import register_financial_ae_sch
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
-from app.models.financial.FinancialAe import FinancialAeSchema, FinancialAeWithCpSchema
+from app.models.financial.FinancialAe import FinancialAeSchema, FinancialCpSchema
 from app.services.authentication.connected_user import ConnectedUser
 from app.services.authentication.exceptions import InvalidTokenError, NoCurrentRegion
 from app.services.code_geo import BadCodeGeoException
-from app.services.financial_data import import_ae, search_financial_data_ae, get_financial_ae, get_annees_ae
+from app.services.financial_data import (
+    import_ae,
+    search_financial_data_ae,
+    get_financial_ae,
+    get_financial_cp_of_ae,
+    get_annees_ae,
+)
 
 api = Namespace(name="Engagement", path="/", description="Api de  gestion des AE des données financières de l'état")
 
@@ -130,9 +136,30 @@ class GetFinancialAe(Resource):
         if result is None:
             return "", 204
 
-        financial_ae = FinancialAeWithCpSchema().dump(result)
+        financial_ae = FinancialAeSchema().dump(result)
 
         return financial_ae, 200
+
+
+@api.route("/ae/<id>/cp")
+@api.doc(model=model_financial_ae_single_api)
+class GetFinancialCpOfAe(Resource):
+    """
+    Récupére les infos d'engagements en fonction de son identifiant technique
+    :return:
+    """
+
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def get(self, id: str):
+        result = get_financial_cp_of_ae(int(id))
+
+        if result is None:
+            return "", 204
+
+        financial_cp = FinancialCpSchema(many=True).dump(result)
+
+        return financial_cp, 200
 
 
 @api.route("/ae/annees")
