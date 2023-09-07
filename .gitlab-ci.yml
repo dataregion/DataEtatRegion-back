@@ -98,7 +98,7 @@ deploy-integ-snapshot:
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "main"'
       when: always
-    - if: '$CI_COMMIT_BRANCH' =~ "/^(fix|hotfix|feature)\//"'
+    - if: '$CI_COMMIT_BRANCH =~ "/^(fix|hotfix|feature|bugfix|chore).*\//"'
       when: manual
     - when: never
   before_script:
