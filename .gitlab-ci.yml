@@ -5,7 +5,7 @@ stages:
 
 run_tests:
   stage: 🧪 test
-  image: python:3.11.1-slim
+  image: python:3.11.5-slim
   before_script:
     - python --version
     - pip install -r requirements.txt
@@ -95,14 +95,11 @@ deploy-integ-tag:
 
 deploy-integ-snapshot:
   extends: .deploy-integ
-  only:
-    - develop
-    - main
-    - /^chore.*$/
-    - /^feature.*$/
-    - /^hotfix.*$/
-    - /^fix.*$/
-    - /^bugfix.*$/
-  when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "main"'
+      when: always
+    - if: '$CI_COMMIT_BRANCH' =~ "/^(fix|hotfix|feature)\//"'
+      when: manual
+    - when: never
   before_script:
     - export VERSION="/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA:0:8}-snapshot"

@@ -1,5 +1,5 @@
 # set base image (host OS)
-FROM python:3.11.1-slim
+FROM python:3.11.5-slim
 
 
 RUN apt-get update -y && \
