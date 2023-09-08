@@ -13,6 +13,7 @@ def make_api_entreprise() -> ApiEntreprise:
     Utilise la configuration `API_ENTREPRISE` de l'application
     """
 
+    timeout = 5
     try:
         config = current_app.config["API_ENTREPRISE"]
 
@@ -22,6 +23,9 @@ def make_api_entreprise() -> ApiEntreprise:
         context = config["CONTEXT"]
         recipient = config["RECIPIENT"]
         object = config["OBJECT"]
+
+        if "TIMEOUT_SECONDS" in config:
+            timeout = int(config["TIMEOUT_SECONDS"])
     except KeyError as e:
         logging.warning("Impossible de trouver la configuration de l'API entreprise.", exc_info=e)
         return None
@@ -36,6 +40,7 @@ def make_api_entreprise() -> ApiEntreprise:
         ),
         _make_rate_limiter(),
     )
+    api_entreprise_config.timeout_s = timeout
 
     return ApiEntreprise(api_entreprise_config)
 
