@@ -100,6 +100,7 @@ deploy-integ-snapshot:
       when: always
     - if: '$CI_COMMIT_BRANCH =~ "/^(fix|hotfix|feature|bugfix|chore).*\//"'
       when: manual
+      allow_failure: true
     - when: never
   before_script:
     - export VERSION="/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA:0:8}-snapshot"
