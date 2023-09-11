@@ -40,7 +40,7 @@ celery = celeryapp.celery
 
 
 @celery.task(bind=True, name="import_file_ae_financial")
-def import_file_ae_financial(self, fichier, source_region: str, annee: int, force_update: bool):
+def import_file_ae_financial(self, fichier: str, source_region: str, annee: int, force_update: bool):
     # get file
     logger.info(f"[IMPORT][FINANCIAL][AE] Start for region {source_region}, year {annee}, file {fichier}")
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -92,7 +92,7 @@ def _delete_cp(annee: int, source_region: str):
 
 
 @celery.task(bind=True, name="import_file_cp_financial")
-def import_file_cp_financial(self, fichier, source_region: str, annee: int):
+def import_file_cp_financial(self, fichier: str, source_region: str, annee: int):
     # get file
     logger.info(f"[IMPORT][FINANCIAL][CP] Start for region {source_region}, year {annee}, file {fichier}")
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
