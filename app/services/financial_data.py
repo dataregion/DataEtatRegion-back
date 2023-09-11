@@ -30,9 +30,22 @@ def import_ae(file_ae, source_region: str, annee: int, force_update: bool, usern
     source_region = _sanitize_source_region(source_region)
 
     logging.info(f"[IMPORT FINANCIAL] Récupération du fichier {save_path}")
-    from app.tasks.financial.import_financial import import_file_ae_financial
+    csv_options = {
+        "sep": ",",
+        "skiprows": 8,
+        "names": FinancialAe.get_columns_files_ae(),
+        "dtype": {"programme": str, "n_ej": str, "n_poste_ej": int, "fournisseur_titulaire": str, "siret": str},
+    }
+    from app.tasks.files.file_task import split_csv_files_and_run_task
 
-    task = import_file_ae_financial.delay(str(save_path), source_region, annee, force_update)
+    task = split_csv_files_and_run_task.delay(
+        str(save_path),
+        "import_file_ae_financial",
+        csv_options,
+        source_region=source_region,
+        annee=annee,
+        force_update=force_update,
+    )
     db.session.add(AuditUpdateData(username=username, filename=file_ae.filename, data_type=DataType.FINANCIAL_DATA_AE))
     db.session.commit()
     return task
@@ -45,9 +58,18 @@ def import_cp(file_cp, source_region: str, annee: int, username=""):
     source_region = _sanitize_source_region(source_region)
 
     logging.info(f"[IMPORT FINANCIAL] Récupération du fichier {save_path}")
-    from app.tasks.financial.import_financial import import_file_cp_financial
+    csv_options = {
+        "sep": ",",
+        "skiprows": 8,
+        "names": FinancialCp.get_columns_files_cp(),
+        "dtype": {"programme": str, "n_ej": str, "n_poste_ej": str, "n_dp": str, "fournisseur_paye": str, "siret": str},
+    }
+    from app.tasks.files.file_task import split_csv_files_and_run_task
 
-    task = import_file_cp_financial.delay(str(save_path), source_region, annee)
+    task = split_csv_files_and_run_task.delay(
+        str(save_path), "import_file_cp_financial", csv_options, source_region=source_region, annee=annee
+    )
+
     db.session.add(AuditUpdateData(username=username, filename=file_cp.filename, data_type=DataType.FINANCIAL_DATA_CP))
     db.session.commit()
     return task

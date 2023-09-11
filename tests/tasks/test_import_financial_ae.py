@@ -24,7 +24,7 @@ def cleanup_after_tests(database):
 def test_import_import_file_ae(mock_subtask):
     # DO
     with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
-        import_file_ae_financial(os.path.abspath(os.getcwd()) + "/data/chorus/chorus_ae.csv", "35", 2023, False)
+        import_file_ae_financial(os.path.abspath(os.getcwd()) + "/data/chorus/split/chorus_ae.csv", "35", 2023, False)
 
     mock_subtask.assert_has_calls(
         [
