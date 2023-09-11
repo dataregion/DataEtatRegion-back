@@ -27,16 +27,6 @@ timeout_queue_retry = (
 )
 
 
-def _move_file(fichier: str, move_folder: str):
-    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    move_folder = os.path.join(move_folder, timestamp)
-    if not os.path.exists(move_folder):
-        os.makedirs(move_folder)
-
-    logger.info(f"[FILE] Save file {fichier} in {move_folder}")
-    shutil.move(fichier, move_folder)
-
-
 def lazy_rabbit_connector():
     conn = None
     chan = None
@@ -110,6 +100,7 @@ def _get_queue(queue_name: str):
     return queue
 
 
+from .files.file_task import *
 from .financial.import_financial import *
 from .financial.import_france_2030 import *
 from .financial.visuterritoire import *

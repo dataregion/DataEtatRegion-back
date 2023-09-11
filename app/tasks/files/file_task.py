@@ -1,12 +1,13 @@
 import logging
 import os
+import json
+import shutil
+import datetime
 
 import pandas
 from celery import subtask
 from flask import current_app
-
 from app import celeryapp
-from app.tasks import _move_file
 
 celery = celeryapp.celery
 
@@ -15,7 +16,7 @@ DEFAULT_MAX_ROW = 10000  # 10K
 
 
 @celery.task(bind=True, name="split_csv_files_and_run_task")
-def split_csv_files_and_run_task(self, fichier: str, task_name: str, csv_options: dict, **kwargs):
+def split_csv_files_and_run_task(self, fichier: str, task_name: str, csv_options: str, **kwargs):
     """
     Split un fichier en plusieurs fichiers et autant de tâches autant qu'il y a de fichier
     :param self:
@@ -31,7 +32,7 @@ def split_csv_files_and_run_task(self, fichier: str, task_name: str, csv_options
 
     logging.info(f"[SPLIT] Start split file for task {task_name} in {max_lines} lines")
 
-    chunks = pandas.read_csv(fichier, chunksize=max_lines, **csv_options)
+    chunks = pandas.read_csv(fichier, chunksize=max_lines, **json.loads(csv_options))
     index = 1
     for df in chunks:
         # Construire le nom de fichier de sortie
@@ -44,3 +45,13 @@ def split_csv_files_and_run_task(self, fichier: str, task_name: str, csv_options
 
     _move_file(fichier, current_app.config["UPLOAD_FOLDER"] + "/save/")
     logging.info(f"[SPLIT] End split file for task {task_name}")
+
+
+def _move_file(fichier: str, move_folder: str):
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    move_folder = os.path.join(move_folder, timestamp)
+    if not os.path.exists(move_folder):
+        os.makedirs(move_folder)
+
+    logging.info(f"[FILE] Save file {fichier} in {move_folder}")
+    shutil.move(fichier, move_folder)
