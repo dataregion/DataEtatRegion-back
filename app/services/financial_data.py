@@ -2,6 +2,7 @@ import logging
 import pandas
 
 from sqlalchemy.orm import contains_eager, selectinload
+import json
 
 from app import db
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
@@ -30,9 +31,17 @@ def import_ae(file_ae, source_region: str, annee: int, force_update: bool, usern
     source_region = _sanitize_source_region(source_region)
 
     logging.info(f"[IMPORT FINANCIAL] Récupération du fichier {save_path}")
-    from app.tasks.financial.import_financial import import_file_ae_financial
+    csv_options = {"sep": ",", "skiprows": 8}
+    from app.tasks.files.file_task import split_csv_files_and_run_task
 
-    task = import_file_ae_financial.delay(str(save_path), source_region, annee, force_update)
+    task = split_csv_files_and_run_task.delay(
+        str(save_path),
+        "import_file_ae_financial",
+        json.dumps(csv_options),
+        source_region=source_region,
+        annee=annee,
+        force_update=force_update,
+    )
     db.session.add(AuditUpdateData(username=username, filename=file_ae.filename, data_type=DataType.FINANCIAL_DATA_AE))
     db.session.commit()
     return task
@@ -45,9 +54,16 @@ def import_cp(file_cp, source_region: str, annee: int, username=""):
     source_region = _sanitize_source_region(source_region)
 
     logging.info(f"[IMPORT FINANCIAL] Récupération du fichier {save_path}")
-    from app.tasks.financial.import_financial import import_file_cp_financial
+    csv_options = {
+        "sep": ",",
+        "skiprows": 8,
+    }
+    from app.tasks.files.file_task import split_csv_files_and_run_task
 
-    task = import_file_cp_financial.delay(str(save_path), source_region, annee)
+    task = split_csv_files_and_run_task.delay(
+        str(save_path), "import_file_cp_financial", json.dumps(csv_options), source_region=source_region, annee=annee
+    )
+
     db.session.add(AuditUpdateData(username=username, filename=file_cp.filename, data_type=DataType.FINANCIAL_DATA_CP))
     db.session.commit()
     return task

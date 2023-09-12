@@ -182,6 +182,8 @@ class BuilderStatementFinancial:
                     self._stmt = self._stmt.where(Commune.code_crte.in_(list_code_geo))
                 case TypeCodeGeo.ARRONDISSEMENT:
                     self._stmt = self._stmt.where(Commune.code_arrondissement.in_(list_code_geo))
+                case TypeCodeGeo.QPV:
+                    self._where_qpv(list_code_geo)
                 case _:
                     self._stmt = self._stmt.where(Commune.code.in_(list_code_geo))
 

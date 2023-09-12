@@ -100,6 +100,7 @@ def _get_queue(queue_name: str):
     return queue
 
 
+from .files.file_task import *
 from .financial.import_financial import *
 from .financial.import_france_2030 import *
 from .financial.visuterritoire import *

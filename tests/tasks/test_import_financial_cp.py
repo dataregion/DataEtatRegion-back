@@ -39,7 +39,7 @@ def cleanup_after_tests():
 def test_import_file_cp(mock_subtask):
     # DO
     with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
-        import_file_cp_financial(os.path.abspath(os.getcwd()) + "/data/chorus/financial_cp.csv", "35", 2023)
+        import_file_cp_financial(os.path.abspath(os.getcwd()) + "/data/chorus/split/financial_cp.csv", "35", 2023)
 
     mock_subtask.assert_has_calls(
         [
