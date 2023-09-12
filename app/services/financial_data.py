@@ -1,5 +1,6 @@
 import logging
 import pandas
+from sqlalchemy import delete
 
 from sqlalchemy.orm import contains_eager, selectinload
 import json
@@ -58,6 +59,8 @@ def import_cp(file_cp, source_region: str, annee: int, username=""):
         "sep": ",",
         "skiprows": 8,
     }
+
+    _delete_cp(annee, source_region)
     from app.tasks.files.file_task import split_csv_files_and_run_task
 
     task = split_csv_files_and_run_task.delay(
@@ -254,3 +257,15 @@ def _sanitize_tag_fullname_for_db(tag: str):
     if not ":" in tag:
         return tag + ":"
     return tag
+
+
+def _delete_cp(annee: int, source_region: str):
+    """
+    Supprimes CP d'une année comptable
+    :param annee:
+    :param source_region:
+    :return:
+    """
+    stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.source_region == source_region)
+    db.session.execute(stmt)
+    db.session.commit()

@@ -98,8 +98,6 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
             },
             chunksize=1000,
         )
-        _delete_cp(annee, source_region)
-
         i = 0
         for chunk in data_chunk:
             for index, line in chunk.iterrows():
@@ -343,18 +341,6 @@ def _insert_financial_data(data: FinancialData) -> FinancialData:
     logger.info("[IMPORT][FINANCIAL] Ajout ligne financière")
     db.session.commit()
     return data
-
-
-def _delete_cp(annee: int, source_region: str):
-    """
-    Supprimes CP d'une année comptable
-    :param annee:
-    :param source_region:
-    :return:
-    """
-    stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.source_region == source_region)
-    db.session.execute(stmt)
-    db.session.commit()
 
 
 def _get_ae_for_cp(n_ej: str, n_poste_ej: int) -> int | None:
