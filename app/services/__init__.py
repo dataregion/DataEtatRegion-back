@@ -1,5 +1,5 @@
 from sqlalchemy import Select, or_, Column
-from sqlalchemy.orm import selectinload, contains_eager
+from sqlalchemy.orm import selectinload, contains_eager, aliased
 
 from .code_geo import BadCodeGeoException
 from .. import db
@@ -26,6 +26,9 @@ class BuilderStatementFinancial:
     """
 
     _stmt: Select = None
+
+    _alias_commune_interministerielle = aliased(Commune)
+    _alias_commune_siret = aliased(Commune)
 
     def __init__(self, stmt=None):
         self._stmt = stmt
@@ -132,7 +135,9 @@ class BuilderStatementFinancial:
         Ajoute une jointure simple sur la commune siret
         :return:
         """
-        self._stmt = self._stmt.join(Siret.ref_commune)
+        self._stmt = self._stmt.join(self._alias_commune_siret, Siret.ref_commune).join(
+            self._alias_commune_interministerielle, LocalisationInterministerielle.commune, isouter=True
+        )
         return self
 
     def where_geo_ae(self, type_geo: TypeCodeGeo, list_code_geo: list, source_region: str):
@@ -145,20 +150,26 @@ class BuilderStatementFinancial:
         :return: L'instance courante de BuilderStatementFinancialAe.
         """
         if list_code_geo is not None:
-            self._stmt = self._stmt.join(Siret.ref_commune)
+            self._stmt = self._stmt.join(self._alias_commune_siret, Siret.ref_commune)
+            # self._stmt = self._stmt.join(LocalisationInterministerielle)
+            self._stmt = self._stmt.join(
+                self._alias_commune_interministerielle, LocalisationInterministerielle.commune, isouter=True
+            )
             match type_geo:
                 case TypeCodeGeo.DEPARTEMENT:
                     return self._where_geo_departement(list_code_geo, source_region)
                 case TypeCodeGeo.EPCI:
-                    return self._where_geo(Commune.code_epci, list_code_geo)
+                    return self._where_geo(self._alias_commune_siret.code_epci, Commune.code_epci, list_code_geo)
                 case TypeCodeGeo.CRTE:
-                    return self._where_geo(Commune.code_crte, list_code_geo)
+                    return self._where_geo(self._alias_commune_siret.code_crte, Commune.code_crte, list_code_geo)
                 case TypeCodeGeo.ARRONDISSEMENT:
-                    return self._where_geo(Commune.code_arrondissement, list_code_geo)
+                    return self._where_geo(
+                        self._alias_commune_siret.code_arrondissement, Commune.code_arrondissement, list_code_geo
+                    )
                 case TypeCodeGeo.QPV:
                     return self._where_qpv(list_code_geo)
                 case _:
-                    return self._where_geo(Commune.code, list_code_geo)
+                    return self._where_geo(self._alias_commune_siret.code, Commune.code, list_code_geo)
 
         return self
 
@@ -205,11 +216,11 @@ class BuilderStatementFinancial:
             contains_eager(Ae.ref_domaine_fonctionnel).load_only(DomaineFonctionnel.label),
             contains_eager(Ae.ref_localisation_interministerielle)
             .load_only(LocalisationInterministerielle.label)
-            .contains_eager(LocalisationInterministerielle.commune)
+            .contains_eager(LocalisationInterministerielle.commune, alias=self._alias_commune_interministerielle)
             .load_only(Commune.label_commune, Commune.code),
             contains_eager(Ae.ref_siret)
             .load_only(Siret.code, Siret.denomination)
-            .contains_eager(Siret.ref_commune)
+            .contains_eager(Siret.ref_commune, alias=self._alias_commune_siret)
             .load_only(Commune.label_commune, Commune.code),
             contains_eager(Ae.ref_siret)
             .contains_eager(Siret.ref_categorie_juridique)
@@ -258,16 +269,18 @@ class BuilderStatementFinancial:
         where_clause = []
         for code_geo in list_code_geo:
             where_clause.append(LocalisationInterministerielle.code.ilike(f"{prefix_code_inter}{code_geo}%"))
-        subquery = subquery.where(or_(*where_clause)).subquery()
+        subquery = subquery.where(or_(*where_clause))
         self._stmt = self._stmt.where(
-            Commune.code_departement.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
+            self._alias_commune_siret.code_departement.in_(list_code_geo)
+            | Ae.localisation_interministerielle.in_(subquery)
         )
         return self
 
-    def _where_geo(self, column: Column, list_code_geo: list):
+    def _where_geo(self, alias_column, column: Column, list_code_geo: list):
         """
         Requête de sélection sur les code geo
-        :param column: la column de la base
+        :param alias_column: la colonne a filtrer sur les liste geo
+        :param column: la column a filtrer sur la geolocalisation des données interministerielle
         :param list_code_geo:
         :return:
         """
@@ -275,9 +288,11 @@ class BuilderStatementFinancial:
             db.select(LocalisationInterministerielle.code)
             .join(LocalisationInterministerielle.commune)
             .where(column.in_(list_code_geo))
-            .subquery()
         )
-        self._stmt = self._stmt.where(column.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery))
+
+        self._stmt = self._stmt.where(
+            alias_column.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
+        )
         return self
 
 
