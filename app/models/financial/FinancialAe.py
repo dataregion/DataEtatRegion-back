@@ -305,8 +305,6 @@ class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
             "updated_at",
             "created_at",
             "source_region",
-            "compte_budgetaire",
-            "contrat_etat_region",
             "financial_cp",
         )
 
@@ -319,6 +317,8 @@ class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
     referentiel_programmation = ReferentielField()
     groupe_marchandise = GroupeMarchandiseField(attribute="groupe_marchandise")
     localisation_interministerielle = LocalisationInterministerielleField(attribute="localisation_interministerielle")
+    compte_budgetaire = fields.String()
+    contrat_etat_region = fields.String()
     programme = ProgrammeField()
     n_ej = fields.String()
     n_poste_ej = fields.Integer()

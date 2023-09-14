@@ -41,11 +41,9 @@ class BuilderStatementFinancial:
         """
         self._stmt = db.select(Ae).options(
             db.defer(Ae.source_region),
-            db.defer(Ae.compte_budgetaire),
             selectinload(Ae.montant_ae).load_only(MontantAe.montant),
             selectinload(Ae.financial_cp).load_only(Cp.montant, Cp.date_derniere_operation_dp),
             selectinload(Ae.tags),
-            db.defer(Ae.contrat_etat_region),
         )
         return self
 
