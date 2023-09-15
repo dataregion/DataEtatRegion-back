@@ -103,6 +103,7 @@ def get_financial_ae(id: int) -> FinancialAe:
         .join_filter_siret()
         .join_filter_programme_theme()
         .join_commune()
+        .join_localisation_interministerielle()
         .by_ae_id(id)
         .options_select_load()
     )
@@ -200,7 +201,7 @@ def search_financial_data_ae(
         (type_geo, list_code_geo) = BuilderCodeGeo().build_list_code_geo(code_geo)
         query_ae.where_geo_ae(type_geo, list_code_geo, source_region)
     else:
-        query_ae.join_commune()
+        query_ae.join_commune().join_localisation_interministerielle()
 
     if domaine_fonctionnel is not None:
         query_ae.where_custom(DomaineFonctionnel.code.in_(domaine_fonctionnel))
