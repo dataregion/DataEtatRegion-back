@@ -133,7 +133,14 @@ class BuilderStatementFinancial:
         Ajoute une jointure simple sur la commune siret
         :return:
         """
-        self._stmt = self._stmt.join(self._alias_commune_siret, Siret.ref_commune).join(
+        self._stmt = self._stmt.join(self._alias_commune_siret, Siret.ref_commune)
+        return self
+
+    def join_localisation_interministerielle(self):
+        """
+        Ajoute une jointure sur la loc interministerielle
+        """
+        self._stmt = self._stmt.join(
             self._alias_commune_interministerielle, LocalisationInterministerielle.commune, isouter=True
         )
         return self
