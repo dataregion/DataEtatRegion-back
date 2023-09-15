@@ -44,6 +44,7 @@ parser_get.add_argument(
     "theme", type=str, action="split", help="Le libelle theme (si code_programme est renseigné, le theme est ignoré)."
 )
 parser_get.add_argument("siret_beneficiaire", type=str, action="split", help="Code siret d'un beneficiaire.")
+parser_get.add_argument("types_beneficiaires", type=str, action="split", help="Types de bénéficiaire.")
 parser_get.add_argument("annee", type=int, action="split", help="L'année comptable.")
 parser_get.add_argument("domaine_fonctionnel", type=str, action="split", help="Le(s) code(s) du domaine fonctionnel.")
 parser_get.add_argument(
