@@ -58,7 +58,7 @@ def handle_error_input_parameter(e: BadCodeGeoException):
 
 
 @api.errorhandler(NoCurrentRegion)
-def handle_invalid_token(e: NoCurrentRegion):
+def handle_no_current_region(e: NoCurrentRegion):
     return ErrorController("Aucune region n'est associée à l'utilisateur.").to_json(), HTTPStatus.BAD_REQUEST
 
 
