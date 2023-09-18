@@ -179,6 +179,7 @@ def search_financial_data_ae(
     code_programme: list = None,
     theme: list = None,
     siret_beneficiaire: list = None,
+    types_beneficiaires: list = None,
     annee: list = None,
     domaine_fonctionnel: list = None,
     referentiel_programmation: list = None,
@@ -211,6 +212,9 @@ def search_financial_data_ae(
 
     if source_region is not None:
         query_ae.where_custom(FinancialAe.source_region == source_region)
+
+    if types_beneficiaires is not None:
+        query_ae.where_custom(CategorieJuridique.type.in_(types_beneficiaires))
 
     if tags is not None:
         _tags = map(_sanitize_tag_fullname_for_db, tags)
