@@ -1,4 +1,4 @@
-from sqlalchemy import Select, or_, Column
+from sqlalchemy import Select, or_, Column, desc
 from sqlalchemy.orm import selectinload, contains_eager, aliased
 
 from .code_geo import BadCodeGeoException
@@ -318,6 +318,15 @@ class BuilderStatementFinancialCp:
         :return: L'instance courante de BuilderStatementFinancialCp.
         """
         self._stmt = db.select(Cp)
+        return self
+
+    def order_by_date(self):
+        """
+        Ordonne les CP par date de la plus récente à la plus ancienne
+        :return: L'instance courante de BuilderStatementFinancialCp.
+        """
+        if id is not None:
+            self._stmt = self._stmt.order_by(desc(Cp.date_base_dp))
         return self
 
     def by_ae_id(self, id: int):
