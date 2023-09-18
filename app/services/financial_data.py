@@ -212,7 +212,7 @@ def search_financial_data_ae(
 
     if source_region is not None:
         query_ae.where_custom(FinancialAe.source_region == source_region)
-    
+
     if types_beneficiaires is not None:
         query_ae.where_custom(CategorieJuridique.type.in_(types_beneficiaires))
 
