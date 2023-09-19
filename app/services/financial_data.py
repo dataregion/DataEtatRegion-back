@@ -1,6 +1,6 @@
 import logging
 import pandas
-from sqlalchemy import delete
+from sqlalchemy import delete, or_
 
 from sqlalchemy.orm import contains_eager, selectinload
 import json
@@ -213,8 +213,13 @@ def search_financial_data_ae(
     if source_region is not None:
         query_ae.where_custom(FinancialAe.source_region == source_region)
 
+    type_beneficiaires_conditions = []
     if types_beneficiaires is not None:
-        query_ae.where_custom(CategorieJuridique.type.in_(types_beneficiaires))
+        type_beneficiaires_conditions.append(CategorieJuridique.type.in_(types_beneficiaires))
+    if types_beneficiaires is not None and "autres" in types_beneficiaires:
+        type_beneficiaires_conditions.append(CategorieJuridique.type == None)
+
+    query_ae.where_custom(or_(*type_beneficiaires_conditions))
 
     if tags is not None:
         _tags = map(_sanitize_tag_fullname_for_db, tags)
