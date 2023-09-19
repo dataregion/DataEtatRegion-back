@@ -156,7 +156,6 @@ class BuilderStatementFinancial:
         """
         if list_code_geo is not None:
             self._stmt = self._stmt.join(self._alias_commune_siret, Siret.ref_commune)
-            # self._stmt = self._stmt.join(LocalisationInterministerielle)
             self._stmt = self._stmt.join(
                 self._alias_commune_interministerielle, LocalisationInterministerielle.commune, isouter=True
             )

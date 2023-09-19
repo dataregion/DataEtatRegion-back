@@ -74,6 +74,9 @@ WHERE code_departement_loc_inter != '';
 
 
 CREATE INDEX idx_groupby_summary_commune ON m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_commune);
+CREATE INDEX idx_groupby_summary_departement ON m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_departement);
+CREATE INDEX idx_groupby_summary_epci ON m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_epci);
+CREATE INDEX idx_groupby_summary_crte ON m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_crte);
 
 
 CREATE MATERIALIZED VIEW m_montant_par_niveau_bop_annee_type AS
