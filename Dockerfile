@@ -1,13 +1,14 @@
-# set base image (host OS)
-FROM python:3.11.1-slim
+FROM python:3.11.5-alpine
 
+# Install postgres c dependencies
+RUN \
+ apk add --no-cache postgresql-libs && \
+ apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
+ pip install psycopg[c,pool]  && \
+ apk --purge del .build-deps
 
-RUN apt-get update -y && \
-apt-get upgrade -y && \
-apt-get install -y p7zip && \
-apt-get install -y curl
+EXPOSE 80
 
-# set the working directory in the container
 WORKDIR /appli
 
 RUN mkdir workdir
@@ -20,7 +21,5 @@ COPY config/ ./config/
 COPY manage.py ./
 COPY migrations ./migrations
 RUN rm /appli/config/config_template.yml
-
-EXPOSE 80
 
 CMD ["waitress-serve","--port=80","--call", "app:create_app_api"]

@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, String, Date, Float, Boolean, UniqueCons
 from sqlalchemy.orm import relationship
 
 from app import db, ma
-from app.models.financial import FinancialData, json_type_object_code_label
+from app.models.financial import FinancialData, CommonField, CommuneField
 from app.models.refs.siret import Siret
 from app.models.tags.Tags import TagsSchema
 
@@ -94,18 +94,6 @@ class SiretField(fields.Field):
             "code": siret,
             "categorie_juridique": obj.ref_siret_beneficiaire.type_categorie_juridique,
         }
-
-
-class CommuneField(fields.Field):
-    """Field Commune"""
-
-    def _jsonschema_type_mapping(self):
-        return json_type_object_code_label()
-
-    def _serialize(self, value: Siret, attr, obj: Ademe, **kwargs):
-        if value is None:
-            return {}
-        return {"label": value.ref_commune.label_commune, "code": value.ref_commune.code}
 
 
 class AdemeSchema(ma.SQLAlchemyAutoSchema):

@@ -2,6 +2,7 @@ import sys
 
 from flask import current_app
 from flask_restx import Namespace, Resource, fields
+from flask_restx._http import HTTPStatus
 from marshmallow_jsonschema import JSONSchema
 from sqlalchemy.exc import NoResultFound
 
@@ -66,14 +67,14 @@ def build_ref_controller(
             page_result = db.paginate(stmt, per_page=query_param.limit, page=query_param.page_number, error_out=False)
 
             if page_result.items == []:
-                return "", 204
+                return "", HTTPStatus.NO_CONTENT
 
             result = schema_many.dump(page_result.items)
 
             return {
                 "items": result,
                 "pageInfo": Pagination(page_result.total, page_result.page, page_result.per_page).to_json(),
-            }, 200
+            }, HTTPStatus.OK
 
     @api.route("/<code>")
     @api.doc(model=model_single_api)
@@ -86,9 +87,9 @@ def build_ref_controller(
                 result = db.session.execute(db.select(cls).filter_by(code=code)).scalar_one()
                 schema_m = schema()
                 result = schema_m.dump(result)
-                return result, 200
+                return result, HTTPStatus.OK
             except NoResultFound:
-                return "", 404
+                return "", HTTPStatus.NOT_FOUND
 
     return api
 

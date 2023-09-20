@@ -106,7 +106,7 @@ class PreferenceUsers(Resource):
             data = schema_create_validation.load(json_data)
         except ValidationError as err:
             logging.error(f"[PREFERENCE][CTRL] {err.messages}")
-            return {"message": "Invalid", "details": err.messages}, 400
+            return {"message": "Invalid", "details": err.messages}, HTTPStatus.BAD_REQUEST
 
         # on retire les shares pour soit même.
         shares = list(filter(lambda d: d["shared_username_email"] != json_data["username"], data["shares"]))
@@ -163,7 +163,7 @@ class PreferenceUsers(Resource):
         schema = PreferenceSchema(many=True)
         create_by_user = schema.dump(list_pref)
         shared_with_user = schema.dump(list_pref_shared)
-        return {"create_by_user": create_by_user, "shared_with_user": shared_with_user}, 200
+        return {"create_by_user": create_by_user, "shared_with_user": shared_with_user}, HTTPStatus.OK
 
 
 @api.route("/<uuid>")
@@ -189,7 +189,7 @@ class CrudPreferenceUsers(Resource):
         try:
             db.session.delete(preference)
             db.session.commit()
-            return "Success", 200
+            return "Success", HTTPStatus.OK
         except Exception as e:
             logging.error(f"[PREFERENCE][CTRL] Error when delete preference {uuid} {application}", e)
             return abort(
@@ -253,7 +253,7 @@ class CrudPreferenceUsers(Resource):
             if len(preference_to_save.shares) > 0:
                 # send task async
                 share_filter_user.delay(str(preference_to_save.uuid), application)
-            return "Success", 200
+            return "Success", HTTPStatus.OK
         except Exception as e:
             logging.error(f"[PREFERENCE][CTRL] Error when delete preference {uuid}", e)
             return abort(message="Error when delete preference", code=HTTPStatus.BAD_REQUEST)
@@ -281,7 +281,7 @@ class CrudPreferenceUsers(Resource):
         except Exception as e:
             logging.warning(f"[PREFERENCE][CTRL] Error when update count usage preference {uuid}", e)
 
-        return result, 200
+        return result, HTTPStatus.OK
 
 
 parser_search = reqparse.RequestParser()
@@ -302,12 +302,12 @@ class UsersSearch(Resource):
         search_username = p_args.get("username")
 
         if search_username is None or len(search_username) < 4:
-            return {"users": []}, 200
+            return {"users": []}, HTTPStatus.OK
         try:
             keycloak_admin = make_or_get_keycloack_admin()
             query = {"briefRepresentation": True, "enabled": True, "search": search_username}
             users = keycloak_admin.get_users(query)
 
-            return [{"username": user["username"]} for user in users], 200
+            return [{"username": user["username"]} for user in users], HTTPStatus.OK
         except KeycloakConfigurationException as admin_exception:
-            return admin_exception.message, 400
+            return admin_exception.message, HTTPStatus.BAD_REQUEST

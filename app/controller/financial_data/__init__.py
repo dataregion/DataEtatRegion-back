@@ -2,6 +2,7 @@ from functools import wraps
 
 from flask import Blueprint, request
 from flask_restx import Api, reqparse, inputs
+from flask_restx._http import HTTPStatus
 from werkzeug.datastructures import FileStorage
 from app.controller.financial_data.schema_model import (
     register_tags_schemamodel,
@@ -72,6 +73,8 @@ from app.controller.financial_data.FinancialAeCtrl import api as api_ae
 from app.controller.financial_data.FinancialCpCtrl import api as api_cp
 from app.controller.financial_data.AdemeCtrl import api as api_ademe
 from app.controller.financial_data.France2030 import api as api_france_2030
+from app.controller.utils.LoginController import api as api_auth
+
 
 api_financial = Blueprint("financial_data", __name__)
 
@@ -88,6 +91,8 @@ api = Api(
 
 model_tags_single_api = register_tags_schemamodel(api)
 
+
+api.add_namespace(api_auth)
 api.add_namespace(api_ae)
 api.add_namespace(api_cp)
 api.add_namespace(api_ademe)
@@ -96,4 +101,4 @@ api.add_namespace(api_france_2030)
 
 @api_financial.errorhandler(DataRegatException)
 def handle_exception(e):
-    return ErrorController(e.message).to_json(), 400
+    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST

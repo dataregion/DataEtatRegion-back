@@ -11,3 +11,4 @@ class TypeCodeGeo(Enum):
     COMMUNE = "COMMUNE"
     EPCI = "EPCI"
     DEPARTEMENT = "DEPARTEMENT"
+    QPV = "QPV"

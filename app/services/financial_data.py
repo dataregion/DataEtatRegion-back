@@ -1,7 +1,9 @@
 import logging
 import pandas
+from sqlalchemy import delete, or_
 
 from sqlalchemy.orm import contains_eager, selectinload
+import json
 
 from app import db
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
@@ -16,7 +18,9 @@ from app.models.refs.commune import Commune
 from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.models.refs.siret import Siret
+from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
+from app.services import BuilderStatementFinancialCp
 from app.services.code_geo import BuilderCodeGeo
 from app.services.file_service import check_file_and_save
 
@@ -28,9 +32,17 @@ def import_ae(file_ae, source_region: str, annee: int, force_update: bool, usern
     source_region = _sanitize_source_region(source_region)
 
     logging.info(f"[IMPORT FINANCIAL] Récupération du fichier {save_path}")
-    from app.tasks.financial.import_financial import import_file_ae_financial
+    csv_options = {"sep": ",", "skiprows": 8}
+    from app.tasks.files.file_task import split_csv_files_and_run_task
 
-    task = import_file_ae_financial.delay(str(save_path), source_region, annee, force_update)
+    task = split_csv_files_and_run_task.delay(
+        str(save_path),
+        "import_file_ae_financial",
+        json.dumps(csv_options),
+        source_region=source_region,
+        annee=annee,
+        force_update=force_update,
+    )
     db.session.add(AuditUpdateData(username=username, filename=file_ae.filename, data_type=DataType.FINANCIAL_DATA_AE))
     db.session.commit()
     return task
@@ -43,9 +55,18 @@ def import_cp(file_cp, source_region: str, annee: int, username=""):
     source_region = _sanitize_source_region(source_region)
 
     logging.info(f"[IMPORT FINANCIAL] Récupération du fichier {save_path}")
-    from app.tasks.financial.import_financial import import_file_cp_financial
+    csv_options = {
+        "sep": ",",
+        "skiprows": 8,
+    }
 
-    task = import_file_cp_financial.delay(str(save_path), source_region, annee)
+    _delete_cp(annee, source_region)
+    from app.tasks.files.file_task import split_csv_files_and_run_task
+
+    task = split_csv_files_and_run_task.delay(
+        str(save_path), "import_file_cp_financial", json.dumps(csv_options), source_region=source_region, annee=annee
+    )
+
     db.session.add(AuditUpdateData(username=username, filename=file_cp.filename, data_type=DataType.FINANCIAL_DATA_CP))
     db.session.commit()
     return task
@@ -82,6 +103,7 @@ def get_financial_ae(id: int) -> FinancialAe:
         .join_filter_siret()
         .join_filter_programme_theme()
         .join_commune()
+        .join_localisation_interministerielle()
         .by_ae_id(id)
         .options_select_load()
     )
@@ -90,7 +112,24 @@ def get_financial_ae(id: int) -> FinancialAe:
     return result
 
 
-def search_ademe(siret_beneficiaire: list = None, code_geo: list = None, annee: list = None, page_number=1, limit=500):
+def get_financial_cp_of_ae(id: int):
+    return BuilderStatementFinancialCp().select_cp().by_ae_id(id).order_by_date().do_all()
+
+
+def get_annees_ae():
+    return db.session.execute(
+        db.text("SELECT ARRAY(SELECT DISTINCT annee FROM public.financial_ae)")
+    ).scalar_one_or_none()
+
+
+def search_ademe(
+    siret_beneficiaire: list = None,
+    code_geo: list = None,
+    annee: list = None,
+    tags: list[str] = None,
+    page_number=1,
+    limit=500,
+):
     query = db.select(Ademe).options(
         contains_eager(Ademe.ref_siret_beneficiaire)
         .load_only(Siret.code, Siret.denomination)
@@ -120,6 +159,11 @@ def search_ademe(siret_beneficiaire: list = None, code_geo: list = None, annee: 
     if annee is not None:
         query_ademe.where_custom(db.func.extract("year", Ademe.date_convention).in_(annee))
 
+    if tags is not None:
+        _tags = map(_sanitize_tag_fullname_for_db, tags)
+        fullnamein = Tags.fullname.in_(_tags)
+        query_ademe.where_custom(Ademe.tags.any(fullnamein))
+
     page_result = query_ademe.do_paginate(limit, page_number)
     return page_result
 
@@ -135,17 +179,19 @@ def search_financial_data_ae(
     code_programme: list = None,
     theme: list = None,
     siret_beneficiaire: list = None,
+    types_beneficiaires: list = None,
     annee: list = None,
     domaine_fonctionnel: list = None,
     referentiel_programmation: list = None,
     source_region: str = None,
     code_geo: list = None,
+    tags: list[str] = None,
     page_number=1,
     limit=500,
 ):
     source_region = _sanitize_source_region(source_region)
 
-    query_siret = (
+    query_ae = (
         BuilderStatementFinancial()
         .select_ae()
         .join_filter_siret(siret_beneficiaire)
@@ -154,20 +200,33 @@ def search_financial_data_ae(
 
     if code_geo is not None:
         (type_geo, list_code_geo) = BuilderCodeGeo().build_list_code_geo(code_geo)
-        query_siret.where_geo_ae(type_geo, list_code_geo)
+        query_ae.where_geo_ae(type_geo, list_code_geo, source_region)
     else:
-        query_siret.join_commune()
+        query_ae.join_commune().join_localisation_interministerielle()
 
     if domaine_fonctionnel is not None:
-        query_siret.where_custom(DomaineFonctionnel.code.in_(domaine_fonctionnel))
+        query_ae.where_custom(DomaineFonctionnel.code.in_(domaine_fonctionnel))
 
     if referentiel_programmation is not None:
-        query_siret.where_custom(ReferentielProgrammation.code.in_(referentiel_programmation))
+        query_ae.where_custom(ReferentielProgrammation.code.in_(referentiel_programmation))
 
     if source_region is not None:
-        query_siret.where_custom(FinancialAe.source_region == source_region)
+        query_ae.where_custom(FinancialAe.source_region == source_region)
 
-    page_result = query_siret.where_annee(annee).options_select_load().do_paginate(limit, page_number)
+    type_beneficiaires_conditions = []
+    if types_beneficiaires is not None:
+        type_beneficiaires_conditions.append(CategorieJuridique.type.in_(types_beneficiaires))
+    if types_beneficiaires is not None and "autres" in types_beneficiaires:
+        type_beneficiaires_conditions.append(CategorieJuridique.type == None)
+
+    query_ae.where_custom(or_(*type_beneficiaires_conditions))
+
+    if tags is not None:
+        _tags = map(_sanitize_tag_fullname_for_db, tags)
+        fullnamein = Tags.fullname.in_(_tags)
+        query_ae.where_custom(FinancialAe.tags.any(fullnamein))
+
+    page_result = query_ae.where_annee(annee).options_select_load().do_paginate(limit, page_number)
     return page_result
 
 
@@ -201,3 +260,22 @@ def _check_file(fichier, columns_name):
 
 def _sanitize_source_region(source_region):
     return source_region.lstrip("0")
+
+
+def _sanitize_tag_fullname_for_db(tag: str):
+    """Convertit les noms de tags reçu de l'API en fullname"""
+    if not ":" in tag:
+        return tag + ":"
+    return tag
+
+
+def _delete_cp(annee: int, source_region: str):
+    """
+    Supprimes CP d'une année comptable
+    :param annee:
+    :param source_region:
+    :return:
+    """
+    stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.source_region == source_region)
+    db.session.execute(stmt)
+    db.session.commit()

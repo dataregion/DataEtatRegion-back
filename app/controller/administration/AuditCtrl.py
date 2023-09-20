@@ -2,6 +2,7 @@ import sqlalchemy
 from flask import current_app
 
 from flask_restx import Namespace, Resource, fields
+from flask_restx._http import HTTPStatus
 from marshmallow_jsonschema import JSONSchema
 from sqlalchemy.exc import NoResultFound
 
@@ -36,7 +37,7 @@ pagination_with_model = api.model(
 
 @api.errorhandler(KeyError)
 def handle_type_not_exist(e):
-    return ErrorController("Type inconnue").to_json(), 400
+    return ErrorController("Type inconnue").to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.route("/<type>")
@@ -61,7 +62,7 @@ class Audit(Resource):
         page_result = db.paginate(stmt, per_page=query_param.limit, page=query_param.page_number, error_out=False)
 
         if page_result.items == []:
-            return "", 204
+            return "", HTTPStatus.NO_CONTENT
 
         schema_many = AuditUpdateDataSchema(many=True)
         result = schema_many.dump(page_result.items)
@@ -69,7 +70,7 @@ class Audit(Resource):
         return {
             "items": result,
             "pageInfo": Pagination(page_result.total, page_result.page, page_result.per_page).to_json(),
-        }, 200
+        }, HTTPStatus.OK
 
 
 @api.route("/<type>/last")
@@ -87,4 +88,4 @@ class AuditLastImport(Resource):
         if result is None:
             raise NoResultFound()
 
-        return {"date": result.isoformat()}, 200
+        return {"date": result.isoformat()}, HTTPStatus.OK

@@ -3,6 +3,7 @@ from flask_restx import Api, Namespace
 
 from app.controller.ref_controller.RefController import build_ref_controller
 from app.controller.ref_controller.RefCrte import api as crte_api
+from app.controller.ref_controller.RefTags import api as api_tags
 from app.controller.ref_controller.RefLocalisationInterministerielle import api as api_loc_interministerielle
 from app.models.refs.arrondissement import Arrondissement
 
@@ -12,8 +13,9 @@ from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.models.refs.groupe_marchandise import GroupeMarchandise
 from app.models.refs.ministere import Ministere
+from app.models.refs.qpv import Qpv
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
-from app.controller.ref_controller.LoginController import api as api_auth
+from app.controller.utils.LoginController import api as api_auth
 from app.models.refs.siret import Siret
 
 api_ref = Blueprint("api_ref", __name__)
@@ -82,6 +84,16 @@ api_ref_beneficiaire = build_ref_controller(
     cond_opt=(Siret.denomination,),
 )
 
+api_ref_qpv = build_ref_controller(
+    Qpv,
+    Namespace(
+        name="Quartier Prioritaire de la politique de la ville",
+        path="/qpv",
+        description="API pour lister les QPV en France",
+    ),
+    cond_opt=(Qpv.label_commune,),
+)
+
 
 api.add_namespace(api_auth)
 
@@ -95,3 +107,5 @@ api.add_namespace(api_groupe_marchandise)
 api.add_namespace(crte_api)
 api.add_namespace(api_ref_arrondissement)
 api.add_namespace(api_ref_beneficiaire)
+api.add_namespace(api_tags)
+api.add_namespace(api_ref_qpv)

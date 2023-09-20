@@ -1,6 +1,7 @@
 from flask import jsonify, current_app, request
 from flask_restx import Namespace, Resource
 from flask_pyoidc import OIDCAuthentication
+from flask_restx._http import HTTPStatus
 
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
@@ -9,11 +10,17 @@ from app.controller.financial_data.schema_model import register_financial_ae_sch
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
-from app.models.financial.FinancialAe import FinancialAeSchema
+from app.models.financial.FinancialAe import FinancialAeSchema, FinancialCpSchema
 from app.services.authentication.connected_user import ConnectedUser
 from app.services.authentication.exceptions import InvalidTokenError, NoCurrentRegion
 from app.services.code_geo import BadCodeGeoException
-from app.services.financial_data import import_ae, search_financial_data_ae, get_financial_ae
+from app.services.financial_data import (
+    import_ae,
+    search_financial_data_ae,
+    get_financial_ae,
+    get_financial_cp_of_ae,
+    get_annees_ae,
+)
 
 api = Namespace(name="Engagement", path="/", description="Api de  gestion des AE des données financières de l'état")
 
@@ -37,26 +44,28 @@ parser_get.add_argument(
     "theme", type=str, action="split", help="Le libelle theme (si code_programme est renseigné, le theme est ignoré)."
 )
 parser_get.add_argument("siret_beneficiaire", type=str, action="split", help="Code siret d'un beneficiaire.")
+parser_get.add_argument("types_beneficiaires", type=str, action="split", help="Types de bénéficiaire.")
 parser_get.add_argument("annee", type=int, action="split", help="L'année comptable.")
 parser_get.add_argument("domaine_fonctionnel", type=str, action="split", help="Le(s) code(s) du domaine fonctionnel.")
 parser_get.add_argument(
     "referentiel_programmation", type=str, action="split", help="Le(s) code(s) du référentiel de programmation."
 )
+parser_get.add_argument("tags", type=str, action="split", help="Le(s) tag(s) à inclure", required=False)
 
 
 @api.errorhandler(BadCodeGeoException)
 def handle_error_input_parameter(e: BadCodeGeoException):
-    return ErrorController(e.message).to_json(), 400
+    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.errorhandler(NoCurrentRegion)
-def handle_invalid_token(e: NoCurrentRegion):
-    return ErrorController("Aucune region n'est associée à l'utilisateur.").to_json(), 400
+def handle_no_current_region(e: NoCurrentRegion):
+    return ErrorController("Aucune region n'est associée à l'utilisateur.").to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.errorhandler(InvalidTokenError)
 def handle_invalid_token(e: InvalidTokenError):
-    return ErrorController("Token invalide.").to_json(), 400
+    return ErrorController("Token invalide.").to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.route("/ae")
@@ -86,7 +95,7 @@ class FinancialAe(Resource):
         task = import_ae(file_ae, source_region, int(data["annee"]), force_update, user.username)
         return jsonify(
             {
-                "status": f"Fichier récupéré. Demande d`import des engaments des données fiancières de l'état en cours (taches asynchrone id = {task.id}"
+                "status": f"Fichier récupéré. Demande d`import des engaments des données fiancières de l'état en cours (taches asynchrone id = {task.id})"
             }
         )
 
@@ -110,7 +119,7 @@ class FinancialAe(Resource):
         return {
             "items": result,
             "pageInfo": Pagination(page_result.total, page_result.page, page_result.per_page).to_json(),
-        }, 200
+        }, HTTPStatus.OK
 
 
 @api.route("/ae/<id>")
@@ -127,8 +136,45 @@ class GetFinancialAe(Resource):
         result = get_financial_ae(int(id))
 
         if result is None:
-            return "", 204
+            return "", HTTPStatus.NO_CONTENT
 
         financial_ae = FinancialAeSchema().dump(result)
 
-        return financial_ae, 200
+        return financial_ae, HTTPStatus.OK
+
+
+@api.route("/ae/<id>/cp")
+@api.doc(model=model_financial_ae_single_api)
+class GetFinancialCpOfAe(Resource):
+    """
+    Récupére les infos d'engagements en fonction de son identifiant technique
+    :return:
+    """
+
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def get(self, id: str):
+        result = get_financial_cp_of_ae(int(id))
+
+        if result is None:
+            return "", 204
+
+        financial_cp = FinancialCpSchema(many=True).dump(result)
+
+        return financial_cp, 200
+
+
+@api.route("/ae/annees")
+class GetYears(Resource):
+    """
+    Récupére la liste de toutes les années pour lesquelles on a des montants (engagés ou payés)
+    :return:
+    """
+
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def get(self):
+        annees = get_annees_ae()
+        if annees is None:
+            return "", HTTPStatus.NO_CONTENT
+        return annees, HTTPStatus.OK

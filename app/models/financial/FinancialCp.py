@@ -1,8 +1,9 @@
 from datetime import datetime
 from dataclasses import dataclass
 
+from marshmallow import fields
 from sqlalchemy import Column, String, ForeignKey, Integer, DateTime, Float, UniqueConstraint
-from app import db
+from app import db, ma
 from app.models.financial import FinancialData
 
 
@@ -107,3 +108,26 @@ class FinancialCp(FinancialData, db.Model):
             "localisation_interministerielle",
             "montant",
         ]
+
+
+class FinancialCpSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = FinancialCp
+        exclude = (
+            "id",
+            "id_ae",
+            "n_ej",
+            "n_poste_ej",
+            "annee",
+            "compte_budgetaire",
+            "contrat_etat_region",
+            "date_derniere_operation_dp",
+            "file_import_lineno",
+            "file_import_taskid",
+            "updated_at",
+            "created_at",
+        )
+
+    n_dp = fields.String()
+    montant = fields.Float()
+    date_base_dp = fields.String()

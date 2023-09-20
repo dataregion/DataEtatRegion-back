@@ -10,6 +10,7 @@ __all__ = (
     "code_programme",
     "domaine_fonctionnel",
     "categorie_juridique",
+    "qpv",
     "siret",
     "region",
     "arrondissement",
