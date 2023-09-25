@@ -94,6 +94,7 @@ class BuilderStatementFinancial:
             self._stmt.join(Ae.ref_siret.and_(Siret.code.in_(siret))) if siret is not None else self._stmt.join(Siret)
         )
         self._stmt = self._stmt.join(Siret.ref_categorie_juridique)
+        self._stmt = self._stmt.join(Siret.ref_qpv)
         return self
 
     def where_annee(self, annee: list):

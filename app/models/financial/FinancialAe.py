@@ -245,6 +245,27 @@ class ProgrammeField(fields.Field):
         return {"label": obj.ref_programme.label, "code": code, "theme": obj.ref_programme.label_theme}
 
 
+class QpvField(fields.Field):
+    """Field QPV"""
+
+    def _jsonschema_type_mapping(self):
+        return {
+            "type": "object",
+            "properties": {
+                "code": {"type": "string"},
+                "label": {"type": "string"},
+            },
+        }
+
+    def _serialize(self, code: String, attr, obj: FinancialAe, **kwargs):
+        if code is None:
+            return {}
+        return {
+            "code": code,
+            "label": obj.ref_siret.ref_qpv.label,
+        }
+
+
 class SiretField(fields.Field):
     """Field Siret"""
 
@@ -255,6 +276,7 @@ class SiretField(fields.Field):
                 "nom_beneficiare": {"type": "string"},
                 "code": {"type": "string"},
                 "categorie_juridique": {"type": "string"},
+                "qpv": {"type": "object", "nullable": True},
             },
         }
 
@@ -265,6 +287,10 @@ class SiretField(fields.Field):
             "nom_beneficiare": obj.ref_siret.denomination,
             "code": code,
             "categorie_juridique": obj.ref_siret.type_categorie_juridique,
+            "qpv": {
+                "code": obj.ref_siret.ref_qpv.code,
+                "label": obj.ref_siret.ref_qpv.label,
+            },
         }
 
 
