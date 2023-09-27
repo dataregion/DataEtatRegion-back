@@ -269,7 +269,9 @@ class SiretField(fields.Field):
             "qpv": {
                 "code": obj.ref_siret.ref_qpv.code,
                 "label": obj.ref_siret.ref_qpv.label,
-            } if obj.ref_siret.ref_qpv != None else None,
+            }
+            if obj.ref_siret.ref_qpv != None
+            else None,
         }
 
 
