@@ -15,6 +15,7 @@ from ..models.refs.groupe_marchandise import GroupeMarchandise
 from ..models.refs.localisation_interministerielle import LocalisationInterministerielle
 from ..models.refs.referentiel_programmation import ReferentielProgrammation
 from ..models.refs.siret import Siret
+from ..models.refs.qpv import Qpv
 from ..models.refs.theme import Theme
 
 __all__ = ("BadCodeGeoException", "BuilderStatementFinancial")
@@ -93,8 +94,7 @@ class BuilderStatementFinancial:
         self._stmt = (
             self._stmt.join(Ae.ref_siret.and_(Siret.code.in_(siret))) if siret is not None else self._stmt.join(Siret)
         )
-        self._stmt = self._stmt.join(Siret.ref_categorie_juridique)
-        self._stmt = self._stmt.join(Siret.ref_qpv)
+        self._stmt = self._stmt.join(Siret.ref_categorie_juridique).join(Siret.ref_qpv, isouter=True)
         return self
 
     def where_annee(self, annee: list):
