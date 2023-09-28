@@ -18,6 +18,7 @@ from app.models.refs.commune import Commune
 from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.models.refs.siret import Siret
+from app.models.refs.qpv import Qpv
 from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
 from app.services import BuilderStatementFinancialCp
@@ -146,6 +147,7 @@ def search_ademe(
         else query.join(Siret, Ademe.ref_siret_beneficiaire)
     )
     query = query.join(Siret.ref_categorie_juridique)
+    query = query.join(Siret.ref_qpv, isouter=True)
 
     # utilisation du builder
     query_ademe = BuilderStatementFinancial(query)
