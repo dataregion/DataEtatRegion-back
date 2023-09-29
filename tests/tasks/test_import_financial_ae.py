@@ -46,7 +46,7 @@ def test_import_import_file_ae(mock_subtask):
 
 def test_import_new_line_ae(database, session):
     # AJout Somme positive
-    data = '{"montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105755","n_poste_ej":5,"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200017","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
+    data = '{"date_replication":"10.01.2023","montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105755","n_poste_ej":5,"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200017","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
     # DO
     with patch(
         "app.services.siret.update_siret_from_api_entreprise",

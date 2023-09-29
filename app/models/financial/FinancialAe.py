@@ -46,6 +46,7 @@ class FinancialAe(FinancialData, db.Model):
 
     # autre colonnes
     date_modification_ej: datetime = Column(DateTime, nullable=False)  # date issue du fichier Chorus
+    date_replication: datetime = Column(DateTime, nullable=False)  # Date de création de l'EJ
     compte_budgetaire: str = Column(String(255), nullable=False)
     contrat_etat_region: str = Column(String(255))
     annee: int = Column(Integer, nullable=False)  # annee de l'AE chorus
@@ -81,7 +82,7 @@ class FinancialAe(FinancialData, db.Model):
         self.update_attribute(kwargs)
 
     def __setattr__(self, key, value):
-        if key == "date_modification_ej" and isinstance(value, str):
+        if (key == "date_modification_ej" or key == "date_replication") and isinstance(value, str):
             value = datetime.strptime(value, "%d.%m.%Y")
 
         super().__setattr__(key, value)
@@ -188,6 +189,7 @@ class FinancialAe(FinancialData, db.Model):
             "centre_couts",
             "referentiel_programmation",
             "n_ej",
+            "date_replication",
             "n_poste_ej",
             "date_modification_ej",
             "fournisseur_titulaire",
