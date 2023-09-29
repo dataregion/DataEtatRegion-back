@@ -46,7 +46,7 @@ class FinancialAe(FinancialData, db.Model):
 
     # autre colonnes
     date_modification_ej: datetime = Column(DateTime, nullable=False)  # date issue du fichier Chorus
-    date_replication: datetime = Column(DateTime, nullable=False)  # Date de création de l'EJ
+    date_replication: datetime = Column(DateTime, nullable=True)  # Date de création de l'EJ
     compte_budgetaire: str = Column(String(255), nullable=False)
     contrat_etat_region: str = Column(String(255))
     annee: int = Column(Integer, nullable=False)  # annee de l'AE chorus
