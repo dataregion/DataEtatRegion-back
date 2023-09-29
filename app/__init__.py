@@ -3,6 +3,7 @@
 import logging
 
 import yaml
+from app.utilities import pretty_printer
 from flask import Flask
 from flask_caching import Cache
 from flask_marshmallow import Marshmallow
@@ -49,6 +50,9 @@ def create_app_base(
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     logging.getLogger().setLevel(logging.INFO)
+
+    # Pretty printer SQL
+    pretty_printer.pre_startup_logconf()
 
     # Instantiate Flask
     app = Flask(__name__)
