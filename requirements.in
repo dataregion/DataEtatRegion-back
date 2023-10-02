@@ -22,6 +22,7 @@ marshmallow-jsonschema~=0.13
 sqlalchemy~=2.0
 psycopg~=3.1
 psycopg-binary~=3.1
+sqlparse ~= 0.4
 
 pyyaml~=6.0
 pandas~=2.0
