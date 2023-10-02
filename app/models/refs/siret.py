@@ -27,7 +27,7 @@ class Siret(Audit, db.Model):
     naf = Column(JSONVariant, nullable=True)
 
     ref_commune = relationship("Commune", lazy="select")
-    ref_qpv = relationship("Qpv", lazy="select")
+    ref_qpv = relationship("Qpv", lazy="joined")
     ref_categorie_juridique = relationship("CategorieJuridique", lazy="select", uselist=False)
     type_categorie_juridique = association_proxy("ref_categorie_juridique", "type")
 
