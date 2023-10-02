@@ -14,12 +14,8 @@ class SAFormatter(logging.Formatter):
         return super().format(record)
 
 
-def pre_startup_logconf():
+def setup():
     format = "%(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(level=logging.INFO, force=True, format=format)
-
-    logging.info("Debug mode enabled 🐛")
-
     formatter = SAFormatter(fmt=format)
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)

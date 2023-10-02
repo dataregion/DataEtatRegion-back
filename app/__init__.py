@@ -52,7 +52,7 @@ def create_app_base(
     logging.getLogger().setLevel(logging.INFO)
 
     # Pretty printer SQL
-    pretty_printer.pre_startup_logconf()
+    pretty_printer.setup()
 
     # Instantiate Flask
     app = Flask(__name__)
