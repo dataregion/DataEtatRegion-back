@@ -1,15 +1,19 @@
 from marshmallow import fields
 from sqlalchemy import Column, String
+from sqlalchemy.orm import relationship
 
 from app import db, ma
 from app.models.common.Audit import Audit
+from app.models.refs.arrondissement import Arrondissement
 
 
 class Commune(Audit, db.Model):
     __tablename__ = "ref_commune"
     id = db.Column(db.Integer, primary_key=True)
+
     code: str = Column(String, unique=True, nullable=False)
     label_commune: str = Column(String)
+
     code_crte: str = Column(String, nullable=True)
     label_crte: str = Column(String)
 
@@ -24,6 +28,7 @@ class Commune(Audit, db.Model):
 
     # FK
     code_arrondissement: str = Column(String, db.ForeignKey("ref_arrondissement.code"), nullable=True)
+    ref_arrondissement = relationship("Arrondissement", lazy="joined")
 
 
 class CommuneSchema(ma.SQLAlchemyAutoSchema):

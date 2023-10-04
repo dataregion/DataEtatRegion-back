@@ -67,10 +67,45 @@ class CommonField(fields.Field):
         return {"type": "object", "properties": {"label": {"type": "string"}, "code": {"type": "string"}}}
 
 
-class CommuneField(CommonField):
+class CommuneField(fields.Field):
     """Field Commune"""
+
+    def _jsonschema_type_mapping(self):
+        return {
+            "type": "object",
+            "properties": {
+                "code": {"type": "string"},
+                "label": {"type": "string"},
+                "code_region": {"type": "string"},
+                "label_region": {"type": "string"},
+                "code_departement": {"type": "string"},
+                "label_departement": {"type": "string"},
+                "code_epci": {"type": "string"},
+                "label_epci": {"type": "string"},
+                "code_crte": {"type": "string"},
+                "label_crte": {"type": "string"},
+                "arrondissement": {"type": "object", "nullable": True},
+            },
+        }
 
     def _serialize(self, value: Siret, attr, obj, **kwargs):
         if value is None:
             return {}
-        return {"label": value.ref_commune.label_commune, "code": value.ref_commune.code}
+        return {
+            "code": value.ref_commune.code,
+            "label": value.ref_commune.label_commune,
+            "code_region": value.ref_commune.code_region,
+            "label_region": value.ref_commune.label_region,
+            "code_departement": value.ref_commune.code_departement,
+            "label_departement": value.ref_commune.label_departement,
+            "code_epci": value.ref_commune.code_epci,
+            "label_epci": value.ref_commune.label_epci,
+            "code_crte": value.ref_commune.code_crte,
+            "label_crte": value.ref_commune.label_crte,
+            "arrondissement": {
+                "code": value.ref_commune.ref_arrondissement.code,
+                "label": value.ref_commune.ref_arrondissement.label,
+            }
+            if value.ref_commune.ref_arrondissement is not None
+            else None,
+        }

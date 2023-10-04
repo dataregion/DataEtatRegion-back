@@ -225,8 +225,7 @@ class BuilderStatementFinancial:
             .load_only(Commune.label_commune, Commune.code),
             contains_eager(Ae.ref_siret)
             .load_only(Siret.code, Siret.denomination)
-            .contains_eager(Siret.ref_commune, alias=self._alias_commune_siret)
-            .load_only(Commune.label_commune, Commune.code),
+            .contains_eager(Siret.ref_commune, alias=self._alias_commune_siret),
             contains_eager(Ae.ref_siret)
             .contains_eager(Siret.ref_categorie_juridique)
             .load_only(CategorieJuridique.type),
