@@ -62,7 +62,7 @@ class BuilderStatementFinancial:
             )
         elif theme is not None:
             self._stmt = self._stmt.join(Ae.ref_programme).join(
-                CodeProgramme.theme_r.and_(Theme.label.in_(theme)), isouter=True
+                CodeProgramme.theme_r.and_(Theme.label.in_(theme))
             )
         else:
             self._stmt = self._stmt.join(Ae.ref_programme).join(CodeProgramme.theme_r, isouter=True)
