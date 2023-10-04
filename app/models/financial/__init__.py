@@ -25,6 +25,9 @@ class FinancialData(Audit):
         if key == "montant":
             value = float(str(value).replace("\U00002013", "-").replace(",", "."))
 
+        if key == "contrat_etat_region":
+            value = self._fix_sharp(value)
+
         if key == "siret":
             value = self._fix_siret(value)
 
@@ -44,6 +47,14 @@ class FinancialData(Audit):
     @abstractmethod
     def should_update(self, new_financial: dict) -> bool:
         pass
+
+    @staticmethod
+    def _fix_sharp(value: str) -> str:
+        # SIRET VIDE
+        if value == "#":
+            return None
+
+        return value
 
     @staticmethod
     def _fix_siret(value: str) -> str:
