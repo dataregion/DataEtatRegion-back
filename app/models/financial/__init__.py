@@ -25,8 +25,11 @@ class FinancialData(Audit):
         if key == "montant":
             value = float(str(value).replace("\U00002013", "-").replace(",", "."))
 
-        if key == "siret":
-            value = self._fix_siret(value)
+        if key == "contrat_etat_region" or key == "siret":
+            value = self._fix_sharp(value)
+
+        if key == "siret" and value is not None:
+            value = self._fix_length_siret(value)
 
         super().__setattr__(key, value)
 
@@ -46,11 +49,16 @@ class FinancialData(Audit):
         pass
 
     @staticmethod
-    def _fix_siret(value: str) -> str:
-        # SIRET VIDE
+    def _fix_sharp(value: str) -> str:
+        # CHAMP VIDE
         if value == "#":
             return None
 
+        return value
+
+    @staticmethod
+    def _fix_length_siret(value: str) -> str:
+        # SIRET VIDE
         if len(value) < 14:
             nb_zeros_a_ajouter = 14 - len(value)
             value = "0" * nb_zeros_a_ajouter + str(value)
