@@ -159,6 +159,8 @@ class BuilderStatementFinancial:
                 self._alias_commune_interministerielle, LocalisationInterministerielle.commune, isouter=True
             )
             match type_geo:
+                case TypeCodeGeo.REGION:
+                    return self._where_geo_region(list_code_geo, source_region)
                 case TypeCodeGeo.DEPARTEMENT:
                     return self._where_geo_departement(list_code_geo, source_region)
                 case TypeCodeGeo.EPCI:
@@ -274,6 +276,24 @@ class BuilderStatementFinancial:
         subquery = subquery.where(or_(*where_clause))
         self._stmt = self._stmt.where(
             self._alias_commune_siret.code_departement.in_(list_code_geo)
+            | Ae.localisation_interministerielle.in_(subquery)
+        )
+        return self
+
+    def _where_geo_region(self, list_code_geo: list, source_region: str):
+        """
+        Filtre code geo region
+        :param list_code_geo:
+        :param source_region:
+        :return:
+        """
+        subquery = db.select(LocalisationInterministerielle.code).join(LocalisationInterministerielle.commune)
+        where_clause = []
+        for code_geo in list_code_geo:
+            where_clause.append(LocalisationInterministerielle.code.ilike(f"N{code_geo}%"))
+        subquery = subquery.where(or_(*where_clause))
+        self._stmt = self._stmt.where(
+            self._alias_commune_siret.code_region.in_(list_code_geo)
             | Ae.localisation_interministerielle.in_(subquery)
         )
         return self

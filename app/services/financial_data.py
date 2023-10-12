@@ -9,6 +9,7 @@ from app import db
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
 from app.models.audit.AuditUpdateData import AuditUpdateData
 from app.models.enums.DataType import DataType
+from app.models.enums.TypeCodeGeo import TypeCodeGeo
 from app.models.financial.Ademe import Ademe
 
 from app.models.financial.FinancialCp import FinancialCp
@@ -186,6 +187,7 @@ def search_financial_data_ae(
     domaine_fonctionnel: list = None,
     referentiel_programmation: list = None,
     source_region: str = None,
+    niveau_geo: str = None,
     code_geo: list = None,
     tags: list[str] = None,
     page_number=1,
@@ -201,8 +203,8 @@ def search_financial_data_ae(
     )
 
     if code_geo is not None:
-        (type_geo, list_code_geo) = BuilderCodeGeo().build_list_code_geo(code_geo)
-        query_ae.where_geo_ae(type_geo, list_code_geo, source_region)
+        #(type_geo, list_code_geo) = BuilderCodeGeo().build_list_code_geo(code_geo)
+        query_ae.where_geo_ae(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
     else:
         query_ae.join_commune().join_localisation_interministerielle()
 

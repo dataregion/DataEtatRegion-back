@@ -50,7 +50,7 @@ class CodeGeo:
 
 class BuilderCodeGeo:
     @staticmethod
-    def build_list_code_geo(list_code: [str]) -> (TypeCodeGeo, [str]):
+    def build_list_code_geo(niveau_geo: str, list_code: [str]) -> (TypeCodeGeo, [str]):
         """
         Construit une liste d'objets CodeGeo à partir d'une liste de codes géographiques
         :param list_code: liste des codes géographiques

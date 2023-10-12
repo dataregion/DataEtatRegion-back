@@ -30,6 +30,7 @@ auth: OIDCAuthentication = current_app.extensions["auth"]
 
 parser_get = get_pagination_parser(default_limit=5000)
 parser_get.add_argument("code_programme", type=str, action="split", help="le code programme (BOP)")
+parser_get.add_argument("niveau_geo", type=str, help="le niveau géographique")
 parser_get.add_argument(
     "code_geo",
     type=str,
