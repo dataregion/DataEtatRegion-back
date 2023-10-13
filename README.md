@@ -5,7 +5,7 @@
 </h1>
 
 <p align="center">
-    Gestion des API nocode pour le projet Regate Num Data Etat<br/>
+    Gestion des API pour le projet Regate Num Data Etat<br/>
 </p>
 
 <div align="center">
@@ -23,8 +23,7 @@
 
 Ce projet contient une suite d'API REST développées avec Flask-RESTx et Python 3.11. 
 Ces API permettent de gérer des utilisateurs Keycloak, en les activant ou en les désactivant. 
-Elles permettent également d'interroger des outils nocode tels que NocoDb et d'intégrer les fichiers 
-Chorus de l'état pour recouper les données.
+Elles permettent également d'intégrer les fichiers Chorus de l'état pour recouper les données.
 
 # Pour le développement
 
@@ -39,23 +38,6 @@ Copier le fichier [oidc_template.yml](./config/oidc_template.yml) en config.yml.
 ```
 cp config/oidc_template.yml config/oidc.yml
 ```
-
-## Remplacer les variables
-
-| Nom de la variable        |                                      Description                                      |
-| :------------------------ | :-----------------------------------------------------------------------------------: |
-| DEBUG                     |                           Active ou désactive le mode debug                           |
-| SQLALCHEMY_DATABASE_URI   |                   URL de connexion à la base de données PostgreSQL                    |
-| CELERY_BROKER_URL         |                            URL du broker Redis pour Celery                            |
-| result_backend            | URL de connexion à la base de données PostgreSQL pour stocker les résultats de Celery |
-| UPLOAD_FOLDER             |            Dossier où sont stockés les fichiers envoyés par l'utilisateur             |
-| KEYCLOAK_ADMIN_URL        |                          URL de l'administration de Keycloak                          |
-| KEYCLOAK_ADMIN_SECRET_KEY |                     Clé secrète pour l'administration de Keycloak                     |
-| KEYCLOAK_ADMIN_REALM      |                                   Realm de Keycloak                                   |
-| SECRET_KEY                |                           Clé secrète utilisée par keycloak                           |
-| NOCODB_URL                |                                     URL de NocoDB                                     |
-| NOCODB_PROJECT            |               Liste des projets de NocoDB à utiliser  avec le token api               |
-
 
 ## Installation
 

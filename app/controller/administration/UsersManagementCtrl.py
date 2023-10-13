@@ -67,7 +67,7 @@ class UsersManagement(Resource):
         keycloak_admin = make_or_get_keycloack_admin()
         users = []
         for group_id in groups_id:
-            users = users + keycloak_admin.get_group_members(group_id, {"briefRepresentation": True})
+            users = users + keycloak_admin.get_group_members(group_id, {"briefRepresentation": False})
 
         if only_disable:
             logging.debug("[USERS] get only disabled users")

@@ -15,6 +15,7 @@ from ..models.refs.groupe_marchandise import GroupeMarchandise
 from ..models.refs.localisation_interministerielle import LocalisationInterministerielle
 from ..models.refs.referentiel_programmation import ReferentielProgrammation
 from ..models.refs.siret import Siret
+from ..models.refs.qpv import Qpv
 from ..models.refs.theme import Theme
 
 __all__ = ("BadCodeGeoException", "BuilderStatementFinancial")
@@ -60,9 +61,7 @@ class BuilderStatementFinancial:
                 CodeProgramme.theme_r, isouter=True
             )
         elif theme is not None:
-            self._stmt = self._stmt.join(Ae.ref_programme).join(
-                CodeProgramme.theme_r.and_(Theme.label.in_(theme)), isouter=True
-            )
+            self._stmt = self._stmt.join(Ae.ref_programme).join(CodeProgramme.theme_r.and_(Theme.label.in_(theme)))
         else:
             self._stmt = self._stmt.join(Ae.ref_programme).join(CodeProgramme.theme_r, isouter=True)
 
@@ -93,7 +92,7 @@ class BuilderStatementFinancial:
         self._stmt = (
             self._stmt.join(Ae.ref_siret.and_(Siret.code.in_(siret))) if siret is not None else self._stmt.join(Siret)
         )
-        self._stmt = self._stmt.join(Siret.ref_categorie_juridique)
+        self._stmt = self._stmt.join(Siret.ref_categorie_juridique).join(Siret.ref_qpv, isouter=True)
         return self
 
     def where_annee(self, annee: list):
@@ -224,8 +223,7 @@ class BuilderStatementFinancial:
             .load_only(Commune.label_commune, Commune.code),
             contains_eager(Ae.ref_siret)
             .load_only(Siret.code, Siret.denomination)
-            .contains_eager(Siret.ref_commune, alias=self._alias_commune_siret)
-            .load_only(Commune.label_commune, Commune.code),
+            .contains_eager(Siret.ref_commune, alias=self._alias_commune_siret),
             contains_eager(Ae.ref_siret)
             .contains_eager(Siret.ref_categorie_juridique)
             .load_only(CategorieJuridique.type),

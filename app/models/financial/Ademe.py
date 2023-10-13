@@ -83,6 +83,7 @@ class SiretField(fields.Field):
                 "nom": {"type": "string"},
                 "code": {"type": "string"},
                 "categorie_juridique": {"type": "string"},
+                "qpv": {"type": "object", "nullable": True},
             },
         }
 
@@ -93,6 +94,12 @@ class SiretField(fields.Field):
             "nom_beneficiare": obj.ref_siret_beneficiaire.denomination,
             "code": siret,
             "categorie_juridique": obj.ref_siret_beneficiaire.type_categorie_juridique,
+            "qpv": {
+                "code": obj.ref_siret_beneficiaire.ref_qpv.code,
+                "label": obj.ref_siret_beneficiaire.ref_qpv.label,
+            }
+            if obj.ref_siret_beneficiaire.ref_qpv is not None
+            else None,
         }
 
 
