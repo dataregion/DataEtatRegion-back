@@ -23,7 +23,6 @@ from app.models.refs.qpv import Qpv
 from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
 from app.services import BuilderStatementFinancialCp
-from app.services.code_geo import BuilderCodeGeo
 from app.services.file_service import check_file_and_save
 
 
@@ -126,6 +125,7 @@ def get_annees_ae():
 
 def search_ademe(
     siret_beneficiaire: list = None,
+    niveau_geo: str = None,
     code_geo: list = None,
     annee: list = None,
     tags: list[str] = None,
@@ -135,8 +135,7 @@ def search_ademe(
     query = db.select(Ademe).options(
         contains_eager(Ademe.ref_siret_beneficiaire)
         .load_only(Siret.code, Siret.denomination)
-        .contains_eager(Siret.ref_commune)
-        .load_only(Commune.label_commune, Commune.code),
+        .contains_eager(Siret.ref_commune),
         contains_eager(Ademe.ref_siret_beneficiaire)
         .contains_eager(Siret.ref_categorie_juridique)
         .load_only(CategorieJuridique.type),
@@ -153,9 +152,8 @@ def search_ademe(
     # utilisation du builder
     query_ademe = BuilderStatementFinancial(query)
 
-    if code_geo is not None:
-        (type_geo, list_code_geo) = BuilderCodeGeo().build_list_code_geo(code_geo)
-        query_ademe.where_geo(type_geo, list_code_geo)
+    if niveau_geo is not None and code_geo is not None:
+        query_ademe.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo)
     else:
         query_ademe.join_commune()
 
@@ -202,8 +200,7 @@ def search_financial_data_ae(
         .join_filter_programme_theme(code_programme, theme)
     )
 
-    if code_geo is not None:
-        #(type_geo, list_code_geo) = BuilderCodeGeo().build_list_code_geo(code_geo)
+    if niveau_geo is not None and code_geo is not None:
         query_ae.where_geo_ae(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
     else:
         query_ae.join_commune().join_localisation_interministerielle()

@@ -190,6 +190,8 @@ class BuilderStatementFinancial:
             self._stmt = self._stmt.join(Siret.ref_commune)
 
             match type_geo:
+                case TypeCodeGeo.REGION:
+                    self._stmt = self._stmt.where(Commune.code_region.in_(list_code_geo))
                 case TypeCodeGeo.DEPARTEMENT:
                     self._stmt = self._stmt.where(Commune.code_departement.in_(list_code_geo))
                 case TypeCodeGeo.EPCI:
