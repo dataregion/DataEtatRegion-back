@@ -295,8 +295,7 @@ class BuilderStatementFinancial:
             where_clause.append(LocalisationInterministerielle.code.ilike(f"N{code_geo}%"))
         subquery = subquery.where(or_(*where_clause))
         self._stmt = self._stmt.where(
-            self._alias_commune_siret.code_region.in_(list_code_geo)
-            | Ae.localisation_interministerielle.in_(subquery)
+            self._alias_commune_siret.code_region.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
         )
         return self
 
