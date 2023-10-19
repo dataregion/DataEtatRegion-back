@@ -20,3 +20,5 @@
 /tests/meta_audit.db
 /tests/*.csv
 /tests/.coverage
+
+.tool-versions
