@@ -1,15 +1,22 @@
 """empty message
 
 Revision ID: cf35dd89ce53
-Revises: d1a470f3416f
+Revises: f6eb760678c1
 Create Date: 2023-08-08 14:02:11.303706
 
+Cette revision a été déplacée.
+Autrefois intercalée entre france2030 et les tags. 
+Elle nécessite en fait les qpv. 
+Nous l'avons donc déplacée entre qpv et date_replication
+
+La première date 20230901 est fausse, c'est pour qu'elle apparaisse au bon endroit dans le listing de dossier
+La seconde date 20230808 est sa date d'application théorique (bien qu'elle ai été appliquée ensuite)
 """
 from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "cf35dd89ce53"
-down_revision = "72cb30957126"
+down_revision = "f6eb760678c1"
 branch_labels = None
 depends_on = None
 
