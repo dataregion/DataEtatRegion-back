@@ -23,6 +23,7 @@ from app.models.refs.qpv import Qpv
 from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
 from app.services import BuilderStatementFinancialCp
+from app.services.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
 
 
@@ -154,6 +155,8 @@ def search_ademe(
 
     if niveau_geo is not None and code_geo is not None:
         query_ademe.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo)
+    elif bool(niveau_geo) ^ bool(code_geo):
+        raise NiveauCodeGeoException("Les paramètres niveau_geo et code_geo doivent être fournis ensemble.")
     else:
         query_ademe.join_commune()
 
@@ -202,6 +205,8 @@ def search_financial_data_ae(
 
     if niveau_geo is not None and code_geo is not None:
         query_ae.where_geo_ae(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
+    elif bool(niveau_geo) ^ bool(code_geo):
+        raise NiveauCodeGeoException("Les paramètres niveau_geo et code_geo doivent être fournis ensemble.")
     else:
         query_ae.join_commune().join_localisation_interministerielle()
 
