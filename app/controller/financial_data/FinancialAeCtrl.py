@@ -12,7 +12,6 @@ from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
 from app.models.financial.FinancialAe import FinancialAeSchema, FinancialCpSchema
 from app.servicesapp.authentication import ConnectedUser, InvalidTokenError, NoCurrentRegion
-from app.servicesapp.exceptions.code_geo import BadCodeGeoException
 from app.servicesapp.financial_data import (
     import_ae,
     search_financial_data_ae,
@@ -51,11 +50,6 @@ parser_get.add_argument(
     "referentiel_programmation", type=str, action="split", help="Le(s) code(s) du référentiel de programmation."
 )
 parser_get.add_argument("tags", type=str, action="split", help="Le(s) tag(s) à inclure", required=False)
-
-
-@api.errorhandler(BadCodeGeoException)
-def handle_error_input_parameter(e: BadCodeGeoException):
-    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.errorhandler(NoCurrentRegion)
