@@ -1,16 +1,18 @@
-import os
 from unittest.mock import patch, MagicMock, call, ANY
 
 from app.models.financial.France2030 import France2030
 from app.models.refs.siret import Siret
 from app.tasks.financial.import_france_2030 import import_file_france_2030, import_line_france_2030
+from tests import DATA_PATH
+
+_data = DATA_PATH / "data"
 
 
 @patch("app.tasks.financial.import_france_2030.subtask")
 def test_import_import_file(mock_subtask: MagicMock):
     # DO
     with patch("shutil.move", return_value=None):
-        import_file_france_2030(os.path.abspath(os.getcwd()) + "/data/france_2030/france_2030.xlsx")
+        import_file_france_2030(_data / "france_2030" / "france_2030.xlsx")
 
     mock_subtask.assert_has_calls(
         [

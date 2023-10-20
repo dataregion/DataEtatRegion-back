@@ -1,4 +1,3 @@
-import os
 from unittest.mock import patch, call
 import json
 
@@ -9,6 +8,7 @@ from app.models.financial.FinancialCp import FinancialCp
 from app.models.refs.siret import Siret
 from app.tasks.financial.import_financial import import_file_ae_financial
 from app.tasks.financial.import_financial import import_line_financial_ae
+from tests import DATA_PATH
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -20,11 +20,15 @@ def cleanup_after_tests(database):
     database.session.commit()
 
 
+_chorus = DATA_PATH / "data" / "chorus"
+_chorus_split = _chorus / "split"
+
+
 @patch("app.tasks.financial.import_financial.subtask")
 def test_import_import_file_ae(mock_subtask):
     # DO
     with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
-        import_file_ae_financial(os.path.abspath(os.getcwd()) + "/data/chorus/split/chorus_ae.csv", "35", 2023, False)
+        import_file_ae_financial(_chorus_split / "chorus_ae.csv", "35", 2023, False)
 
     mock_subtask.assert_has_calls(
         [

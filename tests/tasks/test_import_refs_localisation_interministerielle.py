@@ -4,11 +4,13 @@ from unittest.mock import patch, call
 
 import pytest
 
-from app import db
 from app.models.refs.commune import Commune
 from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_ref_localisation_interministerielle
+from tests import DATA_PATH
+
+_data = DATA_PATH / "data"
 
 
 @pytest.fixture(scope="function")
@@ -34,7 +36,7 @@ def add_comune_angers(database):
 @patch("app.tasks.import_refs_tasks.subtask")
 def test_import_refs_localisation_interministerielle(mock_subtask):
     import_refs_task(
-        os.path.abspath(os.getcwd()) + "/data/LOC_INTERMIN_20230126.csv",
+        _data / "LOC_INTERMIN_20230126.csv",
         "LocalisationInterministerielle",
         ["code", "niveau", "code_departement", "commune", "site", "code_parent", "label"],
         usecols=[0, 1, 3, 5, 6, 9, 10],

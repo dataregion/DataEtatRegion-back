@@ -1,17 +1,19 @@
 import json
-import os
 import pytest
 from unittest.mock import patch, call
 
 from app.models.refs.centre_couts import CentreCouts
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_one_ref_default
+from tests import DATA_PATH
+
+_data = DATA_PATH / "data"
 
 
 @patch("app.tasks.import_refs_tasks.subtask")
 def test_import_refs_centre_cout(mock_subtask):
     import_refs_task(
-        os.path.abspath(os.getcwd()) + "/data/centre_cout.xlsx",
+        _data / "centre_cout.xlsx",
         "CentreCouts",
         ["code", "description", "label", "code_postal", "ville"],
         is_csv=False,
