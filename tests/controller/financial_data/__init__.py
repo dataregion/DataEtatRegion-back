@@ -21,6 +21,7 @@ def patching_roles(roles=None):
             return "user@domain.fr"
 
     with patch(
-        "app.servicesapp.authentication.connected_user.ConnectedUser.from_current_token_identity", return_value=_Mocked()
+        "app.servicesapp.authentication.connected_user.ConnectedUser.from_current_token_identity",
+        return_value=_Mocked(),
     ):
         yield
