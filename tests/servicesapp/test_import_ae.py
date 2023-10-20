@@ -9,6 +9,7 @@ from tests import DATA_PATH
 
 _chorus_errors = DATA_PATH / "data" / "chorus" / "errors"
 
+
 def test_import_import_file_ae_file_not_allowed():
     # DO
     sample_pdf = _chorus_errors / "sample.pdf"

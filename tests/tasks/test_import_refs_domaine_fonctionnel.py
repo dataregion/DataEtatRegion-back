@@ -10,6 +10,7 @@ from tests import DATA_PATH
 
 _data = DATA_PATH / "data"
 
+
 def test_import_refs_with_missing_code_column():
     """Test that import_refs raises MissingCodeColumns exception when 'Code' column is missing."""
     with pytest.raises(MissingCodeColumns):

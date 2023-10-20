@@ -11,8 +11,9 @@ from app.tasks.financial.import_financial import import_file_cp_financial
 from app.tasks.financial.import_financial import import_line_financial_cp
 from tests import DATA_PATH
 
-_chorus = DATA_PATH / "data" / "chorus" 
+_chorus = DATA_PATH / "data" / "chorus"
 _chorus_split = _chorus / "split"
+
 
 def _next_tech_info_fn():
     index = 0

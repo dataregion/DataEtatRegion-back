@@ -19,8 +19,10 @@ def cleanup_after_tests(database):
     database.session.execute(database.delete(FinancialAe))
     database.session.commit()
 
-_chorus = DATA_PATH / "data" / "chorus" 
-_chorus_split = _chorus / "split" 
+
+_chorus = DATA_PATH / "data" / "chorus"
+_chorus_split = _chorus / "split"
+
 
 @patch("app.tasks.financial.import_financial.subtask")
 def test_import_import_file_ae(mock_subtask):

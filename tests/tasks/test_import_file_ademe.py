@@ -6,7 +6,8 @@ from app.models.refs.siret import Siret
 from app.tasks.financial.import_financial import import_line_ademe, import_file_ademe
 from tests import DATA_PATH
 
-_ademe = DATA_PATH / "data" / "ademe" 
+_ademe = DATA_PATH / "data" / "ademe"
+
 
 @patch("app.tasks.financial.import_financial.subtask")
 def test_import_file_ademe(mock_subtask: MagicMock):

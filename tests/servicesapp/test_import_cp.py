@@ -10,8 +10,9 @@ from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
 from app.servicesapp.financial_data import import_cp
 from tests import DATA_PATH
 
-_chorus = DATA_PATH / "data" / "chorus" 
+_chorus = DATA_PATH / "data" / "chorus"
 _chorus_errors = _chorus / "errors"
+
 
 def test_import_import_file_cp_file_not_allowed():
     # DO
@@ -31,7 +32,7 @@ def test_import_file_cp_with_file_ae():
 
 
 def test_import_file_cp_ok(app, database, session):
-    filename = str( _chorus / "financial_cp.csv" )
+    filename = str(_chorus / "financial_cp.csv")
     with patch(
         "app.tasks.files.file_task.split_csv_files_and_run_task", return_value=None
     ):  # ne pas supprimer le fichier de tests :)

@@ -3,8 +3,9 @@ from tests import DATA_PATH
 
 from tests.controller.financial_data import patching_roles
 
-_chorus = DATA_PATH / "data" / "chorus" 
+_chorus = DATA_PATH / "data" / "chorus"
 _chorus_errors = _chorus / "errors"
+
 
 def test_missing_arguments(test_client):
     file_content = b"test content"

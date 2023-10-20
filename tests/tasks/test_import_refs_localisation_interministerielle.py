@@ -12,6 +12,7 @@ from tests import DATA_PATH
 
 _data = DATA_PATH / "data"
 
+
 @pytest.fixture(scope="function")
 def add_comune_belley(database):
     commune_belley = Commune(**{"code": "01034", "label_commune": "Belley", "code_departement": "01"})

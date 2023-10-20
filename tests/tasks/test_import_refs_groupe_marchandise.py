@@ -5,6 +5,7 @@ from tests import DATA_PATH
 
 _data = DATA_PATH / "data"
 
+
 @patch("app.tasks.import_refs_tasks.subtask")
 def test_import_refs_groupe_marchandise_pce(mock_subtask):
     import_refs_task(

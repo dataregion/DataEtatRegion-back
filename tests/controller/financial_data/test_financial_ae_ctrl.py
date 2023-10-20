@@ -5,6 +5,7 @@ from tests.controller.financial_data import patching_roles
 
 _chorus_errors = DATA_PATH / "data" / "chorus" / "errors"
 
+
 def test_missing_arguments(test_client):
     file_content = b"test content"
     file = io.BytesIO(file_content)

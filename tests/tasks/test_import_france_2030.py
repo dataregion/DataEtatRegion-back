@@ -7,6 +7,7 @@ from tests import DATA_PATH
 
 _data = DATA_PATH / "data"
 
+
 @patch("app.tasks.financial.import_france_2030.subtask")
 def test_import_import_file(mock_subtask: MagicMock):
     # DO
