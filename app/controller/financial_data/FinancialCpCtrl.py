@@ -4,7 +4,7 @@ from flask_restx import Namespace, Resource
 from app.controller.Decorators import check_permission
 from app.controller.financial_data import check_param_source_annee_import, parser_import, check_file_import
 from app.models.enums.AccountRole import AccountRole
-from app.services.authentication.connected_user import ConnectedUser
+from app.servicesapp.authentication import ConnectedUser
 from app.servicesapp.financial_data import import_cp
 
 api = Namespace(
