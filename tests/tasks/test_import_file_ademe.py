@@ -1,17 +1,18 @@
-import os
 from datetime import date
 from unittest.mock import patch, call, ANY, MagicMock
 
 from app.models.financial.Ademe import Ademe
 from app.models.refs.siret import Siret
 from app.tasks.financial.import_financial import import_line_ademe, import_file_ademe
+from tests import DATA_PATH
 
+_ademe = DATA_PATH / "data" / "ademe" 
 
 @patch("app.tasks.financial.import_financial.subtask")
 def test_import_file_ademe(mock_subtask: MagicMock):
     # DO
     with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
-        import_file_ademe(os.path.abspath(os.getcwd()) + "/data/ademe/ademe.csv")
+        import_file_ademe(_ademe / "ademe.csv")
 
     mock_subtask.assert_has_calls(
         [

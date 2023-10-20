@@ -1,5 +1,4 @@
 import json
-import os
 import pytest
 from unittest.mock import patch, call
 
@@ -7,7 +6,9 @@ from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.services.import_refs import ReferentielNotFound, MissingCodeColumns
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_one_ref_default
+from tests import DATA_PATH
 
+_data = DATA_PATH / "data"
 
 def test_import_refs_with_missing_code_column():
     """Test that import_refs raises MissingCodeColumns exception when 'Code' column is missing."""
@@ -30,7 +31,7 @@ def test_import_line_ref_with_referential_not_found():
 @patch("app.tasks.import_refs_tasks.subtask")
 def test_import_refs_domaine_fonctionnel(mock_subtask):
     import_refs_task(
-        os.path.abspath(os.getcwd()) + "/data/Calculette_Chorus_test.xlsx",
+        _data / "Calculette_Chorus_test.xlsx",
         "DomaineFonctionnel",
         ["code", "label"],
         is_csv=False,

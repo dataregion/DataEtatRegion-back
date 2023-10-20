@@ -1,5 +1,4 @@
 import json
-import os
 from unittest.mock import patch, call, ANY
 
 import pytest
@@ -10,7 +9,10 @@ from app.models.financial.FinancialCp import FinancialCp
 from app.models.refs.siret import Siret
 from app.tasks.financial.import_financial import import_file_cp_financial
 from app.tasks.financial.import_financial import import_line_financial_cp
+from tests import DATA_PATH
 
+_chorus = DATA_PATH / "data" / "chorus" 
+_chorus_split = _chorus / "split"
 
 def _next_tech_info_fn():
     index = 0
@@ -39,7 +41,7 @@ def cleanup_after_tests():
 def test_import_file_cp(mock_subtask):
     # DO
     with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
-        import_file_cp_financial(os.path.abspath(os.getcwd()) + "/data/chorus/split/financial_cp.csv", "35", 2023)
+        import_file_cp_financial(_chorus_split / "financial_cp.csv", "35", 2023)
 
     mock_subtask.assert_has_calls(
         [

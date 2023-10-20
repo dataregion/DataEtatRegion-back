@@ -1,17 +1,18 @@
 import json
-import os
 import pytest
 from unittest.mock import patch, call
 
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_one_ref_default
+from tests import DATA_PATH
 
+_data = DATA_PATH / "data"
 
 @patch("app.tasks.import_refs_tasks.subtask")
 def test_import_refs_programme_financement(mock_subtask):
     import_refs_task(
-        os.path.abspath(os.getcwd()) + "/data/Calculette_Chorus_test.xlsx",
+        _data / "Calculette_Chorus_test.xlsx",
         "ReferentielProgrammation",
         ["code", "label"],
         is_csv=False,

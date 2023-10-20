@@ -1,13 +1,14 @@
-import os
 from unittest.mock import patch, call
 
 from app.tasks.import_refs_tasks import import_refs_task
+from tests import DATA_PATH
 
+_data = DATA_PATH / "data"
 
 @patch("app.tasks.import_refs_tasks.subtask")
 def test_import_refs_groupe_marchandise_pce(mock_subtask):
     import_refs_task(
-        os.path.abspath(os.getcwd()) + "/data/Calculette_Chorus_test.xlsx",
+        _data / "Calculette_Chorus_test.xlsx",
         "GroupeMarchandise",
         ["domaine", "segment", "code", "label", "description", "code_pce", "label_pce"],
         is_csv=False,
