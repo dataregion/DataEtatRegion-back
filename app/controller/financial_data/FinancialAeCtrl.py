@@ -14,7 +14,7 @@ from app.models.financial.FinancialAe import FinancialAeSchema, FinancialCpSchem
 from app.services.authentication.connected_user import ConnectedUser
 from app.services.authentication.exceptions import InvalidTokenError, NoCurrentRegion
 from app.services.code_geo import BadCodeGeoException
-from app.services.financial_data import (
+from app.servicesapp.financial_data import (
     import_ae,
     search_financial_data_ae,
     get_financial_ae,

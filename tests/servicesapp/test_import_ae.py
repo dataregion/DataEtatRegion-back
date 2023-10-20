@@ -5,7 +5,7 @@ import pytest
 from werkzeug.datastructures import FileStorage
 
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
-from app.services.financial_data import import_ae
+from app.servicesapp.financial_data import import_ae
 
 
 def test_import_import_file_ae_file_not_allowed():

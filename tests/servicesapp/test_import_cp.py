@@ -8,7 +8,7 @@ from werkzeug.datastructures import FileStorage
 from app.models.audit.AuditUpdateData import AuditUpdateData
 from app.models.enums.DataType import DataType
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
-from app.services.financial_data import import_cp
+from app.servicesapp.financial_data import import_cp
 
 
 def test_import_import_file_cp_file_not_allowed():

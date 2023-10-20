@@ -9,7 +9,7 @@ from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
 from app.services.authentication.connected_user import ConnectedUser
-from app.services.financial_data import import_france_2030
+from app.servicesapp.financial_data import import_france_2030
 
 api = Namespace(name="France2030", path="/", description="Api de gestion des données France 2030")
 
