@@ -11,8 +11,8 @@ from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
 from app.models.financial.Ademe import AdemeSchema
-from app.services.authentication.connected_user import ConnectedUser
-from app.services.financial_data import import_ademe, search_ademe, get_ademe
+from app.servicesapp.authentication import ConnectedUser
+from app.servicesapp.financial_data import import_ademe, search_ademe, get_ademe
 
 
 api = Namespace(name="Ademe", path="/", description="Api de gestion des données ADEME")

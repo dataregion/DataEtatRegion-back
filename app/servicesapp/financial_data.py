@@ -23,7 +23,7 @@ from app.models.refs.qpv import Qpv
 from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
 from app.services import BuilderStatementFinancialCp
-from app.services.code_geo import NiveauCodeGeoException
+from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
 
 

@@ -12,7 +12,7 @@ from app.controller.Decorators import check_permission
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
-from app.services.authentication.connected_user import ConnectedUser
+from app.servicesapp.authentication import ConnectedUser
 
 api = Namespace(name="users", path="/users", description="API de gestion des utilisateurs")
 parser_get = get_pagination_parser()

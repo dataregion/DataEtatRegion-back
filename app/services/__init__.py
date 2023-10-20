@@ -1,8 +1,13 @@
+"""
+Package de services (techniques)
+
+Appelé par divers composants de l'application, que ce soit d'autres services, des tâches asynchrones, des controlleurs etc..
+"""
+
 from sqlalchemy import Select, or_, Column, desc
 from sqlalchemy.orm import selectinload, contains_eager, aliased
 
-from .code_geo import BadCodeGeoException
-from .. import db
+from app.database import db
 from ..models.enums.TypeCodeGeo import TypeCodeGeo
 from ..models.refs.categorie_juridique import CategorieJuridique
 from ..models.refs.code_programme import CodeProgramme
@@ -18,7 +23,7 @@ from ..models.refs.siret import Siret
 from ..models.refs.qpv import Qpv
 from ..models.refs.theme import Theme
 
-__all__ = ("BadCodeGeoException", "BuilderStatementFinancial")
+__all__ = "BuilderStatementFinancial"
 
 
 class BuilderStatementFinancial:

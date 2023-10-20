@@ -10,7 +10,7 @@ from werkzeug.datastructures import FileStorage
 from app.controller.Decorators import check_permission
 from app.exceptions.exceptions import FileNotAllowedException
 from app.models.enums.AccountRole import AccountRole
-from app.services.authentication.connected_user import ConnectedUser
+from app.servicesapp.authentication import ConnectedUser
 from app.services.import_refs import import_ref_calculette
 
 api = Namespace(
