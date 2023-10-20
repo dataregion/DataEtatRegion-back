@@ -23,7 +23,7 @@ from ..models.refs.siret import Siret
 from ..models.refs.qpv import Qpv
 from ..models.refs.theme import Theme
 
-__all__ = ("BuilderStatementFinancial")
+__all__ = "BuilderStatementFinancial"
 
 
 class BuilderStatementFinancial:
