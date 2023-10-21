@@ -27,7 +27,7 @@ Elles permettent également d'intégrer les fichiers Chorus de l'état pour reco
 
 # Pour le développement
 
-## Fichier de configuration
+## Fichiers de configuration
 
 Copier le fichier [config_template.yml](./config/config_template.yml) en config.yml.
 ```
@@ -39,6 +39,7 @@ Copier le fichier [oidc_template.yml](./config/oidc_template.yml) en config.yml.
 cp config/oidc_template.yml config/oidc.yml
 ```
 
+
 ## Installation
 
 *Initialisez un venv python*. Puis:
@@ -49,6 +50,19 @@ pip install pip-tools
 pip-compile --resolver=backtracking && pip-compile --resolver=backtracking dev-requirements.in
 pip install -r requirements.txt -r dev-requirements.txt
 ```
+
+## Pre commit hooks
+
+Il est possible d'installer des pre-commit hook prédéfinis (grâce à [https://pre-commit.com/](https://pre-commit.com/)).
+Ils sont configurés ici: [.pre-commit-config.yaml](./.pre-commit-config.yaml)
+
+Après l'installation du venv et des dépendances de dev, executer:
+
+```bash
+pre-commit install
+```
+
+activera les pre-commit hooks
 
 ## Mode Api
 
