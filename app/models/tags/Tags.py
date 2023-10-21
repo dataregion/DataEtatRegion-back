@@ -63,13 +63,13 @@ class TagsSchema(ma.SQLAlchemyAutoSchema):
 
 #region app model
 @dataclass
-class Tag:
+class TagVO:
     """Représente un tag (i.e: un type et une valeur). C'est un value object"""
     type: str
     value: str | None
 
     @property
-    def db_fullname(self):
+    def fullname(self):
         """
         fullname d'un tag correctement formatté pour requête avec la bdd
         voir :meth:`app.models.tags.Tags.fullname`
@@ -81,6 +81,10 @@ class Tag:
     
     @staticmethod
     def from_prettyname(pretty: str):
+        """
+        Parse un nom de tag
+        warning: pretty ne devient pas forcément le fullname du tag
+        """
         fullname = _sanitize_tag_prettyname(pretty)
         split = fullname.split(":")
         type = split[0] or None
@@ -89,20 +93,20 @@ class Tag:
         if type is None:
             raise ValueError("Error during parsing tag prettyname. Type should not be empty")
 
-        return Tag.from_typevalue(type, value)
+        return TagVO.from_typevalue(type, value)
     
     @staticmethod
-    def from_typevalue(type: str, value: str | None):
-        return Tag(type, value)
+    def from_typevalue(type: str, value: str | None = None):
+        return TagVO(type, value)
     
     @staticmethod
     def sanitize_str(pretty: str):
         """
         Corrige les prettyname des tags pour respecter 
-        la convention stricte de représentation des noms de tags.
+        la convention plus stricte de représentation des noms de tags.
         """
-        tag = Tag.from_prettyname(pretty)
-        return tag.db_fullname
+        tag = TagVO.from_prettyname(pretty)
+        return tag.fullname
 
 
 def _sanitize_tag_prettyname(pretty_name: str):

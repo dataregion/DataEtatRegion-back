@@ -2,7 +2,7 @@ import logging
 
 from app import celeryapp, db
 from app.models.financial.FinancialAe import FinancialAe as Ae
-from app.services.tags import select_tag, ApplyTags
+from app.services.tags import select_tags, ApplyTags, TagVO
 from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
 
@@ -23,7 +23,7 @@ def apply_tags_fond_vert(self, tag_type: str, _tag_value: str | None):
     :return:
     """
     _logger.info("[TAGS][Fond vert] Application auto du tags fond vert")
-    tag = select_tag(tag_type)
+    tag = select_tags(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][Fond vert] Récupération du tag fond vert id : {tag.id}")
 
     apply_task = ApplyTags(tag)
@@ -40,7 +40,7 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None):
     :return:
     """
     _logger.info("[TAGS][Relance] Application auto du tags relance")
-    tag = select_tag(tag_type)
+    tag = select_tags(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag relance id : {tag.id}")
 
     stmt_programme_relance = (
@@ -66,7 +66,7 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None):
     :return:
     """
     _logger.info("[TAGS][DETR] Application auto du tags DETR")
-    tag = select_tag(tag_type)
+    tag = select_tags(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag DETR id : {tag.id}")
 
     stmt_ref_programmation = (
@@ -92,7 +92,7 @@ def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None):
     :return:
     """
     _logger.info("[TAGS][CPER] Application auto du tags CPER 2015-20")
-    tag = select_tag(tag_type, tag_value)
+    tag = select_tags(TagVO.from_typevalue(tag_type, tag_value))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
 
     apply_task = ApplyTags(tag)
@@ -109,7 +109,7 @@ def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None):
     :return:
     """
     _logger.info("[TAGS][CPER] Application auto du tags CPER 2021-27")
-    tag = select_tag(tag_type, tag_value)
+    tag = select_tags(TagVO.from_typevalue(tag_type, tag_value))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
 
     apply_task = ApplyTags(tag)
