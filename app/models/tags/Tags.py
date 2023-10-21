@@ -1,4 +1,5 @@
 import dataclasses
+from dataclasses import dataclass
 from typing import List
 
 from sqlalchemy import CheckConstraint, Column, String, Integer, UniqueConstraint, ForeignKey, Boolean, Text, func
@@ -9,6 +10,7 @@ from app import db, ma
 from app.models.common.Audit import Audit
 
 
+#region: db model
 class Tags(Audit, db.Model):
     __tablename__ = "tags"
     id = db.Column(Integer, primary_key=True)
@@ -56,3 +58,56 @@ class TagsSchema(ma.SQLAlchemyAutoSchema):
             "id",
             "enable_rules_auto",
         ) + Tags.exclude_schema()
+
+#endregion
+
+#region app model
+@dataclass
+class Tag:
+    """Représente un tag (i.e: un type et une valeur). C'est un value object"""
+    type: str
+    value: str | None
+
+    @property
+    def db_fullname(self):
+        """
+        fullname d'un tag correctement formatté pour requête avec la bdd
+        voir :meth:`app.models.tags.Tags.fullname`
+        """
+        type = self.type or ''
+        value = self.value or ''
+        pretty = f"{type}:{value}"
+        return pretty
+    
+    @staticmethod
+    def from_prettyname(pretty: str):
+        fullname = _sanitize_tag_prettyname(pretty)
+        split = fullname.split(":")
+        type = split[0] or None
+        value = split[1] or None
+
+        if type is None:
+            raise ValueError("Error during parsing tag prettyname. Type should not be empty")
+
+        return Tag.from_typevalue(type, value)
+    
+    @staticmethod
+    def from_typevalue(type: str, value: str | None):
+        return Tag(type, value)
+    
+    @staticmethod
+    def sanitize_str(pretty: str):
+        """
+        Corrige les prettyname des tags pour respecter 
+        la convention stricte de représentation des noms de tags.
+        """
+        tag = Tag.from_prettyname(pretty)
+        return tag.db_fullname
+
+
+def _sanitize_tag_prettyname(pretty_name: str):
+    if ":" not in pretty_name:
+        return pretty_name + ":"
+    return pretty_name
+
+#endregion
