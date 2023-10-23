@@ -11,7 +11,6 @@ run_tests:
     - pip install -r requirements.txt
   script:
     - pip install pytest pytest-cov
-    - cd tests
     - coverage run -m pytest
     - coverage report
     - coverage xml

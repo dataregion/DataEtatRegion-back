@@ -21,7 +21,11 @@ extra_config = {
 }
 
 
-test_app = create_app_base(extra_config_settings=extra_config)
+test_app = create_app_base(
+    config_filep="tests/config/config.yml",
+    oidc_config_filep="tests/config/oidc.yml",
+    extra_config_settings=extra_config,
+)
 
 
 @pytest.fixture(scope="session")

@@ -38,7 +38,13 @@ def create_app_api():
 
 
 def create_app_base(
-    oidc_enable=True, expose_endpoint=True, init_celery=True, extra_config_settings=None, **kwargs
+    oidc_enable=True,
+    expose_endpoint=True,
+    init_celery=True,
+    config_filep="config/config.yml",
+    oidc_config_filep="config/oidc.yml",
+    extra_config_settings=None,
+    **kwargs,
 ) -> Flask:
     """Create a Flask application."""
 
@@ -56,7 +62,7 @@ def create_app_base(
 
     # Instantiate Flask
     app = Flask(__name__)
-    read_config(app, extra_config_settings)
+    read_config(app, config_filep, extra_config_settings)
 
     db.init_app(app)
     ma.init_app(app)
@@ -72,7 +78,7 @@ def create_app_base(
     # init oidc
     if oidc_enable:
         try:
-            _load_oidc_config(app)
+            _load_oidc_config(app, oidc_config_filep)
         except Exception:
             logging.exception("Impossible de charger la configuration OIDC. Merci de vérifier votre configuration.")
             raise
@@ -87,9 +93,9 @@ def create_app_base(
     return app
 
 
-def read_config(app, extra_config_settings):
+def read_config(app, config_filep: str, extra_config_settings: dict):
     try:
-        with open("config/config.yml") as yamlfile:
+        with open(config_filep) as yamlfile:
             config_data = yaml.load(yamlfile, Loader=yaml.FullLoader)
     except Exception:
         config_data = {}
@@ -108,10 +114,10 @@ def read_config(app, extra_config_settings):
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
-def _load_oidc_config(app):
+def _load_oidc_config(app, oidc_config_filep: str):
     app.config.update(OIDC_REDIRECT_URI="*")
 
-    oidc_conf = _read_oidc_config()
+    oidc_conf = _read_oidc_config(oidc_config_filep)
     provider_name = next(iter(oidc_conf))
 
     client_metadata_kwargs = oidc_conf[provider_name]["client_metadata"]
@@ -130,8 +136,8 @@ def _load_oidc_config(app):
     app.extensions["auth"] = auth
 
 
-def _read_oidc_config() -> dict:
-    with open("config/oidc.yml") as yamlfile:
+def _read_oidc_config(oidc_config_filep: str) -> dict:
+    with open(oidc_config_filep) as yamlfile:
         config_data = yaml.load(yamlfile, Loader=yaml.FullLoader)
         return config_data
 
