@@ -14,7 +14,7 @@ def test_import_import_file_ae_file_not_allowed():
     # DO
     sample_pdf = _chorus_errors / "sample.pdf"
     with open(sample_pdf, "rb") as f:
-        with pytest.raises(FileNotAllowedException, match=r"pas au format \{\'csv\'\}$"):
+        with pytest.raises(FileNotAllowedException, match=r"n'a pas l'extension requise"):
             import_ae(FileStorage(f), "35", 2023, False)
 
     sample_csv = _chorus_errors / "sample.csv"

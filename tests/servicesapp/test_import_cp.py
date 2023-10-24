@@ -17,7 +17,7 @@ _chorus_errors = _chorus / "errors"
 def test_import_import_file_cp_file_not_allowed():
     # DO
     with open(_chorus_errors / "sample.pdf", "rb") as f:
-        with pytest.raises(FileNotAllowedException, match=r"pas au format \{\'csv\'\}$"):
+        with pytest.raises(FileNotAllowedException, match=r"n'a pas l'extension requise"):
             import_cp(FileStorage(f), "35", 2023)
 
     with open(_chorus_errors / "sample.csv", "rb") as f:

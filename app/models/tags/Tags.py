@@ -10,7 +10,7 @@ from app import db, ma
 from app.models.common.Audit import Audit
 
 
-#region: db model
+# region: db model
 class Tags(Audit, db.Model):
     __tablename__ = "tags"
     id = db.Column(Integer, primary_key=True)
@@ -59,12 +59,15 @@ class TagsSchema(ma.SQLAlchemyAutoSchema):
             "enable_rules_auto",
         ) + Tags.exclude_schema()
 
-#endregion
 
-#region app model
+# endregion
+
+
+# region app model
 @dataclass
 class TagVO:
     """Représente un tag (i.e: un type et une valeur). C'est un value object"""
+
     type: str
     value: str | None
 
@@ -74,11 +77,11 @@ class TagVO:
         fullname d'un tag correctement formatté pour requête avec la bdd
         voir :meth:`app.models.tags.Tags.fullname`
         """
-        type = self.type or ''
-        value = self.value or ''
+        type = self.type or ""
+        value = self.value or ""
         pretty = f"{type}:{value}"
         return pretty
-    
+
     @staticmethod
     def from_prettyname(pretty: str):
         """
@@ -94,15 +97,15 @@ class TagVO:
             raise ValueError("Error during parsing tag prettyname. Type should not be empty")
 
         return TagVO.from_typevalue(type, value)
-    
+
     @staticmethod
     def from_typevalue(type: str, value: str | None = None):
         return TagVO(type, value)
-    
+
     @staticmethod
     def sanitize_str(pretty: str):
         """
-        Corrige les prettyname des tags pour respecter 
+        Corrige les prettyname des tags pour respecter
         la convention plus stricte de représentation des noms de tags.
         """
         tag = TagVO.from_prettyname(pretty)
@@ -114,4 +117,5 @@ def _sanitize_tag_prettyname(pretty_name: str):
         return pretty_name + ":"
     return pretty_name
 
-#endregion
+
+# endregion

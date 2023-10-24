@@ -4,11 +4,12 @@ from app import db
 from app.models.financial.FinancialAe import FinancialAe as Ae
 from app.models.tags.Tags import TagVO, TagAssociation
 from app.models.tags.Tags import Tags as DbTag
+from sqlalchemy import delete, and_, select
 
 logger = logging.getLogger(__name__)
 
 
-def select_tags(tag: TagVO) -> DbTag:
+def select_tag(tag: TagVO) -> DbTag:
     """
     Retourne l'objet DbTag à partir du type et de la valeur
     :param tag:    un tag value object
@@ -23,6 +24,11 @@ def select_tags(tag: TagVO) -> DbTag:
     return db.session.execute(stmt).scalar_one()
 
 
+def select_tags(tags: list[TagVO]) -> list[DbTag]:
+    db_tags = [select_tag(tag) for tag in tags]
+    return db_tags
+
+
 def _select_ae_having_tags(tag_id: int):
     """
     Retourne la selection d'ae qui ont déjà au moins un tag tag_id appliqué
@@ -33,7 +39,7 @@ def _select_ae_having_tags(tag_id: int):
 
 
 @dataclasses.dataclass
-class ApplyTags:
+class ApplyTagForAutomation:
     tag: DbTag
 
     def apply_tags_ae(self, whereclause):
@@ -46,12 +52,53 @@ class ApplyTags:
         stmt_ae = db.select(Ae.id).where(whereclause).where(Ae.id.not_in(_select_ae_having_tags(self.tag.id)))
         ae_ids = [row[0] for row in db.session.execute(stmt_ae).all()]
 
-        if (
-            ae_ids
-        ):  # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
+        # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
+        if ae_ids:
             for ae_id in ae_ids:
                 db.session.add(TagAssociation(financial_ae=ae_id, tag=self.tag, auto_applied=True))
             db.session.commit()
             logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags")
         else:
             logger.info(f"[TAGS][{self.tag.type}] Aucune nouvelle association détecté")
+
+
+@dataclasses.dataclass
+class ApplyManualTags:
+    tags: list[DbTag]
+
+    def put_on_ae(self, n_ej: str, poste_ej: str):
+        """
+        Annule et remplace les tags associés à un AE identifié par son numero ej et poste ej.
+        """
+        logger.debug(
+            f"Annule et remplace les tags de l'ae(n_ej, poste_ej) = ({n_ej, poste_ej}) pour les tags [{self.tags}])"
+        )
+
+        _ae_n_ej_and_poste_ej_eq = and_(Ae.n_ej == str(n_ej), Ae.n_poste_ej == int(poste_ej))
+
+        delete_stmt = (
+            delete(TagAssociation)
+            .where(_ae_n_ej_and_poste_ej_eq)
+            .where(Ae.id == TagAssociation.financial_ae)
+            .where(TagAssociation.auto_applied == False)
+        )
+
+        result = db.session.execute(delete_stmt)
+        logger.debug(f"Suppression des anciens tags ({result.rowcount} associations)")
+
+        list_ae_stmt = select(Ae).where(_ae_n_ej_and_poste_ej_eq)
+
+        associations = []
+        result = db.session.execute(list_ae_stmt)
+        rows = result.fetchall()
+        for row in rows:
+            ae = row[0]
+            for db_tag in self.tags:
+                association = TagAssociation(financial_ae=ae.id, tag=db_tag, auto_applied=False)
+                associations.append(association)
+
+        logger.debug(f"Creating {len(associations)} associations")
+        for association in associations:
+            db.session.add(association)
+
+        db.session.commit()
