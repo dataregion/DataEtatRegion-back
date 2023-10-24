@@ -25,7 +25,7 @@ PUT_TAGS_CSV_HEADERS = _headers_type(
     tags=[FinancialAeSchema.TAGS_COLUMNAME],
 )
 """Headers CSV nécessaires pour la commande de put des tags"""
-PUT_TAGS_CSV_CHUNKSIZE = 1  # TODO: put to 1000
+PUT_TAGS_CSV_CHUNKSIZE = 1_000
 """Taille du chunk pour la lecture du fichier de commande de maj de tags"""
 PUT_TAGS_CSV_SEPARATOR = "|"
 """Séparateur des valeurs des tags"""

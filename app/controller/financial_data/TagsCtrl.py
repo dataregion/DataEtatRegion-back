@@ -1,10 +1,12 @@
+from http import HTTPStatus
 from flask import current_app, request
 from flask_restx import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
 from flask_pyoidc import OIDCAuthentication
 
 from app.controller.financial_data import check_file_import
-from app.servicesapp.tags import TagsAppService
+from app.controller.utils.Error import ErrorController
+from app.servicesapp.tags import InvalidRequest, TagsAppService
 
 
 api = Namespace(
@@ -19,6 +21,11 @@ append_tags_input.add_argument(
 )
 
 appservice = TagsAppService()
+
+
+@api.errorhandler(InvalidRequest)
+def handle_exception(e):
+    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.route("/maj_ae_tags_from_export")

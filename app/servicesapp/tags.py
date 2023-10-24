@@ -1,6 +1,5 @@
 import logging
 import pandas as pd
-from pathlib import Path
 
 from werkzeug.datastructures import FileStorage
 
@@ -13,7 +12,34 @@ logger = logging.getLogger(__name__)
 class TagsServiceAppException(Exception):
     """Root exception of the tags services"""
 
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+        self.message = "Erreur inconnue"
+
+
+class InvalidRequest(TagsServiceAppException):
+    """Pour les 400"""
+
     pass
+
+
+class InvalidFile(InvalidRequest):
+    """Fichier invalide"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message or "Erreur inconnue"
+
+    pass
+
+
+class InvalidHeadersInFile(InvalidFile):
+    """Header non présent"""
+
+    def __init__(self, headers_to_find: list[str]) -> None:
+        _headers_pretty = " ou ".join(headers_to_find)
+        _message = f"Le fichier ne contient pas de colonne {_headers_pretty}."
+        super().__init__(_message)
 
 
 class TagsAppService:
@@ -21,9 +47,9 @@ class TagsAppService:
         if file is None:
             raise TagsServiceAppException("Aucun fichier n'est founi pour mettre à jour les tags !")
 
-        input_file = check_file_and_save(file, in_unique_folder=True)  # TODO: map exceptions
+        input_file = check_file_and_save(file, in_unique_folder=True)
 
-        _check_csv_has_necessary_headers(input_file)  # TODO: map to 400
+        _check_csv_has_necessary_headers(input_file)
 
         put_tags_to_ae_from_user_export.delay(input_file)
 
@@ -36,6 +62,4 @@ def _check_csv_has_necessary_headers(input_file: str):
         _in_columns = [x in columns for x in header_synonyms]
         _synonym_in_columns = any(_in_columns)
         if not _synonym_in_columns:
-            raise TagsServiceAppException(
-                f"Aucun header parmis {header_synonyms} n'est trouvable dans les headers du fichier."
-            )
+            raise InvalidHeadersInFile(header_synonyms)
