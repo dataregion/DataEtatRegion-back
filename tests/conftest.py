@@ -1,4 +1,5 @@
 import os
+import random
 import pytest
 
 from app import create_app_base, db
@@ -26,6 +27,23 @@ test_app = create_app_base(
     oidc_config_filep="tests/config/oidc.yml",
     extra_config_settings=extra_config,
 )
+
+FAKER_SEED = random.randint(0, 1_000_000)
+
+
+def pytest_addoption(parser):
+    parser.addoption("--seed", action="store")
+
+
+def pytest_report_header(config):
+    global FAKER_SEED
+    o_seed = config.getoption("seed")
+    if o_seed is None:
+        seed = FAKER_SEED
+    else:
+        seed = o_seed
+    FAKER_SEED = int(seed)
+    return f"=== Faker seed: {seed} - Launch with `pytest --seed {seed}` to reproduce"
 
 
 @pytest.fixture(scope="session")
@@ -86,3 +104,14 @@ def session(connections, database, request):
 
     request.addfinalizer(teardown)
     return session
+
+
+#
+# Configuration de faker
+#
+
+
+@pytest.fixture(scope="session", autouse=True)
+def faker_seed():
+    global FAKER_SEED
+    return FAKER_SEED
