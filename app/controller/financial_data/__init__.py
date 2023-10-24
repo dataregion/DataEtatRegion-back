@@ -72,6 +72,7 @@ def check_file_import():
 from app.controller.financial_data.FinancialAeCtrl import api as api_ae
 from app.controller.financial_data.FinancialCpCtrl import api as api_cp
 from app.controller.financial_data.AdemeCtrl import api as api_ademe
+from app.controller.financial_data.TagsCtrl import api as api_tags
 from app.controller.financial_data.France2030 import api as api_france_2030
 from app.controller.utils.LoginController import api as api_auth
 
@@ -93,6 +94,7 @@ model_tags_single_api = register_tags_schemamodel(api)
 
 
 api.add_namespace(api_auth)
+api.add_namespace(api_tags)
 api.add_namespace(api_ae)
 api.add_namespace(api_cp)
 api.add_namespace(api_ademe)

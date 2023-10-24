@@ -188,7 +188,7 @@ class FinancialAe(FinancialData, db.Model):
             "domaine_fonctionnel",
             "centre_couts",
             "referentiel_programmation",
-            "n_ej",
+            COLUMN_NEJ_NAME,
             "date_replication",
             "n_poste_ej",
             "date_modification_ej",
@@ -307,6 +307,9 @@ class LocalisationInterministerielleField(fields.Field):
         }
 
 
+COLUMN_NEJ_NAME = "n_ej"
+
+
 class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = FinancialAe
@@ -317,7 +320,15 @@ class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
             "financial_cp",
         )
 
-    tags = fields.List(fields.Nested(TagsSchema))
+    TAGS_COLUMNAME = "tags"
+    """Nom de la colonne tags"""
+
+    N_EJ_COLUMNAME = "n_ej"
+    """Nom de la colonne numéro EJ"""
+    N_POSTE_EJ_COLUMNNAME = "n_poste_ej"
+    """Nom de la colonne du poste EJ"""
+
+    tags = fields.List(fields.Nested(TagsSchema), attribute=TAGS_COLUMNAME, data_key=TAGS_COLUMNAME)
     montant_ae = fields.Float(attribute="montant_ae_total")
     montant_cp = fields.Float()
     date_cp = fields.String()
@@ -329,7 +340,7 @@ class FinancialAeSchema(ma.SQLAlchemyAutoSchema):
     compte_budgetaire = fields.String()
     contrat_etat_region = fields.String()
     programme = ProgrammeField()
-    n_ej = fields.String()
-    n_poste_ej = fields.Integer()
+    n_ej = fields.String(attribute=N_EJ_COLUMNAME, data_key=N_EJ_COLUMNAME)
+    n_poste_ej = fields.Integer(attribute=N_POSTE_EJ_COLUMNNAME, data_key=N_POSTE_EJ_COLUMNNAME)
     annee = fields.Integer()
     siret = SiretField()

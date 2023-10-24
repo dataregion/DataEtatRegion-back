@@ -70,6 +70,19 @@ activera les pre-commit hooks
 $ FLASK_APP="app:create_app_api" flask run  --host "0.0.0.0"
 ```
 
+## Tests unitaires
+
+Utilisent pytest.
+
+### Faker
+
+La lib faker est utilisé pour certains tests. Afin qu'ils soient reproductibles il est possible de passer un seed au tests via:
+
+`pytest -seed 1234`
+
+Aussi, lors de leur execution, le seed utilisé est affiché.
+
+
 # Utilisation
 
 ## UserManagement
