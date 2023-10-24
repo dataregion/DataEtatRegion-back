@@ -63,13 +63,20 @@ class ApplyTagForAutomation:
 
 
 @dataclasses.dataclass
+class PutOnAeResult:
+    deleted: int
+    created: int
+
+
+@dataclasses.dataclass
 class ApplyManualTags:
     tags: list[DbTag]
 
-    def put_on_ae(self, n_ej: str, poste_ej: str):
+    def put_on_ae(self, n_ej: str, poste_ej: str) -> PutOnAeResult:
         """
         Annule et remplace les tags associés à un AE identifié par son numero ej et poste ej.
         """
+        process_result = PutOnAeResult(0, 0)
         logger.debug(
             f"Annule et remplace les tags de l'ae(n_ej, poste_ej) = ({n_ej, poste_ej}) pour les tags [{self.tags}])"
         )
@@ -85,6 +92,7 @@ class ApplyManualTags:
 
         result = db.session.execute(delete_stmt)
         logger.debug(f"Suppression des anciens tags ({result.rowcount} associations)")
+        process_result.deleted = result.rowcount
 
         list_ae_stmt = select(Ae).where(_ae_n_ej_and_poste_ej_eq)
 
@@ -97,8 +105,11 @@ class ApplyManualTags:
                 association = TagAssociation(financial_ae=ae.id, tag=db_tag, auto_applied=False)
                 associations.append(association)
 
-        logger.debug(f"Creating {len(associations)} associations")
+        len_associations = len(associations)
+        logger.debug(f"Creating {len_associations} associations")
         for association in associations:
             db.session.add(association)
+        process_result.created = len_associations
 
         db.session.commit()
+        return process_result
