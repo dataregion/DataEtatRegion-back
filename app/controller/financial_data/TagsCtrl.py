@@ -30,7 +30,7 @@ def handle_exception(e):
 
 @api.route("/maj_ae_tags_from_export")
 class TagsResource(Resource):
-    # @auth.token_auth("default", scopes_required=["openid"]) # TODO: re enable
+    @auth.token_auth("default", scopes_required=["openid"])
     @check_file_import()
     @api.expect(append_tags_input)
     @api.doc(security="Bearer")
