@@ -275,9 +275,14 @@ class BuilderStatementFinancial:
         :param source_region:
         :return:
         """
-        subquery = db.select(LocalisationInterministerielle.code).join(LocalisationInterministerielle.commune).where(Commune.code_departement.in_(list_code_geo))
+        subquery = (
+            db.select(LocalisationInterministerielle.code)
+            .join(LocalisationInterministerielle.commune)
+            .where(Commune.code_departement.in_(list_code_geo))
+        )
         self._stmt = self._stmt.where(
-            self._alias_commune_siret.code_departement.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
+            self._alias_commune_siret.code_departement.in_(list_code_geo)
+            | Ae.localisation_interministerielle.in_(subquery)
         )
         return self
 
@@ -288,7 +293,11 @@ class BuilderStatementFinancial:
         :param source_region:
         :return:
         """
-        subquery = db.select(LocalisationInterministerielle.code).join(LocalisationInterministerielle.commune).where(Commune.code_region.in_(list_code_geo))
+        subquery = (
+            db.select(LocalisationInterministerielle.code)
+            .join(LocalisationInterministerielle.commune)
+            .where(Commune.code_region.in_(list_code_geo))
+        )
         self._stmt = self._stmt.where(
             self._alias_commune_siret.code_region.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
         )
