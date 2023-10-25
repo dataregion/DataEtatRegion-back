@@ -275,11 +275,11 @@ class BuilderStatementFinancial:
         :param source_region:
         :return:
         """
-        subquery = (
-            db.select(LocalisationInterministerielle.code)
-            .join(LocalisationInterministerielle.commune)
-            .where(Commune.code_departement.in_(list_code_geo))
-        )
+        subquery = db.select(LocalisationInterministerielle.code).join(LocalisationInterministerielle.commune)
+        where_clause = []
+        for code_geo in list_code_geo:
+            where_clause.append(LocalisationInterministerielle.code.ilike(f"N{source_region}{code_geo}%"))
+        subquery = subquery.where(or_(*where_clause, Commune.code_departement.in_(list_code_geo)))
         self._stmt = self._stmt.where(
             self._alias_commune_siret.code_departement.in_(list_code_geo)
             | Ae.localisation_interministerielle.in_(subquery)
@@ -293,11 +293,11 @@ class BuilderStatementFinancial:
         :param source_region:
         :return:
         """
-        subquery = (
-            db.select(LocalisationInterministerielle.code)
-            .join(LocalisationInterministerielle.commune)
-            .where(Commune.code_region.in_(list_code_geo))
-        )
+        subquery = db.select(LocalisationInterministerielle.code).join(LocalisationInterministerielle.commune)
+        where_clause = []
+        for code_geo in list_code_geo:
+            where_clause.append(LocalisationInterministerielle.code.ilike(f"N{code_geo}%"))
+        subquery = subquery.where(or_(*where_clause, Commune.code_region.in_(list_code_geo)))
         self._stmt = self._stmt.where(
             self._alias_commune_siret.code_region.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
         )
