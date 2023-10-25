@@ -8,6 +8,9 @@ __all__ = (
     "TAG_CPER_21_27",
 )
 
+from faker import Faker
+
+
 TAG_FOND_VERT = {
     "type": "Fond vert",
     "value": None,
@@ -56,3 +59,13 @@ TAG_CPER_21_27 = {
     "description": "tag cper",
     "enable_rules_auto": True,
 }
+
+
+def faked_tag_json(faker: Faker):
+    """Génère un JSON représentant un tag random"""
+    return {
+        "type": faker.pystr(),
+        "value": faker.boolean() and faker.pystr() or None,
+        "description": faker.pystr(),
+        "enable_rules_auto": faker.boolean(),
+    }

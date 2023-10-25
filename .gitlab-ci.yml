@@ -9,8 +9,8 @@ run_tests:
   before_script:
     - python --version
     - pip install -r requirements.txt
+    - pip install -r dev-requirements.txt
   script:
-    - pip install pytest pytest-cov
     - coverage run -m pytest
     - coverage report
     - coverage xml

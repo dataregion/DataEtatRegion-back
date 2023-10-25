@@ -18,7 +18,7 @@ DEFAULT_MAX_ROW = 10000  # 10K
 @celery.task(bind=True, name="split_csv_files_and_run_task")
 def split_csv_files_and_run_task(self, fichier: str, task_name: str, csv_options: str, **kwargs):
     """
-    Split un fichier en plusieurs fichiers et autant de tâches autant qu'il y a de fichier
+    Split un fichier en plusieurs fichiers et autant de tâches qu'il y a de fichier
     :param self:
     :param fichier: le fichier à splitter
     :param tastk_name:  le nom de la task à lancer pour chaque fichier

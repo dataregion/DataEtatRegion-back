@@ -15,7 +15,6 @@ from app.models.financial.Ademe import Ademe
 from app.models.financial.FinancialCp import FinancialCp
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.refs.categorie_juridique import CategorieJuridique
-from app.models.refs.commune import Commune
 from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.models.refs.siret import Siret
@@ -23,6 +22,7 @@ from app.models.refs.qpv import Qpv
 from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
 from app.services import BuilderStatementFinancialCp
+from app.models.tags.Tags import TagVO
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
 
@@ -164,7 +164,7 @@ def search_ademe(
         query_ademe.where_custom(db.func.extract("year", Ademe.date_convention).in_(annee))
 
     if tags is not None:
-        _tags = map(_sanitize_tag_fullname_for_db, tags)
+        _tags = map(TagVO.sanitize_str, tags)
         fullnamein = Tags.fullname.in_(_tags)
         query_ademe.where_custom(Ademe.tags.any(fullnamein))
 
@@ -228,7 +228,7 @@ def search_financial_data_ae(
     query_ae.where_custom(or_(*type_beneficiaires_conditions))
 
     if tags is not None:
-        _tags = map(_sanitize_tag_fullname_for_db, tags)
+        _tags = map(TagVO.sanitize_str, tags)
         fullnamein = Tags.fullname.in_(_tags)
         query_ae.where_custom(FinancialAe.tags.any(fullnamein))
 
@@ -266,13 +266,6 @@ def _check_file(fichier, columns_name):
 
 def _sanitize_source_region(source_region):
     return source_region.lstrip("0")
-
-
-def _sanitize_tag_fullname_for_db(tag: str):
-    """Convertit les noms de tags reçu de l'API en fullname"""
-    if not ":" in tag:
-        return tag + ":"
-    return tag
 
 
 def _delete_cp(annee: int, source_region: str):
