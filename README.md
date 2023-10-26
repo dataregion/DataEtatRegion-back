@@ -64,6 +64,14 @@ pre-commit install
 
 activera les pre-commit hooks
 
+## Comment initialiser un script de migration de base
+
+En utilisant flask db migrate. Voici la commande:
+
+```
+env FLASK_APP=app:create_app_migrate flask db migrate -m "Message plus long" --rev-id "20231026_cequefaitlescript"
+```
+
 ## Mode Api
 
 ```bash

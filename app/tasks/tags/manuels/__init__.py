@@ -1,3 +1,4 @@
+import re
 import traceback
 from collections import namedtuple
 import pandas as pd
@@ -28,8 +29,8 @@ PUT_TAGS_CSV_HEADERS = _headers_type(
 """Headers CSV nécessaires pour la commande de put des tags"""
 PUT_TAGS_CSV_CHUNKSIZE = 1_000
 """Taille du chunk pour la lecture du fichier de commande de maj de tags"""
-PUT_TAGS_CSV_SEPARATOR = "|"
-"""Séparateur des valeurs des tags"""
+PUT_TAGS_CSV_SPLIT_REGEX = "[|\s]+"
+"""Regex utilisé pour split les valeurs de tag"""
 
 
 @_celery.task(bind=True, name="put_tags_to_ae_from_user_export")
@@ -55,7 +56,7 @@ def put_tags_to_ae_from_user_export(self, file: str):
             if tags_field is None:
                 tags = []
             else:
-                tags = tags_field.split(PUT_TAGS_CSV_SEPARATOR)
+                tags = re.split(PUT_TAGS_CSV_SPLIT_REGEX, tags_field)
 
             put_tags_to_ae.delay(n_ej, poste_ej, tags)
 
