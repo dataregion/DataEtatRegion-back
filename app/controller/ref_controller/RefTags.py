@@ -7,7 +7,9 @@ api = Namespace(name="API Tags", path="/tags", description="API des tags")
 
 auth = current_app.extensions["auth"]
 
-tags_model = api.model("tags", model={"type": fields.String(), "value": fields.String()})
+tags_model = api.model(
+    "tags", model={"type": fields.String(), "value": fields.String(), "display_name": fields.String()}
+)
 
 
 @api.route("")

@@ -23,7 +23,7 @@ correspondances = [
 ]
 
 display_names_transfomration = [
-    ["fonds-vert", None, "FondsVert"],
+    ["fonds-vert", None, "Fonds vert"],
     ["cper", "2015-20", "CPER:2015-20"],
     ["cper", "2021-27", "CPER:2021-27"],
     ["detr", None, "DETR"],
