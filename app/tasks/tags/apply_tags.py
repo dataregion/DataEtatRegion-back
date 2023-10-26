@@ -10,11 +10,11 @@ _celery = celeryapp.celery
 _logger = logging.getLogger()
 
 
-__all__ = ("apply_tags_fond_vert", "apply_tags_relance", "apply_tags_detr", "apply_tags_cper_2015_20")
+__all__ = ("apply_tags_fonds_vert", "apply_tags_relance", "apply_tags_detr", "apply_tags_cper_2015_20")
 
 
-@_celery.task(bind=True, name="apply_tags_fond_vert")
-def apply_tags_fond_vert(self, tag_type: str, _tag_value: str | None):
+@_celery.task(bind=True, name="apply_tags_fonds_vert")
+def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None):
     """
     Applique les tags Fond Vert
     :param self:

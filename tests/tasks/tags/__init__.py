@@ -12,7 +12,7 @@ from faker import Faker
 
 
 TAG_FOND_VERT = {
-    "type": "Fond vert",
+    "type": "fonds-vert",
     "value": None,
     "description": "Tag auto Fond Vert si programme = 380",
     "enable_rules_auto": True,
@@ -33,7 +33,7 @@ TAG_RELANCE = {
 }
 
 TAG_DETR = {
-    "type": "DETR",
+    "type": "detr",
     "value": None,
     "description": "detr",
     "enable_rules_auto": True,
@@ -47,14 +47,14 @@ TAG_DUMMY = {
 }
 
 TAG_CPER_15_20 = {
-    "type": "CPER",
+    "type": "cper",
     "value": "2015-20",
     "description": "tag cper",
     "enable_rules_auto": True,
 }
 
 TAG_CPER_21_27 = {
-    "type": "CPER",
+    "type": "cper",
     "value": "2021-27",
     "description": "tag cper",
     "enable_rules_auto": True,

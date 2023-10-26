@@ -5,7 +5,7 @@ from ..tags import *
 
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.tags.Tags import TagAssociation, Tags
-from app.tasks.tags.apply_tags import apply_tags_fond_vert
+from app.tasks.tags.apply_tags import apply_tags_fonds_vert
 
 
 @pytest.fixture(scope="function")
@@ -73,7 +73,7 @@ def test_apply_fond_vert_when_no_tag(
     database, insert_financial_ae_for_tag_fond_vert, insert_financial_ae_for_other_tag, tag_fond_vert
 ):
     # DO
-    apply_tags_fond_vert(tag_fond_vert.type, None)
+    apply_tags_fonds_vert(tag_fond_vert.type, None)
 
     # assert
     ## on a bien une association
@@ -98,7 +98,7 @@ def test_should_apply_tag_if_other_tag_associated(
     session.commit()
 
     # DO
-    apply_tags_fond_vert(tag_fond_vert.type, None)
+    apply_tags_fonds_vert(tag_fond_vert.type, None)
 
     # ASSERT
     tag_assocations = (
@@ -135,7 +135,7 @@ def test_should_not_apply_tag_if_already_present(
     session.commit()
 
     # DO
-    apply_tags_fond_vert(tag_fond_vert.type, None)
+    apply_tags_fonds_vert(tag_fond_vert.type, None)
 
     # ASSERT
     tag_assocation = database.session.execute(
