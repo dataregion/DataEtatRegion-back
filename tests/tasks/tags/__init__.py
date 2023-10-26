@@ -15,6 +15,7 @@ TAG_FOND_VERT = {
     "type": "fonds-vert",
     "value": None,
     "description": "Tag auto Fond Vert si programme = 380",
+    "display_name": "Fonds vert",
     "enable_rules_auto": True,
 }
 
@@ -22,6 +23,7 @@ TAG_DISABLE_AUTO = {
     "type": "test",
     "value": None,
     "description": "tag non actif",
+    "display_name": "Test",
     "enable_rules_auto": False,
 }
 
@@ -29,6 +31,7 @@ TAG_RELANCE = {
     "type": "relance",
     "value": None,
     "description": "relance",
+    "display_name": "Relance",
     "enable_rules_auto": True,
 }
 
@@ -36,6 +39,7 @@ TAG_DETR = {
     "type": "detr",
     "value": None,
     "description": "detr",
+    "display_name": "DETR",
     "enable_rules_auto": True,
 }
 
@@ -43,6 +47,7 @@ TAG_DUMMY = {
     "type": "tag_dummy",
     "value": None,
     "description": "tag dummy",
+    "display_name": "Tag dummy",
     "enable_rules_auto": True,
 }
 
@@ -50,6 +55,7 @@ TAG_CPER_15_20 = {
     "type": "cper",
     "value": "2015-20",
     "description": "tag cper",
+    "display_name": "CPER:2015-20",
     "enable_rules_auto": True,
 }
 
@@ -57,6 +63,7 @@ TAG_CPER_21_27 = {
     "type": "cper",
     "value": "2021-27",
     "description": "tag cper",
+    "display_name": "CPER:2021-27",
     "enable_rules_auto": True,
 }
 
