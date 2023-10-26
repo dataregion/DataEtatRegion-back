@@ -17,6 +17,8 @@ class Tags(Audit, db.Model):
     type: str = Column(String(255), nullable=False)
     value: str = Column(String(255))
     description: str = Column(Text, nullable=True)
+    display_name: str = Column(String(255), nullable=False)
+    """Nom du tag destiné à l'affichage UI"""
     enable_rules_auto: bool = Column(Boolean, nullable=False, default=False)
 
     associations: Mapped[List["TagAssociation"]] = relationship(cascade="all, delete", back_populates="tag")
