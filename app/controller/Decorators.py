@@ -4,7 +4,7 @@ from requests import RequestException
 
 from app.controller import ErrorController
 from app.models.enums.AccountRole import AccountRole
-from app.services.authentication.connected_user import ConnectedUser
+from app.servicesapp.authentication import ConnectedUser
 
 
 def check_permission(permissions):

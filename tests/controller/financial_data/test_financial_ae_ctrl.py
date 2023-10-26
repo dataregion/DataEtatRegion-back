@@ -1,7 +1,9 @@
 import io
-import os
+from tests import DATA_PATH
 
 from tests.controller.financial_data import patching_roles
+
+_chorus_errors = DATA_PATH / "data" / "chorus" / "errors"
 
 
 def test_missing_arguments(test_client):
@@ -45,7 +47,7 @@ def test_not_role(test_client):
 def test_bad_file(test_client):
     data = {"code_region": "35", "annee": 2023}
     with patching_roles(["ADMIN"]):
-        with open(os.path.abspath(os.getcwd()) + "/data/chorus/errors/sample.pdf", "rb") as f:
+        with open(_chorus_errors / "sample.pdf", "rb") as f:
             data["fichier"] = (f, "filename.csv")
             response = test_client.post(
                 "/financial-data/api/v1/ae", data=data, content_type="multipart/form-data", follow_redirects=True
@@ -58,7 +60,7 @@ def test_bad_file(test_client):
 def test_file_missing_column(test_client):
     data = {"code_region": "35", "annee": 2023}
     with patching_roles(["ADMIN"]):
-        with open(os.path.abspath(os.getcwd()) + "/data/chorus/errors/chorue_ae_missing_column.csv", "rb") as f:
+        with open(_chorus_errors / "chorue_ae_missing_column.csv", "rb") as f:
             data["fichier"] = (f, f.name)
             response = test_client.post(
                 "/financial-data/api/v1/ae", data=data, content_type="multipart/form-data", follow_redirects=True

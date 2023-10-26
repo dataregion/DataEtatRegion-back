@@ -108,3 +108,4 @@ from .import_refs_tasks import *
 from .management_tasks import *
 from .refs import *
 from .siret import *
+from .tags import *

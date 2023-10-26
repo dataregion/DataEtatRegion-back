@@ -7,7 +7,7 @@ from flask_pyoidc import OIDCAuthentication
 
 from app import cache
 from app.controller.utils.ControllerUtils import make_cache
-from app.services.api_externes import ApisExternesService
+from app.servicesapp.api_externes import ApisExternesService
 from app.models.apis_externes.entreprise import InfoApiEntreprise
 from app.models.apis_externes.subvention import InfoApiSubvention
 from app.models.apis_externes.error import Error as ApiError

@@ -8,7 +8,7 @@ from werkzeug.datastructures import FileStorage
 from app import celeryapp
 from app.models.enums.AccountRole import AccountRole
 from app.controller.Decorators import check_permission
-from app.services.authentication.connected_user import ConnectedUser
+from app.servicesapp.authentication import ConnectedUser
 
 from ...exceptions.exceptions import FileNotAllowedException
 from ...services.import_refs import ReferentielNotFound, import_refs

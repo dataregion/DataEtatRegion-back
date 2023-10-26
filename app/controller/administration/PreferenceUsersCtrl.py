@@ -20,7 +20,7 @@ from app import db
 from app.clients.keycloack.factory import make_or_get_keycloack_admin, KeycloakConfigurationException
 from app.controller.utils.ControllerUtils import get_origin_referrer
 from app.models.preference.Preference import Preference, PreferenceSchema, PreferenceFormSchema, Share
-from app.services.authentication.connected_user import ConnectedUser
+from app.servicesapp.authentication import ConnectedUser
 
 api = Namespace(
     name="preferences", path="/users/preferences", description="API de gestion des préférences utilisateurs"

@@ -11,10 +11,8 @@ from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
 from app.models.financial.FinancialAe import FinancialAeSchema, FinancialCpSchema
-from app.services.authentication.connected_user import ConnectedUser
-from app.services.authentication.exceptions import InvalidTokenError, NoCurrentRegion
-from app.services.code_geo import BadCodeGeoException
-from app.services.financial_data import (
+from app.servicesapp.authentication import ConnectedUser, InvalidTokenError, NoCurrentRegion
+from app.servicesapp.financial_data import (
     import_ae,
     search_financial_data_ae,
     get_financial_ae,
@@ -30,6 +28,7 @@ auth: OIDCAuthentication = current_app.extensions["auth"]
 
 parser_get = get_pagination_parser(default_limit=5000)
 parser_get.add_argument("code_programme", type=str, action="split", help="le code programme (BOP)")
+parser_get.add_argument("niveau_geo", type=str, help="le niveau géographique")
 parser_get.add_argument(
     "code_geo",
     type=str,
@@ -51,11 +50,6 @@ parser_get.add_argument(
     "referentiel_programmation", type=str, action="split", help="Le(s) code(s) du référentiel de programmation."
 )
 parser_get.add_argument("tags", type=str, action="split", help="Le(s) tag(s) à inclure", required=False)
-
-
-@api.errorhandler(BadCodeGeoException)
-def handle_error_input_parameter(e: BadCodeGeoException):
-    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.errorhandler(NoCurrentRegion)

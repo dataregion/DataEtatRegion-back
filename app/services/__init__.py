@@ -1,8 +1,13 @@
+"""
+Package de services (techniques)
+
+Appelé par divers composants de l'application, que ce soit d'autres services, des tâches asynchrones, des controlleurs etc..
+"""
+
 from sqlalchemy import Select, or_, Column, desc
 from sqlalchemy.orm import selectinload, contains_eager, aliased
 
-from .code_geo import BadCodeGeoException
-from .. import db
+from app.database import db
 from ..models.enums.TypeCodeGeo import TypeCodeGeo
 from ..models.refs.categorie_juridique import CategorieJuridique
 from ..models.refs.code_programme import CodeProgramme
@@ -18,7 +23,7 @@ from ..models.refs.siret import Siret
 from ..models.refs.qpv import Qpv
 from ..models.refs.theme import Theme
 
-__all__ = ("BadCodeGeoException", "BuilderStatementFinancial")
+__all__ = "BuilderStatementFinancial"
 
 
 class BuilderStatementFinancial:
@@ -159,6 +164,8 @@ class BuilderStatementFinancial:
                 self._alias_commune_interministerielle, LocalisationInterministerielle.commune, isouter=True
             )
             match type_geo:
+                case TypeCodeGeo.REGION:
+                    return self._where_geo_region(list_code_geo, source_region)
                 case TypeCodeGeo.DEPARTEMENT:
                     return self._where_geo_departement(list_code_geo, source_region)
                 case TypeCodeGeo.EPCI:
@@ -188,6 +195,8 @@ class BuilderStatementFinancial:
             self._stmt = self._stmt.join(Siret.ref_commune)
 
             match type_geo:
+                case TypeCodeGeo.REGION:
+                    self._stmt = self._stmt.where(Commune.code_region.in_(list_code_geo))
                 case TypeCodeGeo.DEPARTEMENT:
                     self._stmt = self._stmt.where(Commune.code_departement.in_(list_code_geo))
                 case TypeCodeGeo.EPCI:
@@ -267,14 +276,30 @@ class BuilderStatementFinancial:
         :return:
         """
         subquery = db.select(LocalisationInterministerielle.code).join(LocalisationInterministerielle.commune)
-        prefix_code_inter = f"N{source_region}"
         where_clause = []
         for code_geo in list_code_geo:
-            where_clause.append(LocalisationInterministerielle.code.ilike(f"{prefix_code_inter}{code_geo}%"))
-        subquery = subquery.where(or_(*where_clause))
+            where_clause.append(LocalisationInterministerielle.code.ilike(f"N{source_region}{code_geo}%"))
+        subquery = subquery.where(or_(*where_clause, Commune.code_departement.in_(list_code_geo)))
         self._stmt = self._stmt.where(
             self._alias_commune_siret.code_departement.in_(list_code_geo)
             | Ae.localisation_interministerielle.in_(subquery)
+        )
+        return self
+
+    def _where_geo_region(self, list_code_geo: list, source_region: str):
+        """
+        Filtre code geo region
+        :param list_code_geo:
+        :param source_region:
+        :return:
+        """
+        subquery = db.select(LocalisationInterministerielle.code).join(LocalisationInterministerielle.commune)
+        where_clause = []
+        for code_geo in list_code_geo:
+            where_clause.append(LocalisationInterministerielle.code.ilike(f"N{code_geo}%"))
+        subquery = subquery.where(or_(*where_clause, Commune.code_region.in_(list_code_geo)))
+        self._stmt = self._stmt.where(
+            self._alias_commune_siret.code_region.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
         )
         return self
 

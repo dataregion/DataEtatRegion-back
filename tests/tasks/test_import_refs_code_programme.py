@@ -1,5 +1,4 @@
 import json
-import os
 from unittest.mock import patch, call
 
 from app import db
@@ -7,13 +6,16 @@ from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.ministere import Ministere
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_one_ref_default
+from tests import DATA_PATH
+
+_data = DATA_PATH / "data"
 
 
 @patch("app.tasks.import_refs_tasks.subtask")
 def test_import_refs_code_programme(mock_subtask):
     # DO
     import_refs_task(
-        os.path.abspath(os.getcwd()) + "/data/Calculette_Chorus_test.xlsx",
+        _data / "Calculette_Chorus_test.xlsx",
         "CodeProgramme",
         ["code_ministere", "code", "label"],
         is_csv=False,
@@ -45,7 +47,7 @@ def test_import_refs_code_programme(mock_subtask):
 @patch("app.tasks.import_refs_tasks.subtask")
 def test_import_refs_ministere(mock_subtask):
     import_refs_task(
-        os.path.abspath(os.getcwd()) + "/data/Calculette_Chorus_test.xlsx",
+        _data / "Calculette_Chorus_test.xlsx",
         "Ministere",
         ["code", "sigle_ministere", "label"],
         is_csv=False,
