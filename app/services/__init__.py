@@ -20,7 +20,6 @@ from ..models.refs.groupe_marchandise import GroupeMarchandise
 from ..models.refs.localisation_interministerielle import LocalisationInterministerielle
 from ..models.refs.referentiel_programmation import ReferentielProgrammation
 from ..models.refs.siret import Siret
-from ..models.refs.qpv import Qpv
 from ..models.refs.theme import Theme
 
 __all__ = "BuilderStatementFinancial"

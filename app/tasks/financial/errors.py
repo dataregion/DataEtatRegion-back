@@ -71,7 +71,7 @@ def _handle_exception_import(name):
                 logger.debug(f"On retry avec countdown {e.delai}, max_retries {nb_retries} et le jitter")
                 caller.retry(countdown=e.delai, max_retries=nb_retries, retry_jitter=True)
 
-            except AnnuleLaTache as e:
+            except AnnuleLaTache as _:
                 logger.warning(f"[IMPORT][{name}] tâche annulée.")
                 return "tâche annulée"
 
@@ -91,7 +91,7 @@ def _map_exceptions(func):
             return func(*args, **kwargs)
 
         except LimitHitError as e:
-            logger.info(f"[IMPORT] Limite d'appel à l'API entreprise atteinte.")
+            logger.info("[IMPORT] Limite d'appel à l'API entreprise atteinte.")
             raise Reessayer.fromLimitHitError(e)
 
         except sqlalchemy.exc.IntegrityError as e:

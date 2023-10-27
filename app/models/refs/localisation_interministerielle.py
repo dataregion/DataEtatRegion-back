@@ -10,11 +10,11 @@ from app.models.refs.commune import CommuneSchema
 class LocalisationInterministerielle(Audit, db.Model):
     __tablename__ = "ref_localisation_interministerielle"
     id = db.Column(db.Integer, primary_key=True)
-    code: str = Column(String, unique=True, nullable=False)
-    label: str = Column(String)
-    site: str = Column(String)
+    code: Column[str] = Column(String, unique=True, nullable=False)
+    label: Column[str] = Column(String)
+    site: Column[str] = Column(String)
     description: str = Column(Text)
-    niveau: str = Column(String)
+    niveau: Column[str] = Column(String)
     code_parent = Column(String)
 
     # FK

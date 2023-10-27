@@ -61,7 +61,7 @@ def share_filter_user(self, preference_uuid, host_link):
 
     if preference is not None and len(preference.shares) > 0:
         for share in preference.shares:
-            if share.email_send == False:
+            if not share.email_send:
                 txt = text_template.format(preference.username, subject, link_preference, link_register)
                 htm = html_template.format(preference.username, subject, link_preference, link_register)
 

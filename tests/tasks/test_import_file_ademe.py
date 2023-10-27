@@ -42,7 +42,7 @@ def test_import_line_ademe(app, database, session):
     data = session.execute(database.select(Ademe).where(Ademe.reference_decision == "21BRD0090")).scalar_one_or_none()
     assert data.id is not None
     assert data.montant == 400.1
-    assert data.notification_ue == True
+    assert data.notification_ue is True
     assert data.date_convention == date(2021, 5, 5)
     assert data.siret_beneficiaire == "82815371800014"
     assert data.siret_attribuant == "38529030900454"

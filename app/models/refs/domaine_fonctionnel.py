@@ -14,8 +14,8 @@ from app.models.common.Audit import Audit
 class DomaineFonctionnel(Audit, db.Model):
     __tablename__ = "ref_domaine_fonctionnel"
     id = db.Column(db.Integer, primary_key=True)
-    code: str = Column(String, unique=True, nullable=False)
-    label: str = Column(String)
+    code: Column[str] = Column(String, unique=True, nullable=False)
+    label: Column[str] = Column(String)
     description: str = Column(Text)
 
     @hybrid_property
@@ -24,7 +24,7 @@ class DomaineFonctionnel(Audit, db.Model):
         Retourne le code programme associé
         :return:
         """
-        if self.code and type(self.code) == str:
+        if bool(self.code) and isinstance(self.code, str):
             matches = re.search(r"^(\d{4})(-)?", self.code)
             if matches is not None:
                 return matches.group(1)[1:]

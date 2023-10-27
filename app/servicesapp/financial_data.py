@@ -18,7 +18,6 @@ from app.models.refs.categorie_juridique import CategorieJuridique
 from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.models.refs.siret import Siret
-from app.models.refs.qpv import Qpv
 from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
 from app.services import BuilderStatementFinancialCp
@@ -223,7 +222,7 @@ def search_financial_data_ae(
     if types_beneficiaires is not None:
         type_beneficiaires_conditions.append(CategorieJuridique.type.in_(types_beneficiaires))
     if types_beneficiaires is not None and "autres" in types_beneficiaires:
-        type_beneficiaires_conditions.append(CategorieJuridique.type == None)
+        type_beneficiaires_conditions.append(CategorieJuridique.type == None)  # noqa: E711
 
     query_ae.where_custom(or_(*type_beneficiaires_conditions))
 

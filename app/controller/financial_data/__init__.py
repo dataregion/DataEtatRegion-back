@@ -69,12 +69,12 @@ def check_file_import():
     return wrapper
 
 
-from app.controller.financial_data.FinancialAeCtrl import api as api_ae
-from app.controller.financial_data.FinancialCpCtrl import api as api_cp
-from app.controller.financial_data.AdemeCtrl import api as api_ademe
-from app.controller.financial_data.TagsCtrl import api as api_tags
-from app.controller.financial_data.France2030 import api as api_france_2030
-from app.controller.utils.LoginController import api as api_auth
+from app.controller.financial_data.FinancialAeCtrl import api as api_ae  # noqa: E402
+from app.controller.financial_data.FinancialCpCtrl import api as api_cp  # noqa: E402
+from app.controller.financial_data.AdemeCtrl import api as api_ademe  # noqa: E402
+from app.controller.financial_data.TagsCtrl import api as api_tags  # noqa: E402
+from app.controller.financial_data.France2030 import api as api_france_2030  # noqa: E402
+from app.controller.utils.LoginController import api as api_auth  # noqa: E402
 
 
 api_financial = Blueprint("financial_data", __name__)

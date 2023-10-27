@@ -14,34 +14,34 @@ class FinancialCp(FinancialData, db.Model):
     id: int = Column(Integer, primary_key=True)
 
     # numero de la dépense (non unique).
-    n_dp: str = Column(String, nullable=False)
+    n_dp: Column[str] = Column(String, nullable=False)
 
     # FK AE
     id_ae: int = Column(Integer, ForeignKey("financial_ae.id"), nullable=True)
 
     # liens vers les AE
-    n_ej: str = Column(String, nullable=True)
+    n_ej: Column[str] = Column(String, nullable=True)
     n_poste_ej: int = Column(Integer, nullable=True)
 
     # FK
-    source_region: str = Column(String, ForeignKey("ref_region.code"), nullable=False)
-    programme: str = Column(String, ForeignKey("ref_code_programme.code"), nullable=False)
-    domaine_fonctionnel: str = Column(String, db.ForeignKey("ref_domaine_fonctionnel.code"), nullable=False)
-    centre_couts: str = Column(String, db.ForeignKey("ref_centre_couts.code"), nullable=False)
-    referentiel_programmation: str = Column(String, db.ForeignKey("ref_programmation.code"), nullable=False)
-    siret: str = Column(String, db.ForeignKey("ref_siret.code"), nullable=True)
-    groupe_marchandise: str = Column(String, db.ForeignKey("ref_groupe_marchandise.code"), nullable=False)
+    source_region: Column[str] = Column(String, ForeignKey("ref_region.code"), nullable=False)
+    programme: Column[str] = Column(String, ForeignKey("ref_code_programme.code"), nullable=False)
+    domaine_fonctionnel: Column[str] = Column(String, db.ForeignKey("ref_domaine_fonctionnel.code"), nullable=False)
+    centre_couts: Column[str] = Column(String, db.ForeignKey("ref_centre_couts.code"), nullable=False)
+    referentiel_programmation: Column[str] = Column(String, db.ForeignKey("ref_programmation.code"), nullable=False)
+    siret: Column[str] = Column(String, db.ForeignKey("ref_siret.code"), nullable=True)
+    groupe_marchandise: Column[str] = Column(String, db.ForeignKey("ref_groupe_marchandise.code"), nullable=False)
     localisation_interministerielle: str = Column(
         String, db.ForeignKey("ref_localisation_interministerielle.code"), nullable=False
     )
-    fournisseur_paye: str = Column(String, db.ForeignKey("ref_fournisseur_titulaire.code"), nullable=False)
+    fournisseur_paye: Column[str] = Column(String, db.ForeignKey("ref_fournisseur_titulaire.code"), nullable=False)
 
     # Autre colonne
     date_base_dp: datetime = Column(DateTime, nullable=True)
     date_derniere_operation_dp: datetime = Column(DateTime, nullable=True)
 
-    compte_budgetaire: str = Column(String(255), nullable=True)
-    contrat_etat_region: str = Column(String(255), nullable=True)
+    compte_budgetaire: Column[str] = Column(String(255), nullable=True)
+    contrat_etat_region: Column[str] = Column(String(255), nullable=True)
     montant: float = Column(Float)
     annee: int = Column(Integer, nullable=False)
 

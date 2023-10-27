@@ -55,7 +55,7 @@ def test_parse_tags_prettyname(input: str, expected: TagVO, expected_db_fullname
 )
 def test_parse_tags_prettyname_error(input: str, err_type):
     """Test parsing of tags pretty name"""
-    with pytest.raises(err_type) as e:
+    with pytest.raises(err_type) as _:
         _ = TagVO.from_prettyname(input)
 
 

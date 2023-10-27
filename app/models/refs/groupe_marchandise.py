@@ -8,16 +8,16 @@ from app.models.common.Audit import Audit
 class GroupeMarchandise(Audit, db.Model):
     __tablename__ = "ref_groupe_marchandise"
     id = db.Column(db.Integer, primary_key=True)
-    code: str = Column(String, unique=True, nullable=False)
-    label: str = Column(String)
+    code: Column[str] = Column(String, unique=True, nullable=False)
+    label: Column[str] = Column(String)
     description: str = Column(Text)
 
-    domaine: str = Column(String)
-    segment: str = Column(String)
+    domaine: Column[str] = Column(String)
+    segment: Column[str] = Column(String)
 
     # mutualisation avec compte_general
-    code_pce: str = Column(String)
-    label_pce: str = Column(String)
+    code_pce: Column[str] = Column(String)
+    label_pce: Column[str] = Column(String)
 
 
 class GroupeMarchandiseSchema(ma.SQLAlchemyAutoSchema):

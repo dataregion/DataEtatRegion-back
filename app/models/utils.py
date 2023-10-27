@@ -47,14 +47,10 @@ class _InstrumentForFlaskRestx(_AddMarshmallowSchema):
         definitions_json_schemas = JSONSchema().dump(ma_schema)["definitions"]
         definition_jsonschema = definitions_json_schemas[name]
 
-        def schema_model(api: Namespace):
-            """Crée le schema_model depuis le json schema pour cette dataclasse"""
-            return api.schema_model(name, definition_jsonschema)
-
         def _register_schemamodels(api: Namespace):
             option_name = "RESTX_INCLUDE_ALL_MODELS"
             conf = current_app.config.get(option_name, None)
-            if conf is None or conf == False:
+            if conf is None or not conf:
                 logging.warning(
                     f"Ajout du modèle {name} au swagger. "
                     f"L'option {option_name} n'est pas active. "

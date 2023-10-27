@@ -2,7 +2,7 @@ import json
 import logging
 
 from flask import request
-from flask_restx import Namespace, fields, Resource, abort
+from flask_restx import Namespace, fields, Resource
 from flask_restx._http import HTTPStatus
 from keycloak import KeycloakAuthenticationError
 

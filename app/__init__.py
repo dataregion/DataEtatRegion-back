@@ -107,7 +107,7 @@ def read_config(app, config_filep: str, extra_config_settings: dict):
     # Load extra settings from extra_config_settings param
     app.config.update(extra_config_settings)
 
-    if app.config["DEBUG"] == True:
+    if app.config["DEBUG"] is True:
         app.config["SQLALCHEMY_ECHO"] = True
         logging.getLogger().setLevel(logging.DEBUG)
 

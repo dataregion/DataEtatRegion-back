@@ -2,16 +2,16 @@ from unittest.mock import patch, call
 import pytest
 
 from app.models.tags.Tags import Tags
-from . import *  # necessaire pour utiliser la fixture dans le init
+from . import *  # noqa: F403
 from app.tasks.tags.update_all_tags import update_all_tags
 
 
 @pytest.fixture(scope="module")
 def tags(database):
-    database.session.add(Tags(**TAG_FOND_VERT))
-    database.session.add(Tags(**TAG_RELANCE))
-    database.session.add(Tags(**TAG_DISABLE_AUTO))
-    database.session.add(Tags(**TAG_CPER_21_27))
+    database.session.add(Tags(**TAG_FOND_VERT))  # noqa: F405
+    database.session.add(Tags(**TAG_RELANCE))  # noqa: F405
+    database.session.add(Tags(**TAG_DISABLE_AUTO))  # noqa: F405
+    database.session.add(Tags(**TAG_CPER_21_27))  # noqa: F405
     database.session.commit()
     yield
     database.session.execute(database.delete(Tags))

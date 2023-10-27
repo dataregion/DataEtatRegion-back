@@ -2,7 +2,6 @@ import logging
 
 from flask import make_response, current_app
 from flask_restx._http import HTTPStatus
-from flask import g
 
 from flask_restx import Namespace, Resource, abort, inputs
 
@@ -71,7 +70,7 @@ class UsersManagement(Resource):
 
         if only_disable:
             logging.debug("[USERS] get only disabled users")
-            users = list(filter(lambda user: user["enabled"] == False, users))
+            users = list(filter(lambda user: user["enabled"] is False, users))
 
         debut_index = (page_number - 1) * limit
         fin_index = debut_index + limit
@@ -102,7 +101,7 @@ class UserDelete(Resource):
         user = keycloak_admin.get_user(uuid)
 
         # on check si l'utilisateur est bien désactivé
-        if user["enabled"] == True:
+        if user["enabled"] is True:
             return (
                 ErrorController("L'utilisateur est actif. Merci de le désactiver dans un premier temps").to_json(),
                 HTTPStatus.BAD_REQUEST,

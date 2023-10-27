@@ -138,7 +138,7 @@ def import_line_financial_ae(self, dict_financial: str, index: int, force_update
         logger.exception(f"[IMPORT][FINANCIAL][AE] Erreur index {index} sur le check ligne")
         raise FinancialException(o) from o
 
-    if financial_instance != False:
+    if financial_instance:
         new_ae = FinancialAe(**line)
 
         _check_ref(CodeProgramme, new_ae.programme)
@@ -154,7 +154,7 @@ def import_line_financial_ae(self, dict_financial: str, index: int, force_update
 
         # FINANCIAL_AE
         new_financial_ae = None
-        if financial_instance == True:
+        if financial_instance:
             new_financial_ae = _insert_financial_data(new_ae)
         else:
             new_financial_ae = _update_financial_data(line, financial_instance)

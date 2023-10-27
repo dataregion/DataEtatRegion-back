@@ -53,7 +53,7 @@ class InfoSubventionCtrl(Resource):
     @api.response(200, "Success", model=InfoApiSubvention.schema_model(api))
     @_document_error_responses(api)
     def get(self, siret: str):
-        logging.info(f"[API EXTERNES][CTRL] Info subventions")
+        logging.info("[API EXTERNES][CTRL] Info subventions")
 
         subvention = service.subvention(siret)
         json = InfoApiSubvention.ma_schema.dump(subvention)
@@ -88,7 +88,7 @@ class InfoEntrepriseCtrl(Resource):
     )
     @_document_error_responses(api)
     def get(self, siret: str):
-        logging.info(f"[API EXTERNES][CTRL] Info entreprise")
+        logging.info("[API EXTERNES][CTRL] Info entreprise")
 
         entreprise = service.entreprise(siret)
         json = InfoApiEntreprise.ma_schema.dump(entreprise)

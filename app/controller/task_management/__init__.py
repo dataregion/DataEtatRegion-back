@@ -31,7 +31,7 @@ class TaskResultTraceSchema(TaskResultSchema):
         exclude = ("id", "queue", "worker")
 
 
-from app.controller.task_management.TaskCtrl import api as taskApi
+from app.controller.task_management.TaskCtrl import api as taskApi  # noqa: E402
 
 api_task = Blueprint("task_api", __name__)
 

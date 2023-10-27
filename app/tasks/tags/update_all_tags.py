@@ -21,7 +21,7 @@ def update_all_tags(self):
     """
     LOGGER.info("[TAGS] Start Application des tags")
 
-    stmt = db.select(Tags).where(Tags.enable_rules_auto == True)
+    stmt = db.select(Tags).where(Tags.enable_rules_auto == True)  # noqa: E712
     LOGGER.debug("[TAGS] Sélection des tags pour application auto")
 
     translator = str.maketrans(string.whitespace + "-", "_" * len(string.whitespace + "-"))
