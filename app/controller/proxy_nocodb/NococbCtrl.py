@@ -106,7 +106,7 @@ def build_client(project) -> NocoDBRequestsClient:
     token = current_app.config["NOCODB_PROJECT"][project]
 
     if token is None:
-        abort(403, "Information manquante pour le projet {project}")
+        abort(403, f"Information manquante pour le projet {project}")
     try:
         return NocoDBRequestsClient(APIToken(token), uri)
     except Exception as clientException:
