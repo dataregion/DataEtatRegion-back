@@ -3,20 +3,20 @@ import random
 import pytest
 
 from app import create_app_base, db
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
-_data_path = DATA_PATH
+_tests_path = TESTS_PATH
 
-file_path = _data_path / "database.db"
-settings_path = _data_path / "settings.db"
-audit_path = _data_path / "meta_audit.db"
+file_path = _tests_path / "database.db"
+settings_path = _tests_path / "settings.db"
+audit_path = _tests_path / "meta_audit.db"
 
 extra_config = {
     "SQLALCHEMY_BINDS": {
-        "settings": f"sqlite:///{settings_path.as_uri()}",
-        "audit": f"sqlite:///{audit_path.as_uri()}",
+        "settings": f"sqlite:///{settings_path.as_posix()}",
+        "audit": f"sqlite:///{audit_path.as_posix()}",
     },
-    "SQLALCHEMY_DATABASE_URI": f"sqlite:///{file_path.as_uri()}",
+    "SQLALCHEMY_DATABASE_URI": f"sqlite:///{file_path.as_posix()}",
     "SECRET_KEY": "secret",
     "OIDC_CLIENT_SECRETS": "ser",
     "TESTING": True,

@@ -9,9 +9,9 @@ from app.models.financial.FinancialCp import FinancialCp
 from app.models.refs.siret import Siret
 from app.tasks.financial.import_financial import import_file_cp_financial
 from app.tasks.financial.import_financial import import_line_financial_cp
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
-_chorus = DATA_PATH / "data" / "chorus"
+_chorus = TESTS_PATH / "data" / "chorus"
 _chorus_split = _chorus / "split"
 
 

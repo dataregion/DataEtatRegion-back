@@ -3,7 +3,7 @@ from functools import wraps
 from unittest.mock import patch
 from pathlib import Path
 
-DATA_PATH = Path(os.path.dirname(__file__))
+TESTS_PATH = Path(os.path.dirname(__file__))
 
 
 # MOCK du accept_token
