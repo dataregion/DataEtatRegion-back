@@ -14,7 +14,7 @@ class Siret(Audit, db.Model):
     __tablename__ = "ref_siret"
     id = db.Column(db.Integer, primary_key=True)
     # code siret
-    code: str = Column(String, unique=True, nullable=False)
+    code: Column[str] = Column(String, unique=True, nullable=False)
 
     # FK
     code_commune = Column(String, db.ForeignKey("ref_commune.code"), nullable=False)

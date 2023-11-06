@@ -5,9 +5,9 @@ from werkzeug.datastructures import FileStorage
 
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
 from app.servicesapp.financial_data import import_ae
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
-_chorus_errors = DATA_PATH / "data" / "chorus" / "errors"
+_chorus_errors = TESTS_PATH / "data" / "chorus" / "errors"
 
 
 def test_import_import_file_ae_file_not_allowed():

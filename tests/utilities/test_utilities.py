@@ -4,7 +4,7 @@ from app.utilities.exhandling import wrap_all_ex_to
 
 
 def test_wrap_all_to_ex():
-    assert returning_a_value() == True, "It should return true"
+    assert returning_a_value() is True, "It should return true"
 
     with pytest.raises(CustomEx) as excinfo:
         raising_value_error()

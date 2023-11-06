@@ -6,9 +6,9 @@ from app.models.common.Audit import Audit
 
 class Ministere(Audit, db.Model):
     __tablename__ = "ref_ministere"
-    code: str = Column(String, primary_key=True)
-    sigle_ministere: str = Column(String, nullable=True)
-    label: str = Column(String, nullable=False)
+    code: Column[str] = Column(String, primary_key=True)
+    sigle_ministere: Column[str] = Column(String, nullable=True)
+    label: Column[str] = Column(String, nullable=False)
     description: str = Column(Text)
 
 

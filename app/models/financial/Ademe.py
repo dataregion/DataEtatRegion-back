@@ -1,3 +1,4 @@
+from datetime import date
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -6,8 +7,7 @@ from sqlalchemy import Column, Integer, String, Date, Float, Boolean, UniqueCons
 from sqlalchemy.orm import relationship
 
 from app import db, ma
-from app.models.financial import FinancialData, CommonField, CommuneField
-from app.models.refs.siret import Siret
+from app.models.financial import FinancialData, CommuneField
 from app.models.tags.Tags import TagsSchema
 
 __all__ = ("Ademe", "AdemeSchema")
@@ -17,18 +17,18 @@ __all__ = ("Ademe", "AdemeSchema")
 class Ademe(FinancialData, db.Model):
     __tablename__ = "ademe"
     # PK
-    id = Column(Integer, primary_key=True)
-    date_convention = Column(Date)
+    id: Column[int] = Column(Integer, primary_key=True)
+    date_convention: Column[date] = Column(Date)
 
     reference_decision = Column(String(255), nullable=False)
 
     objet = Column(String(255))
-    montant = Column(Float)
+    montant: Column[float] = Column(Float)
     nature = Column(String(255))
     conditions_versement = Column(String(255))
     dates_periode_versement = Column(String(255))
     notification_ue = Column(Boolean, default=False)
-    pourcentage_subvention = Column(Float)
+    pourcentage_subvention: Column[float] = Column(Float)
 
     # FK
     siret_attribuant = Column(String, db.ForeignKey("ref_siret.code"), nullable=True)

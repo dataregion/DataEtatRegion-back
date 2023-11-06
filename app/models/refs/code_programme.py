@@ -10,12 +10,12 @@ from app.models.common.Audit import Audit
 class CodeProgramme(Audit, db.Model):
     __tablename__ = "ref_code_programme"
     id = db.Column(db.Integer, primary_key=True)
-    code: str = Column(String, unique=True, nullable=False)
+    code: Column[str] = Column(String, unique=True, nullable=False)
     # FK
-    code_ministere: str = Column(String, db.ForeignKey("ref_ministere.code"), nullable=True)
+    code_ministere: Column[str] = Column(String, db.ForeignKey("ref_ministere.code"), nullable=True)
     theme: int = Column(db.Integer, db.ForeignKey("ref_theme.id"), nullable=True)
 
-    label: str = Column(String)
+    label: Column[str] = Column(String)
     description: str = Column(Text)
 
     theme_r = relationship("Theme", uselist=False, lazy="select")

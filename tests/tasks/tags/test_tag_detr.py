@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
-from ..tags import *
+from ..tags import *  # noqa: F403
 
 from app import db
 from app.models.financial.FinancialAe import FinancialAe
@@ -13,7 +13,7 @@ from app.tasks.tags.apply_tags import apply_tags_detr
 
 @pytest.fixture(autouse=True)
 def tag_detr(database):
-    tags = Tags(**TAG_DETR)
+    tags = Tags(**TAG_DETR)  # noqa: F405
     database.session.add(tags)
     database.session.commit()
     yield tags
@@ -88,7 +88,7 @@ def insert_two_financial_ae_for_tag_detr(database, session):
 
 def test_apply_detr_no_tag(insert_two_financial_ae_for_tag_detr, tag_detr):
     # DO
-    apply_tags_detr(tag_detr.type, None)
+    apply_tags_detr(tag_detr.type, None)  # type: ignore
 
     # assert
     ## on a bien une association
@@ -104,7 +104,7 @@ def test_apply_detr_no_tag(insert_two_financial_ae_for_tag_detr, tag_detr):
         or (tag_assocations[1].financial_ae == insert_two_financial_ae_for_tag_detr[1].id)
     )
     assert tag_assocations[0].ademe is None and tag_assocations[1].ademe is None
-    assert tag_assocations[0].auto_applied == True and tag_assocations[1].auto_applied == True
+    assert tag_assocations[0].auto_applied and tag_assocations[1].auto_applied
 
 
 def test_should_not_apply_tag_if_already_present(database, session, tag_detr, insert_two_financial_ae_for_tag_detr):
@@ -126,7 +126,7 @@ def test_should_not_apply_tag_if_already_present(database, session, tag_detr, in
     ).scalar_one_or_none()
 
     # DO
-    apply_tags_detr(tag_detr.type, None)
+    apply_tags_detr(tag_detr.type, None)  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(
@@ -136,4 +136,4 @@ def test_should_not_apply_tag_if_already_present(database, session, tag_detr, in
     ).scalar_one_or_none()
     assert tag_assocation.ademe is None
     assert tag_assocation.financial_ae == insert_two_financial_ae_for_tag_detr[0].id
-    assert tag_assocation.auto_applied == False
+    assert not tag_assocation.auto_applied

@@ -1,5 +1,4 @@
-import datetime
-import enum
+from datetime import datetime
 
 from sqlalchemy import Column, String, Integer, DateTime
 from sqlalchemy.orm import validates
@@ -16,13 +15,14 @@ class AuditUpdateData(db.Model):
     __tablename__ = "audit_update_data"
     __bind_key__ = "audit"
     # PK
-    id: int = Column(Integer, primary_key=True, nullable=False)
+    id: Column[int] = Column(Integer, primary_key=True, nullable=False)
 
-    username: str = Column(String, nullable=False)
-    filename: str = Column(String, nullable=False)
-    data_type: DataType = Column(String, nullable=False)
+    username: Column[str] = Column(String, nullable=False)
+    filename: Column[str] = Column(String, nullable=False)
+    data_type: Column[str] = Column(String, nullable=False)
+    """Type de donnée. Voir `app.models.enums.DataType.DataType`"""
 
-    date: DateTime = Column(DateTime(timezone=True), default=datetime.datetime.utcnow, nullable=False)
+    date: Column[datetime] = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     @validates("data_type")
     def validate_data_type(self, _key, data_type):

@@ -1,5 +1,4 @@
 import hashlib
-from argparse import ArgumentTypeError
 
 from flask import request
 from flask_restx import reqparse

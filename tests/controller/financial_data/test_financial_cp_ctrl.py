@@ -1,9 +1,9 @@
 import io
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
 from tests.controller.financial_data import patching_roles
 
-_chorus = DATA_PATH / "data" / "chorus"
+_chorus = TESTS_PATH / "data" / "chorus"
 _chorus_errors = _chorus / "errors"
 
 

@@ -1,4 +1,4 @@
-from flask import jsonify, current_app, request, g
+from flask import jsonify, current_app, request
 from flask_restx import Namespace, Resource
 
 from app.controller.Decorators import check_permission

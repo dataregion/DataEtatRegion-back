@@ -6,9 +6,9 @@ from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.services.import_refs import ReferentielNotFound, MissingCodeColumns
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_one_ref_default
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
-_data = DATA_PATH / "data"
+_data = TESTS_PATH / "data"
 
 
 def test_import_refs_with_missing_code_column():

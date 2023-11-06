@@ -7,7 +7,6 @@ from marshmallow_jsonschema import JSONSchema
 from sqlalchemy.exc import NoResultFound
 
 from app import db
-from app.clients.keycloack.factory import make_or_get_keycloack_admin, KeycloakConfigurationException
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
 from app.controller.utils.ControllerUtils import get_pagination_parser
@@ -25,7 +24,7 @@ auth = current_app.extensions["auth"]
 
 schema_many = AuditUpdateDataSchema(many=True)
 
-model_json = JSONSchema().dump(schema_many)["definitions"]["AuditUpdateDataSchema"]
+model_json = JSONSchema().dump(schema_many)["definitions"]["AuditUpdateDataSchema"]  # type: ignore
 model_single_api = api.schema_model("AuditUpdateDataSchema", model_json)
 pagination_model = api.schema_model("Pagination", Pagination.definition_jsonschema)
 

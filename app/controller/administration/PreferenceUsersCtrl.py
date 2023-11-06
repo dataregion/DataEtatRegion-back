@@ -11,7 +11,7 @@ from http import HTTPStatus
 
 import sqlalchemy
 from flask_restx import Namespace, Resource, fields, abort, reqparse
-from flask import request, g, current_app
+from flask import request, current_app
 from marshmallow import ValidationError
 from sqlalchemy import cast
 from sqlalchemy.orm import lazyload

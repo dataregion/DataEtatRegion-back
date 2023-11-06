@@ -9,7 +9,6 @@ from celery import subtask
 from flask import current_app
 
 from app import celeryapp, db
-from app.exceptions.exceptions import ConfigurationException
 from app.models.refs.siret import Siret
 
 from app.services.siret import update_siret_from_api_entreprise
@@ -76,7 +75,7 @@ def update_siret_task(self, index: int, code: str):
     try:
         db.session.add(siret)
         db.session.commit()
-    except Exception as e:
+    except Exception as _:
         logger.error(f"[UPDATE][SIRET][{code}] Erreur lors de la mise à jour en base de données. Rollback.")
         db.session.rollback()
         raise

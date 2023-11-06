@@ -1,6 +1,6 @@
 import json
 
-from . import *
+from . import *  # noqa: F403
 
 
 def test_centre_cout_by_code(test_client, insert_centre_couts):

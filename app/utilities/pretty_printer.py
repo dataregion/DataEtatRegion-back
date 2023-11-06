@@ -1,8 +1,6 @@
 import logging
 import sqlparse
 
-import celery
-
 
 class SAFormatter(logging.Formatter):
     def format(self, record):

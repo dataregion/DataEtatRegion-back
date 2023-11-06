@@ -1,34 +1,35 @@
 from marshmallow import fields
 from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
+
+from app.models.refs.arrondissement import Arrondissement  # noqa: F401
 
 from app import db, ma
 from app.models.common.Audit import Audit
-from app.models.refs.arrondissement import Arrondissement
 
 
 class Commune(Audit, db.Model):
     __tablename__ = "ref_commune"
     id = db.Column(db.Integer, primary_key=True)
 
-    code: str = Column(String, unique=True, nullable=False)
-    label_commune: str = Column(String)
+    code: Column[str] = Column(String, unique=True, nullable=False)
+    label_commune: Column[str] = Column(String)
 
-    code_crte: str = Column(String, nullable=True)
-    label_crte: str = Column(String)
+    code_crte: Column[str] = Column(String, nullable=True)
+    label_crte: Column[str] = Column(String)
 
-    code_region: str = Column(String)
-    label_region: str = Column(String)
+    code_region: Column[str] = Column(String)
+    label_region: Column[str] = Column(String)
 
-    code_epci: str = Column(String)
-    label_epci: str = Column(String)
+    code_epci: Column[str] = Column(String)
+    label_epci: Column[str] = Column(String)
 
-    code_departement: str = Column(String)
-    label_departement: str = Column(String)
+    code_departement: Column[str] = Column(String)
+    label_departement: Column[str] = Column(String)
 
     # FK
-    code_arrondissement: str = Column(String, db.ForeignKey("ref_arrondissement.code"), nullable=True)
-    ref_arrondissement = relationship("Arrondissement", lazy="joined")
+    code_arrondissement: Column[str] = Column(String, db.ForeignKey("ref_arrondissement.code"), nullable=True)
+    ref_arrondissement: Mapped[Arrondissement] = relationship("Arrondissement", lazy="joined")
 
 
 class CommuneSchema(ma.SQLAlchemyAutoSchema):

@@ -10,7 +10,8 @@ from app.controller.financial_data.schema_model import register_financial_ae_sch
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
-from app.models.financial.FinancialAe import FinancialAeSchema, FinancialCpSchema
+from app.models.financial.FinancialAe import FinancialAeSchema
+from app.models.financial.FinancialCp import FinancialCpSchema
 from app.servicesapp.authentication import ConnectedUser, InvalidTokenError, NoCurrentRegion
 from app.servicesapp.financial_data import (
     import_ae,

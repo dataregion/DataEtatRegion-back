@@ -1,5 +1,3 @@
-from . import logger
-
 from celery import Celery
 from app import celeryapp, db
 from sqlalchemy import text

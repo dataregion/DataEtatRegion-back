@@ -2,7 +2,6 @@ import json
 
 import pytest
 
-from app.models.refs.ministere import Ministere
 from app.models.refs.qpv import Qpv
 
 

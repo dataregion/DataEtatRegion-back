@@ -4,7 +4,7 @@ import pytest
 
 from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.theme import Theme
-from ..tags import *
+from ..tags import *  # noqa: F403
 
 from app import db
 from app.models.financial.FinancialAe import FinancialAe
@@ -14,7 +14,7 @@ from app.tasks.tags.apply_tags import apply_tags_relance
 
 @pytest.fixture(autouse=True)
 def tag_relance(database):
-    tags = Tags(**TAG_RELANCE)
+    tags = Tags(**TAG_RELANCE)  # noqa: F405
     database.session.add(tags)
     database.session.commit()
     yield tags
@@ -80,18 +80,18 @@ def insert_financial_ae_for_tag_relance(database, session):
 
 def test_apply_relance_no_tag(insert_financial_ae_for_tag_relance, tag_relance):
     # DO
-    apply_tags_relance(tag_relance.type, None)
+    apply_tags_relance(tag_relance.type, None)  # type: ignore
 
     # assert
     ## on a bien une association
     tag_assocation: TagAssociation = db.session.execute(
         db.select(TagAssociation).where(TagAssociation.tag_id == tag_relance.id)
-    ).scalar_one_or_none()
+    ).scalar_one_or_none()  # type: ignore
     assert tag_assocation.ademe is None
     assert (
         tag_assocation.financial_ae == insert_financial_ae_for_tag_relance.id
     )  # il s'agit bien de l'id de l'AE code programme 380
-    assert tag_assocation.auto_applied == True
+    assert tag_assocation.auto_applied is True
 
 
 def test_should_not_apply_tag_if_already_present(
@@ -113,7 +113,7 @@ def test_should_not_apply_tag_if_already_present(
     ).scalar_one_or_none()
 
     # DO
-    apply_tags_relance(tag_relance.type, None)
+    apply_tags_relance(tag_relance.type, None)  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(
@@ -121,4 +121,4 @@ def test_should_not_apply_tag_if_already_present(
     ).scalar_one_or_none()
     assert tag_assocation.ademe is None
     assert tag_assocation.financial_ae == insert_financial_ae_for_tag_relance.id
-    assert tag_assocation.auto_applied == False
+    assert not tag_assocation.auto_applied

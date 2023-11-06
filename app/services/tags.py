@@ -87,7 +87,7 @@ class ApplyManualTags:
             delete(TagAssociation)
             .where(_ae_n_ej_and_poste_ej_eq)
             .where(Ae.id == TagAssociation.financial_ae)
-            .where(TagAssociation.auto_applied == False)
+            .where(TagAssociation.auto_applied == False)  # noqa: E712
         )
 
         result = db.session.execute(delete_stmt)

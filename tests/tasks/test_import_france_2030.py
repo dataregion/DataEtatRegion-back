@@ -3,9 +3,9 @@ from unittest.mock import patch, MagicMock, call, ANY
 from app.models.financial.France2030 import France2030
 from app.models.refs.siret import Siret
 from app.tasks.financial.import_france_2030 import import_file_france_2030, import_line_france_2030
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
-_data = DATA_PATH / "data"
+_data = TESTS_PATH / "data"
 
 
 @patch("app.tasks.financial.import_france_2030.subtask")
