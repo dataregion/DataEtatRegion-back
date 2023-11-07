@@ -18,9 +18,9 @@ depends_on = None
 
 def upgrade():
     with op.batch_alter_table('ref_commune', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('date_signature_pvd', sa.Date(), nullable=True))
+        batch_op.add_column(sa.Column('is_pvd', sa.Boolean(), nullable=True))
 
 
 def downgrade():
     with op.batch_alter_table('ref_commune', schema=None) as batch_op:
-        batch_op.drop_column('date_signature_pvd')
+        batch_op.drop_column('is_pvd')

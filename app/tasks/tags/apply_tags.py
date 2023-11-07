@@ -133,7 +133,7 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None):
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag PVD id : {tag.id}")
 
     # Récupération des codes des communes PVD
-    stmt_communes_pvd = db.select(Commune.id, Commune.code).where(Commune.date_signature_pvd != None)
+    stmt_communes_pvd = db.select(Commune.id, Commune.code).where(Commune.is_pvd == True)
     communes_pvd = db.session.execute(stmt_communes_pvd).fetchall();
 
     # Récupération des codes des SIRET ayant une commune PVD
