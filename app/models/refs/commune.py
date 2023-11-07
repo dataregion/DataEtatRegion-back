@@ -1,5 +1,6 @@
+from datetime import date
 from marshmallow import fields
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Date
 from sqlalchemy.orm import relationship, Mapped
 
 from app.models.refs.arrondissement import Arrondissement  # noqa: F401
@@ -27,9 +28,11 @@ class Commune(Audit, db.Model):
     code_departement: Column[str] = Column(String)
     label_departement: Column[str] = Column(String)
 
+    date_signature_pvd: Column[date] = Column(Date, nullable=True)
+
     # FK
-    code_arrondissement: Column[str] = Column(String, db.ForeignKey("ref_arrondissement.code"), nullable=True)
-    ref_arrondissement: Mapped[Arrondissement] = relationship("Arrondissement", lazy="joined")
+    code_arrondissement: str = Column(String, db.ForeignKey("ref_arrondissement.code"), nullable=True)
+    ref_arrondissement = relationship("Arrondissement", lazy="joined")
 
 
 class CommuneSchema(ma.SQLAlchemyAutoSchema):
