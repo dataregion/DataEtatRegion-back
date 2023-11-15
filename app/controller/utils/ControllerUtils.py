@@ -58,3 +58,15 @@ def get_pagination_parser(default_page_number=1, default_limit=100):
         "limit", type=positive(), required=False, default=default_limit, help="Nombre de résultat par page"
     )
     return pagination_parser
+
+
+class ParserArgument:
+    def __init__(self, field: any, type: type, help: str, action: str = None, required: bool = False):
+        """
+        Attributs d'un paramètre attendu par un endpoint de l'API
+        """
+        self.field = field
+        self.type = type
+        self.help = help
+        self.action = action
+        self.required = required

@@ -4,9 +4,8 @@ from flask_restx._http import HTTPStatus
 
 from app import db
 from app.controller.ref_controller import build_ref_controller
-from app.controller.utils.ControllerUtils import get_pagination_parser
+from app.controller.utils.ControllerUtils import ParserArgument, get_pagination_parser
 from app.models.common.Pagination import Pagination
-from app.models.common.QueryParam import QueryParam
 from app.models.refs.localisation_interministerielle import (
     LocalisationInterministerielleSchema,
     LocalisationInterministerielle,
@@ -21,7 +20,7 @@ api = build_ref_controller(
         path="/loc-interministerielle",
         description="API referentiels des localisations interministerielles",
     ),
-    cond_opt=(LocalisationInterministerielle.site,),
+    cond_opt=(ParserArgument(LocalisationInterministerielle.site, str, "Site"),),
 )
 
 parser_get_loc_child = get_pagination_parser()
@@ -35,15 +34,14 @@ class RefLocalisationByCodeParent(Resource):
     @api.expect(parser_get_loc_child)
     @api.response(200, "Success", api.models["LocalisationInterministeriellePagination"])
     def get(self, code):
-        query_param = QueryParam(parser_get_loc_child)
+        args = parser_get_loc_child.parse_args()
         stmt = (
             db.select(LocalisationInterministerielle)
             .where(LocalisationInterministerielle.code_parent == code)
             .order_by(LocalisationInterministerielle.code)
         )
 
-        page_result = db.paginate(stmt, per_page=query_param.limit, page=query_param.page_number, error_out=False)
-
+        page_result = db.paginate(stmt, per_page=args.limit, page=args.page_number, error_out=False)
         if page_result.items == []:
             return "", HTTPStatus.NO_CONTENT
 

@@ -3,6 +3,7 @@ import re
 from sqlalchemy import Column, String, Text
 from marshmallow import fields
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import func
 
 from app import db, ma
 from app.models.common.Audit import Audit
@@ -26,6 +27,14 @@ class ReferentielProgrammation(Audit, db.Model):
             if matches is not None:
                 return matches.group(1)[1:]
         return None
+
+    @code_programme.expression
+    def code_programme(cls):
+        """
+        Expression pour utiliser le code_programme dans une requête SQLAlchemy
+        :return:
+        """
+        return func.substring(func.substring(cls.code, 1, 4), 2).label("code_programme")
 
 
 class ReferentielProgrammationSchema(ma.SQLAlchemyAutoSchema):
