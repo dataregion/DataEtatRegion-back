@@ -43,3 +43,5 @@ xlrd~=2.0
 odfpy~=1.4.1
 
 api-entreprise >= 3.3.6
+
+prometheus-flask-exporter~=0.23.0
