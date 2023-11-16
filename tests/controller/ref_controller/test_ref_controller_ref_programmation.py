@@ -34,13 +34,13 @@ def test_ref_prog_by_code_not_found(test_client, insert_ref_programmations):
 
 def test_search_ref_prog_no_content(test_client, insert_ref_programmations):
     test = "fcode1"
-    resp = test_client.get("/budget/api/v1/ref-programmation?code=" + test)
+    resp = test_client.get("/budget/api/v1/ref-programmation?code_label=" + test)
     assert resp.status_code == 204
 
 
 def test_search_ref_prog_bycode_label(test_client, insert_ref_programmations):
     test = "0101"
-    resp = test_client.get("/budget/api/v1/ref-programmation?code=" + test + "&label=" + test)
+    resp = test_client.get("/budget/api/v1/ref-programmation?code_label=" + test)
     assert resp.status_code == 200
 
     page_return = json.loads(resp.data.decode())

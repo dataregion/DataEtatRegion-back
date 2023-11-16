@@ -11,6 +11,8 @@ from app import db
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 
+from sqlalchemy import and_, or_
+
 
 auth = current_app.extensions["auth"]
 
@@ -34,8 +36,7 @@ def build_ref_controller(cls, namespace: Namespace, cond_opt: tuple = None):
     schema = getattr(sys.modules[module_name], f"{cls.__name__}Schema")
 
     parser_get = get_pagination_parser()
-    parser_get.add_argument("code", type=str, required=False, help="Recherche sur le code")
-    parser_get.add_argument("label", type=str, required=False, help="Recherche sur le label")
+    parser_get.add_argument("code_label", type=str, required=False, help="Recherche sur le code ou le label")
     if cond_opt is not None:
         for cond in cond_opt:
             parser_get.add_argument(
@@ -65,7 +66,7 @@ def build_ref_controller(cls, namespace: Namespace, cond_opt: tuple = None):
             args = parser_get.parse_args()
             where_clause = _build_where_clause(cls, args, cond_opt)
             if where_clause is not None:
-                stmt = db.select(cls).where(where_clause).order_by(cls.code)
+                stmt = db.select(cls).where(and_(where_clause)).order_by(cls.code)
             else:
                 stmt = db.select(cls).order_by(cls.code)
 
@@ -106,31 +107,31 @@ def _build_where_clause(cls, args: ParseResult, cond_opt: tuple):
     :param cond_opt:    Les conditions supplémentaire
     :return:
     """
-    where_clause = None
-    if args.get("code"):
-        where_clause = cls.code.ilike(f"%{args.get('code')}%")
+    # Retour de None si aucun paramètre
+    if args.get("code_label") is None and cond_opt is None:
+        return None
 
-    if args.get("label"):
-        where_clause = (
-            where_clause | cls.label.ilike(f"%{args.get('label')}%")
-            if where_clause is not None
-            else cls.label.ilike(f"%{args.get('label')}%")
+    # Condition sur code OR label
+    code_label_clause = None
+    if args.get("code_label"):
+        code_label_clause = or_(
+            cls.code.ilike(f"%{args.get('code_label')}%"), cls.label.ilike(f"%{args.get('code_label')}%")
         )
 
+    # Conditions particulières
+    conditions_clause = []
     if cond_opt is not None:
         for cond in cond_opt:
             if args.get(cond.field.name):
                 if cond.action == "split":
-                    where_clause = (
-                        where_clause | cond.field.in_(args.get(cond.field.name))
-                        if where_clause is not None
-                        else cond.field.in_(args.get(cond.field.name))
-                    )
+                    conditions_clause.append(cond.field.in_(args.get(cond.field.name)))
                 else:
-                    where_clause = (
-                        where_clause | cond.field.ilike(f"%{args.get(cond.field.name)}%")
-                        if where_clause is not None
-                        else cond.field.ilike(f"%{args.get(cond.field.name)}%")
-                    )
+                    conditions_clause.append(cond.field.ilike(f"%{args.get(cond.field.name)}%"))
 
-    return where_clause
+    if code_label_clause is not None and not conditions_clause:
+        return code_label_clause
+
+    if code_label_clause is None and conditions_clause:
+        return and_(*conditions_clause)
+
+    return and_(code_label_clause, *conditions_clause)
