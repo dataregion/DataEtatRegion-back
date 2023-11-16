@@ -5,6 +5,7 @@ from app.controller.ref_controller.RefController import build_ref_controller
 from app.controller.ref_controller.RefCrte import api as crte_api
 from app.controller.ref_controller.RefTags import api as api_tags
 from app.controller.ref_controller.RefLocalisationInterministerielle import api as api_loc_interministerielle
+from app.controller.utils.ControllerUtils import ParserArgument
 from app.models.refs.arrondissement import Arrondissement
 
 # models
@@ -39,7 +40,7 @@ api_domaine = build_ref_controller(
 api_centre_cout = build_ref_controller(
     CentreCouts,
     Namespace(name="Centre couts", path="/centre-couts", description="API referentiels des Centre de couts"),
-    cond_opt=(CentreCouts.code_postal,),
+    cond_opt=(ParserArgument(CentreCouts.code_postal, str, "Recherche sur le code postal de la commune associée"),),
 )
 
 api_groupe_marchandise = build_ref_controller(
@@ -50,8 +51,8 @@ api_groupe_marchandise = build_ref_controller(
         description="API referentiels des groupes de marchandises",
     ),
     cond_opt=(
-        GroupeMarchandise.domaine,
-        GroupeMarchandise.segment,
+        ParserArgument(GroupeMarchandise.domaine, str, "Recherche sur le domaine"),
+        ParserArgument(GroupeMarchandise.segment, str, "Recherche sur le segment"),
     ),
 )
 
@@ -67,6 +68,11 @@ api_ref_programmation = build_ref_controller(
         path="/ref-programmation",
         description="API referentiels des referentiel de programmation",
     ),
+    cond_opt=(
+        ParserArgument(
+            ReferentielProgrammation.code_programme, str, "Recherche sur le(s) code(s) BOP associé(s)", "split"
+        ),
+    ),
 )
 
 api_ref_ministere = build_ref_controller(
@@ -81,7 +87,7 @@ api_ref_arrondissement = build_ref_controller(
 api_ref_beneficiaire = build_ref_controller(
     Siret,
     Namespace(name="Beneficiaire", path="/beneficiaire", description="API pour rechercher les beneficiares (siret)"),
-    cond_opt=(Siret.denomination,),
+    cond_opt=(ParserArgument(Siret.denomination, str, "Recherche sur la dénomation du SIRET"),),
 )
 
 api_ref_qpv = build_ref_controller(
@@ -91,7 +97,7 @@ api_ref_qpv = build_ref_controller(
         path="/qpv",
         description="API pour lister les QPV en France",
     ),
-    cond_opt=(Qpv.label_commune,),
+    cond_opt=(ParserArgument(Qpv.label_commune, str, "Recherche sur le label de la commune associée"),),
 )
 
 

@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 import hashlib
+from typing import Any
 
 from flask import request
 from flask_restx import reqparse
@@ -58,3 +60,16 @@ def get_pagination_parser(default_page_number=1, default_limit=100):
         "limit", type=positive(), required=False, default=default_limit, help="Nombre de résultat par page"
     )
     return pagination_parser
+
+
+@dataclass
+class ParserArgument:
+    """
+    Attributs d'un paramètre attendu par un endpoint de l'API
+    """
+
+    field: Any
+    type: type
+    help: str
+    action: str | None = None
+    required: bool = False

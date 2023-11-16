@@ -39,13 +39,13 @@ def test_qpv_not_found(test_client, insert_qpv):
 
 def test_search_qpv_no_content(test_client, insert_qpv):
     test = "fQP09"
-    resp = test_client.get("/budget/api/v1/qpv?query=" + test)
+    resp = test_client.get("/budget/api/v1/qpv?code=" + test)
     assert resp.status_code == 204
 
 
 def test_search_min_by_commune(test_client, insert_qpv):
     test = "Avign"
-    resp = test_client.get("/budget/api/v1/qpv?query=" + test)
+    resp = test_client.get("/budget/api/v1/qpv?label_commune=" + test)
     assert resp.status_code == 200
 
     page_return = json.loads(resp.data.decode())

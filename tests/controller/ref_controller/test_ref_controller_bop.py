@@ -25,13 +25,13 @@ def test_bop_not_found(test_client, init_ref_ministeres_themes):
 
 def test_search_bop_no_content(test_client, init_ref_ministeres_themes):
     test = "fcode1"
-    resp = test_client.get("/budget/api/v1/programme?query=" + test)
+    resp = test_client.get("/budget/api/v1/programme?code=" + test)
     assert resp.status_code == 204
 
 
 def test_search_bop_bycode_label(test_client, init_ref_ministeres_themes):
     test = "programme 1"
-    resp = test_client.get("/budget/api/v1/programme?query=" + test)
+    resp = test_client.get("/budget/api/v1/programme?code=" + test + "&label=" + test)
     assert resp.status_code == 200
 
     page_return = json.loads(resp.data.decode())

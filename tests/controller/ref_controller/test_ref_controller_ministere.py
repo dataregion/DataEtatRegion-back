@@ -35,13 +35,13 @@ def test_min_not_found(test_client, insert_ministeres):
 
 def test_search_min_no_content(test_client, insert_ministeres):
     test = "fcode1"
-    resp = test_client.get("/budget/api/v1/ministere?query=" + test)
+    resp = test_client.get("/budget/api/v1/ministere?code=" + test)
     assert resp.status_code == 204
 
 
 def test_search_min_bycode_label(test_client, insert_ministeres):
     test = "ulTUr"
-    resp = test_client.get("/budget/api/v1/ministere?query=" + test)
+    resp = test_client.get("/budget/api/v1/ministere?code=" + test + "&label=" + test)
     assert resp.status_code == 200
 
     page_return = json.loads(resp.data.decode())
