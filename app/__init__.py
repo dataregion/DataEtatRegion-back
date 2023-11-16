@@ -10,6 +10,7 @@ from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ProviderMetadata, ClientMetadata
+from prometheus_flask_exporter import PrometheusMetrics
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app import celeryapp, mailapp
@@ -21,6 +22,7 @@ from app.database import db
 # TODO déplacer en extensions
 ma = Marshmallow()
 cache = Cache()
+prometheus = PrometheusMetrics.for_app_factory()
 
 
 def create_app_migrate():
@@ -34,7 +36,15 @@ def create_app_migrate():
 
 
 def create_app_api():
-    return create_app_base()
+    api_app = create_app_base()
+
+    if api_app.config.get("ENABLE_API_METRICS", False):
+        logging.info("Setting up prometheus metrics.")
+        prometheus.init_app(api_app)
+    else:
+        logging.warning("Metrics are disabled ! use `ENABLE_API_METRICS` feature flag to enable it.")
+
+    return api_app
 
 
 def create_app_base(
