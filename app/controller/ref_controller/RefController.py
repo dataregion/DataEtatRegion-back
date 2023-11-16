@@ -36,7 +36,7 @@ def build_ref_controller(cls, namespace: Namespace, cond_opt: tuple = None):
     schema = getattr(sys.modules[module_name], f"{cls.__name__}Schema")
 
     parser_get = get_pagination_parser()
-    parser_get.add_argument("code_label", type=str, required=False, help="Recherche sur le code ou le label")
+    parser_get.add_argument("query", type=str, required=False, help="Recherche sur le code ou le label")
     if cond_opt is not None:
         for cond in cond_opt:
             parser_get.add_argument(
@@ -108,14 +108,14 @@ def _build_where_clause(cls, args: ParseResult, cond_opt: tuple):
     :return:
     """
     # Retour de None si aucun paramètre
-    if args.get("code_label") is None and cond_opt is None:
+    if args.get("query") is None and cond_opt is None:
         return None
 
     # Condition sur code OR label
     code_label_clause = None
-    if args.get("code_label"):
+    if args.get("query"):
         code_label_clause = or_(
-            cls.code.ilike(f"%{args.get('code_label')}%"), cls.label.ilike(f"%{args.get('code_label')}%")
+            cls.code.ilike(f"%{args.get('query')}%"), cls.label.ilike(f"%{args.get('query')}%")
         )
 
     # Conditions particulières
