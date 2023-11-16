@@ -108,28 +108,29 @@ def _build_where_clause(cls, args: ParseResult, cond_opt: tuple):
     """
     where_clause = None
     if args.get("code"):
-        where_clause = cls.code.ilike(args.get("code"))
+        where_clause = cls.code.ilike(f"%{args.get('code')}%")
 
     if args.get("label"):
         where_clause = (
-            where_clause | cls.label.ilike(args.get("label"))
+            where_clause | cls.label.ilike(f"%{args.get('label')}%")
             if where_clause is not None
-            else cls.label.ilike(args.get("label"))
+            else cls.label.ilike(f"%{args.get('label')}%")
         )
 
     if cond_opt is not None:
         for cond in cond_opt:
-            if cond.action == "split":
-                where_clause = (
-                    where_clause | cond.field.in_(args.get(cond.field.name))
-                    if where_clause is not None
-                    else cond.field.in_(args.get(cond.field.name))
-                )
-            else:
-                where_clause = (
-                    where_clause | cond.field.ilike(args.get(cond.field.name))
-                    if where_clause is not None
-                    else cond.field.ilike(args.get(cond.field.name))
-                )
+            if args.get(cond.field.name):
+                if cond.action == "split":
+                    where_clause = (
+                        where_clause | cond.field.in_(args.get(cond.field.name))
+                        if where_clause is not None
+                        else cond.field.in_(args.get(cond.field.name))
+                    )
+                else:
+                    where_clause = (
+                        where_clause | cond.field.ilike(f"%{args.get(cond.field.name)}%")
+                        if where_clause is not None
+                        else cond.field.ilike(f"%{args.get(cond.field.name)}%")
+                    )
 
     return where_clause

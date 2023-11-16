@@ -20,7 +20,11 @@ api = build_ref_controller(
         path="/loc-interministerielle",
         description="API referentiels des localisations interministerielles",
     ),
-    cond_opt=(ParserArgument(LocalisationInterministerielle.site, str, "Site"),),
+    cond_opt=(
+        ParserArgument(
+            LocalisationInterministerielle.site, str, "Recherche sur le site de la localisation interministérielle"
+        ),
+    ),
 )
 
 parser_get_loc_child = get_pagination_parser()

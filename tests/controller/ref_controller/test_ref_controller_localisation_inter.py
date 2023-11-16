@@ -84,13 +84,13 @@ def test_loc_inter_not_found(test_client, insert_loc):
 
 def test_search_loc_inter_no_content(test_client, insert_loc):
     test = "notfound"
-    resp = test_client.get("/budget/api/v1/loc-interministerielle?query=" + test)
+    resp = test_client.get("/budget/api/v1/loc-interministerielle?code=" + test)
     assert resp.status_code == 204
 
 
 def test_search_loc_inter_by_site(test_client, insert_loc):
     test = "rennest"
-    resp = test_client.get("/budget/api/v1/loc-interministerielle?limit=2&query=" + test)
+    resp = test_client.get("/budget/api/v1/loc-interministerielle?limit=2&site=" + test)
     assert resp.status_code == 200
 
     page_return = json.loads(resp.data.decode())
