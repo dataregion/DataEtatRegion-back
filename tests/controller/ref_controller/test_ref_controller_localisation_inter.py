@@ -84,7 +84,7 @@ def test_loc_inter_not_found(test_client, insert_loc):
 
 def test_search_loc_inter_no_content(test_client, insert_loc):
     test = "notfound"
-    resp = test_client.get("/budget/api/v1/loc-interministerielle?code=" + test)
+    resp = test_client.get("/budget/api/v1/loc-interministerielle?query=" + test)
     assert resp.status_code == 204
 
 

@@ -39,7 +39,7 @@ def test_qpv_not_found(test_client, insert_qpv):
 
 def test_search_qpv_no_content(test_client, insert_qpv):
     test = "fQP09"
-    resp = test_client.get("/budget/api/v1/qpv?code=" + test)
+    resp = test_client.get("/budget/api/v1/qpv?query=" + test)
     assert resp.status_code == 204
 
 

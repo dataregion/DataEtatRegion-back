@@ -72,6 +72,7 @@ api_ref_programmation = build_ref_controller(
         description="API referentiels des referentiel de programmation",
     ),
     cond_opt=(
+        ParserArgument(ReferentielProgrammation.code, str, "Recherche sur le(s) code(s)", "split"),
         ParserArgument(
             ReferentielProgrammation.code_programme, str, "Recherche sur le(s) code(s) BOP associé(s)", "split"
         ),

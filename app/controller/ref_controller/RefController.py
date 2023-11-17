@@ -66,7 +66,7 @@ def build_ref_controller(cls, namespace: Namespace, cond_opt: tuple = None):
             args = parser_get.parse_args()
             where_clause = _build_where_clause(cls, args, cond_opt)
             if where_clause is not None:
-                stmt = db.select(cls).where(and_(where_clause)).order_by(cls.code)
+                stmt = db.select(cls).where(where_clause).order_by(cls.code)
             else:
                 stmt = db.select(cls).order_by(cls.code)
 
@@ -107,16 +107,15 @@ def _build_where_clause(cls, args: ParseResult, cond_opt: tuple):
     :param cond_opt:    Les conditions supplémentaire
     :return:
     """
-    # Retour de None si aucun paramètre
-    if args.get("query") is None and cond_opt is None:
+    # Retour de None si aucun paramètre (uniquement page_number et limit)
+    args_no_none = [t for t in list(args.items()) if None not in t]
+    if len(args_no_none) == 2:
         return None
 
     # Condition sur code OR label
     code_label_clause = None
     if args.get("query"):
-        code_label_clause = or_(
-            cls.code.ilike(f"%{args.get('query')}%"), cls.label.ilike(f"%{args.get('query')}%")
-        )
+        code_label_clause = or_(cls.code.ilike(f"%{args.get('query')}%"), cls.label.ilike(f"%{args.get('query')}%"))
 
     # Conditions particulières
     conditions_clause = []
