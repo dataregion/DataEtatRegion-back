@@ -3,7 +3,7 @@
 import logging
 
 import yaml
-from app.utilities import pretty_printer
+from app.utilities import sqlalchemy_pretty_printer
 from flask import Flask
 from flask_caching import Cache
 from flask_marshmallow import Marshmallow
@@ -61,14 +61,10 @@ def create_app_base(
     if extra_config_settings is None:
         extra_config_settings = {}
 
-    logging.basicConfig(
-        format="%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-    logging.getLogger().setLevel(logging.INFO)
+    _format = "%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s"
+    logging.basicConfig(format=_format, datefmt="%Y-%m-%d %H:%M:%S", level=logging.INFO, force=True)
 
-    # Pretty printer SQL
-    pretty_printer.setup()
+    sqlalchemy_pretty_printer.setup(format=_format)
 
     # Instantiate Flask
     app = Flask(__name__)
@@ -100,6 +96,8 @@ def create_app_base(
         # Utiliser uniquement pour Demarche simplifie pour un POC
         cache.init_app(app, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 300})
         _expose_endpoint(app)
+
+    _post_create_app_base(app)
     return app
 
 
@@ -117,10 +115,7 @@ def read_config(app, config_filep: str, extra_config_settings: dict):
     # Load extra settings from extra_config_settings param
     app.config.update(extra_config_settings)
 
-    if app.config["DEBUG"] is True:
-        app.config["SQLALCHEMY_ECHO"] = True
-        logging.getLogger().setLevel(logging.DEBUG)
-
+    logging.info("Force 'SQLALCHEMY_TRACK_MODIFICATIONS' to False")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
@@ -173,3 +168,15 @@ def _expose_endpoint(app: Flask):
         if "NOCODB_PROJECT" in app.config:
             for project in app.config["NOCODB_PROJECT"].items():
                 app.register_blueprint(mount_blueprint(project[0]), url_prefix=f"/nocodb/{project[0]}")
+
+
+def _post_create_app_base(app):
+    if app.config["DEBUG"] is True:
+        logging.info("Debug is enabled.")
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    if app.config["DEBUG"] is True:
+        logging.info("SQL Logging enabled.")
+        logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+    else:
+        logging.info("SQL Logging disabled.")
