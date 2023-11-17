@@ -20,6 +20,15 @@ _data_folder = Path(__file__).resolve().parent / __name__
 def upgrade():
     _drop_old_view()
 
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ae")
+    op.execute(_view_flatten_ae())
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ademe")
+    op.execute(_view_flatten_ademe())
+
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_financial_lines")
+    op.execute(_view_flatten_financial_lines())
+
+    # visuterritoire
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_summarized_ae")
     op.execute(_view_flatten_summarized_ae())
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_summarized_ademe")
@@ -38,6 +47,10 @@ def downgrade():
     print("On recrée les anciennes vues visuterritoire. Cela peut être long.")
     op.execute(_views_old_visuterritoire())
 
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ae")
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ademe")
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_financial_lines")
+
 
 def _drop_old_view():
     """Drop les vues qui ont été créées hors migration."""
@@ -45,6 +58,18 @@ def _drop_old_view():
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.m_montant_par_niveau_bop_annee_type")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.m_summary_annee_geo_type_bop")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.budget_summary")
+
+
+def _view_flatten_financial_lines():
+    return _filecontent("flatten_financial_lines.sql")
+
+
+def _view_flatten_ae():
+    return _filecontent("flatten_ae.sql")
+
+
+def _view_flatten_ademe():
+    return _filecontent("flatten_ademe.sql")
 
 
 def _view_flatten_summarized_ae():

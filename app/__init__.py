@@ -152,14 +152,18 @@ def _expose_endpoint(app: Flask):
         app.wsgi_app = ProxyFix(app.wsgi_app)
         CORS(app, resources={r"*": {"origins": "*"}})
 
-        from app.controller.financial_data import api_financial  # pour éviter les import circulaire avec oidc
+        from app.controller.financial_data import (
+            api_financial_v1,
+            api_financial_v2,
+        )  # pour éviter les import circulaire avec oidc
         from app.controller.administration import api_administration
         from app.controller.ref_controller import api_ref
         from app.controller.apis_externes import api_apis_externes
         from app.controller.task_management import api_task
         from app.controller.proxy_nocodb import mount_blueprint  # pour éviter les import circulaire avec oidc
 
-        app.register_blueprint(api_financial, url_prefix="/financial-data")
+        app.register_blueprint(api_financial_v1, url_prefix="/financial-data")
+        app.register_blueprint(api_financial_v2, url_prefix="/financial-data")
         app.register_blueprint(api_administration, url_prefix="/administration")
         app.register_blueprint(api_ref, url_prefix="/budget")
         app.register_blueprint(api_apis_externes, url_prefix="/apis-externes")

@@ -22,6 +22,7 @@ from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
 from app.services import BuilderStatementFinancialCp
 from app.models.tags.Tags import TagVO
+from app.services.data import BuilderStatementFinancialLine
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
 
@@ -277,3 +278,49 @@ def _delete_cp(annee: int, source_region: str):
     stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.source_region == source_region)
     db.session.execute(stmt)
     db.session.commit()
+
+
+def search_financial_lines(
+    code_programme: list = None,
+    theme: list = None,
+    siret_beneficiaire: list = None,
+    types_beneficiaires: list = None,
+    annee: list = None,
+    domaine_fonctionnel: list = None,
+    referentiel_programmation: list = None,
+    source_region: str = None,
+    niveau_geo: str = None,
+    code_geo: list = None,
+    tags: list[str] = None,
+    page_number=1,
+    limit=500,
+):
+    source_region = _sanitize_source_region(source_region)
+
+    query_financial_lines = (
+        BuilderStatementFinancialLine()
+        .beneficiaire_siret_in(siret_beneficiaire)
+        .code_programme_in(code_programme)
+        .themes_in(theme)
+        .annee_in(annee)
+        .domaine_fonctionnel_in(domaine_fonctionnel)
+        .referentiel_programmation_in(referentiel_programmation)
+        .source_region_in([source_region])
+    )
+
+    if niveau_geo is not None and code_geo is not None:
+        query_financial_lines.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
+    elif bool(niveau_geo) ^ bool(code_geo):
+        raise NiveauCodeGeoException("Les paramètres niveau_geo et code_geo doivent être fournis ensemble.")
+
+    _includes_nones = False
+    if types_beneficiaires is not None and "autres" in types_beneficiaires:
+        _includes_nones = True
+    query_financial_lines.type_categorie_juridique_du_beneficiaire_in(
+        types_beneficiaires, includes_none=_includes_nones
+    )
+
+    query_financial_lines.tags_fullname_in(tags)
+
+    page_result = query_financial_lines.do_paginate(limit, page_number)
+    return page_result

@@ -76,13 +76,16 @@ from app.controller.financial_data.TagsCtrl import api as api_tags  # noqa: E402
 from app.controller.financial_data.France2030 import api as api_france_2030  # noqa: E402
 from app.controller.utils.LoginController import api as api_auth  # noqa: E402
 
+from app.controller.financial_data.v2 import api_ns as api_ae_v2  # noqa: E402
 
-api_financial = Blueprint("financial_data", __name__)
+
+api_financial_v1 = Blueprint("financial_data", __name__)
+api_financial_v2 = Blueprint("financial_data_v2", __name__)
 
 authorizations = {"Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}}
 
-api = Api(
-    api_financial,
+api_v1 = Api(
+    api_financial_v1,
     doc="/doc",
     prefix="/api/v1",
     description="API de gestion des données financière",
@@ -90,17 +93,34 @@ api = Api(
     authorizations=authorizations,
 )
 
-model_tags_single_api = register_tags_schemamodel(api)
+model_tags_single_api = register_tags_schemamodel(api_v1)
 
 
-api.add_namespace(api_auth)
-api.add_namespace(api_tags)
-api.add_namespace(api_ae)
-api.add_namespace(api_cp)
-api.add_namespace(api_ademe)
-api.add_namespace(api_france_2030)
+api_v1.add_namespace(api_auth)
+api_v1.add_namespace(api_tags)
+api_v1.add_namespace(api_ae)
+api_v1.add_namespace(api_cp)
+api_v1.add_namespace(api_ademe)
+api_v1.add_namespace(api_france_2030)
+
+api_v2 = Api(
+    api_financial_v2,
+    version="2.0",
+    doc="/api/v2/doc",
+    prefix="/api/v2",
+    description="API de gestion des données financières",
+    title="API Data transform",
+    authorizations=authorizations,
+)
+
+api_v2.add_namespace(api_ae_v2)
 
 
-@api_financial.errorhandler(DataRegatException)
+@api_financial_v1.errorhandler(DataRegatException)
 def handle_exception(e):
+    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
+
+
+@api_financial_v2.errorhandler(DataRegatException)
+def handle_exception_for_api_v2(e):
     return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
