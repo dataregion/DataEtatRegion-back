@@ -113,6 +113,8 @@ api_v2 = Api(
     authorizations=authorizations,
 )
 
+model_tags_single_api = register_tags_schemamodel(api_v2)
+
 api_v2.add_namespace(api_ae_v2)
 
 
