@@ -18,7 +18,7 @@ def select_commune(code: str, label: str) -> Commune:
   return db.session.execute(stmt).scalar_one()
 
 
-def set_pvd(self, commune: Commune, date: Date = None) -> None:
+def set_pvd(self, commune: Commune, date_signature: Date = None) -> None:
   """
   Définis une commune comme PVD à partie d'une date spécifiée
   :param commune: Commune à modifier
@@ -26,8 +26,7 @@ def set_pvd(self, commune: Commune, date: Date = None) -> None:
   :return: None
   """
   commune.is_pvd = True
-  commune.date_pvd = date
-  print(f"PVD : {commune.code} {commune.label_commune}")
+  commune.date_pvd = date_signature
   db.session.commit()
 
 
@@ -36,5 +35,5 @@ def set_communes_non_pvd() -> None:
     Reset toutes les communes comme non PVD
     :return: None
     """
-    Commune.query.update({Commune.is_pvd: None}) 
+    Commune.query.update({Commune.is_pvd: None, Commune.date_pvd: None}) 
     db.session.commit()
