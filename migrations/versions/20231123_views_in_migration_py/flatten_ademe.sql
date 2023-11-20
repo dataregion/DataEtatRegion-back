@@ -1,6 +1,6 @@
 CREATE MATERIALIZED VIEW flatten_ademe AS
 SELECT
-       'ADEME' as source,
+       'ADEME' as source, -- Raccord avec l'enum DataType
        root.id as id,
        NULL::int4 AS n_poste_ej,
        NULL AS n_ej,

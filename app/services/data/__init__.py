@@ -2,7 +2,8 @@
 Services liés à la couche d'accès aux données
 """
 
-from sqlalchemy import Column, ColumnExpressionArgument, Select, select, or_, and_
+from sqlalchemy import Column, ColumnExpressionArgument, Select, desc, select, or_, and_, func, distinct
+from app.models.enums.DataType import DataType
 from app.models.enums.TypeCodeGeo import TypeCodeGeo
 from app.database import db
 
@@ -156,9 +157,9 @@ class BuilderStatementFinancialLine:
         self._stmt = self._stmt.where(where)
         return self._stmt
 
-    def par_identifiant_technique(self, source: str, id: int):
+    def par_identifiant_technique(self, source: DataType, id: int):
         """Filtre selon l'identifiant technique. ie couple source - id"""
-        self._stmt = self._stmt.where(FinancialLines.source == source, FinancialLines.id == id)
+        self._stmt = self._stmt.where(FinancialLines.source == str(source), FinancialLines.id == id)
         return self
 
     def do_paginate(self, limit, page_number):
@@ -170,12 +171,22 @@ class BuilderStatementFinancialLine:
         """
         return db.paginate(self._stmt, per_page=limit, page=page_number, error_out=False)
 
+    def do_select_annees(self) -> list[int]:
+        """
+        Retourne l'ensemble des années ordonnées par ordre decroissant
+        concernées par la recherche
+        """
+        subq = select(distinct(FinancialLines.annee)).order_by(desc(FinancialLines.annee)).subquery()
+        stmt = select(func.array_agg(subq.c[0]))
+        result = db.session.execute(stmt).scalar_one_or_none()
+        return result  # type: ignore
+
     def do_single(self):
         """
         Effectue la recherche et retourne le seul résultat
         :return:
         """
-        return db.session.execute(self._stmt).scalar_one_or_none()
+        return db.session.execute(self._stmt).unique().scalar_one_or_none()
 
     def _stmt_where_field_in(self, field: Column, set_of_values: list | None):
         if set_of_values is not None:

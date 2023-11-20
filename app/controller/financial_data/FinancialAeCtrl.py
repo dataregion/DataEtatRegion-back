@@ -63,6 +63,7 @@ def handle_invalid_token(e: InvalidTokenError):
     return ErrorController("Token invalide.").to_json(), HTTPStatus.BAD_REQUEST
 
 
+# TODO: deprecate
 @api.route("/ae")
 class FinancialAe(Resource):
     @api.expect(parser_import)
@@ -117,6 +118,7 @@ class FinancialAe(Resource):
         }, HTTPStatus.OK
 
 
+# TODO: deprecate
 @api.route("/ae/<id>")
 @api.doc(model=model_financial_ae_single_api)
 class GetFinancialAe(Resource):
@@ -159,6 +161,7 @@ class GetFinancialCpOfAe(Resource):
         return financial_cp, 200
 
 
+# TODO: deprecate
 @api.route("/ae/annees")
 class GetYears(Resource):
     """

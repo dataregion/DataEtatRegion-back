@@ -280,24 +280,46 @@ def _delete_cp(annee: int, source_region: str):
     db.session.commit()
 
 
-def search_financial_lines(
-    code_programme: list = None,
-    theme: list = None,
-    siret_beneficiaire: list = None,
-    types_beneficiaires: list = None,
-    annee: list = None,
-    domaine_fonctionnel: list = None,
-    referentiel_programmation: list = None,
-    source_region: str = None,
-    niveau_geo: str = None,
-    code_geo: list = None,
-    tags: list[str] = None,
+def get_ligne_budgetaire(
+    source: DataType,
+    id: int,
+    source_region: str | None = None,
+):
+    """
+    Recherche la ligne budgetaire selon son ID et sa source region
+    """
+    source_region = _sanitize_source_region(source_region)
+
+    query_ligne_budget = (
+        BuilderStatementFinancialLine().par_identifiant_technique(source, id).source_region_in([source_region])
+    )
+    result = query_ligne_budget.do_single()
+    return result
+
+
+def search_lignes_budgetaires(
+    code_programme: list | None = None,
+    theme: list | None = None,
+    siret_beneficiaire: list | None = None,
+    types_beneficiaires: list | None = None,
+    annee: list | None = None,
+    domaine_fonctionnel: list | None = None,
+    referentiel_programmation: list | None = None,
+    source_region: str | None = None,
+    niveau_geo: str | None = None,
+    code_geo: list | None = None,
+    tags: list[str] | None = None,
     page_number=1,
     limit=500,
 ):
+    """
+    Recherche les lignes budgetaires (quelle que soit la source)
+    correspondant aux critères de recherche utilisateur.
+    """
+
     source_region = _sanitize_source_region(source_region)
 
-    query_financial_lines = (
+    query_lignes_budget = (
         BuilderStatementFinancialLine()
         .beneficiaire_siret_in(siret_beneficiaire)
         .code_programme_in(code_programme)
@@ -309,18 +331,23 @@ def search_financial_lines(
     )
 
     if niveau_geo is not None and code_geo is not None:
-        query_financial_lines.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
+        query_lignes_budget.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
     elif bool(niveau_geo) ^ bool(code_geo):
         raise NiveauCodeGeoException("Les paramètres niveau_geo et code_geo doivent être fournis ensemble.")
 
     _includes_nones = False
     if types_beneficiaires is not None and "autres" in types_beneficiaires:
         _includes_nones = True
-    query_financial_lines.type_categorie_juridique_du_beneficiaire_in(
-        types_beneficiaires, includes_none=_includes_nones
-    )
+    query_lignes_budget.type_categorie_juridique_du_beneficiaire_in(types_beneficiaires, includes_none=_includes_nones)
 
-    query_financial_lines.tags_fullname_in(tags)
+    query_lignes_budget.tags_fullname_in(tags)
 
-    page_result = query_financial_lines.do_paginate(limit, page_number)
+    page_result = query_lignes_budget.do_paginate(limit, page_number)
     return page_result
+
+
+def get_annees_budget(source_region: str | None = None):
+    source_region = _sanitize_source_region(source_region)
+
+    query_annees_budget = BuilderStatementFinancialLine().source_region_in([source_region])
+    return query_annees_budget.do_select_annees()

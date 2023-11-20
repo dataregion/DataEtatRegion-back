@@ -1,6 +1,6 @@
 CREATE MATERIALIZED VIEW flatten_ae AS
 SELECT
-       'FINANCIAL_DATA_AE' as source,
+       'FINANCIAL_DATA_AE' as source, -- Raccord avec l'enum DataType
        root.id as id,
        root.n_poste_ej,
        root.n_ej,
