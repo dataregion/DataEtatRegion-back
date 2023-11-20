@@ -113,9 +113,12 @@ def _build_where_clause(cls, args: ParseResult, cond_opt: tuple):
         return None
 
     # Condition sur code OR label
-    code_label_clause = None
+    code_label_clause = and_(True)
     if args.get("query"):
-        code_label_clause = or_(cls.code.ilike(f"%{args.get('query')}%"), cls.label.ilike(f"%{args.get('query')}%"))
+        if hasattr(cls, "code"):
+            code_label_clause = and_(code_label_clause, cls.code.ilike(f"%{args.get('query')}%"))
+        if hasattr(cls, "label"):
+            code_label_clause = or_(code_label_clause, cls.label.ilike(f"%{args.get('query')}%"))
 
     # Conditions particulières
     conditions_clause = []
