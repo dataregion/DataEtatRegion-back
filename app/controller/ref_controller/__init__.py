@@ -40,7 +40,10 @@ api_domaine = build_ref_controller(
 api_centre_cout = build_ref_controller(
     CentreCouts,
     Namespace(name="Centre couts", path="/centre-couts", description="API referentiels des Centre de couts"),
-    cond_opt=(ParserArgument(CentreCouts.code_postal, str, "Recherche sur le code postal de la commune associée"),),
+    cond_opt=(
+        ParserArgument(CentreCouts.code, str, "Recherche sur le code du centre de coûts"),
+        ParserArgument(CentreCouts.code_postal, str, "Recherche sur le code postal de la commune associée"),
+    ),
 )
 
 api_groupe_marchandise = build_ref_controller(
@@ -69,6 +72,7 @@ api_ref_programmation = build_ref_controller(
         description="API referentiels des referentiel de programmation",
     ),
     cond_opt=(
+        ParserArgument(ReferentielProgrammation.code, str, "Recherche sur le(s) code(s)", "split"),
         ParserArgument(
             ReferentielProgrammation.code_programme, str, "Recherche sur le(s) code(s) BOP associé(s)", "split"
         ),

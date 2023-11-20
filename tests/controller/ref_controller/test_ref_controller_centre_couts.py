@@ -20,13 +20,13 @@ def test_centre_cout_by_code_not_found(test_client, insert_centre_couts):
 
 def test_search_centre_cout_no_content(test_client, insert_centre_couts):
     test = "fcode1"
-    resp = test_client.get("/budget/api/v1/centre-couts?code=" + test)
+    resp = test_client.get("/budget/api/v1/centre-couts?query=" + test)
     assert resp.status_code == 204
 
 
 def test_search_centre_cout_bycode_label(test_client, insert_centre_couts):
     test = "code12"
-    resp = test_client.get("/budget/api/v1/centre-couts?code=" + test + "&label=" + test)
+    resp = test_client.get("/budget/api/v1/centre-couts?query=" + test)
     assert resp.status_code == 200
 
     page_return = json.loads(resp.data.decode())

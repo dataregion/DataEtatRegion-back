@@ -57,7 +57,8 @@ def test_gm_not_found(test_client, insert_gm):
 
 def test_search_gm_no_content(test_client, insert_gm):
     test = "daine 02"
-    resp = test_client.get("/budget/api/v1/groupe-marchandise?code=" + test)
+    resp = test_client.get("/budget/api/v1/groupe-marchandise?query=" + test)
+    print(resp)
     assert resp.status_code == 204
 
 

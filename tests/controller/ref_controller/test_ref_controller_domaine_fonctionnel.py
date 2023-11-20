@@ -43,13 +43,13 @@ def test_domaine_not_found(test_client, insert_domaine_fonctionnel):
 
 def test_search_domaine_no_content(test_client, insert_domaine_fonctionnel):
     test = "daine 02"
-    resp = test_client.get("/budget/api/v1/domaine-fonct?code=" + test)
+    resp = test_client.get("/budget/api/v1/domaine-fonct?query=" + test)
     assert resp.status_code == 204
 
 
 def test_search_domaine_by_label(test_client, insert_domaine_fonctionnel):
     test = "aine 01"
-    resp = test_client.get("/budget/api/v1/domaine-fonct?code=" + test + "&label=" + test)
+    resp = test_client.get("/budget/api/v1/domaine-fonct?query=" + test)
     assert resp.status_code == 200
 
     page_return = json.loads(resp.data.decode())
