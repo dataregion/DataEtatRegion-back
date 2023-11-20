@@ -1,7 +1,7 @@
 import logging
 from app import db
 from app.models.refs.commune import Commune
-from sqlalchemy import and_
+from sqlalchemy import and_, Date
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def select_commune(code: str, label: str) -> Commune:
   return db.session.execute(stmt).scalar_one()
 
 
-def set_pvd(self, commune: Commune) -> None:
+def set_pvd(self, commune: Commune, date: Date = None) -> None:
   """
   Définis une commune comme PVD à partie d'une date spécifiée
   :param commune: Commune à modifier
@@ -26,6 +26,7 @@ def set_pvd(self, commune: Commune) -> None:
   :return: None
   """
   commune.is_pvd = True
+  commune.date_pvd = date
   print(f"PVD : {commune.code} {commune.label_commune}")
   db.session.commit()
 

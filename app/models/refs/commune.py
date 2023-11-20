@@ -1,6 +1,6 @@
 from datetime import date
 from marshmallow import fields
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Column, String, Boolean, Date
 from sqlalchemy.orm import relationship, Mapped
 
 from app.models.refs.arrondissement import Arrondissement  # noqa: F401
@@ -29,6 +29,7 @@ class Commune(Audit, db.Model):
     label_departement: Column[str] = Column(String)
 
     is_pvd: Column[bool] = Column(Boolean, nullable=True)
+    date_pvd: Column[bool] = Column(Date, nullable=True)
 
     # FK
     code_arrondissement: Column[str] = Column(String, db.ForeignKey("ref_arrondissement.code"), nullable=True)

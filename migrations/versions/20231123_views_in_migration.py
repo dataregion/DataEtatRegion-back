@@ -7,6 +7,7 @@ Create Date: 2023-11-13 14:53:18.871674
 """
 from pathlib import Path
 from alembic import op
+import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "20231123_views_in_migration"
@@ -18,6 +19,7 @@ _data_folder = Path(__file__).resolve().parent / __name__
 
 
 def upgrade():
+    # Views
     _drop_old_view()
 
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ae")
@@ -40,8 +42,14 @@ def upgrade():
     print("On crée les vues visuterritoire. Cela peut être long.")
     op.execute(_views_vt_visuterritoire())
 
+    # PVD
+    with op.batch_alter_table('ref_commune', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('is_pvd', sa.Boolean(), nullable=True))
+        batch_op.add_column(sa.Column('date_pvd', sa.Date(), nullable=True))
+
 
 def downgrade():
+    # Views
     _drop_old_view()
 
     op.execute("DROP VIEW IF EXISTS public.montant_par_niveau_bop_annee_type")
@@ -59,6 +67,11 @@ def downgrade():
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_financial_lines")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ae")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ademe")
+
+    # PVD
+    with op.batch_alter_table('ref_commune', schema=None) as batch_op:
+        batch_op.drop_column('is_pvd')
+        batch_op.drop_column('date_pvd')
 
 
 def _drop_old_view():
