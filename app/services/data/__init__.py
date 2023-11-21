@@ -53,14 +53,16 @@ class BuilderStatementFinancialLine:
         types_beneficiaires: list[str] | None,
         includes_none: bool = False,
     ):
-        cond = and_(True)
-
+        conds = []
         if types_beneficiaires is not None and includes_none:
-            cond = or_(cond, FinancialLines.beneficiaire_categorieJuridique_type == None)  # noqa: E711
+            _cond = FinancialLines.beneficiaire_categorieJuridique_type == None  # noqa: E711
+            conds.append(_cond)
 
         if types_beneficiaires is not None:
-            cond = or_(cond, FinancialLines.beneficiaire_categorieJuridique_type.in_(types_beneficiaires))
+            _cond = FinancialLines.beneficiaire_categorieJuridique_type.in_(types_beneficiaires)
+            conds.append(_cond)
 
+        cond = or_(*conds)
         self._stmt = self._stmt.where(cond)
         return self
 
@@ -122,7 +124,7 @@ class BuilderStatementFinancialLine:
         column_codegeo_commune_loc_inter: Column[str] | None,
         column_codegeo_commune_beneficiaire: Column[str] | None,
     ):
-        where_clause = and_(True)
+        conds = []
 
         #
         # On calcule les patterns valides pour les codes de localisations interministerielles
@@ -136,20 +138,21 @@ class BuilderStatementFinancialLine:
         ]
         # fmt:on
         if len(code_locinter_pattern) > 0:
-            where_clause = and_(where_clause, or_(*_conds_code_locinter))
+            conds.append(or_(*_conds_code_locinter))
 
         #
         # Ou les code geo de la commune associée à la localisation interministerielle
         #
         if column_codegeo_commune_loc_inter is not None:
-            where_clause = or_(where_clause, column_codegeo_commune_loc_inter.in_(list_code_geo))
+            conds.append(column_codegeo_commune_loc_inter.in_(list_code_geo))
 
         #
         # Ou les code geo de la commune associée au bénéficiaire
         #
         if column_codegeo_commune_beneficiaire is not None:
-            where_clause = or_(where_clause, column_codegeo_commune_beneficiaire.in_(list_code_geo))
+            conds.append(column_codegeo_commune_beneficiaire.in_(list_code_geo))
 
+        where_clause = or_(*conds)
         self._stmt = self._stmt.where(where_clause)
         return self._stmt
 
