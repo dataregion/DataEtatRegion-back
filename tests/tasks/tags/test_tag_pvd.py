@@ -25,7 +25,14 @@ def tag_pvd(database):
 @pytest.fixture(scope="function")
 def add_commune_cancale(database):
     commune = Commune(
-        **{"code": "35049", "label_commune": "Cancale", "code_departement": "35", "is_pvd": True, "date_pvd": None}
+        **{
+            "id": "111",
+            "code": "35049",
+            "label_commune": "Cancale",
+            "code_departement": "35",
+            "is_pvd": True,
+            "date_pvd": None,
+        }
     )
     database.session.add(commune)
     database.session.commit()
