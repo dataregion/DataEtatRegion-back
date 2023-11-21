@@ -9,7 +9,8 @@ SELECT
        root.compte_budgetaire,
        aggr.montant_ae,
        aggr.montant_cp,
-       aggr.date_dernier_paiement,
+       aggr.date_dernier_paiement as "dateDeDernierPaiement",
+       root.date_replication as "dateDeCreation",
     -- domaine fonctionnel
        rdf.code as "domaineFonctionnel_code",
        rdf.label as "domaineFonctionnel_label",

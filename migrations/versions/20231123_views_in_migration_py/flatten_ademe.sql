@@ -9,7 +9,8 @@ SELECT
        NULL AS compte_budgetaire,
        root.montant as montant_ae,
        root.montant as montant_cp,
-       CAST(NULL AS TIMESTAMP) AS date_dernier_paiement,
+       CAST(NULL AS TIMESTAMP) as "dateDeDernierPaiement",
+       CAST(NULL AS TIMESTAMP) as "dateDeCreation",
     -- domaine fonctionnel
        NULL as "domaineFonctionnel_code",
        NULL as "domaineFonctionnel_label",

@@ -30,7 +30,8 @@ class FlattenFinancialLines(db.Model):
     montant_ae = Column(Float)
     montant_cp = Column(Float)
 
-    date_dernier_paiement = Column(DateTime)
+    dateDeDernierPaiement = Column(DateTime)
+    dateDeCreation = Column(DateTime)
 
     domaineFonctionnel_code = Column(String)
     domaineFonctionnel_label = Column(String)
