@@ -2,7 +2,7 @@
 Services liés à la couche d'accès aux données
 """
 
-from sqlalchemy import Column, ColumnExpressionArgument, Select, desc, select, or_, and_, func, distinct
+from sqlalchemy import Column, ColumnExpressionArgument, Select, desc, select, or_, func, distinct
 from app.models.enums.DataType import DataType
 from app.models.enums.TypeCodeGeo import TypeCodeGeo
 from app.database import db

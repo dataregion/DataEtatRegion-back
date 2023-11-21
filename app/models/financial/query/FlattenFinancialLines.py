@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship, Mapped
 from marshmallow import fields
 
 from app import db, ma
-from app.models.enums.DataType import DataType, DataTypeField
+from app.models.enums.DataType import DataTypeField
 from app.models.tags.Tags import Tags, TagsSchema
 
 
