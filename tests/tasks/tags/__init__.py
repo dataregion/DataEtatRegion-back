@@ -6,7 +6,7 @@ __all__ = (
     "TAG_DETR",
     "TAG_CPER_15_20",
     "TAG_CPER_21_27",
-    "TAG_PVD"
+    "TAG_PVD",
 )
 
 from faker import Faker

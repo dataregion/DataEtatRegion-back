@@ -48,7 +48,7 @@ def _send_subtask_pvd(data_pvd: str, tech_info: LineImportTechInfo):
 def import_file_pvd(self, fichier: str):
     # get file
     _logger.info(f"[IMPORT][PVD] Start for file {fichier}")
-    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
     move_folder = current_app.config["UPLOAD_FOLDER"] + "/save/"
 
@@ -87,11 +87,11 @@ def import_file_pvd(self, fichier: str):
 
 @_celery.task(bind=True, name="import_line_pvd")
 @_handle_exception_import("PVD")
-def import_line_pvd(self, line_commune: str, tech_info_list: list):
-    code_commune = line_commune.get("insee_com", None)
-    label_commune = line_commune.get("lib_com", None)
-    date_signature = line_commune.get("date_signature", None)
+def import_line_pvd(self, commune_json, tech_info_list: list):
+    code_commune = commune_json.get("insee_com", None)
+    label_commune = commune_json.get("lib_com", None)
+    date_signature = commune_json.get("date_signature", None)
 
     _logger.debug(f"Commune PVD : {code_commune} - {label_commune}")
     commune = select_commune(code_commune, label_commune)
-    return set_pvd(commune, datetime.strptime(date_signature, "%Y-%m-%d") if date_signature is not None else None)
+    set_pvd(commune, datetime.strptime(date_signature, "%Y-%m-%d") if date_signature is not None else None)

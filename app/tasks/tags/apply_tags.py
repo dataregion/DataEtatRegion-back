@@ -133,23 +133,23 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None):
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag PVD id : {tag.id}")
 
     # Récupération des codes des communes PVD
-    stmt_communes_pvd = db.select(Commune.id, Commune.code).where(Commune.is_pvd == True)
-    communes_pvd = db.session.execute(stmt_communes_pvd).fetchall();
+    stmt_communes_pvd = db.select(Commune.id, Commune.code).where(Commune.is_pvd == True)  # noqa: E712
+    communes_pvd = db.session.execute(stmt_communes_pvd).fetchall()
 
     # Récupération des codes des SIRET ayant une commune PVD
     condition_siret = Siret.code_commune.in_([pvd.code for pvd in communes_pvd])
     stmt_siret = db.select(Siret.code).where(condition_siret)
-    siret_pvd = db.session.execute(stmt_siret).fetchall();
+    siret_pvd = db.session.execute(stmt_siret).fetchall()
 
     # Récupération des codes des localisations interministérielles ayant une commune PVD
     condition_loc = LocalisationInterministerielle.commune_id.in_([pvd.id for pvd in communes_pvd])
     stmt_loc = db.select(LocalisationInterministerielle.id).where(condition_loc)
-    loc_pvd = db.session.execute(stmt_loc).fetchall();
+    loc_pvd = db.session.execute(stmt_loc).fetchall()
 
     _logger.debug(f"[TAGS][{tag.type}] Récupération des siret et des loc interministérielle ayant une commune PVD")
 
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(
-        Ae.siret.in_([siret.code for siret in siret_pvd]) |
-        Ae.localisation_interministerielle.in_([loc.code for loc in loc_pvd])
+        Ae.siret.in_([siret.code for siret in siret_pvd])
+        | Ae.localisation_interministerielle.in_([loc.code for loc in loc_pvd])
     )

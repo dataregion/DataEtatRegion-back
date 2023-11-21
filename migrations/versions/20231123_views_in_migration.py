@@ -46,6 +46,11 @@ def upgrade():
     with op.batch_alter_table('ref_commune', schema=None) as batch_op:
         batch_op.add_column(sa.Column('is_pvd', sa.Boolean(), nullable=True))
         batch_op.add_column(sa.Column('date_pvd', sa.Date(), nullable=True))
+    
+    op.execute("""
+        INSERT INTO tags (type, description, enable_rules_auto, display_name)
+        VALUES ('pvd', 'Petite Ville de Demain', true, 'PVD');
+    """)
 
 
 def downgrade():
@@ -72,6 +77,8 @@ def downgrade():
     with op.batch_alter_table('ref_commune', schema=None) as batch_op:
         batch_op.drop_column('is_pvd')
         batch_op.drop_column('date_pvd')
+
+    op.execute("DELETE FROM tags WHERE type = 'pvd';")
 
 
 def _drop_old_view():
