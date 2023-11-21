@@ -47,9 +47,9 @@ def downgrade():
     print("On recrée les anciennes vues visuterritoire. Cela peut être long.")
     op.execute(_views_old_visuterritoire())
 
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_financial_lines")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ae")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ademe")
-    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_financial_lines")
 
 
 def _drop_old_view():
