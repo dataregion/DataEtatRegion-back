@@ -1,25 +1,23 @@
 CREATE MATERIALIZED VIEW vt_flatten_summarized_ademe AS
-       SELECT 
-              'ADEME' as SOURCE, -- Le data type
-              ademe.id AS id,
-              date_part('year', ademe.date_convention) AS annee,
-              ademe.montant AS montant_ae,
-              ademe.montant AS montant_cp,
-              'ADEME' AS code_programme,
-              rs.code AS siret,
-              rc.code AS code_commune,
-              rc.code_departement,
-              rc.code_crte,
-              rc.code_epci,
-              rs.code_qpv AS "code_qpv",
-              rcj.type AS "categorie_juridique",
-              NULL AS "loc_inter",
-              NULL AS "code_departement_loc_inter",
-              NULL AS "code_commune_loc_inter",
-              NULL AS "code_epci_loc_inter",
-              NULL AS "code_crte_loc_inter"
-       FROM "ademe" ademe
-       LEFT JOIN ref_siret rs ON ademe.siret_beneficiaire = rs.code
-       LEFT JOIN ref_commune rc ON rs.code_commune = rc.code
-       LEFT JOIN ref_categorie_juridique rcj ON rs.categorie_juridique = rcj.code
-       WHERE rc.code IS NOT NULL;
+SELECT 
+       'ADEME' as SOURCE, -- Le data type
+       fa.id AS "id",
+       fa.annee  AS "annee",
+       fa.montant_ae AS "montant_ae",
+       fa.montant_cp AS "montant_cp",
+       'ADEME' AS "code_programme",
+       fa.beneficiaire_code AS "siret",
+       fa.beneficiaire_commune_code AS "code_commune",
+       fa."beneficiaire_commune_codeDepartement" as "code_departement",
+       fa."beneficiaire_commune_codeCrte" as "code_crte",
+       fa."beneficiaire_commune_codeEpci" as "code_epci",
+       fa.beneficiaire_qpv_code AS "code_qpv",
+       fa."beneficiaire_categorieJuridique_type" AS "categorie_juridique",
+       NULL AS "loc_inter",
+       NULL AS "code_departement_loc_inter",
+       NULL AS "code_commune_loc_inter",
+       NULL AS "code_epci_loc_inter",
+       NULL AS "code_crte_loc_inter"
+from flatten_ademe fa
+WHERE fa.beneficiaire_commune_code IS NOT null
+order by SOURCE, id;
