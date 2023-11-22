@@ -125,3 +125,17 @@ class GetPlageAnnees(Resource):
         if annees is None:
             return [], HTTPStatus.OK
         return annees, HTTPStatus.OK
+
+
+@api_ns.route("/budget/healthcheck")
+class GetHealthcheck(Resource):
+    def get(self):
+        """
+        Effectue un GET pour vérifier la disponibilité de l'API des lignes budgetaires
+        """
+        result_q = search_lignes_budgetaires(limit=10, page_number=0)
+        result = EnrichedFlattenFinancialLinesSchema(many=True).dump(result_q.items)
+
+        assert len(result) == 10, "On devrait récupérer 10 lignes budgetaires"
+
+        return HTTPStatus.OK
