@@ -5,7 +5,7 @@ from sqlalchemy import text
 celery: Celery = celeryapp.celery
 
 
-@celery.task(bind=True, name="visuterritoire_maj_materialized_view")
+@celery.task(bind=True, name="maj_materialized_view")
 def refresh_materialized_views(self):
     refresh_request = text(
         "refresh materialized view flatten_ademe;"
