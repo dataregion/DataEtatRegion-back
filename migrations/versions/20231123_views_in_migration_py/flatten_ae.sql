@@ -66,9 +66,6 @@ SELECT
       root.updated_at as updated_at,
       root.created_at as created_at
    FROM "financial_ae" root
-   --
-   LEFT JOIN montant_financial_ae mce ON root.id = mce.id_financial_ae
-   LEFT JOIN financial_cp fcp ON fcp.id_ae = root.id
    -- siret => beneficiaire
    LEFT JOIN ref_siret rs ON root.siret = rs.code
    LEFT JOIN ref_categorie_juridique rs_rcj ON rs.categorie_juridique = rs_rcj.code
