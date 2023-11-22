@@ -10,13 +10,13 @@ def refresh_materialized_views(self):
     refresh_request = text(
         "refresh materialized view flatten_ademe;"
         "refresh materialized view flatten_ae;"
-        "refresh materialized view financial_lines;"
+        "refresh materialized view flatten_financial_lines;"
         # Vues visuterritoire
-        "refresh materialized view flatten_summarized_ademe;"
-        "refresh materialized view flatten_summarized_ae;"
-        "refresh materialized view budget_summary;"
-        "refresh materialized view m_summary_annee_geo_type_bop;"
-        "refresh materialized view m_montant_par_niveau_bop_annee_type;"
+        "refresh materialized view vt_flatten_summarized_ademe;"
+        "refresh materialized view vt_flatten_summarized_ae;"
+        "refresh materialized view vt_budget_summary;"
+        "refresh materialized view vt_m_summary_annee_geo_type_bop;"
+        "refresh materialized view vt_m_montant_par_niveau_bop_annee_type;"
     )
 
     db.session.execute(refresh_request)

@@ -30,18 +30,18 @@ def upgrade():
 
     # visuterritoire
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_summarized_ae")
-    op.execute(_view_flatten_summarized_ae())
+    op.execute(_view_vt_flatten_summarized_ae())
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_summarized_ademe")
-    op.execute(_view_flatten_summarized_ademe())
+    op.execute(_view_vt_flatten_summarized_ademe())
 
     print("On crée les vues visuterritoire. Cela peut être long.")
-    op.execute(_views_visuterritoire())
+    op.execute(_views_vt_visuterritoire())
 
 
 def downgrade():
     _drop_old_view()
 
-    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_summarized_ae")
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_flatten_summarized_ae")
     op.execute(_old_view_flatten_summarized_ae())
 
     print("On recrée les anciennes vues visuterritoire. Cela peut être long.")
@@ -72,20 +72,20 @@ def _view_flatten_ademe():
     return _filecontent("flatten_ademe.sql")
 
 
-def _view_flatten_summarized_ae():
-    return _filecontent("flatten_summarized_ae.sql")
+def _view_vt_flatten_summarized_ae():
+    return _filecontent("vt_flatten_summarized_ae.sql")
 
 
-def _view_flatten_summarized_ademe():
-    return _filecontent("flatten_summarized_ademe.sql")
+def _view_vt_flatten_summarized_ademe():
+    return _filecontent("vt_flatten_summarized_ademe.sql")
 
 
 def _old_view_flatten_summarized_ae():
     return _filecontent("old_flatten_summarized_ae.sql")
 
 
-def _views_visuterritoire():
-    return _filecontent("views_visuterritoire.sql")
+def _views_vt_visuterritoire():
+    return _filecontent("vt_views_visuterritoire.sql")
 
 
 def _views_old_visuterritoire():
@@ -95,6 +95,6 @@ def _views_old_visuterritoire():
 def _filecontent(name: str):
     """Get file content from ./`modulename`/name"""
     p = _data_folder / name
-    with p.open() as f:
+    with p.open("r") as f:
         view_str = f.read()
     return view_str
