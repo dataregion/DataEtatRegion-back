@@ -1,4 +1,4 @@
-CREATE MATERIALIZED VIEW flatten_summarized_ademe AS
+CREATE MATERIALIZED VIEW vt_flatten_summarized_ademe AS
        SELECT 
               'ADEME' as SOURCE, -- Le data type
               ademe.id AS id,

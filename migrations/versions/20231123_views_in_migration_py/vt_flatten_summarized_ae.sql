@@ -1,4 +1,4 @@
-CREATE MATERIALIZED VIEW flatten_summarized_ae AS
+CREATE MATERIALIZED VIEW vt_flatten_summarized_ae AS
 	   SELECT
                'FINANCIAL_DATA_AE' as SOURCE,
                fce.id as id,

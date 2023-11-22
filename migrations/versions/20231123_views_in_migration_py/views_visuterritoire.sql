@@ -19,7 +19,7 @@ SELECT id,
        code_commune_loc_inter,
        code_epci_loc_inter,
        code_crte_loc_inter
-FROM flatten_summarized_ae
+FROM vt_flatten_summarized_ae
 UNION
 SELECT id,
        annee,
@@ -38,7 +38,7 @@ SELECT id,
        code_commune_loc_inter,
        code_epci_loc_inter,
        code_crte_loc_inter
-FROM flatten_summarized_ademe;
+FROM vt_flatten_summarized_ademe;
 
 
 CREATE INDEX idx_groupby_commune ON budget_summary (annee, code_programme, categorie_juridique, code_commune, montant_ae, montant_cp);
