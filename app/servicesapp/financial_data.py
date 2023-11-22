@@ -180,17 +180,17 @@ def get_ademe(id: int) -> Ademe:
 
 
 def search_financial_data_ae(
-    code_programme: list = None,
-    theme: list = None,
-    siret_beneficiaire: list = None,
-    types_beneficiaires: list = None,
-    annee: list = None,
-    domaine_fonctionnel: list = None,
-    referentiel_programmation: list = None,
-    source_region: str = None,
-    niveau_geo: str = None,
-    code_geo: list = None,
-    tags: list[str] = None,
+    code_programme: list | None = None,
+    theme: list | None = None,
+    siret_beneficiaire: list | None = None,
+    types_beneficiaires: list | None = None,
+    annee: list | None = None,
+    domaine_fonctionnel: list | None = None,
+    referentiel_programmation: list | None = None,
+    source_region: str | None = None,
+    niveau_geo: str | None = None,
+    code_geo: list | None = None,
+    tags: list[str] | None = None,
     page_number=1,
     limit=500,
 ):
@@ -265,7 +265,7 @@ def _check_file(fichier, columns_name):
 
 
 def _sanitize_source_region(source_region):
-    return source_region.lstrip("0")
+    return source_region.lstrip("0") if source_region else None
 
 
 def _delete_cp(annee: int, source_region: str):

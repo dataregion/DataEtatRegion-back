@@ -24,7 +24,7 @@ from app.servicesapp.financial_data import (
     get_annees_ae,
 )
 
-api = Namespace(name="Engagement", path="/", description="Api de  gestion des AE des données financières de l'état")
+api = Namespace(name="Engagement", path="/", description="Api de gestion des AE des données financières de l'état")
 
 model_financial_ae_single_api = register_financial_ae_schemamodel(api)
 model_financial_cp_single_api = register_financial_cp_schemamodel(api)
@@ -180,3 +180,17 @@ class GetYears(Resource):
         if annees is None:
             return "", HTTPStatus.NO_CONTENT
         return annees, HTTPStatus.OK
+
+
+@api.route("/ae/healthcheck")
+class GetHealthcheck(Resource):
+    def get(self):
+        """
+        Effectue un GET pour vérifier la disponibilité de l'API engagements
+        """
+        result_q = search_financial_data_ae(limit=10, page_number=0)
+        result = FinancialAeSchema(many=True).dump(result_q.items)
+
+        assert len(result) == 10, "On devrait récupérer 10 AE"
+
+        return HTTPStatus.OK
