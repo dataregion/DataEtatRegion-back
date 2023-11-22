@@ -73,7 +73,7 @@ def _view_flatten_ademe():
 
 
 def _view_vt_flatten_summarized_ae():
-    return _filecontent("vt_latten_summarized_ae.sql")
+    return _filecontent("vt_flatten_summarized_ae.sql")
 
 
 def _view_vt_flatten_summarized_ademe():
