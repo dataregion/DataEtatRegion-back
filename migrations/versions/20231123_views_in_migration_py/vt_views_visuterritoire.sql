@@ -1,7 +1,7 @@
 ---
 --- Vues dediées à visuterritoire
 ---
-CREATE MATERIALIZED VIEW budget_summary AS
+CREATE MATERIALIZED VIEW vt_budget_summary AS
 SELECT id,
        annee,
        montant_ae,
@@ -41,14 +41,14 @@ SELECT id,
 FROM vt_flatten_summarized_ademe;
 
 
-CREATE INDEX idx_groupby_commune ON budget_summary (annee, code_programme, categorie_juridique, code_commune, montant_ae, montant_cp);
-CREATE INDEX idx_groupby_departement ON budget_summary (annee, code_programme, categorie_juridique, code_departement, montant_ae, montant_cp);
-CREATE INDEX idx_groupby_crte ON budget_summary (annee, code_programme, categorie_juridique, code_crte, montant_ae, montant_cp);
-CREATE INDEX idx_groupby_epci ON budget_summary (annee, code_programme, categorie_juridique, code_epci, montant_ae, montant_cp);
+CREATE INDEX idx_groupby_commune ON vt_budget_summary (annee, code_programme, categorie_juridique, code_commune, montant_ae, montant_cp);
+CREATE INDEX idx_groupby_departement ON vt_budget_summary (annee, code_programme, categorie_juridique, code_departement, montant_ae, montant_cp);
+CREATE INDEX idx_groupby_crte ON vt_budget_summary (annee, code_programme, categorie_juridique, code_crte, montant_ae, montant_cp);
+CREATE INDEX idx_groupby_epci ON vt_budget_summary (annee, code_programme, categorie_juridique, code_epci, montant_ae, montant_cp);
 
 
 -----
-CREATE MATERIALIZED VIEW m_summary_annee_geo_type_bop AS
+CREATE MATERIALIZED VIEW vt_m_summary_annee_geo_type_bop AS
 SELECT DISTINCT annee,
                 code_programme,
                 code_commune,
@@ -58,7 +58,7 @@ SELECT DISTINCT annee,
                 code_qpv,
                 siret,
                 categorie_juridique
-FROM public.budget_summary
+FROM public.vt_budget_summary
 UNION
 SELECT DISTINCT annee,
                 code_programme,
@@ -69,21 +69,21 @@ SELECT DISTINCT annee,
                 NULL,
                 NULL,
                 categorie_juridique
-FROM public.budget_summary
+FROM public.vt_budget_summary
 WHERE code_departement_loc_inter != '';
 
 
-CREATE INDEX idx_groupby_summary_commune ON m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_commune);
-CREATE INDEX idx_groupby_summary_departement ON m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_departement);
-CREATE INDEX idx_groupby_summary_epci ON m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_epci);
-CREATE INDEX idx_groupby_summary_crte ON m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_crte);
+CREATE INDEX idx_groupby_summary_commune ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_commune);
+CREATE INDEX idx_groupby_summary_departement ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_departement);
+CREATE INDEX idx_groupby_summary_epci ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_epci);
+CREATE INDEX idx_groupby_summary_crte ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_crte);
 
 
 -----
-CREATE MATERIALIZED VIEW m_montant_par_niveau_bop_annee_type AS
+CREATE MATERIALIZED VIEW vt_m_montant_par_niveau_bop_annee_type AS
 SELECT
   (SELECT SUM(fce.montant_ae)
-   FROM budget_summary fce
+   FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
      AND (fce.code_commune = s.code_commune
@@ -93,7 +93,7 @@ SELECT
               AND s.categorie_juridique IS NULL))) AS montant_ae,
 
   (SELECT SUM(fce.montant_cp)
-   FROM budget_summary fce
+   FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
      AND (fce.code_commune = s.code_commune
@@ -106,7 +106,7 @@ SELECT
        s.code_programme as programme,
        s.code_commune AS code,
        s.categorie_juridique AS TYPE
-FROM m_summary_annee_geo_type_bop s
+FROM vt_m_summary_annee_geo_type_bop s
 WHERE s.code_commune IS NOT NULL
 GROUP BY s.annee,
          s.code_programme,
@@ -115,7 +115,7 @@ GROUP BY s.annee,
 UNION
 SELECT
   (SELECT SUM(fce.montant_ae)
-   FROM budget_summary fce
+   FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
      AND (fce.code_departement = s.code_departement
@@ -125,7 +125,7 @@ SELECT
               AND s.categorie_juridique IS NULL))) AS montant_ae,
 
   (SELECT SUM(fce.montant_cp)
-   FROM budget_summary fce
+   FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
      AND (fce.code_departement = s.code_departement
@@ -138,7 +138,7 @@ SELECT
        s.code_programme as programme,
        s.code_departement AS code,
        s.categorie_juridique AS TYPE
-FROM m_summary_annee_geo_type_bop s
+FROM vt_m_summary_annee_geo_type_bop s
 WHERE s.code_departement IS NOT NULL
 GROUP BY s.annee,
          s.code_programme,
@@ -147,7 +147,7 @@ GROUP BY s.annee,
 UNION
 SELECT
   (SELECT SUM(fce.montant_ae)
-   FROM budget_summary fce
+   FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
      AND (fce.code_epci = s.code_epci
@@ -157,7 +157,7 @@ SELECT
               AND s.categorie_juridique IS NULL))) AS montant_ae,
 
   (SELECT SUM(fce.montant_cp)
-   FROM budget_summary fce
+   FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
      AND (fce.code_epci = s.code_epci
@@ -170,7 +170,7 @@ SELECT
        s.code_programme as programme,
        s.code_epci AS code,
        s.categorie_juridique AS TYPE
-FROM m_summary_annee_geo_type_bop s
+FROM vt_m_summary_annee_geo_type_bop s
 WHERE s.code_epci IS NOT NULL
 GROUP BY s.annee,
          s.code_programme,
@@ -179,7 +179,7 @@ GROUP BY s.annee,
 UNION
 SELECT
   (SELECT SUM(fce.montant_ae)
-   FROM budget_summary fce
+   FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
      AND (fce.code_crte = s.code_crte
@@ -189,7 +189,7 @@ SELECT
               AND s.categorie_juridique IS NULL))) AS montant_ae,
 
   (SELECT SUM(fce.montant_cp)
-   FROM budget_summary fce
+   FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
      AND (fce.code_crte = s.code_crte
@@ -202,7 +202,7 @@ SELECT
        s.code_programme as programme,
        s.code_crte AS code,
        s.categorie_juridique AS TYPE
-FROM m_summary_annee_geo_type_bop s
+FROM vt_m_summary_annee_geo_type_bop s
 WHERE s.code_crte IS NOT NULL
 GROUP BY s.annee,
          s.code_programme,
@@ -211,7 +211,7 @@ GROUP BY s.annee,
 UNION
 SELECT
   (SELECT SUM(fce.montant_ae)
-   FROM budget_summary fce
+   FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
      AND fce.code_qpv = s.code_qpv
@@ -220,7 +220,7 @@ SELECT
               AND s.categorie_juridique IS NULL))) AS montant_ae,
 
   (SELECT SUM(fce.montant_cp)
-   FROM budget_summary fce
+   FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
      AND fce.code_qpv = s.code_qpv
@@ -232,7 +232,7 @@ SELECT
        s.code_programme as programme,
        s.code_qpv AS code,
        s.categorie_juridique AS TYPE
-FROM m_summary_annee_geo_type_bop s
+FROM vt_m_summary_annee_geo_type_bop s
 WHERE s.code_qpv IS NOT NULL
 GROUP BY s.annee,
          s.code_programme,
@@ -242,4 +242,4 @@ GROUP BY s.annee,
 
 CREATE OR REPLACE VIEW montant_par_niveau_bop_annee_type AS
 SELECT *
-FROM public.m_montant_par_niveau_bop_annee_type;
+FROM public.vt_m_montant_par_niveau_bop_annee_type;

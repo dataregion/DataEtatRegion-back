@@ -35,7 +35,7 @@ def upgrade():
     op.execute(_view_vt_flatten_summarized_ademe())
 
     print("On crée les vues visuterritoire. Cela peut être long.")
-    op.execute(_views_visuterritoire())
+    op.execute(_views_vt_visuterritoire())
 
 
 def downgrade():
@@ -84,8 +84,8 @@ def _old_view_flatten_summarized_ae():
     return _filecontent("old_flatten_summarized_ae.sql")
 
 
-def _views_visuterritoire():
-    return _filecontent("views_visuterritoire.sql")
+def _views_vt_visuterritoire():
+    return _filecontent("vt_views_visuterritoire.sql")
 
 
 def _views_old_visuterritoire():
@@ -95,6 +95,6 @@ def _views_old_visuterritoire():
 def _filecontent(name: str):
     """Get file content from ./`modulename`/name"""
     p = _data_folder / name
-    with p.open() as f:
+    with p.open("r") as f:
         view_str = f.read()
     return view_str
