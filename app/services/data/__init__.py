@@ -192,8 +192,15 @@ class BuilderStatementFinancialLine:
         return db.session.execute(self._stmt).unique().scalar_one_or_none()
 
     def _stmt_where_field_in(self, field: Column, set_of_values: list | None):
-        if set_of_values is not None:
-            self._stmt = self._stmt.where(field.in_(set_of_values))
+        if set_of_values is None:
+            return
+
+        pruned = [x for x in set_of_values if x is not None]
+
+        if len(pruned) == 0:
+            return
+
+        self._stmt = self._stmt.where(field.in_(pruned))
 
     def _codes_locinterministerielle(
         self,

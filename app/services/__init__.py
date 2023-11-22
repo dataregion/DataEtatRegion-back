@@ -52,7 +52,7 @@ class BuilderStatementFinancial:
         )
         return self
 
-    def join_filter_programme_theme(self, code_programme: list = None, theme: list = None):
+    def join_filter_programme_theme(self, code_programme: list | None = None, theme: list | None = None):
         """
         Effectue des jointures avec les tables CodeProgramme et Theme en fonction des codes de programme et des thèmes fournis.
 
@@ -86,7 +86,7 @@ class BuilderStatementFinancial:
         self._stmt = self._stmt.join(Ae.financial_cp)
         return self
 
-    def join_filter_siret(self, siret: list = None):
+    def join_filter_siret(self, siret: list | None = None):
         """
         Effectue une jointure avec la table Siret en fonction des SIRET fournis.
 
@@ -148,7 +148,7 @@ class BuilderStatementFinancial:
         )
         return self
 
-    def where_geo_ae(self, type_geo: TypeCodeGeo, list_code_geo: list, source_region: str):
+    def where_geo_ae(self, type_geo: TypeCodeGeo, list_code_geo: list, source_region: str | None):
         """
         Ajoute une condition WHERE pour filtrer par géolocalisation sur les engagements
 
@@ -267,7 +267,7 @@ class BuilderStatementFinancial:
         self._stmt = self._stmt.where(Siret.code_qpv.in_(list_code_geo))
         return self
 
-    def _where_geo_departement(self, list_code_geo: list, source_region: str):
+    def _where_geo_departement(self, list_code_geo: list, source_region: str | None):
         """
         Filtre code geo departement
         :param list_code_geo:
@@ -285,7 +285,7 @@ class BuilderStatementFinancial:
         )
         return self
 
-    def _where_geo_region(self, list_code_geo: list, source_region: str):
+    def _where_geo_region(self, list_code_geo: list, source_region: str | None):
         """
         Filtre code geo region
         :param list_code_geo:
