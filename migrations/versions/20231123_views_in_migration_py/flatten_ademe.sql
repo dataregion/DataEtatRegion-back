@@ -1,6 +1,6 @@
 CREATE MATERIALIZED VIEW flatten_ademe AS
 SELECT
-       'ADEME' as source,
+       'ADEME' as source, -- Raccord avec l'enum DataType
        root.id as id,
        NULL::int4 AS n_poste_ej,
        NULL AS n_ej,
@@ -9,7 +9,8 @@ SELECT
        NULL AS compte_budgetaire,
        root.montant as montant_ae,
        root.montant as montant_cp,
-       CAST(NULL AS TIMESTAMP) AS date_dernier_paiement,
+       CAST(NULL AS TIMESTAMP) as "dateDeDernierPaiement",
+       CAST(NULL AS TIMESTAMP) as "dateDeCreation",
     -- domaine fonctionnel
        NULL as "domaineFonctionnel_code",
        NULL as "domaineFonctionnel_label",

@@ -1,6 +1,6 @@
 CREATE MATERIALIZED VIEW flatten_ae AS
 SELECT
-       'FINANCIAL_DATA_AE' as source,
+       'FINANCIAL_DATA_AE' as source, -- Raccord avec l'enum DataType
        root.id as id,
        root.n_poste_ej,
        root.n_ej,
@@ -9,7 +9,8 @@ SELECT
        root.compte_budgetaire,
        aggr.montant_ae,
        aggr.montant_cp,
-       aggr.date_dernier_paiement,
+       aggr.date_dernier_paiement as "dateDeDernierPaiement",
+       root.date_replication as "dateDeCreation",
     -- domaine fonctionnel
        rdf.code as "domaineFonctionnel_code",
        rdf.label as "domaineFonctionnel_label",

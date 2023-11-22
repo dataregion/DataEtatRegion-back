@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from flask_restx import fields
 from flask import current_app
 from flask_restx import Namespace, Resource
 from flask_pyoidc import OIDCAuthentication
@@ -7,12 +8,13 @@ from app.controller.financial_data.schema_model import register_flatten_financia
 from app.controller.utils.ControllerUtils import get_pagination_parser
 
 from app.models.common.Pagination import Pagination
+from app.models.enums.DataType import DataType
 from app.models.financial.query import EnrichedFlattenFinancialLinesSchema
 from app.servicesapp.authentication.connected_user import ConnectedUser
-from app.servicesapp.financial_data import search_financial_lines
+from app.servicesapp.financial_data import get_annees_budget, get_ligne_budgetaire, search_lignes_budgetaires
 
 
-api_ns = Namespace(name="Budget", path="/", description="Api de  gestion des AE des données financières de l'état")
+api_ns = Namespace(name="Budget", path="/", description="Api d'accès aux données budgetaires.")
 
 auth: OIDCAuthentication = current_app.extensions["auth"]
 
@@ -43,25 +45,83 @@ parser_get.add_argument(
 )
 parser_get.add_argument("tags", type=str, action="split", help="Le(s) tag(s) à inclure", required=False)
 
+pagination_model = api_ns.schema_model("Pagination", Pagination.definition_jsonschema)
+paginated_budget = api_ns.model(
+    "PaginatedBudgetLines",
+    {
+        "items": fields.List(fields.Nested(model_flatten_budget_schemamodel)),
+        "pageInfo": fields.Nested(pagination_model),
+    },
+)
+
 
 @api_ns.route("/budget")
 class BudgetCtrl(Resource):
     @api_ns.expect(parser_get)
     @auth.token_auth("default", scopes_required=["openid"])
     @api_ns.doc(security="Bearer")
+    @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune lignes correspondante")
+    @api_ns.response(HTTPStatus.OK, description="Lignes correspondante", model=paginated_budget)
     def get(self):
         """Recupère les lignes de données budgetaires génériques"""
         user = ConnectedUser.from_current_token_identity()
         params = parser_get.parse_args()
         params["source_region"] = user.current_region
 
-        page_result = search_financial_lines(**params)
+        page_result = search_lignes_budgetaires(**params)
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result.items)
 
         if len(page_result.items) == 0:
-            return "", 204
+            return "", HTTPStatus.NO_CONTENT
+
+        total = page_result.total if page_result.total is not None else 0
 
         return {
             "items": result,
-            "pageInfo": Pagination(page_result.total, page_result.page, page_result.per_page).to_json(),
+            "pageInfo": Pagination(total, page_result.page, page_result.per_page).to_json(),
         }, HTTPStatus.OK
+
+
+@api_ns.route("/budget/<source>/<id>")
+class GetBudgetCtrl(Resource):
+
+    """
+    Récupére les infos budgetaires en fonction de son identifiant technique
+    :return:
+    """
+
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api_ns.doc(security="Bearer")
+    @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune ligne correspondante")
+    @api_ns.response(HTTPStatus.OK, description="Ligne correspondante", model=model_flatten_budget_schemamodel)
+    def get(self, source: DataType, id: str):
+        user = ConnectedUser.from_current_token_identity()
+        source_region = user.current_region
+
+        id_i = int(id)
+        ligne = get_ligne_budgetaire(source, id_i, source_region)
+
+        if ligne is None:
+            return "", HTTPStatus.NO_CONTENT
+
+        ligne_payload = EnrichedFlattenFinancialLinesSchema().dump(ligne)
+        return ligne_payload, HTTPStatus.OK
+
+
+@api_ns.route("/budget/annees")
+class GetPlageAnnees(Resource):
+    """
+    Recupère la plage des années pour lesquelles les données budgetaires courent.
+    """
+
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api_ns.doc(security="Bearer")
+    @api_ns.response(HTTPStatus.OK, description="Liste des années", model=fields.List(fields.Integer))
+    def get(self):
+        user = ConnectedUser.from_current_token_identity()
+        source_region = user.current_region
+
+        annees = get_annees_budget(source_region)
+        if annees is None:
+            return [], HTTPStatus.OK
+        return annees, HTTPStatus.OK

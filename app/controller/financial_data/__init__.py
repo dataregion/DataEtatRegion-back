@@ -84,11 +84,17 @@ api_financial_v2 = Blueprint("financial_data_v2", __name__)
 
 authorizations = {"Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}}
 
+_description = (
+    "API de gestion des données financière"
+    "<br />"
+    "<strong>C'est une API dediée à l'outil interne de consultation budget. "
+    "utilisez pas cette API pour intégrer nos données à votre système.</strong>"
+)
 api_v1 = Api(
     api_financial_v1,
     doc="/doc",
     prefix="/api/v1",
-    description="API de gestion des données financière",
+    description=_description,
     title="API Data transform",
     authorizations=authorizations,
 )
@@ -103,12 +109,18 @@ api_v1.add_namespace(api_cp)
 api_v1.add_namespace(api_ademe)
 api_v1.add_namespace(api_france_2030)
 
+_description = (
+    "Api de d'accès aux données financières de l'état "
+    "<br />"
+    "<strong>C'est une API dediée à l'outil interne de consultation budget. "
+    "utilisez pas cette API pour intégrer nos données à votre système.</strong>"
+)
 api_v2 = Api(
     api_financial_v2,
     version="2.0",
     doc="/api/v2/doc",
     prefix="/api/v2",
-    description="API de gestion des données financières",
+    description=_description,
     title="API Data transform",
     authorizations=authorizations,
 )

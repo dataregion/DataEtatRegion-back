@@ -2,7 +2,8 @@
 Services liés à la couche d'accès aux données
 """
 
-from sqlalchemy import Column, ColumnExpressionArgument, Select, select, or_, and_
+from sqlalchemy import Column, ColumnExpressionArgument, Select, desc, select, or_, func, distinct
+from app.models.enums.DataType import DataType
 from app.models.enums.TypeCodeGeo import TypeCodeGeo
 from app.database import db
 
@@ -52,14 +53,16 @@ class BuilderStatementFinancialLine:
         types_beneficiaires: list[str] | None,
         includes_none: bool = False,
     ):
-        cond = and_(True)
-
+        conds = []
         if types_beneficiaires is not None and includes_none:
-            cond = or_(cond, FinancialLines.beneficiaire_categorieJuridique_type == None)  # noqa: E711
+            _cond = FinancialLines.beneficiaire_categorieJuridique_type == None  # noqa: E711
+            conds.append(_cond)
 
         if types_beneficiaires is not None:
-            cond = or_(cond, FinancialLines.beneficiaire_categorieJuridique_type.in_(types_beneficiaires))
+            _cond = FinancialLines.beneficiaire_categorieJuridique_type.in_(types_beneficiaires)
+            conds.append(_cond)
 
+        cond = or_(*conds)
         self._stmt = self._stmt.where(cond)
         return self
 
@@ -121,7 +124,7 @@ class BuilderStatementFinancialLine:
         column_codegeo_commune_loc_inter: Column[str] | None,
         column_codegeo_commune_beneficiaire: Column[str] | None,
     ):
-        where_clause = and_(True)
+        conds = []
 
         #
         # On calcule les patterns valides pour les codes de localisations interministerielles
@@ -135,20 +138,21 @@ class BuilderStatementFinancialLine:
         ]
         # fmt:on
         if len(code_locinter_pattern) > 0:
-            where_clause = and_(where_clause, or_(*_conds_code_locinter))
+            conds.append(or_(*_conds_code_locinter))
 
         #
         # Ou les code geo de la commune associée à la localisation interministerielle
         #
         if column_codegeo_commune_loc_inter is not None:
-            where_clause = or_(where_clause, column_codegeo_commune_loc_inter.in_(list_code_geo))
+            conds.append(column_codegeo_commune_loc_inter.in_(list_code_geo))
 
         #
         # Ou les code geo de la commune associée au bénéficiaire
         #
         if column_codegeo_commune_beneficiaire is not None:
-            where_clause = or_(where_clause, column_codegeo_commune_beneficiaire.in_(list_code_geo))
+            conds.append(column_codegeo_commune_beneficiaire.in_(list_code_geo))
 
+        where_clause = or_(*conds)
         self._stmt = self._stmt.where(where_clause)
         return self._stmt
 
@@ -156,9 +160,9 @@ class BuilderStatementFinancialLine:
         self._stmt = self._stmt.where(where)
         return self._stmt
 
-    def par_identifiant_technique(self, source: str, id: int):
+    def par_identifiant_technique(self, source: DataType, id: int):
         """Filtre selon l'identifiant technique. ie couple source - id"""
-        self._stmt = self._stmt.where(FinancialLines.source == source, FinancialLines.id == id)
+        self._stmt = self._stmt.where(FinancialLines.source == str(source), FinancialLines.id == id)
         return self
 
     def do_paginate(self, limit, page_number):
@@ -170,12 +174,22 @@ class BuilderStatementFinancialLine:
         """
         return db.paginate(self._stmt, per_page=limit, page=page_number, error_out=False)
 
+    def do_select_annees(self) -> list[int]:
+        """
+        Retourne l'ensemble des années ordonnées par ordre decroissant
+        concernées par la recherche
+        """
+        subq = select(distinct(FinancialLines.annee)).order_by(desc(FinancialLines.annee)).subquery()
+        stmt = select(func.array_agg(subq.c[0]))
+        result = db.session.execute(stmt).scalar_one_or_none()
+        return result  # type: ignore
+
     def do_single(self):
         """
         Effectue la recherche et retourne le seul résultat
         :return:
         """
-        return db.session.execute(self._stmt).scalar_one_or_none()
+        return db.session.execute(self._stmt).unique().scalar_one_or_none()
 
     def _stmt_where_field_in(self, field: Column, set_of_values: list | None):
         if set_of_values is not None:

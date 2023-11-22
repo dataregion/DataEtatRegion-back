@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship, Mapped
 from marshmallow import fields
 
 from app import db, ma
+from app.models.enums.DataType import DataTypeField
 from app.models.tags.Tags import Tags, TagsSchema
 
 
@@ -14,10 +15,10 @@ class FlattenFinancialLines(db.Model):
 
     __tablename__ = "flatten_financial_lines"
 
-    source = Column(String)
-    """Source de la ligne (ademe, chorus etc...)"""
+    source = Column(String, nullable=False)
+    """Source de la ligne (ademe, chorus etc...). C'est l'enum DataType qui est pris ici."""
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, nullable=False)
 
     n_ej = Column(String)
     n_poste_ej = Column(Integer)
@@ -29,7 +30,8 @@ class FlattenFinancialLines(db.Model):
     montant_ae = Column(Float)
     montant_cp = Column(Float)
 
-    date_dernier_paiement = Column(DateTime)
+    dateDeDernierPaiement = Column(DateTime)
+    dateDeCreation = Column(DateTime)
 
     domaineFonctionnel_code = Column(String)
     domaineFonctionnel_label = Column(String)
@@ -108,5 +110,7 @@ class EnrichedFlattenFinancialLines(FlattenFinancialLines):
 class EnrichedFlattenFinancialLinesSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = EnrichedFlattenFinancialLines
+
+    source = DataTypeField()
 
     tags = fields.List(fields.Nested(TagsSchema))

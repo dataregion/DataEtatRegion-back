@@ -103,7 +103,7 @@ def _get_queue(queue_name: str):
 from .files.file_task import *  # noqa: E402, F403
 from .financial.import_financial import *  # noqa: E402, F403
 from .financial.import_france_2030 import *  # noqa: E402, F403
-from .financial.visuterritoire import *  # noqa: E402, F403
+from .financial.refresh_materialized_views import *  # noqa: E402, F403
 from .import_refs_tasks import *  # noqa: E402, F403
 from .management_tasks import *  # noqa: E402, F403
 from .refs import *  # noqa: E402, F403
