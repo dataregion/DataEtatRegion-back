@@ -10,7 +10,7 @@ def refresh_materialized_views(self):
     refresh_request = text(
         "refresh materialized view flatten_ademe;"
         "refresh materialized view flatten_ae;"
-        "refresh materialized view financial_lines;"
+        "refresh materialized view flatten_financial_lines;"
         # Vues visuterritoire
         "refresh materialized view vt_flatten_summarized_ademe;"
         "refresh materialized view vt_flatten_summarized_ae;"
