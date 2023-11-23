@@ -44,6 +44,11 @@ def upgrade():
 def downgrade():
     _drop_old_view()
 
+    op.execute("DROP VIEW IF EXISTS public.montant_par_niveau_bop_annee_type")
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_m_montant_par_niveau_bop_annee_type")
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_m_summary_annee_geo_type_bop")
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_budget_summary")
+    op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_flatten_summarized_ademe")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_flatten_summarized_ae")
     op.execute(_old_view_flatten_summarized_ae())
 
