@@ -12,8 +12,8 @@ from app.exceptions.exceptions import FileNotAllowedException
 from app.models.enums.AccountRole import AccountRole
 from app.servicesapp.authentication import ConnectedUser
 from app.services.import_refs import import_ref_calculette
-from app.tasks.refs.update_ref_communes import import_file_pvd_from_website
-from app.tasks.tags.apply_tags import apply_tags_pvd
+from app.tasks.refs.update_ref_communes import import_file_pvd_from_website # noqa: F401
+from app.tasks.tags.apply_tags import apply_tags_pvd # noqa: F401
 
 
 api = Namespace(
@@ -41,6 +41,7 @@ class TaskRunImportRef(Resource):
             return jsonify({"status": "Fichier récupéré. Demande d`import du referentiel en cours"})
         except FileNotAllowedException as e:
             return {"status": e.message}, HTTPStatus.BAD_REQUEST
+
 
 # @api.route("/communes-pvd")
 # class TaskRunImportRefPVD(Resource):

@@ -1,7 +1,4 @@
-import json
-
-from datetime import datetime
-from unittest.mock import patch, call, ANY, MagicMock
+from unittest.mock import patch, MagicMock
 
 import pytest
 

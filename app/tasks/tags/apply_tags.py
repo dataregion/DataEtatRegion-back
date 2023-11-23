@@ -141,7 +141,9 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None):
 
     # Création des conditions
     siret_condition: ColumnElement[bool] = Ae.ref_siret.has(Siret.code_commune.in_([c.code for c in communes_pvd]))
-    loc_condition: ColumnElement[bool] = Ae.ref_localisation_interministerielle.has(LocalisationInterministerielle.commune_id.in_([c.id for c in communes_pvd]))
+    loc_condition: ColumnElement[bool] = Ae.ref_localisation_interministerielle.has(
+        LocalisationInterministerielle.commune_id.in_([c.id for c in communes_pvd])
+    )
 
     # Application du tag aux AE
     apply_task = ApplyTagForAutomation(tag)

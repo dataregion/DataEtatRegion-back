@@ -1,7 +1,7 @@
 import logging
 from app import db
 from app.models.refs.commune import Commune
-from sqlalchemy import bindparam, and_, Date, update
+from sqlalchemy import and_, Date, update
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +16,7 @@ def select_communes_id(codes: str) -> Commune:
     stmt = db.select(Commune.id, Commune.code)
     stmt = stmt.where(Commune.code.in_(codes))
     return db.session.execute(stmt).fetchall()
+
 
 def select_commune(code: str) -> Commune:
     """
