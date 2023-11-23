@@ -1,12 +1,23 @@
 import logging
 from app import db
 from app.models.refs.commune import Commune
-from sqlalchemy import and_, Date
+from sqlalchemy import bindparam, and_, Date, update
 
 logger = logging.getLogger(__name__)
 
 
-def select_commune(code: str, label: str) -> Commune:
+def select_communes_id(codes: str) -> Commune:
+    """
+    Retourne l'objet Commune à partir du code et du nom de la commune
+    :param code: Code de la commune
+    :param label: Nom de la commune
+    :return: Commune
+    """
+    stmt = db.select(Commune.id, Commune.code)
+    stmt = stmt.where(Commune.code.in_(codes))
+    return db.session.execute(stmt).fetchall()
+
+def select_commune(code: str) -> Commune:
     """
     Retourne l'objet Commune à partir du code et du nom de la commune
     :param code: Code de la commune
@@ -14,7 +25,7 @@ def select_commune(code: str, label: str) -> Commune:
     :return: Commune
     """
     stmt = db.select(Commune)
-    stmt = stmt.where(and_(Commune.code == code, Commune.label_commune == label))
+    stmt = stmt.where(and_(Commune.code == code))
     return db.session.execute(stmt).scalar_one()
 
 
@@ -35,5 +46,14 @@ def set_communes_non_pvd() -> None:
     Reset toutes les communes comme non PVD
     :return: None
     """
-    Commune.query.update({Commune.is_pvd: None, Commune.date_pvd: None})
+    Commune.query.update({Commune.is_pvd: False, Commune.date_pvd: None})
+    db.session.commit()
+
+
+def set_communes_pvd(updates_to_commit: []) -> None:
+    """
+    Set is_pvd = True et date_pvd = :date_pvd des communes en fonction des id précisés dans updates_to_commit
+    :return: None
+    """
+    db.session.execute(update(Commune), updates_to_commit)
     db.session.commit()

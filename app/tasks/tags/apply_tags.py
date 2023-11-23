@@ -1,5 +1,7 @@
 import logging
 
+from sqlalchemy import ColumnElement
+
 from app import celeryapp, db
 from app.models.financial.FinancialAe import FinancialAe as Ae
 from app.models.refs.commune import Commune
@@ -135,21 +137,12 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None):
     # Récupération des codes des communes PVD
     stmt_communes_pvd = db.select(Commune.id, Commune.code).where(Commune.is_pvd == True)  # noqa: E712
     communes_pvd = db.session.execute(stmt_communes_pvd).fetchall()
+    _logger.debug(f"[TAGS][{tag.type}] Récupération des communes PVD")
 
-    # Récupération des codes des SIRET ayant une commune PVD
-    condition_siret = Siret.code_commune.in_([pvd.code for pvd in communes_pvd])
-    stmt_siret = db.select(Siret.code).where(condition_siret)
-    siret_pvd = db.session.execute(stmt_siret).fetchall()
+    # Création des conditions
+    siret_condition: ColumnElement[bool] = Ae.ref_siret.has(Siret.code_commune.in_([c.code for c in communes_pvd]))
+    loc_condition: ColumnElement[bool] = Ae.ref_localisation_interministerielle.has(LocalisationInterministerielle.commune_id.in_([c.id for c in communes_pvd]))
 
-    # Récupération des codes des localisations interministérielles ayant une commune PVD
-    condition_loc = LocalisationInterministerielle.commune_id.in_([pvd.id for pvd in communes_pvd])
-    stmt_loc = db.select(LocalisationInterministerielle.id).where(condition_loc)
-    loc_pvd = db.session.execute(stmt_loc).fetchall()
-
-    _logger.debug(f"[TAGS][{tag.type}] Récupération des siret et des loc interministérielle ayant une commune PVD")
-
+    # Application du tag aux AE
     apply_task = ApplyTagForAutomation(tag)
-    apply_task.apply_tags_ae(
-        Ae.siret.in_([siret.code for siret in siret_pvd])
-        | Ae.localisation_interministerielle.in_([loc.code for loc in loc_pvd])
-    )
+    apply_task.apply_tags_ae(siret_condition | loc_condition)
