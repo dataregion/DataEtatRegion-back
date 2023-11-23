@@ -1,23 +1,33 @@
 from celery import Celery
 from app import celeryapp, db
 from sqlalchemy import text
+import time
 
 celery: Celery = celeryapp.celery
 
 
 @celery.task(bind=True, name="maj_materialized_view")
 def refresh_materialized_views(self):
-    refresh_request = text(
-        "refresh materialized view flatten_ademe;"
-        "refresh materialized view flatten_ae;"
-        "refresh materialized view flatten_financial_lines;"
+    views = [
+        "flatten_ademe",
+        "flatten_ae",
+        "flatten_financial_lines",
         # Vues visuterritoire
-        "refresh materialized view vt_flatten_summarized_ademe;"
-        "refresh materialized view vt_flatten_summarized_ae;"
-        "refresh materialized view vt_budget_summary;"
-        "refresh materialized view vt_m_summary_annee_geo_type_bop;"
-        "refresh materialized view vt_m_montant_par_niveau_bop_annee_type;"
-    )
+        "vt_flatten_summarized_ademe",
+        "vt_flatten_summarized_ae",
+        "vt_budget_summary",
+        "vt_m_summary_annee_geo_type_bop",
+        "vt_m_montant_par_niveau_bop_annee_type",
+    ]
 
-    db.session.execute(refresh_request)
-    db.session.commit()
+    result = {}
+
+    for view in views:
+        start = time.time()
+        db.session.execute(text(f"refresh materialized view ${view};"))
+        db.session.commit()
+        elapsed = time.time() - start
+
+        result[view] = {"elapsed_seconds": elapsed}
+
+    return result
