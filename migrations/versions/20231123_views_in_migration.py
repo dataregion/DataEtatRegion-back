@@ -28,6 +28,9 @@ def upgrade():
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_financial_lines")
     op.execute(_view_flatten_financial_lines())
 
+    op.execute("DROP VIEW IF EXISTS public.superset_lignes_financieres")
+    op.execute(_view_superset_lignes_financieres())
+
     # visuterritoire
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_summarized_ae")
     op.execute(_view_vt_flatten_summarized_ae())
@@ -47,6 +50,7 @@ def downgrade():
     print("On recrée les anciennes vues visuterritoire. Cela peut être long.")
     op.execute(_views_old_visuterritoire())
 
+    op.execute("DROP VIEW IF EXISTS public.superset_lignes_financieres")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_financial_lines")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ae")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ademe")
@@ -62,6 +66,10 @@ def _drop_old_view():
 
 def _view_flatten_financial_lines():
     return _filecontent("flatten_financial_lines.sql")
+
+
+def _view_superset_lignes_financieres():
+    return _filecontent("superset_lignes_financieres.sql")
 
 
 def _view_flatten_ae():
