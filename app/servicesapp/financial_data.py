@@ -18,11 +18,11 @@ from app.models.refs.categorie_juridique import CategorieJuridique
 from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.models.refs.siret import Siret
-from app.models.refs.qpv import Qpv
 from app.models.tags.Tags import Tags
 from app.services import BuilderStatementFinancial
 from app.services import BuilderStatementFinancialCp
 from app.models.tags.Tags import TagVO
+from app.services.data import BuilderStatementFinancialLine
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
 
@@ -180,17 +180,17 @@ def get_ademe(id: int) -> Ademe:
 
 
 def search_financial_data_ae(
-    code_programme: list = None,
-    theme: list = None,
-    siret_beneficiaire: list = None,
-    types_beneficiaires: list = None,
-    annee: list = None,
-    domaine_fonctionnel: list = None,
-    referentiel_programmation: list = None,
-    source_region: str = None,
-    niveau_geo: str = None,
-    code_geo: list = None,
-    tags: list[str] = None,
+    code_programme: list | None = None,
+    theme: list | None = None,
+    siret_beneficiaire: list | None = None,
+    types_beneficiaires: list | None = None,
+    annee: list | None = None,
+    domaine_fonctionnel: list | None = None,
+    referentiel_programmation: list | None = None,
+    source_region: str | None = None,
+    niveau_geo: str | None = None,
+    code_geo: list | None = None,
+    tags: list[str] | None = None,
     page_number=1,
     limit=500,
 ):
@@ -223,7 +223,7 @@ def search_financial_data_ae(
     if types_beneficiaires is not None:
         type_beneficiaires_conditions.append(CategorieJuridique.type.in_(types_beneficiaires))
     if types_beneficiaires is not None and "autres" in types_beneficiaires:
-        type_beneficiaires_conditions.append(CategorieJuridique.type == None)
+        type_beneficiaires_conditions.append(CategorieJuridique.type == None)  # noqa: E711
 
     query_ae.where_custom(or_(*type_beneficiaires_conditions))
 
@@ -265,7 +265,7 @@ def _check_file(fichier, columns_name):
 
 
 def _sanitize_source_region(source_region):
-    return source_region.lstrip("0")
+    return source_region.lstrip("0") if source_region else None
 
 
 def _delete_cp(annee: int, source_region: str):
@@ -278,3 +278,76 @@ def _delete_cp(annee: int, source_region: str):
     stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.source_region == source_region)
     db.session.execute(stmt)
     db.session.commit()
+
+
+def get_ligne_budgetaire(
+    source: DataType,
+    id: int,
+    source_region: str | None = None,
+):
+    """
+    Recherche la ligne budgetaire selon son ID et sa source region
+    """
+    source_region = _sanitize_source_region(source_region)
+
+    query_ligne_budget = (
+        BuilderStatementFinancialLine().par_identifiant_technique(source, id).source_region_in([source_region])
+    )
+    result = query_ligne_budget.do_single()
+    return result
+
+
+def search_lignes_budgetaires(
+    code_programme: list | None = None,
+    theme: list | None = None,
+    siret_beneficiaire: list | None = None,
+    types_beneficiaires: list | None = None,
+    annee: list | None = None,
+    domaine_fonctionnel: list | None = None,
+    referentiel_programmation: list | None = None,
+    source_region: str | None = None,
+    niveau_geo: str | None = None,
+    code_geo: list | None = None,
+    tags: list[str] | None = None,
+    page_number=1,
+    limit=500,
+):
+    """
+    Recherche les lignes budgetaires (quelle que soit la source)
+    correspondant aux critères de recherche utilisateur.
+    """
+
+    source_region = _sanitize_source_region(source_region)
+
+    query_lignes_budget = (
+        BuilderStatementFinancialLine()
+        .beneficiaire_siret_in(siret_beneficiaire)
+        .code_programme_in(code_programme)
+        .themes_in(theme)
+        .annee_in(annee)
+        .domaine_fonctionnel_in(domaine_fonctionnel)
+        .referentiel_programmation_in(referentiel_programmation)
+        .source_region_in([source_region])
+    )
+
+    if niveau_geo is not None and code_geo is not None:
+        query_lignes_budget.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
+    elif bool(niveau_geo) ^ bool(code_geo):
+        raise NiveauCodeGeoException("Les paramètres niveau_geo et code_geo doivent être fournis ensemble.")
+
+    _includes_nones = False
+    if types_beneficiaires is not None and "autres" in types_beneficiaires:
+        _includes_nones = True
+    query_lignes_budget.type_categorie_juridique_du_beneficiaire_in(types_beneficiaires, includes_none=_includes_nones)
+
+    query_lignes_budget.tags_fullname_in(tags)
+
+    page_result = query_lignes_budget.do_paginate(limit, page_number)
+    return page_result
+
+
+def get_annees_budget(source_region: str | None = None):
+    source_region = _sanitize_source_region(source_region)
+
+    query_annees_budget = BuilderStatementFinancialLine().source_region_in([source_region])
+    return query_annees_budget.do_select_annees()

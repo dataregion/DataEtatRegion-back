@@ -3,20 +3,21 @@ import sys
 from flask import current_app
 from flask_restx import Namespace, Resource, fields
 from flask_restx._http import HTTPStatus
+from flask_restx.reqparse import ParseResult
 from marshmallow_jsonschema import JSONSchema
 from sqlalchemy.exc import NoResultFound
 
 from app import db
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
-from app.models.common.QueryParam import QueryParam
+
+from sqlalchemy import and_, or_
+
 
 auth = current_app.extensions["auth"]
 
 
-def build_ref_controller(
-    cls, namespace: Namespace, help_query="Recherche sur le code et le label", cond_opt: tuple = None
-):
+def build_ref_controller(cls, namespace: Namespace, cond_opt: tuple = None):
     """
     Construit dynamiquement des endpoint pour un referentiel
     L'api contient un endpoint de recherche paginé, et une endpoint pour retourner un objet par son code
@@ -35,7 +36,12 @@ def build_ref_controller(
     schema = getattr(sys.modules[module_name], f"{cls.__name__}Schema")
 
     parser_get = get_pagination_parser()
-    parser_get.add_argument("query", type=str, required=False, help=help_query)
+    parser_get.add_argument("query", type=str, required=False, help="Recherche sur le code ou le label")
+    if cond_opt is not None:
+        for cond in cond_opt:
+            parser_get.add_argument(
+                cond.field.name, type=cond.type, required=cond.required, help=cond.help, action=cond.action
+            )
 
     schema_many = schema(many=True)
 
@@ -57,15 +63,14 @@ def build_ref_controller(
         @api.response(200, "Success", pagination_with_model)
         @api.response(204, "No Result")
         def get(self):
-            query_param = QueryParam(parser_get)
-            if query_param.is_query_search():
-                where_clause = _build_where_clause(cls, query_param, cond_opt)
+            args = parser_get.parse_args()
+            where_clause = _build_where_clause(cls, args, cond_opt)
+            if where_clause is not None:
                 stmt = db.select(cls).where(where_clause).order_by(cls.code)
             else:
                 stmt = db.select(cls).order_by(cls.code)
 
-            page_result = db.paginate(stmt, per_page=query_param.limit, page=query_param.page_number, error_out=False)
-
+            page_result = db.paginate(stmt, per_page=args.get("limit"), page=args.get("page_number"), error_out=False)
             if page_result.items == []:
                 return "", HTTPStatus.NO_CONTENT
 
@@ -94,22 +99,41 @@ def build_ref_controller(
     return api
 
 
-def _build_where_clause(cls, query_param: QueryParam, cond_opt: tuple):
+def _build_where_clause(cls, args: ParseResult, cond_opt: tuple):
     """
-    Construit dynamiquement la clause where de la query de recherche
-    :param cls:     l'instance de la clase
-    :param query_param: l'objet QueryParam pour la recherche
-    :param cond_opt:    les conditions supplémentaire
+    Construit dynamiquement la clause where selon les arguments sélectionnés (code, label, + cond_opt)
+    :param cls:         L'instance de la clase
+    :param args:        Les paramètres de la requête
+    :param cond_opt:    Les conditions supplémentaire
     :return:
     """
-    like = query_param.get_search_like_param()
+    # Retour de None si aucun paramètre (uniquement page_number et limit)
+    args_no_none = [t for t in list(args.items()) if None not in t]
+    if len(args_no_none) == 2:
+        return None
 
-    where_clause = cls.code.ilike(like)
-    if hasattr(cls, "label"):
-        where_clause = where_clause | cls.label.ilike(like)
+    # Condition sur code OR label
+    code_label_clause = and_(True)
+    if args.get("query"):
+        if hasattr(cls, "code"):
+            code_label_clause = and_(code_label_clause, cls.code.ilike(f"%{args.get('query')}%"))
+        if hasattr(cls, "label"):
+            code_label_clause = or_(code_label_clause, cls.label.ilike(f"%{args.get('query')}%"))
 
+    # Conditions particulières
+    conditions_clause = []
     if cond_opt is not None:
         for cond in cond_opt:
-            where_clause = where_clause | cond.ilike(like)
+            if args.get(cond.field.name):
+                if cond.action == "split":
+                    conditions_clause.append(cond.field.in_(args.get(cond.field.name)))
+                else:
+                    conditions_clause.append(cond.field.ilike(f"%{args.get(cond.field.name)}%"))
 
-    return where_clause
+    if code_label_clause is not None and not conditions_clause:
+        return code_label_clause
+
+    if code_label_clause is None and conditions_clause:
+        return and_(*conditions_clause)
+
+    return and_(code_label_clause, *conditions_clause)

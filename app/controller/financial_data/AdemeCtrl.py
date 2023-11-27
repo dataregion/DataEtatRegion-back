@@ -1,7 +1,6 @@
-from flask import jsonify, current_app, request, g
+from flask import jsonify, current_app, request
 from flask_restx import Namespace, Resource, reqparse
 from flask_restx._http import HTTPStatus
-from marshmallow_jsonschema import JSONSchema
 from werkzeug.datastructures import FileStorage
 
 from app.controller.Decorators import check_permission

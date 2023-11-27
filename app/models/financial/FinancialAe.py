@@ -1,4 +1,3 @@
-import datetime
 import logging
 from datetime import datetime
 from dataclasses import dataclass
@@ -6,14 +5,19 @@ from dataclasses import dataclass
 from marshmallow import fields
 from sqlalchemy import Column, String, ForeignKey, Integer, DateTime, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from app import db, ma
 from app.models.financial import FinancialData, CommonField, CommuneField
+from app.models.financial.FinancialCp import FinancialCp
 from app.models.financial.MontantFinancialAe import MontantFinancialAe
+from app.models.refs.code_programme import CodeProgramme
+from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
+from app.models.refs.groupe_marchandise import GroupeMarchandise
+from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
+from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.models.refs.siret import Siret
-from app.models.tags.Tags import TagsSchema
-from app.models.financial.FinancialCp import FinancialCpSchema
+from app.models.tags.Tags import TagsSchema, Tags
 
 COLUMN_MONTANT_NAME = "montant"
 
@@ -24,42 +28,44 @@ __all__ = ("FinancialAe", "FinancialAeSchema")
 class FinancialAe(FinancialData, db.Model):
     __tablename__ = "financial_ae"
     # PK
-    id: int = Column(Integer, primary_key=True)
+    id: Column[int] = Column(Integer, primary_key=True)
 
     # UNIQUE
-    n_ej: str = Column(String, nullable=False)
-    n_poste_ej: int = Column(Integer, nullable=False)
+    n_ej: Column[str] = Column(String, nullable=False)
+    n_poste_ej: Column[int] = Column(Integer, nullable=False)
     UniqueConstraint("n_ej", "n_poste_ej", name="n_ej_n_poste_ej"),
 
     # liens vers les référentiels
-    source_region: str = Column(String, ForeignKey("ref_region.code"), nullable=True)
-    programme: str = Column(String, ForeignKey("ref_code_programme.code"), nullable=False)
-    domaine_fonctionnel: str = Column(String, db.ForeignKey("ref_domaine_fonctionnel.code"), nullable=False)
-    centre_couts: str = Column(String, db.ForeignKey("ref_centre_couts.code"), nullable=False)
-    referentiel_programmation: str = Column(String, db.ForeignKey("ref_programmation.code"), nullable=False)
-    localisation_interministerielle: str = Column(
+    source_region: Column[str] = Column(String, ForeignKey("ref_region.code"), nullable=True)
+    programme: Column[str] = Column(String, ForeignKey("ref_code_programme.code"), nullable=False)
+    domaine_fonctionnel: Column[str] = Column(String, db.ForeignKey("ref_domaine_fonctionnel.code"), nullable=False)
+    centre_couts: Column[str] = Column(String, db.ForeignKey("ref_centre_couts.code"), nullable=False)
+    referentiel_programmation: Column[str] = Column(String, db.ForeignKey("ref_programmation.code"), nullable=False)
+    localisation_interministerielle: Column[str] = Column(
         String, db.ForeignKey("ref_localisation_interministerielle.code"), nullable=False
     )
-    groupe_marchandise: str = Column(String, db.ForeignKey("ref_groupe_marchandise.code"), nullable=False)
-    fournisseur_titulaire: str = Column(String, db.ForeignKey("ref_fournisseur_titulaire.code"), nullable=False)
-    siret: str = Column(String, db.ForeignKey("ref_siret.code"), nullable=True)
+    groupe_marchandise: Column[str] = Column(String, db.ForeignKey("ref_groupe_marchandise.code"), nullable=False)
+    fournisseur_titulaire: Column[str] = Column(String, db.ForeignKey("ref_fournisseur_titulaire.code"), nullable=False)
+    siret: Column[str] = Column(String, db.ForeignKey("ref_siret.code"), nullable=True)
 
     # autre colonnes
-    date_modification_ej: datetime = Column(DateTime, nullable=False)  # date issue du fichier Chorus
-    date_replication: datetime = Column(DateTime, nullable=True)  # Date de création de l'EJ
-    compte_budgetaire: str = Column(String(255), nullable=False)
-    contrat_etat_region: str = Column(String(255))
-    annee: int = Column(Integer, nullable=False)  # annee de l'AE chorus
+    date_modification_ej: Column[datetime] = Column(DateTime, nullable=False)  # date issue du fichier Chorus
+    date_replication: Column[datetime] = Column(DateTime, nullable=True)  # Date de création de l'EJ
+    compte_budgetaire: Column[str] = Column(String(255), nullable=False)
+    contrat_etat_region: Column[str] = Column(String(255))
+    annee: Column[int] = Column(Integer, nullable=False)  # annee de l'AE chorus
 
-    tags = relationship("Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True)
-    montant_ae = relationship("MontantFinancialAe", uselist=True, lazy="select")
-    financial_cp = relationship("FinancialCp", uselist=True, lazy="select")
-    ref_programme = relationship("CodeProgramme", lazy="select")
-    ref_domaine_fonctionnel = relationship("DomaineFonctionnel", lazy="select")
-    ref_groupe_marchandise = relationship("GroupeMarchandise", lazy="select")
-    ref_ref_programmation = relationship("ReferentielProgrammation", lazy="select")
-    ref_siret = relationship("Siret", lazy="select")
-    ref_localisation_interministerielle = relationship("LocalisationInterministerielle", lazy="select")
+    tags: Mapped[Tags] = relationship("Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True)
+    montant_ae: Mapped[MontantFinancialAe] = relationship("MontantFinancialAe", uselist=True, lazy="select")
+    financial_cp: Mapped[FinancialCp] = relationship("FinancialCp", uselist=True, lazy="select")
+    ref_programme: Mapped[CodeProgramme] = relationship("CodeProgramme", lazy="select")
+    ref_domaine_fonctionnel: Mapped[DomaineFonctionnel] = relationship("DomaineFonctionnel", lazy="select")
+    ref_groupe_marchandise: Mapped[GroupeMarchandise] = relationship("GroupeMarchandise", lazy="select")
+    ref_ref_programmation: Mapped[ReferentielProgrammation] = relationship("ReferentielProgrammation", lazy="select")
+    ref_siret: Mapped[Siret] = relationship("Siret", lazy="select")
+    ref_localisation_interministerielle: Mapped[LocalisationInterministerielle] = relationship(
+        "LocalisationInterministerielle", lazy="select"
+    )
 
     @hybrid_property
     def montant_ae_total(self):

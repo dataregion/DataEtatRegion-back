@@ -111,7 +111,7 @@ def build_client(project) -> NocoDBRequestsClient:
         return NocoDBRequestsClient(APIToken(token), uri)
     except Exception as clientException:
         logging.error(clientException)
-        abort(500, f"Erreur interne ")
+        abort(500, "Erreur interne ")
 
 
 # def build_params(args):

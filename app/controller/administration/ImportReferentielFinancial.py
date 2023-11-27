@@ -2,7 +2,7 @@
 Controller permettant de mettre à jours certains référentiels des données fiancières à partir d'un fichier 'calculette
 
 """
-from flask import current_app, request, jsonify, g
+from flask import current_app, request, jsonify
 from flask_restx import Namespace, Resource, reqparse
 from flask_restx._http import HTTPStatus
 from werkzeug.datastructures import FileStorage

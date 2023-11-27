@@ -3,13 +3,14 @@
 import logging
 
 import yaml
-from app.utilities import pretty_printer
+from app.utilities import sqlalchemy_pretty_printer
 from flask import Flask
 from flask_caching import Cache
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ProviderMetadata, ClientMetadata
+from prometheus_flask_exporter import PrometheusMetrics
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app import celeryapp, mailapp
@@ -21,6 +22,7 @@ from app.database import db
 # TODO déplacer en extensions
 ma = Marshmallow()
 cache = Cache()
+prometheus = PrometheusMetrics.for_app_factory()
 
 
 def create_app_migrate():
@@ -34,7 +36,15 @@ def create_app_migrate():
 
 
 def create_app_api():
-    return create_app_base()
+    api_app = create_app_base()
+
+    if api_app.config.get("ENABLE_API_METRICS", False):
+        logging.info("Setting up prometheus metrics.")
+        prometheus.init_app(api_app)
+    else:
+        logging.warning("Metrics are disabled ! use `ENABLE_API_METRICS` feature flag to enable it.")
+
+    return api_app
 
 
 def create_app_base(
@@ -51,14 +61,10 @@ def create_app_base(
     if extra_config_settings is None:
         extra_config_settings = {}
 
-    logging.basicConfig(
-        format="%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-    logging.getLogger().setLevel(logging.INFO)
+    _format = "%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s"
+    logging.basicConfig(format=_format, datefmt="%Y-%m-%d %H:%M:%S", level=logging.INFO, force=True)
 
-    # Pretty printer SQL
-    pretty_printer.setup()
+    sqlalchemy_pretty_printer.setup(format=_format)
 
     # Instantiate Flask
     app = Flask(__name__)
@@ -90,6 +96,8 @@ def create_app_base(
         # Utiliser uniquement pour Demarche simplifie pour un POC
         cache.init_app(app, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 300})
         _expose_endpoint(app)
+
+    _post_create_app_base(app)
     return app
 
 
@@ -107,10 +115,7 @@ def read_config(app, config_filep: str, extra_config_settings: dict):
     # Load extra settings from extra_config_settings param
     app.config.update(extra_config_settings)
 
-    if app.config["DEBUG"] == True:
-        app.config["SQLALCHEMY_ECHO"] = True
-        logging.getLogger().setLevel(logging.DEBUG)
-
+    logging.info("Force 'SQLALCHEMY_TRACK_MODIFICATIONS' to False")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
@@ -147,14 +152,18 @@ def _expose_endpoint(app: Flask):
         app.wsgi_app = ProxyFix(app.wsgi_app)
         CORS(app, resources={r"*": {"origins": "*"}})
 
-        from app.controller.financial_data import api_financial  # pour éviter les import circulaire avec oidc
+        from app.controller.financial_data import (
+            api_financial_v1,
+            api_financial_v2,
+        )  # pour éviter les import circulaire avec oidc
         from app.controller.administration import api_administration
         from app.controller.ref_controller import api_ref
         from app.controller.apis_externes import api_apis_externes
         from app.controller.task_management import api_task
         from app.controller.proxy_nocodb import mount_blueprint  # pour éviter les import circulaire avec oidc
 
-        app.register_blueprint(api_financial, url_prefix="/financial-data")
+        app.register_blueprint(api_financial_v1, url_prefix="/financial-data")
+        app.register_blueprint(api_financial_v2, url_prefix="/financial-data")
         app.register_blueprint(api_administration, url_prefix="/administration")
         app.register_blueprint(api_ref, url_prefix="/budget")
         app.register_blueprint(api_apis_externes, url_prefix="/apis-externes")
@@ -163,3 +172,15 @@ def _expose_endpoint(app: Flask):
         if "NOCODB_PROJECT" in app.config:
             for project in app.config["NOCODB_PROJECT"].items():
                 app.register_blueprint(mount_blueprint(project[0]), url_prefix=f"/nocodb/{project[0]}")
+
+
+def _post_create_app_base(app):
+    if app.config["DEBUG"] is True:
+        logging.info("Debug is enabled.")
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    if app.config["DEBUG"] is True:
+        logging.info("SQL Logging enabled.")
+        logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+    else:
+        logging.info("SQL Logging disabled.")

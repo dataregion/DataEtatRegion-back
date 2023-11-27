@@ -8,7 +8,7 @@ from app.models.financial.FinancialCp import FinancialCp
 from app.models.refs.siret import Siret
 from app.tasks.financial.import_financial import import_file_ae_financial
 from app.tasks.financial.import_financial import import_line_financial_ae
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -20,7 +20,7 @@ def cleanup_after_tests(database):
     database.session.commit()
 
 
-_chorus = DATA_PATH / "data" / "chorus"
+_chorus = TESTS_PATH / "data" / "chorus"
 _chorus_split = _chorus / "split"
 
 

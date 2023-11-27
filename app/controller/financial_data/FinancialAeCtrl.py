@@ -1,16 +1,20 @@
 from flask import jsonify, current_app, request
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, fields
 from flask_pyoidc import OIDCAuthentication
 from flask_restx._http import HTTPStatus
 
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
 from app.controller.financial_data import check_param_source_annee_import, parser_import, check_file_import
-from app.controller.financial_data.schema_model import register_financial_ae_schemamodel
+from app.controller.financial_data.schema_model import (
+    register_financial_ae_schemamodel,
+    register_financial_cp_schemamodel,
+)
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
-from app.models.financial.FinancialAe import FinancialAeSchema, FinancialCpSchema
+from app.models.financial.FinancialAe import FinancialAeSchema
+from app.models.financial.FinancialCp import FinancialCpSchema
 from app.servicesapp.authentication import ConnectedUser, InvalidTokenError, NoCurrentRegion
 from app.servicesapp.financial_data import (
     import_ae,
@@ -20,9 +24,10 @@ from app.servicesapp.financial_data import (
     get_annees_ae,
 )
 
-api = Namespace(name="Engagement", path="/", description="Api de  gestion des AE des données financières de l'état")
+api = Namespace(name="Engagement", path="/", description="Api de gestion des AE des données financières de l'état")
 
 model_financial_ae_single_api = register_financial_ae_schemamodel(api)
+model_financial_cp_single_api = register_financial_cp_schemamodel(api)
 
 auth: OIDCAuthentication = current_app.extensions["auth"]
 
@@ -62,6 +67,7 @@ def handle_invalid_token(e: InvalidTokenError):
     return ErrorController("Token invalide.").to_json(), HTTPStatus.BAD_REQUEST
 
 
+# TODO: deprecate
 @api.route("/ae")
 class FinancialAe(Resource):
     @api.expect(parser_import)
@@ -116,6 +122,7 @@ class FinancialAe(Resource):
         }, HTTPStatus.OK
 
 
+# TODO: deprecate
 @api.route("/ae/<id>")
 @api.doc(model=model_financial_ae_single_api)
 class GetFinancialAe(Resource):
@@ -138,7 +145,7 @@ class GetFinancialAe(Resource):
 
 
 @api.route("/ae/<id>/cp")
-@api.doc(model=model_financial_ae_single_api)
+@api.doc(model=fields.List(fields.Nested(model_financial_cp_single_api)))
 class GetFinancialCpOfAe(Resource):
     """
     Récupére les infos d'engagements en fonction de son identifiant technique
@@ -158,6 +165,7 @@ class GetFinancialCpOfAe(Resource):
         return financial_cp, 200
 
 
+# TODO: deprecate
 @api.route("/ae/annees")
 class GetYears(Resource):
     """
@@ -172,3 +180,17 @@ class GetYears(Resource):
         if annees is None:
             return "", HTTPStatus.NO_CONTENT
         return annees, HTTPStatus.OK
+
+
+@api.route("/ae/healthcheck")
+class GetHealthcheck(Resource):
+    def get(self):
+        """
+        Effectue un GET pour vérifier la disponibilité de l'API engagements
+        """
+        result_q = search_financial_data_ae(limit=10, page_number=0)
+        result = FinancialAeSchema(many=True).dump(result_q.items)
+
+        assert len(result) == 10, "On devrait récupérer 10 AE"
+
+        return HTTPStatus.OK

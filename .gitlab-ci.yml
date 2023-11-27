@@ -1,3 +1,6 @@
+variables:
+  PYTHON_IMAGE: python:3.11.5-slim
+
 stages:
   - 🧪 test
   - 🔨 build
@@ -5,7 +8,7 @@ stages:
 
 run_tests:
   stage: 🧪 test
-  image: python:3.11.5-slim
+  image: ${PYTHON_IMAGE}
   before_script:
     - python --version
     - pip install -r requirements.txt
@@ -32,6 +35,15 @@ run_black:
   script:
     - black --check .
 
+run_ruff:
+  stage: 🧪 test
+  image: ${PYTHON_IMAGE}
+  before_script:
+    - python --version
+    - pip install -r requirements.txt
+    - pip install -r dev-requirements.txt
+  script:
+    - ruff check .
 
 .deploy-integ:
   stage: 🐣 deploy

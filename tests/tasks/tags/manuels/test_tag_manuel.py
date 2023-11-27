@@ -6,7 +6,7 @@ from tests.tasks.tags import faked_tag_json
 from app import db
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.tags.Tags import Tags, TagAssociation
-from app.tasks.tags.manuels import put_tags_to_ae, put_tags_to_ae_from_user_export
+from app.tasks.tags.manuels import put_tags_to_ae
 
 
 @pytest.fixture(autouse=True)

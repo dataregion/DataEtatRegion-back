@@ -1,5 +1,4 @@
 import json
-import os
 from unittest.mock import patch, call
 
 import pytest
@@ -8,9 +7,9 @@ from app.models.refs.commune import Commune
 from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_ref_localisation_interministerielle
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
-_data = DATA_PATH / "data"
+_data = TESTS_PATH / "data"
 
 
 @pytest.fixture(scope="function")

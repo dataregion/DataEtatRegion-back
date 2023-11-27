@@ -1,3 +1,6 @@
+---- 
+---- Script manuel rappatrié pour être intégré dans les migrations
+----
 CREATE MATERIALIZED VIEW budget_summary AS
 SELECT id,
        annee,
@@ -48,6 +51,7 @@ CREATE INDEX idx_groupby_crte ON budget_summary (annee, code_programme, categori
 CREATE INDEX idx_groupby_epci ON budget_summary (annee, code_programme, categorie_juridique, code_epci, montant_ae, montant_cp);
 
 
+-----
 CREATE MATERIALIZED VIEW m_summary_annee_geo_type_bop AS
 SELECT DISTINCT annee,
                 code_programme,
@@ -79,6 +83,7 @@ CREATE INDEX idx_groupby_summary_epci ON m_summary_annee_geo_type_bop (annee, co
 CREATE INDEX idx_groupby_summary_crte ON m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_crte);
 
 
+-----
 CREATE MATERIALIZED VIEW m_montant_par_niveau_bop_annee_type AS
 SELECT
   (SELECT SUM(fce.montant_ae)

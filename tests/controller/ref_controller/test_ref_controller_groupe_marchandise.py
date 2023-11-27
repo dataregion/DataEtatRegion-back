@@ -58,12 +58,13 @@ def test_gm_not_found(test_client, insert_gm):
 def test_search_gm_no_content(test_client, insert_gm):
     test = "daine 02"
     resp = test_client.get("/budget/api/v1/groupe-marchandise?query=" + test)
+    print(resp)
     assert resp.status_code == 204
 
 
 def test_search_gm_by_domaine(test_client, insert_gm):
     test = "frais"
-    resp = test_client.get("/budget/api/v1/groupe-marchandise?query=" + test)
+    resp = test_client.get("/budget/api/v1/groupe-marchandise?domaine=" + test)
     assert resp.status_code == 200
 
     page_return = json.loads(resp.data.decode())

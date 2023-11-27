@@ -6,3 +6,4 @@ black ~= 23.7
 pip-tools ~= 6.13
 pre-commit ~= 3.5.0
 faker ~= 19.11.0
+ruff ~= 0.1.3

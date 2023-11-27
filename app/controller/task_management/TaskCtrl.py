@@ -1,8 +1,7 @@
 import functools
 
-from celery import states
-from flask import request, current_app, jsonify, g
-from flask_restx import Namespace, Resource, reqparse, inputs, fields
+from flask import request, current_app, jsonify
+from flask_restx import Namespace, Resource, reqparse, inputs
 from werkzeug.datastructures import FileStorage
 
 from app import celeryapp

@@ -1,5 +1,5 @@
 import json
-from . import *
+from . import *  # noqa: F403
 
 
 def test_bop_by_code(test_client, init_ref_ministeres_themes):

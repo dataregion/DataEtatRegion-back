@@ -1,4 +1,5 @@
 from enum import Enum
+from marshmallow import fields
 
 
 class DataType(Enum):
@@ -8,3 +9,8 @@ class DataType(Enum):
     FRANCE_2030 = "FRANCE_2030"
     ADEME = "ADEME"
     REFERENTIEL = "REFERENTIEL"
+
+
+class DataTypeField(fields.Field):
+    def _jsonschema_type_mapping(self):
+        return {"type": "string", "enum": [member.value for member in DataType]}

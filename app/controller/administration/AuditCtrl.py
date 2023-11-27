@@ -7,13 +7,11 @@ from marshmallow_jsonschema import JSONSchema
 from sqlalchemy.exc import NoResultFound
 
 from app import db
-from app.clients.keycloack.factory import make_or_get_keycloack_admin, KeycloakConfigurationException
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.audit.AuditUpdateData import AuditUpdateData, AuditUpdateDataSchema
 from app.models.common.Pagination import Pagination
-from app.models.common.QueryParam import QueryParam
 from app.models.enums.DataType import DataType
 from app.models.enums.AccountRole import AccountRole
 
@@ -25,7 +23,7 @@ auth = current_app.extensions["auth"]
 
 schema_many = AuditUpdateDataSchema(many=True)
 
-model_json = JSONSchema().dump(schema_many)["definitions"]["AuditUpdateDataSchema"]
+model_json = JSONSchema().dump(schema_many)["definitions"]["AuditUpdateDataSchema"]  # type: ignore
 model_single_api = api.schema_model("AuditUpdateDataSchema", model_json)
 pagination_model = api.schema_model("Pagination", Pagination.definition_jsonschema)
 
@@ -51,7 +49,7 @@ class Audit(Resource):
     @api.response(204, "No Result")
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     def get(self, type: DataType):
-        query_param = QueryParam(parser_get)
+        args = parser_get.parse_args()
         enum_type = DataType[type]
 
         stmt = (
@@ -59,7 +57,7 @@ class Audit(Resource):
             .where((AuditUpdateData.data_type == enum_type.name))
             .order_by(AuditUpdateData.date.desc())
         )
-        page_result = db.paginate(stmt, per_page=query_param.limit, page=query_param.page_number, error_out=False)
+        page_result = db.paginate(stmt, per_page=args.limit, page=args.page_number, error_out=False)
 
         if page_result.items == []:
             return "", HTTPStatus.NO_CONTENT

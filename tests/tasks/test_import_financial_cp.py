@@ -9,9 +9,9 @@ from app.models.financial.FinancialCp import FinancialCp
 from app.models.refs.siret import Siret
 from app.tasks.financial.import_financial import import_file_cp_financial
 from app.tasks.financial.import_financial import import_line_financial_cp
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
-_chorus = DATA_PATH / "data" / "chorus"
+_chorus = TESTS_PATH / "data" / "chorus"
 _chorus_split = _chorus / "split"
 
 
@@ -104,8 +104,8 @@ def test_import_new_line_cp_without_ae(session):
     assert data.id_ae is None
     assert data.annee == 2023
     assert data.programme == "101"
-    assert data.n_poste_ej == None
-    assert data.n_ej == None
+    assert data.n_poste_ej is None
+    assert data.n_ej is None
     assert data.centre_couts == "DSJCARE035"
     assert data.referentiel_programmation == "010101010113"
     assert data.montant == 28.26

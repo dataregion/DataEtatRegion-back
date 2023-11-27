@@ -1,7 +1,7 @@
 import datetime
 
 import pytest
-from ..tags import *
+from ..tags import *  # noqa: F403
 
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.tags.Tags import TagAssociation, Tags
@@ -10,7 +10,7 @@ from app.tasks.tags.apply_tags import apply_tags_fonds_vert
 
 @pytest.fixture(scope="function")
 def tag_fond_vert(database):
-    tags = Tags(**TAG_FOND_VERT)
+    tags = Tags(**TAG_FOND_VERT)  # noqa: F405
     database.session.add(tags)
     database.session.commit()
     yield tags
@@ -73,7 +73,7 @@ def test_apply_fond_vert_when_no_tag(
     database, insert_financial_ae_for_tag_fond_vert, insert_financial_ae_for_other_tag, tag_fond_vert
 ):
     # DO
-    apply_tags_fonds_vert(tag_fond_vert.type, None)
+    apply_tags_fonds_vert(tag_fond_vert.type, None)  # type: ignore
 
     # assert
     ## on a bien une association
@@ -84,21 +84,21 @@ def test_apply_fond_vert_when_no_tag(
     assert (
         tag_assocation.financial_ae == insert_financial_ae_for_tag_fond_vert.id
     )  # il s'agit bien de l'id de l'AE code programme 380
-    assert tag_assocation.auto_applied == True
+    assert tag_assocation.auto_applied is True
 
 
 def test_should_apply_tag_if_other_tag_associated(
     database, session, tag_fond_vert, insert_financial_ae_for_tag_fond_vert: FinancialAe
 ):
     # given
-    tags_dummy = Tags(**TAG_DUMMY)
+    tags_dummy = Tags(**TAG_DUMMY)  # noqa: F405
     tag_assoc = TagAssociation(**{"financial_ae": insert_financial_ae_for_tag_fond_vert.id, "auto_applied": False})
     tag_assoc.tag = tags_dummy
     session.add(tag_assoc)
     session.commit()
 
     # DO
-    apply_tags_fonds_vert(tag_fond_vert.type, None)
+    apply_tags_fonds_vert(tag_fond_vert.type, None)  # type: ignore
 
     # ASSERT
     tag_assocations = (
@@ -135,7 +135,7 @@ def test_should_not_apply_tag_if_already_present(
     session.commit()
 
     # DO
-    apply_tags_fonds_vert(tag_fond_vert.type, None)
+    apply_tags_fonds_vert(tag_fond_vert.type, None)  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(
@@ -143,4 +143,4 @@ def test_should_not_apply_tag_if_already_present(
     ).scalar_one_or_none()
     assert tag_assocation.ademe is None
     assert tag_assocation.financial_ae == insert_financial_ae_for_tag_fond_vert.id
-    assert tag_assocation.auto_applied == False
+    assert not tag_assocation.auto_applied

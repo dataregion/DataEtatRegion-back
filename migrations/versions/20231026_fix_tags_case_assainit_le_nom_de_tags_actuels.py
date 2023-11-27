@@ -7,7 +7,6 @@ Create Date: 2023-10-26 09:51:22.694107
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "20231026_fix_tags_case"

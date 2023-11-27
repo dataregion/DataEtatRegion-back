@@ -6,9 +6,9 @@ from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.ministere import Ministere
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_one_ref_default
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
-_data = DATA_PATH / "data"
+_data = TESTS_PATH / "data"
 
 
 @patch("app.tasks.import_refs_tasks.subtask")

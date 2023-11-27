@@ -8,7 +8,6 @@ from app.models.apis_externes.error import (
     CODE_CALL_FAILED,
     CODE_LIMIT_HIT,
 )
-from requests import Timeout
 
 from app.clients.entreprise import ApiError as ApiEntrepriseError, LimitHitError
 from app.clients.data_subventions import CallError as ApiSubventionCallError
@@ -22,7 +21,7 @@ from app.clients.data_subventions import CallError as ApiSubventionCallError
 def handle_api_subvention_call_error(error: ApiSubventionCallError):
     """Lorsqu'une erreur lors d'un appel à l'API subvention est survenue"""
 
-    logger.error(f"[API EXTERNES][CTRL] " "Une erreur lors de l'appel à l'API subvention est survenue")
+    logger.error("[API EXTERNES][CTRL] " "Une erreur lors de l'appel à l'API subvention est survenue")
 
     desc = error.call_error_description
     message = (
@@ -59,29 +58,13 @@ def handle_limit_hit(error: LimitHitError):
 def handle_api_entreprise_error(error: ApiEntrepriseError):
     """Lorsqu'une erreur lors de l'appel à l'API entreprise est survenue"""
 
-    logger.error(f"[API EXTERNES][CTRL] Une erreur lors de l'appel à l'API entreprise est survenue")
+    logger.error("[API EXTERNES][CTRL] Une erreur lors de l'appel à l'API entreprise est survenue")
 
     err = ApiError(
         code=CODE_CALL_FAILED,
-        message=f"Une erreur de l'API entreprise est survenue",
+        message="Une erreur de l'API entreprise est survenue",
         remote_errors=error.errors,
     )
-    dict = dataclasses.asdict(err)
-    return dict
-
-
-@api.errorhandler(Timeout)
-@api.response(500, "Internal Server Error", model=ApiError.schema_model(api))
-def handle_generic(error: Timeout):
-    """Lorsqu'un timeout vers le service externe est survenu"""
-
-    logger.error(f"[API EXTERNES][CTRL] Un timeout s'est produit")
-
-    err = ApiError(
-        code=CODE_CALL_FAILED,
-        message=f"Un timeout s'est produit en appelant le service distant.",
-    )
-
     dict = dataclasses.asdict(err)
     return dict
 
@@ -91,11 +74,11 @@ def handle_generic(error: Timeout):
 def handle_generic(error):
     """Lorsqu'une erreur 500 vers la ressource externe est survenue"""
 
-    logger.error(f"[API EXTERNES][CTRL] Une erreur est survenue")
+    logger.error("[API EXTERNES][CTRL] Une erreur est survenue")
 
     err = ApiError(
         code=CODE_UNKNOWN,
-        message=f"Une erreur inconnue est survenue",
+        message="Une erreur inconnue est survenue",
     )
 
     dict = dataclasses.asdict(err)

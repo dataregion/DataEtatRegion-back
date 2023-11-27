@@ -2,7 +2,6 @@ import json
 
 import pytest
 
-from app.models.refs.ministere import Ministere
 from app.models.refs.qpv import Qpv
 
 
@@ -46,7 +45,7 @@ def test_search_qpv_no_content(test_client, insert_qpv):
 
 def test_search_min_by_commune(test_client, insert_qpv):
     test = "Avign"
-    resp = test_client.get("/budget/api/v1/qpv?query=" + test)
+    resp = test_client.get("/budget/api/v1/qpv?label_commune=" + test)
     assert resp.status_code == 200
 
     page_return = json.loads(resp.data.decode())

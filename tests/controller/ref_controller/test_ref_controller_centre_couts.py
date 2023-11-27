@@ -1,6 +1,6 @@
 import json
 
-from . import *
+from . import *  # noqa: F403
 
 
 def test_centre_cout_by_code(test_client, insert_centre_couts):
@@ -38,8 +38,8 @@ def test_search_centre_cout_bycode_label(test_client, insert_centre_couts):
 
 def test_search_centre_cout_bycode(test_client, insert_centre_couts):
     test = "code1"
-    resp = test_client.get("/budget/api/v1/centre-couts?query=" + test + "&limit=5&page_number=0")
-    resp_page2 = test_client.get("/budget/api/v1/centre-couts?query=" + test + "&limit=5&page_number=2")
+    resp = test_client.get("/budget/api/v1/centre-couts?code=" + test + "&limit=5&page_number=0")
+    resp_page2 = test_client.get("/budget/api/v1/centre-couts?code=" + test + "&limit=5&page_number=2")
 
     assert resp.status_code == 200
     assert resp_page2.status_code == 200
@@ -60,13 +60,13 @@ def test_search_centre_cout_bycode(test_client, insert_centre_couts):
     assert insert_centre_couts[15] in page2_return["items"]  # code16
     assert insert_centre_couts[16] in page2_return["items"]  # code17
 
-    assert page1_return["pageInfo"] == {"totalRows": 13, "page": 1, "pageSize": 5}
-    assert page2_return["pageInfo"] == {"totalRows": 13, "page": 2, "pageSize": 5}
+    assert page1_return["pageInfo"] == {"totalRows": 11, "page": 1, "pageSize": 5}
+    assert page2_return["pageInfo"] == {"totalRows": 11, "page": 2, "pageSize": 5}
 
 
 def test_search_centre_cout_by_code_postal(test_client, insert_centre_couts):
     test = "35411"
-    resp = test_client.get("/budget/api/v1/centre-couts?query=" + test + "&limit=5&pageNumber=0")
+    resp = test_client.get("/budget/api/v1/centre-couts?code_postal=" + test + "&limit=5&pageNumber=0")
     assert resp.status_code == 200
     page_return = json.loads(resp.data.decode())
     assert page_return["items"].__len__() == 1

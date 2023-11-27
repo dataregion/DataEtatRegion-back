@@ -30,7 +30,7 @@ def import_refs_task(self, file: str, model_name: str, columns: List, is_csv=Tru
     if "code" not in columns:
         raise MissingCodeColumns()
 
-    model = _get_instance_model_by_name(model_name)
+    _ = _get_instance_model_by_name(model_name)
     if is_csv:
         df = pandas.read_csv(file, dtype=str, **kwargs)
     else:

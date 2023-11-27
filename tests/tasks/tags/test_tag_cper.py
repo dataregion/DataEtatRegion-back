@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 from app.tasks.tags import apply_tags_cper_2015_20
-from ..tags import *
+from ..tags import *  # noqa: F403
 
 from app import db
 from app.models.financial.FinancialAe import FinancialAe
@@ -12,7 +12,7 @@ from app.models.tags.Tags import TagAssociation, Tags
 
 @pytest.fixture(autouse=True)
 def tag_cper_15_20(database):
-    tags = Tags(**TAG_CPER_15_20)
+    tags = Tags(**TAG_CPER_15_20)  # noqa: F405
     database.session.add(tags)
     database.session.commit()
     yield tags
@@ -23,7 +23,7 @@ def tag_cper_15_20(database):
 
 @pytest.fixture(autouse=True)
 def tag_cper_21_27(database):
-    tags = Tags(**TAG_CPER_21_27)
+    tags = Tags(**TAG_CPER_21_27)  # noqa: F405
     database.session.add(tags)
     database.session.commit()
     yield tags
@@ -98,7 +98,7 @@ def insert_two_financial_ae_for_tag_cper_2015_20(database, session):
 
 def test_apply_cper_2015_20_no_tag(insert_two_financial_ae_for_tag_cper_2015_20, tag_cper_15_20):
     # DO
-    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20")
+    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20")  # type: ignore
 
     # assert
     ## on a bien deux associations
@@ -116,4 +116,4 @@ def test_apply_cper_2015_20_no_tag(insert_two_financial_ae_for_tag_cper_2015_20,
         or (tag_assocations[1].financial_ae == insert_two_financial_ae_for_tag_cper_2015_20[1].id)
     )
     assert tag_assocations[0].ademe is None and tag_assocations[1].ademe is None
-    assert tag_assocations[0].auto_applied == True and tag_assocations[1].auto_applied == True
+    assert tag_assocations[0].auto_applied and tag_assocations[1].auto_applied

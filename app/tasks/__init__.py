@@ -5,10 +5,10 @@ from functools import wraps
 from tenacity import retry, stop_after_attempt
 
 from app import celeryapp
-
-logger = logging.getLogger()
-celery = celeryapp.celery
 from celery import current_app
+
+celery = celeryapp.celery
+logger = logging.getLogger()
 
 __all__ = (
     "limiter_queue",
@@ -78,7 +78,7 @@ def limiter_queue(
                             f"Timeout exceeded while waiting for the queue '{queue_name}' to be available."
                         )
 
-                    logger.warning(f"Limite de la file rabbitmq atteinte. On attend 10 secondes")
+                    logger.warning("Limite de la file rabbitmq atteinte. On attend 10 secondes")
                     time.sleep(10)
                     num_retries += 1
 
@@ -100,12 +100,12 @@ def _get_queue(queue_name: str):
     return queue
 
 
-from .files.file_task import *
-from .financial.import_financial import *
-from .financial.import_france_2030 import *
-from .financial.visuterritoire import *
-from .import_refs_tasks import *
-from .management_tasks import *
-from .refs import *
-from .siret import *
-from .tags import *
+from .files.file_task import *  # noqa: E402, F403
+from .financial.import_financial import *  # noqa: E402, F403
+from .financial.import_france_2030 import *  # noqa: E402, F403
+from .financial.refresh_materialized_views import *  # noqa: E402, F403
+from .import_refs_tasks import *  # noqa: E402, F403
+from .management_tasks import *  # noqa: E402, F403
+from .refs import *  # noqa: E402, F403
+from .siret import *  # noqa: F403, E402
+from .tags import *  # noqa: E402, F403

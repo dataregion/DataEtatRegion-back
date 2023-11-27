@@ -8,9 +8,9 @@ from app.models.audit.AuditUpdateData import AuditUpdateData
 from app.models.enums.DataType import DataType
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
 from app.servicesapp.financial_data import import_cp
-from tests import DATA_PATH
+from tests import TESTS_PATH
 
-_chorus = DATA_PATH / "data" / "chorus"
+_chorus = TESTS_PATH / "data" / "chorus"
 _chorus_errors = _chorus / "errors"
 
 
