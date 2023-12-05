@@ -18,7 +18,6 @@ _data_folder = Path(__file__).resolve().parent / __name__
 
 
 def upgrade():
-    # Views
     _drop_old_view()
 
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ae")
@@ -43,7 +42,6 @@ def upgrade():
 
 
 def downgrade():
-    # Views
     _drop_old_view()
 
     op.execute("DROP VIEW IF EXISTS public.montant_par_niveau_bop_annee_type")
