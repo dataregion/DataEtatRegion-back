@@ -7,7 +7,6 @@ Create Date: 2023-11-13 14:53:18.871674
 """
 from pathlib import Path
 from alembic import op
-import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "20231123_views_in_migration"
@@ -42,15 +41,10 @@ def upgrade():
     print("On crée les vues visuterritoire. Cela peut être long.")
     op.execute(_views_vt_visuterritoire())
 
-    # PVD
-    with op.batch_alter_table('ref_commune', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('is_pvd', sa.Boolean(), nullable=True))
-        batch_op.add_column(sa.Column('date_pvd', sa.Date(), nullable=True))
-    
-    op.execute("""
-        INSERT INTO tags (type, description, enable_rules_auto, display_name)
-        VALUES ('pvd', 'Petite Ville de Demain', true, 'PVD');
-    """)
+    # Foreign key on delete cascade
+    with op.batch_alter_table('tag_association', schema=None) as batch_op:
+        batch_op.drop_constraint('tag_association_tag_id_fkey', type_='foreignkey')
+        batch_op.create_foreign_key('tag_association_tag_id_fkey', 'tags', ['tag_id'], ['id'], ondelete='cascade')
 
 
 def downgrade():

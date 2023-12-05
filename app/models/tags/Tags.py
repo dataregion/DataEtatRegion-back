@@ -42,7 +42,7 @@ class TagAssociation(Audit, db.Model):
     )
 
     id = db.Column(Integer, primary_key=True)
-    tag_id = Column(Integer, ForeignKey("tags.id"), nullable=False)
+    tag_id = Column(Integer, ForeignKey("tags.id", ondelete="cascade"), nullable=False)
 
     ademe = Column(Integer, ForeignKey("ademe.id"), nullable=True)
     financial_ae = Column(Integer, ForeignKey("financial_ae.id"), nullable=True)

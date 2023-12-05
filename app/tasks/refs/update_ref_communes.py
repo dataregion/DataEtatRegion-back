@@ -48,7 +48,6 @@ def import_file_pvd(self, fichier: str):
     move_folder = current_app.config["UPLOAD_FOLDER"] + "/save/"
 
     try:
-        print(fichier)
         data_pvd_chunk = pd.read_csv(
             fichier,
             sep=",",

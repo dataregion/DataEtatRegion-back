@@ -51,7 +51,7 @@ def set_communes_non_pvd() -> None:
     db.session.commit()
 
 
-def set_communes_pvd(updates_to_commit: []) -> None:
+def set_communes_pvd(updates_to_commit: [dict[str, any]]) -> None:
     """
     Set is_pvd = True et date_pvd = :date_pvd des communes en fonction des id précisés dans updates_to_commit
     :return: None
