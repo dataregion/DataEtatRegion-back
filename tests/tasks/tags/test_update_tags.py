@@ -12,6 +12,7 @@ def tags(database):
     database.session.add(Tags(**TAG_RELANCE))  # noqa: F405
     database.session.add(Tags(**TAG_DISABLE_AUTO))  # noqa: F405
     database.session.add(Tags(**TAG_CPER_21_27))  # noqa: F405
+    database.session.add(Tags(**TAG_PVD))  # noqa: F405
     database.session.commit()
     yield
     database.session.execute(database.delete(Tags))

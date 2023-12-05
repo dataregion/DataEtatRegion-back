@@ -1,7 +1,12 @@
 import logging
 
+from sqlalchemy import ColumnElement
+
 from app import celeryapp, db
 from app.models.financial.FinancialAe import FinancialAe as Ae
+from app.models.refs.commune import Commune
+from app.models.refs.siret import Siret
+from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
 from app.services.tags import select_tag, ApplyTagForAutomation, TagVO
 from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
@@ -114,3 +119,32 @@ def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None):
 
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae((Ae.contrat_etat_region != "#") & (Ae.annee >= 2021) & (Ae.annee <= 2027))
+
+
+@_celery.task(bind=True, name="apply_tags_pvd")
+def apply_tags_pvd(self, tag_type: str, tag_value: str | None):
+    """
+    Applique le tag PVD (Petite Ville de Demain)
+    :param self:
+    :param tag_type:
+    :param tag_value:
+    :return:
+    """
+    _logger.info("[TAGS][PVD] Application auto du tags PVD")
+    tag = select_tag(TagVO.from_typevalue(tag_type))
+    _logger.debug(f"[TAGS][{tag.type}] Récupération du tag PVD id : {tag.id}")
+
+    # Récupération des codes des communes PVD
+    stmt_communes_pvd = db.select(Commune.id, Commune.code).where(Commune.is_pvd == True)  # noqa: E712
+    communes_pvd = db.session.execute(stmt_communes_pvd).fetchall()
+    _logger.debug(f"[TAGS][{tag.type}] Récupération des communes PVD")
+
+    # Création des conditions
+    siret_condition: ColumnElement[bool] = Ae.ref_siret.has(Siret.code_commune.in_([c.code for c in communes_pvd]))
+    loc_condition: ColumnElement[bool] = Ae.ref_localisation_interministerielle.has(
+        LocalisationInterministerielle.commune_id.in_([c.id for c in communes_pvd])
+    )
+
+    # Application du tag aux AE
+    apply_task = ApplyTagForAutomation(tag)
+    apply_task.apply_tags_ae(siret_condition | loc_condition)
