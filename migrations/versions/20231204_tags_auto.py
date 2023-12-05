@@ -26,6 +26,11 @@ def upgrade():
         VALUES ('pvd', 'Petite Ville de Demain', true, 'PVD');
     """)
 
+    # Foreign key on delete cascade
+    with op.batch_alter_table('tag_association', schema=None) as batch_op:
+        batch_op.drop_constraint('tag_association_tag_id_fkey', type_='foreignkey')
+        batch_op.create_foreign_key('tag_association_tag_id_fkey', 'tags', ['tag_id'], ['id'], ondelete='cascade')
+
 
 def downgrade():
     # Infos communes pour tags PVD & ACV
@@ -34,3 +39,8 @@ def downgrade():
         batch_op.drop_column('date_pvd')
 
     op.execute("DELETE FROM tags WHERE type = 'pvd';")
+
+    # Foreign key on delete cascade
+    with op.batch_alter_table('tag_association', schema=None) as batch_op:
+        batch_op.drop_constraint('tag_association_tag_id_fkey', type_='foreignkey')
+        batch_op.create_foreign_key('tag_association_tag_id_fkey', 'tags', ['tag_id'], ['id'])

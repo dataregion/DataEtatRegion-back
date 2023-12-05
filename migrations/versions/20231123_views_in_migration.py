@@ -41,11 +41,6 @@ def upgrade():
     print("On crée les vues visuterritoire. Cela peut être long.")
     op.execute(_views_vt_visuterritoire())
 
-    # Foreign key on delete cascade
-    with op.batch_alter_table('tag_association', schema=None) as batch_op:
-        batch_op.drop_constraint('tag_association_tag_id_fkey', type_='foreignkey')
-        batch_op.create_foreign_key('tag_association_tag_id_fkey', 'tags', ['tag_id'], ['id'], ondelete='cascade')
-
 
 def downgrade():
     # Views
@@ -66,13 +61,6 @@ def downgrade():
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_financial_lines")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ae")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.flatten_ademe")
-
-    # PVD
-    with op.batch_alter_table('ref_commune', schema=None) as batch_op:
-        batch_op.drop_column('is_pvd')
-        batch_op.drop_column('date_pvd')
-
-    op.execute("DELETE FROM tags WHERE type = 'pvd';")
 
 
 def _drop_old_view():
