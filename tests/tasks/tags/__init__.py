@@ -7,6 +7,7 @@ __all__ = (
     "TAG_CPER_15_20",
     "TAG_CPER_21_27",
     "TAG_PVD",
+    "TAG_ACV",
 )
 
 from faker import Faker
@@ -76,6 +77,13 @@ TAG_PVD = {
     "enable_rules_auto": True,
 }
 
+TAG_ACV = {
+    "type": "acv",
+    "value": None,
+    "description": "tag acv",
+    "display_name": "ACV",
+    "enable_rules_auto": True,
+}
 
 def faked_tag_json(faker: Faker):
     """Génère un JSON représentant un tag random"""
