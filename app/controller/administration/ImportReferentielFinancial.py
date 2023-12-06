@@ -12,8 +12,6 @@ from app.exceptions.exceptions import FileNotAllowedException
 from app.models.enums.AccountRole import AccountRole
 from app.servicesapp.authentication import ConnectedUser
 from app.services.import_refs import import_ref_calculette
-from app.tasks.refs.update_ref_communes import import_file_pvd_from_website  # noqa: F401
-from app.tasks.tags.apply_tags import apply_tags_pvd  # noqa: F401
 
 
 api = Namespace(
