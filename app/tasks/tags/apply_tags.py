@@ -148,3 +148,32 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None):
     # Application du tag aux AE
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(siret_condition | loc_condition)
+
+
+@_celery.task(bind=True, name="apply_tags_acv")
+def apply_tags_acv(self, tag_type: str, tag_value: str | None):
+    """
+    Applique le tag ACV (Action Coeur de la Ville)
+    :param self:
+    :param tag_type:
+    :param tag_value:
+    :return:
+    """
+    _logger.info("[TAGS][ACV] Application auto du tags ACV")
+    tag = select_tag(TagVO.from_typevalue(tag_type))
+    _logger.debug(f"[TAGS][{tag.type}] Récupération du tag ACV id : {tag.id}")
+
+    # Récupération des codes des communes ACV
+    stmt_communes_acv = db.select(Commune.id, Commune.code).where(Commune.is_acv == True)  # noqa: E712
+    communes_acv = db.session.execute(stmt_communes_acv).fetchall()
+    _logger.debug(f"[TAGS][{tag.type}] Récupération des communes ACV")
+
+    # Création des conditions
+    siret_condition: ColumnElement[bool] = Ae.ref_siret.has(Siret.code_commune.in_([c.code for c in communes_acv]))
+    loc_condition: ColumnElement[bool] = Ae.ref_localisation_interministerielle.has(
+        LocalisationInterministerielle.commune_id.in_([c.id for c in communes_acv])
+    )
+
+    # Application du tag aux AE
+    apply_task = ApplyTagForAutomation(tag)
+    apply_task.apply_tags_ae(siret_condition | loc_condition)

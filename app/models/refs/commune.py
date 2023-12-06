@@ -31,6 +31,9 @@ class Commune(Audit, db.Model):
     is_pvd: Column[bool] = Column(Boolean, nullable=True)
     date_pvd: Column[date] = Column(Date, nullable=True)
 
+    is_acv: Column[bool] = Column(Boolean, nullable=True)
+    date_acv: Column[date] = Column(Date, nullable=True)
+
     # FK
     code_arrondissement: Column[str] = Column(String, db.ForeignKey("ref_arrondissement.code"), nullable=True)
     ref_arrondissement: Mapped[Arrondissement] = relationship("Arrondissement", lazy="joined")

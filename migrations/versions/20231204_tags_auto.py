@@ -20,10 +20,14 @@ def upgrade():
     with op.batch_alter_table('ref_commune', schema=None) as batch_op:
         batch_op.add_column(sa.Column('is_pvd', sa.Boolean(), nullable=True))
         batch_op.add_column(sa.Column('date_pvd', sa.Date(), nullable=True))
+        batch_op.add_column(sa.Column('is_acv', sa.Boolean(), nullable=True))
+        batch_op.add_column(sa.Column('date_acv', sa.Date(), nullable=True))
     
     op.execute("""
         INSERT INTO tags (type, description, enable_rules_auto, display_name)
-        VALUES ('pvd', 'Petite Ville de Demain', true, 'PVD');
+        VALUES
+        ('pvd', 'Petite Ville de Demain', true, 'PVD'),
+        ('acv', 'Action cœur de ville', true, 'ACV');
     """)
 
     # Foreign key on delete cascade
@@ -37,8 +41,10 @@ def downgrade():
     with op.batch_alter_table('ref_commune', schema=None) as batch_op:
         batch_op.drop_column('is_pvd')
         batch_op.drop_column('date_pvd')
+        batch_op.drop_column('is_acv')
+        batch_op.drop_column('date_acv')
 
-    op.execute("DELETE FROM tags WHERE type = 'pvd';")
+    op.execute("DELETE FROM tags WHERE type IN ('pvd', 'acv');")
 
     # Foreign key on delete cascade
     with op.batch_alter_table('tag_association', schema=None) as batch_op:

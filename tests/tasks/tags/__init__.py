@@ -7,6 +7,7 @@ __all__ = (
     "TAG_CPER_15_20",
     "TAG_CPER_21_27",
     "TAG_PVD",
+    "TAG_ACV",
 )
 
 from faker import Faker
@@ -73,6 +74,14 @@ TAG_PVD = {
     "value": None,
     "description": "tag pvd",
     "display_name": "PVD",
+    "enable_rules_auto": True,
+}
+
+TAG_ACV = {
+    "type": "acv",
+    "value": None,
+    "description": "tag acv",
+    "display_name": "ACV",
     "enable_rules_auto": True,
 }
 
