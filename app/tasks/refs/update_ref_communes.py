@@ -12,16 +12,20 @@ from flask import current_app
 from celery import subtask
 
 from app import celeryapp
-from app.services.communes import *
+from app.services.communes import (
+    select_communes_id,
+    set_communes_non_pvd,
+    set_communes_pvd,
+    set_communes_non_acv,
+    set_communes_acv,
+)
 from app.tasks import limiter_queue
 from app.tasks.financial import logger
 
 _celery = celeryapp.celery
 _logger = logging.getLogger(__name__)
 
-"""
-Enrichissement des comunnes PVD
-"""
+
 @_celery.task(bind=True, name="import_file_pvd_from_website")
 def import_file_pvd_from_website(self, url: str):
     response = requests.get(url, stream=True)
@@ -93,11 +97,8 @@ def import_file_pvd(self, fichier: str):
     except Exception as e:
         logger.exception(f"[IMPORT][PVD] Error lors de l'import du fichier PVD: {fichier}")
         raise e
-    
 
-"""
-Enrichissement des comunnes ACV
-"""
+
 @_celery.task(bind=True, name="import_file_acv_from_website")
 def import_file_acv_from_website(self, url: str):
     response = requests.get(url, stream=True)

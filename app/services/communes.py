@@ -30,9 +30,6 @@ def select_commune(code: str) -> Commune:
     return db.session.execute(stmt).scalar_one()
 
 
-"""
-Comunnes PVD
-"""
 def set_pvd(commune: Commune, date_signature: Date = None) -> None:
     """
     Définis une commune comme PVD à partie d'une date spécifiée
@@ -63,9 +60,6 @@ def set_communes_pvd(updates_to_commit: [dict[str, any]]) -> None:
     db.session.commit()
 
 
-"""
-Comunnes ACV
-"""
 def set_acv(commune: Commune, date_signature: Date = None) -> None:
     """
     Définis une commune comme ACV à partie d'une date spécifiée

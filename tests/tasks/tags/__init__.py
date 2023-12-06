@@ -85,6 +85,7 @@ TAG_ACV = {
     "enable_rules_auto": True,
 }
 
+
 def faked_tag_json(faker: Faker):
     """Génère un JSON représentant un tag random"""
     return {
