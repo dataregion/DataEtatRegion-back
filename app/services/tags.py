@@ -54,10 +54,15 @@ class ApplyTagForAutomation:
 
         # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
         if ae_ids:
+            index = 0
             for ae_id in ae_ids:
                 db.session.add(TagAssociation(financial_ae=ae_id, tag=self.tag, auto_applied=True))
+                index += 1
+                # Bluk insert toutes les 100 associations
+                if index % 100 == 0:
+                    db.session.commit()
             db.session.commit()
-            logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags")
+            logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags : {len(ae_ids)}")
         else:
             logger.info(f"[TAGS][{self.tag.type}] Aucune nouvelle association détecté")
 
