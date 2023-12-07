@@ -56,11 +56,13 @@ class ApplyTagForAutomation:
         if ae_ids:
             insert_to_commit = []
             for ae_id in ae_ids:
-                insert_to_commit.append({
-                    TagAssociation.financial_ae.name: ae_id,
-                    TagAssociation.tag_id.name: self.tag.id,
-                    TagAssociation.auto_applied.name: True,
-                })
+                insert_to_commit.append(
+                    {
+                        TagAssociation.financial_ae.name: ae_id,
+                        TagAssociation.tag_id.name: self.tag.id,
+                        TagAssociation.auto_applied.name: True,
+                    }
+                )
             db.session.execute(insert(TagAssociation), insert_to_commit)
             db.session.commit()
             logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags : {len(ae_id)}")
