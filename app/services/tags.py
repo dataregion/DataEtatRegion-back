@@ -4,7 +4,7 @@ from app import db
 from app.models.financial.FinancialAe import FinancialAe as Ae
 from app.models.tags.Tags import TagVO, TagAssociation
 from app.models.tags.Tags import Tags as DbTag
-from sqlalchemy import delete, and_, select
+from sqlalchemy import delete, and_, select, insert
 
 logger = logging.getLogger(__name__)
 
@@ -54,15 +54,16 @@ class ApplyTagForAutomation:
 
         # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
         if ae_ids:
-            index = 0
+            insert_to_commit = []
             for ae_id in ae_ids:
-                db.session.add(TagAssociation(financial_ae=ae_id, tag=self.tag, auto_applied=True))
-                index += 1
-                # Bluk insert toutes les 100 associations
-                if index % 100 == 0:
-                    db.session.commit()
+                insert_to_commit.append({
+                    TagAssociation.financial_ae.name: ae_id,
+                    TagAssociation.tag_id.name: self.tag.id,
+                    TagAssociation.auto_applied.name: True,
+                })
+            db.session.execute(insert(TagAssociation), insert_to_commit)
             db.session.commit()
-            logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags : {len(ae_ids)}")
+            logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags : {len(ae_id)}")
         else:
             logger.info(f"[TAGS][{self.tag.type}] Aucune nouvelle association détecté")
 
