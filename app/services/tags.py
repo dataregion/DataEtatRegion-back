@@ -65,7 +65,7 @@ class ApplyTagForAutomation:
                 )
             db.session.execute(insert(TagAssociation), insert_to_commit)
             db.session.commit()
-            logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags : {len(ae_id)}")
+            logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags : {len(ae_ids)}")
         else:
             logger.info(f"[TAGS][{self.tag.type}] Aucune nouvelle association détecté")
 
