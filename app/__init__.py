@@ -22,7 +22,7 @@ from app.database import db
 # TODO déplacer en extensions
 ma = Marshmallow()
 cache = Cache()
-prometheus = PrometheusMetrics.for_app_factory()
+prometheus = PrometheusMetrics.for_app_factory(group_by="endpoint")
 
 
 def create_app_migrate():
