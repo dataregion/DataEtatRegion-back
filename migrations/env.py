@@ -7,30 +7,41 @@ from flask import current_app
 
 from alembic import context
 
+IGNORE_TABLES = ["nc_evolutions"]  # XXX: Cette table est gerée par nocodb
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-include_schemas=True
+include_schemas = True
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
-logger = logging.getLogger('alembic.env')
+logger = logging.getLogger("alembic.env")
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-config.set_main_option(
-    'sqlalchemy.url',
-    str(current_app.extensions['migrate'].db.get_engine().url).replace(
-        '%', '%%'))
-target_metadata = current_app.extensions['migrate'].db.metadata
+config.set_main_option("sqlalchemy.url", str(current_app.extensions["migrate"].db.get_engine().url).replace("%", "%%"))
+target_metadata = current_app.extensions["migrate"].db.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    """
+    Should you include this table or not?
+    """
+    if type_ == "table" and (name in IGNORE_TABLES or object.info.get("skip_autogenerate", False)):
+        return False
+    elif type_ == "column" and object.info.get("skip_autogenerate", False):
+        return False
+
+    return True
 
 
 def run_migrations_offline():
@@ -46,9 +57,7 @@ def run_migrations_offline():
 
     """
     url = config.get_main_option("sqlalchemy.url")
-    context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True
-    )
+    context.configure(url=url, target_metadata=target_metadata, literal_binds=True, include_object=include_object)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -66,20 +75,21 @@ def run_migrations_online():
     # when there are no changes to the schema
     # reference: http://alembic.zzzcomputing.com/en/latest/cookbook.html
     def process_revision_directives(context, revision, directives):
-        if getattr(config.cmd_opts, 'autogenerate', False):
+        if getattr(config.cmd_opts, "autogenerate", False):
             script = directives[0]
             if script.upgrade_ops.is_empty():
                 directives[:] = []
-                logger.info('No changes in schema detected.')
+                logger.info("No changes in schema detected.")
 
-    connectable = current_app.extensions['migrate'].db.get_engine()
+    connectable = current_app.extensions["migrate"].db.get_engine()
 
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
+            include_object=include_object,
             process_revision_directives=process_revision_directives,
-            **current_app.extensions['migrate'].configure_args
+            **current_app.extensions["migrate"].configure_args,
         )
 
         with context.begin_transaction():

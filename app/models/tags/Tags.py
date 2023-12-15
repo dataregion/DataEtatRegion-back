@@ -13,6 +13,7 @@ from app.models.common.Audit import Audit
 # region: db model
 class Tags(Audit, db.Model):
     __tablename__ = "tags"
+    __table_args__ = (UniqueConstraint("type", "value", name="uq_type_value_tags"),)
     id = db.Column(Integer, primary_key=True)
     type: Column[str] = Column(String(255), nullable=False)
     value: Column[str] = Column(String(255))
@@ -22,7 +23,6 @@ class Tags(Audit, db.Model):
     enable_rules_auto: Column[bool] = Column(Boolean, nullable=False, default=False)
 
     associations: Mapped[List["TagAssociation"]] = relationship(cascade="all, delete", back_populates="tag")
-    UniqueConstraint("type", "value", name="unique_tags")
 
     @hybrid_property
     def fullname(self):
@@ -44,8 +44,8 @@ class TagAssociation(Audit, db.Model):
     id = db.Column(Integer, primary_key=True)
     tag_id = Column(Integer, ForeignKey("tags.id", ondelete="cascade"), nullable=False)
 
-    ademe = Column(Integer, ForeignKey("ademe.id"), nullable=True)
-    financial_ae = Column(Integer, ForeignKey("financial_ae.id"), nullable=True)
+    ademe = Column(Integer, ForeignKey("ademe.id"), nullable=True, index=True)
+    financial_ae = Column(Integer, ForeignKey("financial_ae.id"), nullable=True, index=True)
 
     # indique si le tag a été appliqué par un script auto ou non
     auto_applied = Column(Boolean, default=False, nullable=False)

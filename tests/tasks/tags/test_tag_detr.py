@@ -61,7 +61,7 @@ def insert_two_financial_ae_for_tag_detr(database, session):
     bad_ae = FinancialAe(
         **{
             "annee": 2020,
-            "n_ej": "2",
+            "n_ej": "3",
             "n_poste_ej": 2,
             "programme": "xxx",  #
             "domaine_fonctionnel": "0380-01-01",
