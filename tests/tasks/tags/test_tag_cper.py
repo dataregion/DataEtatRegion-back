@@ -72,7 +72,7 @@ def insert_two_financial_ae_for_tag_cper_2015_20(database, session):
     bad_ae_1 = FinancialAe(
         **{
             "annee": 2019,
-            "n_ej": "2",
+            "n_ej": "3",
             "n_poste_ej": 1,
             "contrat_etat_region": "#",
             "programme": "165",

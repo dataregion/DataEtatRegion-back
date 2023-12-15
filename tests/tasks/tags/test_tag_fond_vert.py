@@ -49,7 +49,7 @@ def insert_financial_ae_for_other_tag(database, session):
     ae = FinancialAe(
         **{
             "annee": 2020,
-            "n_ej": "1",
+            "n_ej": "2",
             "n_poste_ej": 1,
             "programme": "200",
             "domaine_fonctionnel": "0380-01-01",
