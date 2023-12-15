@@ -27,13 +27,13 @@ __all__ = ("FinancialAe", "FinancialAeSchema")
 @dataclass
 class FinancialAe(FinancialData, db.Model):
     __tablename__ = "financial_ae"
+    __table_args__ = (UniqueConstraint("n_ej", "n_poste_ej", name="unique_ej_poste_ej"),)
     # PK
     id: Column[int] = Column(Integer, primary_key=True)
 
     # UNIQUE
     n_ej: Column[str] = Column(String, nullable=False)
     n_poste_ej: Column[int] = Column(Integer, nullable=False)
-    UniqueConstraint("n_ej", "n_poste_ej", name="n_ej_n_poste_ej"),
 
     # liens vers les référentiels
     source_region: Column[str] = Column(String, ForeignKey("ref_region.code"), nullable=True)
