@@ -79,7 +79,7 @@ def upgrade():
         {
             "type": "DETR",
             "value": None,
-            "description": 'La ligne est taguée DETR si le libellé de son champ RéférentielProgrammation est "DETR".',
+            "description": 'La ligne est taguée DETR si le libellé de son champ Référentiel Programmation est "DETR".',
             "enable_rules_auto": True,
         },
     ]
