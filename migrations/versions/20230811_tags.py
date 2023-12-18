@@ -55,31 +55,31 @@ def upgrade():
         {
             "type": "Fond vert",
             "value": None,
-            "description": "Tag auto Fond Vert si programme = 380",
+            "description": 'La ligne est taguée Fonds vert si le libellé de son champ Programme est "380-".',
             "enable_rules_auto": True,
         },
         {
             "type": "Relance",
             "value": None,
-            "description": "Tag pour le thème de France Relance",
+            "description": 'La ligne est taguée France Relance si le libellé de son champ Thème est "France Relance".',
             "enable_rules_auto": True,
         },
         {
             "type": "CPER",
             "value": "2015-20",
-            "description": "Si le Contrat de plan État-région de la ligne n’est pas égale à non affecté ou NULL alors tag CPER selon l'année",
+            "description": 'La ligne est taguée CPER si le champ "Contrat plan État-région" n’est pas nul (NULL) ou non affecté (NA), selon l’année.',
             "enable_rules_auto": True,
         },
         {
             "type": "CPER",
             "value": "2021-27",
-            "description": "Si le Contrat de plan État-région de la ligne n’est pas égale à non affecté ou NULL alors tag CPER selon l'année",
+            "description": 'La ligne est taguée CPER si le champ "Contrat plan État-région" n’est pas nul (NULL) ou non affecté (NA), selon l’année.',
             "enable_rules_auto": True,
         },
         {
             "type": "DETR",
             "value": None,
-            "description": "Si le référentiel de programmation = DETR alors tag DETR",
+            "description": 'La ligne est taguée DETR si le libellé de son champ Référentiel Programmation est "DETR".',
             "enable_rules_auto": True,
         },
     ]
