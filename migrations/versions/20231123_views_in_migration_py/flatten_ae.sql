@@ -7,9 +7,9 @@ SELECT
        root.annee as annee,
        root.contrat_etat_region,
        root.compte_budgetaire,
-       aggr.montant_ae,
-       aggr.montant_cp,
-       aggr.date_dernier_paiement as "dateDeDernierPaiement",
+       aggr_mt_ae.montant_ae,
+       aggr_mt_cp.montant_cp,
+       aggr_mt_cp.date_dernier_paiement as "dateDeDernierPaiement",
        root.date_replication as "dateDeCreation",
     -- domaine fonctionnel
        rdf.code as "domaineFonctionnel_code",
@@ -86,14 +86,20 @@ SELECT
    LEFT JOIN ref_groupe_marchandise rgm on root.groupe_marchandise = rgm.code
    -- Aggregations
    LEFT JOIN (
-       SELECT
-        root.id as id,
-        SUM(mce.montant) as montant_ae,
-        SUM(fcp.montant) as montant_cp,
-        max(fcp.date_derniere_operation_dp) as date_dernier_paiement
+       select
+         root.id as id,
+         SUM(mce.montant) as montant_ae
        FROM "financial_ae" root
        LEFT JOIN montant_financial_ae mce ON root.id = mce.id_financial_ae
+       GROUP BY root.id
+   ) aggr_mt_ae on aggr_mt_ae.id = root.id
+   LEFT JOIN (
+       select
+         root.id as id,
+         SUM(fcp.montant) as montant_cp,
+         max(fcp.date_derniere_operation_dp) as date_dernier_paiement
+       FROM "financial_ae" root
        LEFT JOIN financial_cp fcp ON fcp.id_ae = root.id
        GROUP BY root.id
-   ) aggr on aggr.id = root.id
+   ) aggr_mt_cp on aggr_mt_cp.id = root.id
 ;

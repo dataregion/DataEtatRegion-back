@@ -24,7 +24,7 @@ def refresh_materialized_views(self):
 
     for view in views:
         start = time.time()
-        db.session.execute(text(f"refresh materialized view ${view};"))
+        db.session.execute(text(f"refresh materialized view {view};"))
         db.session.commit()
         elapsed = time.time() - start
 

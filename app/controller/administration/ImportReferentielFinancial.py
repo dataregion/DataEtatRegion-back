@@ -13,6 +13,7 @@ from app.models.enums.AccountRole import AccountRole
 from app.servicesapp.authentication import ConnectedUser
 from app.services.import_refs import import_ref_calculette
 
+
 api = Namespace(
     name="Referentiel", path="/referentiels", description="API de de mise à jours des référentiels issue de Chorus"
 )
