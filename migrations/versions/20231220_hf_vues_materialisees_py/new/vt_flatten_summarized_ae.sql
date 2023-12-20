@@ -1,0 +1,36 @@
+CREATE MATERIALIZED VIEW vt_flatten_summarized_ae AS
+SELECT
+   'FINANCIAL_DATA_AE' as SOURCE,
+   fa.id as id,
+   fa.n_poste_ej as "n_poste_ej",
+   fa.n_ej as "n_ej",
+   fa.source_region as "source_region",
+   fa.annee as "annee",
+   fa.contrat_etat_region as "contrat_etat_region",
+   fa.montant_ae as "montant_ae",
+   fa.montant_cp  as "montant_cp",
+   fa."dateDeDernierPaiement"  as "date_dernier_paiement",
+   fa."domaineFonctionnel_code" as "code_domaine_fonctionnel",
+   fa."domaineFonctionnel_label" as "label_domaine_fonctionnel",
+   fa.programme_theme as "theme",
+   fa.programme_code as "code_programme",
+   fa.programme_label  as "label_programme",
+   fa."referentielProgrammation_code" as "ref_programmation",
+   fa."referentielProgrammation_label" as "label_ref_programmation",
+   fa.beneficiaire_code as "siret",
+   fa.beneficiaire_denomination as "denomination",
+   fa.beneficiaire_commune_code as "code_commune",
+   fa."beneficiaire_commune_codeDepartement" as "code_departement",
+   fa."beneficiaire_commune_codeCrte" as "code_crte",
+   fa."beneficiaire_commune_codeEpci" as "code_epci",
+   fa.beneficiaire_qpv_code  AS "code_qpv",
+   fa."beneficiaire_categorieJuridique_type" AS "categorie_juridique",
+   fa."localisationInterministerielle_code" as "loc_inter",
+   fa."localisationInterministerielle_label" as "label_loc_inter",
+   fa."localisationInterministerielle_codeDepartement" as "code_departement_loc_inter",
+   fa."localisationInterministerielle_commune_code" as "code_commune_loc_inter",
+   fa."localisationInterministerielle_commune_codeEpci" as "code_epci_loc_inter",
+   fa."localisationInterministerielle_commune_codeCrte" as "code_crte_loc_inter"
+FROM flatten_ae fa  
+WHERE fa.beneficiaire_commune_code IS NOT null
+order by source, id, n_ej, n_poste_ej, source_region, annee;
