@@ -22,7 +22,6 @@ _data_folder = Path(__file__).resolve().parent / __name__
 
 def upgrade():
     _drop_old_views()
-    # ### end Alembic commands ###
 
     # Recrée les vues
     print("creating flatten_ae")
@@ -43,6 +42,19 @@ def upgrade():
 
     print("creating vues de visu territoire")
     op.execute(_new_views_vt_visuterritoire())
+
+    #
+    # Table d'audit
+    #
+    print("creating table d'events refresh materialized views")
+    op.create_table(
+        "audit_refresh_materialized_views",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("event", sa.String(), nullable=False),
+        sa.Column("date", sa.DateTime(timezone=True), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+        schema="audit",
+    )
 
 
 def downgrade():
@@ -67,6 +79,12 @@ def downgrade():
 
     print("creating vues de visu territoire")
     op.execute(_old_views_vt_visuterritoire())
+
+    #
+    # Table d'audit
+    #
+    print("drop table d'events refresh materialized views")
+    op.drop_table("audit_refresh_materialized_views", schema="audit")
 
 
 def _drop_old_views():
