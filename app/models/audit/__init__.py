@@ -1,1 +1,4 @@
-__all__ = ("AuditUpdateData",)
+__all__ = (
+    "AuditUpdateData",
+    "AuditRefreshMaterializedViewsEvents",
+)
