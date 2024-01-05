@@ -173,10 +173,6 @@ class BuilderStatementFinancialLine:
         :return: L'objet Pagination contenant les résultats paginés.
         """
 
-        # XXX: pour le listing des lignes budgetaires, il est nécessaire
-        # que le bénéficiaire soit présent.
-        self._stmt = self._stmt.where(FinancialLines.beneficiaire_code != None)  # noqa: E711
-
         return db.paginate(self._stmt, per_page=limit, page=page_number, error_out=False)
 
     def do_select_annees(self) -> list[int]:
