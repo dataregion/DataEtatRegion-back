@@ -68,7 +68,7 @@ class France2030(FinancialData, db.Model):
             "acteur_emergent",
             "nom_strategie",
             "code_nomenclature",
-            "nomemclature",
+            "nomenclature",
             "montant_subvention",
             "montant_avance_remboursable",
             "montant_aide",

@@ -36,12 +36,12 @@ class France2030Import(Resource):
         """
         user = ConnectedUser.from_current_token_identity()
 
-        file_ademe = request.files["fichier"]
+        file_france2030 = request.files["fichier"]
 
-        task = import_france_2030(file_ademe, user.username)
+        task = import_france_2030(file_france2030, user.username)
         return jsonify(
             {
-                "status": f"Fichier récupéré. Demande d`import des  données ADEME en cours (taches asynchrone id = {task.id}"
+                "status": f"Fichier récupéré. Demande d`import des données FRANCE2030 en cours (taches asynchrone id = {task.id}"
             }
         )
 

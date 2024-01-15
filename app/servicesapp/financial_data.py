@@ -14,6 +14,7 @@ from app.models.financial.Ademe import Ademe
 
 from app.models.financial.FinancialCp import FinancialCp
 from app.models.financial.FinancialAe import FinancialAe
+from app.models.financial.France2030 import France2030
 from app.models.refs.categorie_juridique import CategorieJuridique
 from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
@@ -74,12 +75,22 @@ def import_cp(file_cp, source_region: str, annee: int, username=""):
     return task
 
 
+def _check_france_2030_filestructure(file_france):
+    header_only = pandas.read_csv(file_france, nrows=0)
+    headers = header_only.columns.tolist()
+
+    if France2030.get_columns_files() != headers:
+        raise Exception(f"Header incorrects pour le fichier de france 2030")
+
+
 def import_france_2030(file_france, username=""):
-    save_path = check_file_and_save(file_france, allowed_extensions={"xlsx"})
+    save_path = check_file_and_save(file_france)
 
     logging.info(f"[IMPORT FRANCE 2030] Récupération du fichier {save_path}")
+
     from app.tasks.financial.import_france_2030 import import_file_france_2030
 
+    _check_france_2030_filestructure(str(save_path))
     task = import_file_france_2030.delay(str(save_path))
     db.session.add(AuditUpdateData(username=username, filename=file_france.filename, data_type=DataType.FRANCE_2030))
     db.session.commit()
