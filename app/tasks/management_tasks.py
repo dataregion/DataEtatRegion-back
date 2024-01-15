@@ -74,7 +74,6 @@ def share_filter_user(self, preference_uuid, host_link):
 
 
 def get_subject(link: str):
-    link = "budget.paysdelaloire.dataregion.fr"
     region = "Localhost"
     synonymes_regions: dict[str, list[str]] = {
         "Bretagne": [
