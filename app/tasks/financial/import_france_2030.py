@@ -17,7 +17,7 @@ celery = celeryapp.celery
 
 
 @celery.task(bind=True, name="import_file_france_2030")
-def import_file_france_2030(self, fichier: str):
+def import_file_france_2030(self, fichier: str, annee: int):
     # get file
     logger.info(f"[IMPORT][FRANCE 2030]Start file {fichier}")
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -38,6 +38,7 @@ def import_file_france_2030(self, fichier: str):
                 "siret": str,
             },
         )
+        additionnal_line_info = pandas.Series({f"{France2030.annee.key}": annee})
         for chunk in chunked:
             # Gestion des valeurs numériques
             for field in ["montant_subvention", "montant_avance_remboursable", "montant_aide"]:
@@ -45,7 +46,8 @@ def import_file_france_2030(self, fichier: str):
 
             for i, row in chunk.iterrows():
                 tech_info = LineImportTechInfo(current_taskid, i)
-                _send_subtask_france_2030(row.to_json(), tech_info)
+                line = pandas.concat([row, additionnal_line_info])
+                _send_subtask_france_2030(line.to_json(), tech_info)
 
         move_folder = os.path.join(move_folder, timestamp)
         if not os.path.exists(move_folder):

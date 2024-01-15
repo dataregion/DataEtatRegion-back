@@ -20,6 +20,7 @@ parser_get = get_pagination_parser(default_limit=5000)
 
 parser_import_file = reqparse.RequestParser()
 parser_import_file.add_argument("fichier", type=FileStorage, help="fichier à importer", location="files", required=True)
+parser_import_file.add_argument("annee", type=int, help="Année du fichier france 2030", location="files", required=True)
 
 
 @api.route("/france-2030")
@@ -34,11 +35,13 @@ class France2030Import(Resource):
         Charge un fichier issue de l'excel France 2030
         Les lignes sont insérés de manière asynchrone
         """
+        data = request.form
         user = ConnectedUser.from_current_token_identity()
+        annee = int(data["annee"])
 
         file_france2030 = request.files["fichier"]
 
-        task = import_france_2030(file_france2030, user.username)
+        task = import_france_2030(file_france2030, annee=annee, username=user.username)
         return jsonify(
             {
                 "status": f"Fichier récupéré. Demande d`import des données FRANCE2030 en cours (taches asynchrone id = {task.id}"

@@ -31,6 +31,9 @@ class France2030(FinancialData, db.Model):
     siret = Column(String, db.ForeignKey("ref_siret.code"), nullable=True)
     code_nomenclature = Column(String, db.ForeignKey("nomenclature_france_2030.code"), nullable=True)
 
+    # autres champs
+    annee: Column[int] = Column(Integer, nullable=False)  # annee de la ligne de financement france 2030
+
     # Données techniques
     file_import_taskid = Column(String(255))
     """Task ID de la tâche d'import racine pour cette ligne"""

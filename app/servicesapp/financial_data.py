@@ -83,15 +83,16 @@ def _check_france_2030_filestructure(file_france):
         raise Exception(f"Header incorrects pour le fichier de france 2030")
 
 
-def import_france_2030(file_france, username=""):
+def import_france_2030(file_france, annee: int, username=""):
     save_path = check_file_and_save(file_france)
 
     logging.info(f"[IMPORT FRANCE 2030] Récupération du fichier {save_path}")
 
+    _delete_france_2030(annee)
     from app.tasks.financial.import_france_2030 import import_file_france_2030
 
     _check_france_2030_filestructure(str(save_path))
-    task = import_file_france_2030.delay(str(save_path))
+    task = import_file_france_2030.delay(str(save_path), annee=annee)
     db.session.add(AuditUpdateData(username=username, filename=file_france.filename, data_type=DataType.FRANCE_2030))
     db.session.commit()
     return task
@@ -286,7 +287,17 @@ def _delete_cp(annee: int, source_region: str):
     :param source_region:
     :return:
     """
+    logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour l'année {annee} et la source region {source_region}")
     stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.source_region == source_region)
+    db.session.execute(stmt)
+    db.session.commit()
+
+
+def _delete_france_2030(annee: int):
+    """Supprime les lignes de france 2030 pour une année donnée."""
+
+    logging.info(f"[IMPORT FRANCE 2030] Suppression des lignes pour l'année {annee}")
+    stmt = delete(France2030).where(France2030.annee == annee)
     db.session.execute(stmt)
     db.session.commit()
 
