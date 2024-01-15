@@ -12,16 +12,16 @@ _data = TESTS_PATH / "data"
 def test_import_import_file(mock_subtask: MagicMock):
     # DO
     with patch("shutil.move", return_value=None):
-        import_file_france_2030(_data / "france_2030" / "france_2030.csv")
+        import_file_france_2030(_data / "france_2030" / "france_2030.csv", annee=2023)
 
     mock_subtask.assert_has_calls(
         [
             call().delay(
-                '{"date_dpm":"2021-04-16","operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"POLYCOR BIS","nom_beneficiaire":"CHU NANTES","siret":26440013600471,"typologie":"\\u00c9tablissements publics","regions":"Pays de la Loire","localisation_geo":44,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomenclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":418492.0,"montant_avance_remboursable":null,"montant_aide":418492.0}',
+                '{"date_dpm":"2021-04-16","operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"POLYCOR BIS","nom_beneficiaire":"CHU NANTES","siret":"26440013600471","typologie":"\\u00c9tablissements publics","regions":"Pays de la Loire","localisation_geo":44,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomenclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":418492.0,"montant_avance_remboursable":null,"montant_aide":418492.0,"annee":2023}',
                 ANY,
             ),
             call().delay(
-                '{"date_dpm":"2021-04-16","operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"EXT_XT","nom_beneficiaire":"LFB BIOMANUFACTURING","siret":49927250800015,"typologie":"Petites et moyennes entreprises","regions":"Occitanie","localisation_geo":30,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomenclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":null,"montant_avance_remboursable":3489768.0,"montant_aide":3489768.0}',
+                '{"date_dpm":"2021-04-16","operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"EXT_XT","nom_beneficiaire":"LFB BIOMANUFACTURING","siret":"49927250800015","typologie":"Petites et moyennes entreprises","regions":"Occitanie","localisation_geo":30,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomenclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":null,"montant_avance_remboursable":3489768.0,"montant_aide":3489768.0,"annee":2023}',
                 ANY,
             ),
             call("import_line_france_2030"),
