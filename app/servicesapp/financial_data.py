@@ -80,7 +80,7 @@ def _check_france_2030_filestructure(file_france):
     headers = header_only.columns.tolist()
 
     if France2030.get_columns_files() != headers:
-        raise Exception(f"Header incorrects pour le fichier de france 2030")
+        raise Exception("Header incorrects pour le fichier de france 2030")
 
 
 def import_france_2030(file_france, annee: int, username=""):
