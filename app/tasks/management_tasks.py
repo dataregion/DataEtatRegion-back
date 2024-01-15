@@ -74,15 +74,30 @@ def share_filter_user(self, preference_uuid, host_link):
 
 
 def get_subject(link: str):
+    link = "budget.paysdelaloire.dataregion.fr"
     region = "Localhost"
     synonymes_regions: dict[str, list[str]] = {
-        "Bretagne": ["bretagne"],
-        "Pays de la Loire": ["pdl", "paysdelaloire", "pays-de-la-loire"],
-        "Hauts-de-France": ["hdf", "hautsdefrance", "hauts-de-france"],
+        "Bretagne": [
+            "bretagne.nocode.csm.ovh",
+            "budget.bretagne.preprod.dataregion.fr",
+            "budget.bretagne.dataregion.fr",
+            "budget.preprod.databretagne.fr",
+            "budget.databretagne.fr",
+        ],
+        "Pays de la Loire": [
+            "pdl.nocode.csm.ovh",
+            "budget.paysdelaloire.dataregion.fr",
+            "budget.paysdelaloire.preprod.dataregion.fr",
+        ],
+        "Hauts-de-France": [
+            "hdf.nocode.csm.ovh",
+            "budget.hautsdefrance.dataregion.fr",
+            "budget.hautsdefrance.preprod.dataregion.fr",
+        ],
     }
 
     for key in synonymes_regions:
-        if link.split(".")[0] in synonymes_regions[key]:
+        if link in synonymes_regions[key]:
             region = key
 
     if "relance" in link:
