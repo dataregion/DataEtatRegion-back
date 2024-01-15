@@ -32,7 +32,7 @@ def test_import_import_file(mock_subtask: MagicMock):
 
 def test_import_ligne_france_2030(database, session):
     # GIVEN
-    data = '{"date_dpm":1631318400000,"operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"RONSARD 2","nom_beneficiaire":"RECIPHARM MONTS","siret":"39922695000026","typologie":"Petites et moyennes entreprises","regions":"CVL","localisation_geo":37,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomemclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":null,"montant_avance_remboursable":23372935.0,"montant_aide":23372935.0}'
+    data = '{"date_dpm":1631318400000,"operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"RONSARD 2","nom_beneficiaire":"RECIPHARM MONTS","siret":"39922695000026","typologie":"Petites et moyennes entreprises","regions":"CVL","localisation_geo":37,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomemclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":null,"montant_avance_remboursable":23372935.0,"montant_aide":23372935.0,"annee":2023}'
     # DO
 
     with patch(
