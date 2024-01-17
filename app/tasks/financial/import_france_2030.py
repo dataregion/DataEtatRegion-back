@@ -76,8 +76,15 @@ def import_line_france_2030(self, line: str, tech_info_list: list):
 
     tech_info = LineImportTechInfo(*tech_info_list)
 
-    line = json.loads(line)
-    france_2030 = France2030(**line)
+    line_json = json.loads(line)
+
+    # XXX: on ignore la nommenclature du flux d'import
+    # puisque c'est un referentiel.
+    if "nomenclature" in line_json:
+        line_json.pop("nomenclature")
+
+    france_2030 = France2030(**line_json)
+
     france_2030.file_import_taskid = tech_info.file_import_taskid
     france_2030.file_import_lineno = tech_info.lineno
 

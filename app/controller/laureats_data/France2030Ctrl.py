@@ -1,6 +1,6 @@
 import dataclasses
 
-from flask import jsonify, current_app, request
+from flask import jsonify, current_app, request, abort
 from flask_restx import Namespace, Resource, reqparse
 from flask_restx._http import HTTPStatus
 from werkzeug.datastructures import FileStorage
@@ -12,14 +12,22 @@ from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
 from app.servicesapp.authentication import ConnectedUser
 from app.servicesapp.financial_data import import_france_2030
+from app.servicesapp.france2030 import (
+    SousAxePlanRelancePayload,
+    liste_axes_france2030,
+    search_france_2030,
+    search_france_2030_beneficiaire,
+)
+from app.servicesapp.france2030 import StructurePayload
 
 api = Namespace(name="France2030", path="/", description="Api de gestion des données France 2030")
+
 
 auth = current_app.extensions["auth"]
 
 parser_get = get_pagination_parser(default_limit=5000)
 parser_get.add_argument("structures", type=str, action="split", help="Noms des structures")
-parser_get.add_argument("sous-axes", type=str, action="split", help="Sous axes")
+parser_get.add_argument("axes", type=str, action="split", help="Axes")
 parser_get.add_argument("territoires", type=str, action="split", help="Territoires (communes)")
 
 
@@ -62,19 +70,15 @@ class France2030Import(Resource):
         """
         params = parser_get.parse_args()
 
-        # TODO: implementer
-        fake_data = {
-            "Structure": "STRUCTURE FAKE",
-            "Num\u00e9roDeSiretSiConnu": "22560001400016",
-            "SubventionAccord\u00e9e": "516642.00",
-            "Synth\u00e8se": "Pr\u00eats d'honneur - R\u00e9vision novembre 2021",
-            "axe": "Coh\u00e9sion",
-            "sous-axe": "Formation professionnelle",
-            "dispositif": "Pr\u00eat d'honneur solidaire",
-            "territoire": "D\u00e9partement du Morbihan entier",
-        }
+        try:
+            search = search_france_2030(**params)
+        except NotImplementedError as e:
+            abort(501, str(e))
 
-        return {"items": [fake_data], "pageInfo": Pagination(0, 1, 0).to_json(), "params": params}, HTTPStatus.OK
+        return {
+            "items": search.items,
+            "pageInfo": Pagination(search.total, search.page, search.per_page).to_json(),
+        }, HTTPStatus.OK
 
 
 #############################################
@@ -84,32 +88,14 @@ parser_searchterm = reqparse.RequestParser()
 parser_searchterm.add_argument("term", type=str, help="The search term")
 
 
-@dataclasses.dataclass
-class SousAxePlanRelancePayload:
-    label: str
-    axe: str
-
-
-@dataclasses.dataclass
-class StructurePayload:
-    label: str
-    siret: str
-
-
-@dataclasses.dataclass
-class TerritoirePayload:
-    Commune: str
-    CodeInsee: int
-
-
 @api.route("/france-2030-axes")
 class France2030Axes(Resource):
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     def get(self) -> list[SousAxePlanRelancePayload]:
-        # TODO: ne plus mocker
-        sousaxe = SousAxePlanRelancePayload("tata", "toto")
-        return [dataclasses.asdict(sousaxe)]  # type: ignore
+        axes = liste_axes_france2030()
+        payload = [dataclasses.asdict(x) for x in axes]
+        return payload  # type: ignore
 
 
 @api.route("/france-2030-structures")
@@ -118,23 +104,18 @@ class France2030Structures(Resource):
     @api.expect(parser_searchterm)
     @api.doc(security="Bearer")
     def get(self) -> list[StructurePayload]:
-        # TODO: ne plus mocker
+        params = parser_searchterm.parse_args()
+        print(params)
 
-        _ = parser_get.parse_args()
-
-        structure = StructurePayload("structure", "oui")
-        return [dataclasses.asdict(structure)]  # type: ignore
+        structures = search_france_2030_beneficiaire(params["term"])
+        return [dataclasses.asdict(x) for x in structures]  # type: ignore
 
 
 @api.route("/france-2030-territoires")
 class France2030Territoires(Resource):
+    # TODO: implementer
     @auth.token_auth("default", scopes_required=["openid"])
     @api.expect(parser_searchterm)
     @api.doc(security="Bearer")
     def get(self) -> list[StructurePayload]:
-        # TODO: ne plus mocker
-
-        _ = parser_get.parse_args()
-
-        territoires = TerritoirePayload("structure", 1234)
-        return [dataclasses.asdict(territoires)]  # type: ignore
+        abort(501, "France 2030 ne supporte pas encore les territoires.")

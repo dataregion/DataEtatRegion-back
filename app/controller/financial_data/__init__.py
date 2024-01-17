@@ -73,7 +73,7 @@ from app.controller.financial_data.FinancialAeCtrl import api as api_ae  # noqa:
 from app.controller.financial_data.FinancialCpCtrl import api as api_cp  # noqa: E402
 from app.controller.financial_data.AdemeCtrl import api as api_ademe  # noqa: E402
 from app.controller.financial_data.TagsCtrl import api as api_tags  # noqa: E402
-from app.controller.financial_data.France2030Ctrl import api as api_france_2030  # noqa: E402
+from app.controller.laureats_data.France2030Ctrl import api as api_france_2030  # noqa: E402
 from app.controller.utils.LoginController import api as api_auth  # noqa: E402
 
 from app.controller.financial_data.v2 import api_ns as api_ae_v2  # noqa: E402
@@ -88,7 +88,7 @@ _description = (
     "API de gestion des données financière"
     "<br />"
     "<strong>C'est une API dediée à l'outil interne de consultation budget. "
-    "utilisez pas cette API pour intégrer nos données à votre système.</strong>"
+    "N'utilisez pas cette API pour intégrer nos données à votre système.</strong>"
 )
 api_v1 = Api(
     api_financial_v1,
@@ -107,7 +107,6 @@ api_v1.add_namespace(api_tags)
 api_v1.add_namespace(api_ae)
 api_v1.add_namespace(api_cp)
 api_v1.add_namespace(api_ademe)
-api_v1.add_namespace(api_france_2030)
 
 _description = (
     "Api de d'accès aux données financières de l'état "
