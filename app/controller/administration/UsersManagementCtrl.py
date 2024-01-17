@@ -174,7 +174,8 @@ def _update_enable_user(user_uuid: str, enable: bool):
 
 
 def _fetch_subgroups(keycloak_admin: KeycloakAdmin, parent_id):
-    endpoint = keycloak_admin.server_url + "/admin/realms/Regions/groups/" + parent_id + "/children"
+    keycloak_admin.realm_name
+    endpoint = keycloak_admin.server_url + "/admin/realms/" + keycloak_admin.realm_name + "/groups/" + parent_id + "/children"
     headers = {"Authorization": "Bearer " + keycloak_admin.token["access_token"]}
     return requests.get(endpoint, headers=headers).json()
 
