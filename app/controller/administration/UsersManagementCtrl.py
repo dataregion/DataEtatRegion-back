@@ -174,6 +174,12 @@ def _update_enable_user(user_uuid: str, enable: bool):
 
 
 def _fetch_subgroups(keycloak_admin: KeycloakAdmin, parent_id):
+    """
+    WORKAROUND : Récupération des subgroups en appelant directement l'API Admin de Keycloak
+    - Les subgroups ne sont plus retournés via le endpoint /groups
+    - Appel direct à l'API Keycloak en attendant une maj du package python-keycloak
+    ISSUE : https://github.com/marcospereirampj/python-keycloak/issues/509
+    """
     keycloak_admin.realm_name
     endpoint = (
         keycloak_admin.server_url + "/admin/realms/" + keycloak_admin.realm_name + "/groups/" + parent_id + "/children"
