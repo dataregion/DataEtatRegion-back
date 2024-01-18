@@ -77,21 +77,21 @@ def get_subject(link: str):
     region = "Localhost"
     synonymes_regions: dict[str, list[str]] = {
         "Bretagne": [
-            "bretagne.nocode.csm.ovh",
-            "budget.bretagne.preprod.dataregion.fr",
-            "budget.bretagne.dataregion.fr",
-            "budget.preprod.databretagne.fr",
-            "budget.databretagne.fr",
+            "https://bretagne.nocode.csm.ovh",
+            "https://budget.bretagne.preprod.dataregion.fr",
+            "https://budget.bretagne.dataregion.fr",
+            "https://budget.preprod.databretagne.fr",
+            "https://budget.databretagne.fr",
         ],
         "Pays de la Loire": [
-            "pdl.nocode.csm.ovh",
-            "budget.paysdelaloire.dataregion.fr",
-            "budget.paysdelaloire.preprod.dataregion.fr",
+            "https://pdl.nocode.csm.ovh",
+            "https://budget.paysdelaloire.dataregion.fr",
+            "https://budget.paysdelaloire.preprod.dataregion.fr",
         ],
         "Hauts-de-France": [
-            "hdf.nocode.csm.ovh",
-            "budget.hautsdefrance.dataregion.fr",
-            "budget.hautsdefrance.preprod.dataregion.fr",
+            "https://hdf.nocode.csm.ovh",
+            "https://budget.hautsdefrance.dataregion.fr",
+            "https://budget.hautsdefrance.preprod.dataregion.fr",
         ],
     }
 
