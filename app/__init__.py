@@ -156,6 +156,9 @@ def _expose_endpoint(app: Flask):
             api_financial_v1,
             api_financial_v2,
         )  # pour éviter les import circulaire avec oidc
+        from app.controller.laureats_data import (
+            api_laureats,
+        )
         from app.controller.administration import api_administration
         from app.controller.ref_controller import api_ref
         from app.controller.apis_externes import api_apis_externes
@@ -168,6 +171,9 @@ def _expose_endpoint(app: Flask):
         app.register_blueprint(api_ref, url_prefix="/budget")
         app.register_blueprint(api_apis_externes, url_prefix="/apis-externes")
         app.register_blueprint(api_task, url_prefix="/task-management")
+
+        #
+        app.register_blueprint(api_laureats, url_prefix="/laureats-data")
 
         if "NOCODB_PROJECT" in app.config:
             for project in app.config["NOCODB_PROJECT"].items():

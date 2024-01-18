@@ -12,16 +12,16 @@ _data = TESTS_PATH / "data"
 def test_import_import_file(mock_subtask: MagicMock):
     # DO
     with patch("shutil.move", return_value=None):
-        import_file_france_2030(_data / "france_2030" / "france_2030.xlsx")
+        import_file_france_2030(_data / "france_2030" / "france_2030.csv", annee=2023)
 
     mock_subtask.assert_has_calls(
         [
             call().delay(
-                '{"date_dpm":1629849600000,"operateur":"ANR","procedure":"D\\u00e9monstrateurs num\\u00e9riques dans l\'enseignement sup\\u00e9rieur (DemoES)","nom_projet":"PEIA","nom_beneficiaire":"Universit\\u00e9 Polytechnique Hauts-de-France","siret":"19593279300019","typologie":"\\u00c9tablissements publics","regions":"Hauts-de-France","localisation_geo":59,"acteur_emergent":null,"nom_strategie":"SA Enseignement et num\\u00e9rique","code_nomenclature":"Levier 3","nomemclature":"D\\u00e9velopper les talents\\u00a0en construisant les formations de demain\\u00a0","montant_subvention":5000000.0,"montant_avance_remboursable":null,"montant_aide":5000000.0}',
+                '{"date_dpm":"2021-04-16","operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"POLYCOR BIS","nom_beneficiaire":"CHU NANTES","siret":"26440013600471","typologie":"\\u00c9tablissements publics","regions":"Pays de la Loire","localisation_geo":44,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomenclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":418492.0,"montant_avance_remboursable":null,"montant_aide":418492.0,"annee":2023}',
                 ANY,
             ),
             call().delay(
-                '{"date_dpm":1631318400000,"operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"RONSARD 2","nom_beneficiaire":"RECIPHARM MONTS","siret":"39922695000026","typologie":"Petites et moyennes entreprises","regions":"CVL","localisation_geo":37,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomemclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":null,"montant_avance_remboursable":23372935.0,"montant_aide":23372935.0}',
+                '{"date_dpm":"2021-04-16","operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"EXT_XT","nom_beneficiaire":"LFB BIOMANUFACTURING","siret":"49927250800015","typologie":"Petites et moyennes entreprises","regions":"Occitanie","localisation_geo":30,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomenclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":null,"montant_avance_remboursable":3489768.0,"montant_aide":3489768.0,"annee":2023}',
                 ANY,
             ),
             call("import_line_france_2030"),
@@ -32,7 +32,7 @@ def test_import_import_file(mock_subtask: MagicMock):
 
 def test_import_ligne_france_2030(database, session):
     # GIVEN
-    data = '{"date_dpm":1631318400000,"operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"RONSARD 2","nom_beneficiaire":"RECIPHARM MONTS","siret":"39922695000026","typologie":"Petites et moyennes entreprises","regions":"CVL","localisation_geo":37,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomemclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":null,"montant_avance_remboursable":23372935.0,"montant_aide":23372935.0}'
+    data = '{"date_dpm":1631318400000,"operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"RONSARD 2","nom_beneficiaire":"RECIPHARM MONTS","siret":"39922695000026","typologie":"Petites et moyennes entreprises","regions":"CVL","localisation_geo":37,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomemclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":null,"montant_avance_remboursable":23372935.0,"montant_aide":23372935.0,"annee":2023}'
     # DO
 
     with patch(

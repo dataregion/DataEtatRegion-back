@@ -74,18 +74,6 @@ def import_cp(file_cp, source_region: str, annee: int, username=""):
     return task
 
 
-def import_france_2030(file_france, username=""):
-    save_path = check_file_and_save(file_france, allowed_extensions={"xlsx"})
-
-    logging.info(f"[IMPORT FRANCE 2030] Récupération du fichier {save_path}")
-    from app.tasks.financial.import_france_2030 import import_file_france_2030
-
-    task = import_file_france_2030.delay(str(save_path))
-    db.session.add(AuditUpdateData(username=username, filename=file_france.filename, data_type=DataType.FRANCE_2030))
-    db.session.commit()
-    return task
-
-
 def import_ademe(file_ademe, username=""):
     save_path = check_file_and_save(file_ademe)
 
@@ -275,6 +263,7 @@ def _delete_cp(annee: int, source_region: str):
     :param source_region:
     :return:
     """
+    logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour l'année {annee} et la source region {source_region}")
     stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.source_region == source_region)
     db.session.execute(stmt)
     db.session.commit()

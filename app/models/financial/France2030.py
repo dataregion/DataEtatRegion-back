@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, Date, String, Float, UniqueConstraint
+from sqlalchemy.orm import relationship
 from app import db
 from app.models.financial import FinancialData
 
@@ -29,7 +30,12 @@ class France2030(FinancialData, db.Model):
 
     # FK
     siret = Column(String, db.ForeignKey("ref_siret.code"), nullable=True)
+    beneficiaire = relationship("Siret")
     code_nomenclature = Column(String, db.ForeignKey("nomenclature_france_2030.code"), nullable=True)
+    nomenclature = relationship("NomenclatureFrance2030")
+
+    # autres champs
+    annee: Column[int] = Column(Integer, nullable=False)  # annee de la ligne de financement france 2030
 
     # Données techniques
     file_import_taskid = Column(String(255))
@@ -68,7 +74,7 @@ class France2030(FinancialData, db.Model):
             "acteur_emergent",
             "nom_strategie",
             "code_nomenclature",
-            "nomemclature",
+            "nomenclature",
             "montant_subvention",
             "montant_avance_remboursable",
             "montant_aide",
