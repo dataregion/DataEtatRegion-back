@@ -73,7 +73,6 @@ from app.controller.financial_data.FinancialAeCtrl import api as api_ae  # noqa:
 from app.controller.financial_data.FinancialCpCtrl import api as api_cp  # noqa: E402
 from app.controller.financial_data.AdemeCtrl import api as api_ademe  # noqa: E402
 from app.controller.financial_data.TagsCtrl import api as api_tags  # noqa: E402
-from app.controller.laureats_data.France2030Ctrl import api as api_france_2030  # noqa: E402
 from app.controller.utils.LoginController import api as api_auth  # noqa: E402
 
 from app.controller.financial_data.v2 import api_ns as api_ae_v2  # noqa: E402
