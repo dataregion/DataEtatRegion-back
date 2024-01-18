@@ -56,3 +56,12 @@ class SiretParser:
     def siren(self):
         """Renvoie la partie siren."""
         return self._siret[0:9]
+
+    @staticmethod
+    def is_siret_valide(siret: str):
+        """Renvoie True si un siret est valide (ie: bon format)"""
+        try:
+            SiretParser(siret)
+        except SiretFormatError:
+            return False
+        return True

@@ -12,6 +12,7 @@ from app.models.financial.France2030 import France2030
 from app.services.siret import check_siret
 from app.tasks import logger, limiter_queue, LineImportTechInfo
 from app.tasks.financial.errors import _handle_exception_import
+from app.utilities.siret import SiretParser
 
 celery = celeryapp.celery
 
@@ -82,6 +83,10 @@ def import_line_france_2030(self, line: str, tech_info_list: list):
     # puisque c'est un referentiel.
     if "nomenclature" in line_json:
         line_json.pop("nomenclature")
+
+    if "siret" in line_json and not SiretParser.is_siret_valide(line_json["siret"]):
+        logger.warning("[IMPORT][FRANCE 2030][LINE] La ligne comporte un siret invalide. On l'ignore")
+        line_json.pop("siret")
 
     france_2030 = France2030(**line_json)
 

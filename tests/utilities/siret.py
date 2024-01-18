@@ -33,6 +33,14 @@ def test_parse_invalid_siret(invalid_siret):
         SiretParser(invalid_siret)
 
 
+def test_is_siret_valide_util_function():
+    ut = "263505794"
+    assert not SiretParser.is_siret_valide(ut), f"Le siret {ut} ne devrait pas être validé"
+
+    ut = "26350579400000"
+    assert SiretParser.is_siret_valide(ut), f"Le siret {ut} devrait être validé"
+
+
 def _assert_parser_good_siret_siren(parser: SiretParser):
     _assert_siren_is_9_len(parser.siren)
     _assert_siret_is_14_len(parser.siret)
