@@ -97,9 +97,9 @@ def search_france_2030(
     filtered = False
     stmt = (
         db.select(France2030)
-        .join(NomenclatureFrance2030)
+        .outerjoin(NomenclatureFrance2030)
         .options(contains_eager(France2030.nomenclature))
-        .join(Siret)
+        .outerjoin(Siret)
         .options(contains_eager(France2030.beneficiaire))
     )
 
