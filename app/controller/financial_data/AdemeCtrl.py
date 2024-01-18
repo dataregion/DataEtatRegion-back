@@ -20,7 +20,7 @@ model_ademe_single_api = register_ademe_schemamodel(api)
 
 auth = current_app.extensions["auth"]
 
-parser_get = get_pagination_parser(default_limit=6000)
+parser_get = get_pagination_parser(default_limit=6500)
 parser_get.add_argument("niveau_geo", type=str, help="Le niveau géographique")
 parser_get.add_argument(
     "code_geo",
