@@ -45,7 +45,8 @@ class BuilderStatementFinancialLine:
         return self
 
     def source_region_in(self, source_region: list[str] | None):
-        self._stmt_where_field_in(FinancialLines.source_region, source_region)
+        """Filtre sur la source region. Notons que ce filtre est passant sur les lignes sans source regions"""
+        self._stmt_where_field_in(FinancialLines.source_region, source_region, can_be_null=True)
         return self
 
     def type_categorie_juridique_du_beneficiaire_in(
@@ -173,10 +174,6 @@ class BuilderStatementFinancialLine:
         :return: L'objet Pagination contenant les résultats paginés.
         """
 
-        # XXX: pour le listing des lignes budgetaires, il est nécessaire
-        # que le bénéficiaire soit présent.
-        self._stmt = self._stmt.where(FinancialLines.beneficiaire_code != None)  # noqa: E711
-
         return db.paginate(self._stmt, per_page=limit, page=page_number, error_out=False)
 
     def do_select_annees(self) -> list[int]:
@@ -196,7 +193,7 @@ class BuilderStatementFinancialLine:
         """
         return db.session.execute(self._stmt).unique().scalar_one_or_none()
 
-    def _stmt_where_field_in(self, field: Column, set_of_values: list | None):
+    def _stmt_where_field_in(self, field: Column, set_of_values: list | None, can_be_null=False):
         if set_of_values is None:
             return
 
@@ -205,7 +202,16 @@ class BuilderStatementFinancialLine:
         if len(pruned) == 0:
             return
 
-        self._stmt = self._stmt.where(field.in_(pruned))
+        complete_cond = []
+
+        if can_be_null:
+            _cond = field.is_(None)
+            complete_cond.append(_cond)
+
+        _cond = field.in_(pruned)
+        complete_cond.append(_cond)
+
+        self._stmt = self._stmt.where(or_(*complete_cond))
 
     def _codes_locinterministerielle(
         self,

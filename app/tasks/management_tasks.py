@@ -34,8 +34,8 @@ Il vise au partage et à la réutilisation des données de l’État dont financ
 <p>Si vous n'avez pas de compte, vous pouvez faire une demande en suivant ce <a href="{3}">lien</a></p>
 """
 
-subject_budget = "Budget Data État Bretagne"
-subject_france_relance = "France Relance Bretagne"
+subject_budget = "Budget Data État"
+subject_france_relance = "France Relance"
 
 
 @celery.task(name="share_filter_user", bind=True)
@@ -73,7 +73,32 @@ def share_filter_user(self, preference_uuid, host_link):
                 LOGGER.debug(f"[SHARE][FILTER] Send mail to {share.shared_username_email}")
 
 
-def get_subject(link):
+def get_subject(link: str):
+    region = "Localhost"
+    synonymes_regions: dict[str, list[str]] = {
+        "Bretagne": [
+            "https://bretagne.nocode.csm.ovh",
+            "https://budget.bretagne.preprod.dataregion.fr",
+            "https://budget.bretagne.dataregion.fr",
+            "https://budget.preprod.databretagne.fr",
+            "https://budget.databretagne.fr",
+        ],
+        "Pays de la Loire": [
+            "https://pdl.nocode.csm.ovh",
+            "https://budget.paysdelaloire.dataregion.fr",
+            "https://budget.paysdelaloire.preprod.dataregion.fr",
+        ],
+        "Hauts-de-France": [
+            "https://hdf.nocode.csm.ovh",
+            "https://budget.hautsdefrance.dataregion.fr",
+            "https://budget.hautsdefrance.preprod.dataregion.fr",
+        ],
+    }
+
+    for key in synonymes_regions:
+        if link in synonymes_regions[key]:
+            region = key
+
     if "relance" in link:
-        return subject_france_relance
-    return subject_budget
+        return subject_france_relance + " " + region
+    return subject_budget + " " + region
