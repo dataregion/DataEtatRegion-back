@@ -238,7 +238,7 @@ six==1.16.0
     #   ecdsa
     #   pyjwkest
     #   python-dateutil
-sqlalchemy==2.0.25
+sqlalchemy==2.0.23
     # via
     #   -r requirements.in
     #   alembic
