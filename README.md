@@ -11,7 +11,7 @@
 <div align="center">
  
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-green.svg)](https://conventionalcommits.org)
-[![Python version](https://img.shields.io/badge/python-3.11.0-blue)](https://www.python.org/downloads/release/python-3110/)
+[![Python version](https://img.shields.io/badge/python-3.12.1-blue)](https://www.python.org/downloads/release/python-3121/)
 [![Flask version](https://img.shields.io/badge/Flask-2.1.3-blue)](https://flask.palletsprojects.com/en/2.1.x/)
 [![Postgresql version](https://img.shields.io/badge/Postgresql-informational)](https://www.postgresql.org/)
 [![Docker build](https://img.shields.io/badge/docker-automated-informational)](https://docs.docker.com/compose/)
@@ -21,7 +21,7 @@
 
 # Description
 
-Ce projet contient une suite d'API REST développées avec Flask-RESTx et Python 3.11. 
+Ce projet contient une suite d'API REST développées avec Flask-RESTx et Python 3.12. 
 Ces API permettent de gérer des utilisateurs Keycloak, en les activant ou en les désactivant. 
 Elles permettent également d'intégrer les fichiers Chorus de l'état pour recouper les données.
 
