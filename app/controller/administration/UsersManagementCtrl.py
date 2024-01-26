@@ -1,4 +1,5 @@
 import logging
+import requests
 
 from flask import make_response, current_app
 from flask_restx._http import HTTPStatus
@@ -12,6 +13,8 @@ from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
 from app.servicesapp.authentication import ConnectedUser
+
+from keycloak import KeycloakAdmin
 
 api = Namespace(name="users", path="/users", description="API de gestion des utilisateurs")
 parser_get = get_pagination_parser()
@@ -170,6 +173,21 @@ def _update_enable_user(user_uuid: str, enable: bool):
     return response
 
 
+def _fetch_subgroups(keycloak_admin: KeycloakAdmin, parent_id):
+    """
+    WORKAROUND : Récupération des subgroups en appelant directement l'API Admin de Keycloak
+    - Les subgroups ne sont plus retournés via le endpoint /groups
+    - Appel direct à l'API Keycloak en attendant une maj du package python-keycloak
+    ISSUE : https://github.com/marcospereirampj/python-keycloak/issues/509
+    """
+    keycloak_admin.realm_name
+    endpoint = (
+        keycloak_admin.server_url + "/admin/realms/" + keycloak_admin.realm_name + "/groups/" + parent_id + "/children"
+    )
+    headers = {"Authorization": "Bearer " + keycloak_admin.token["access_token"]}
+    return requests.get(endpoint, headers=headers).json()
+
+
 def _fetch_groups(source_region: str) -> list:
     """
     Récupérer les groupes ids d'une région
@@ -179,13 +197,15 @@ def _fetch_groups(source_region: str) -> list:
     keycloak_admin = make_or_get_keycloack_admin()
     logging.debug(f"[USERS] Get groups for region {source_region}")
 
-    groups = keycloak_admin.get_groups({"briefRepresentation": False, "q": f"region:{source_region}"})
+    groups = keycloak_admin.get_groups({"q": f"region:{source_region}"})
     if groups is None:
         logging.warning(f"[USERS] Group for region {source_region} not found")
         return abort(message="admin_exception.message", code=HTTPStatus.BAD_REQUEST)
     groups_id = [groups[0]["id"]]
-    for subgroup in groups[0]["subGroups"]:
-        groups_id.append(subgroup["id"])
+    if groups[0]["subGroupCount"] != 0:
+        subgroups = _fetch_subgroups(keycloak_admin, groups[0]["id"])
+        for subgroup in subgroups:
+            groups_id.append(subgroup["id"])
     return groups_id
 
 

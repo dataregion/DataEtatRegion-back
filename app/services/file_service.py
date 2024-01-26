@@ -33,7 +33,7 @@ def check_file_and_save(file, allowed_extensions=None, in_unique_folder=False) -
     if file.filename == "":
         raise InvalidFile(message="Pas de fichier")
 
-    _check_file_extension(file)
+    _check_file_extension(file, allowed_extensions=allowed_extensions)
 
     if not file:
         logging.error(f"[IMPORT] Fichier refusé {file.filename}")
@@ -73,7 +73,7 @@ def _check_file_extension(file: FileStorage, allowed_extensions=None):
     :raises FileNotAllowedException:
         Si l'extension est illégale
     """
-    if not allowed_file(file.filename):
+    if not allowed_file(file.filename, allowed_extensions=allowed_extensions):
         logging.error(f"[IMPORT] Fichier refusé {file.filename}")
         raise FileNotAllowedException(message=f"Le fichier n'a pas l'extension requise ({allowed_extensions})")
 

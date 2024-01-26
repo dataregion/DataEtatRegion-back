@@ -19,7 +19,7 @@ marshmallow-sqlalchemy ~= 0.29
 marshmallow-dataclass ~= 8.5
 marshmallow-jsonschema ~= 0.13
 
-sqlalchemy ~= 2.0
+sqlalchemy == 2.0.23 # XXX: regression sur la 2.0.25
 psycopg ~= 3.1
 psycopg-binary ~= 3.1
 sqlparse ~= 0.4
