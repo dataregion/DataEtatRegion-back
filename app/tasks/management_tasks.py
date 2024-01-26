@@ -27,9 +27,8 @@ text_template = (
 html_template = """
  <h3>Bonjour,</h3>
 
-<p>{0} souhaite vous partager un tableau de bord via le service {1}.</p>
-<p>{1} est un projet interministériel piloté par le SGAR Bretagne (Préfecture de région). 
-Il vise au partage et à la réutilisation des données de l’État dont financières pour piloter les politiques publiques et valoriser les financements de l’État sur les territoires.</p>
+<p>{0} souhaite vous partager un tableau de bord via le service {1} de votre région.</p>
+<p>{1} est unu solution interministérielle pilotée par les préfectures de région. Elle vise au partage et à la réutilisation de données financières de l’État.</p>
 <p>Pour y accéder, veuillez cliquer sur ce <a href="{2}">lien</a> et vous connecter.</p>
 <p>Si vous n'avez pas de compte, vous pouvez faire une demande en suivant ce <a href="{3}">lien</a></p>
 """
@@ -74,6 +73,7 @@ def share_filter_user(self, preference_uuid, host_link):
 
 
 def get_subject(link: str):
+<<<<<<< Updated upstream
     region = "Localhost"
     synonymes_regions: dict[str, list[str]] = {
         "Bretagne": [
@@ -99,6 +99,8 @@ def get_subject(link: str):
         if link in synonymes_regions[key]:
             region = key
 
+=======
+>>>>>>> Stashed changes
     if "relance" in link:
-        return subject_france_relance + " " + region
-    return subject_budget + " " + region
+        return subject_france_relance
+    return subject_budget
