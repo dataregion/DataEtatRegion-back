@@ -8,7 +8,7 @@ from app.models.financial.FinancialCp import FinancialCp as Cp
 from app.models.refs.commune import Commune
 from app.models.refs.siret import Siret
 from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
-from app.services.tags import select_tag, ApplyTagForAutomation, TagVO
+from app.services.tags import delete_associations_of_tag, select_tag, ApplyTagForAutomation, TagVO
 from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
 
@@ -153,13 +153,17 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None):
 
 @_celery.task(bind=True, name="apply_tags_cp_orphelin")
 def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None):
-    _logger.info("[TAGS][CP ORPHELIN] Application auto du tags CP Orphelin")
+    _logger.info("[TAGS][cp-orphelin] Application auto du tags CP Orphelin")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CP ORPHELIN id : {tag.id}")
 
+    # Suppression des associations existantes
+    _logger.debug(f"[TAGS][{tag.type}] Suppression des associations relatives au tag : {tag.id}...")
+    n_deleted = delete_associations_of_tag(tag)
+    _logger.debug(f"[TAGS][{tag.type}] Supprimé {n_deleted} associations")
+
     # Condition
     stmt_cp_orphelins = Cp.id_ae == None  # noqa: E711
-
     # Application du tag aux entités
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_cp(stmt_cp_orphelins)
