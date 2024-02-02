@@ -1,10 +1,13 @@
 import logging
 import dataclasses
 from app import db
+from app.models.financial import FinancialData
 from app.models.financial.FinancialAe import FinancialAe as Ae
-from app.models.tags.Tags import TagVO, TagAssociation
+from app.models.financial.FinancialCp import FinancialCp as Cp
+from app.models.financial.Ademe import Ademe
+from app.models.tags.Tags import TagVO, TagAssociation, Tags
 from app.models.tags.Tags import Tags as DbTag
-from sqlalchemy import delete, and_, select, insert
+from sqlalchemy import Column, delete, and_, select, insert
 
 logger = logging.getLogger(__name__)
 
@@ -29,18 +32,93 @@ def select_tags(tags: list[TagVO]) -> list[DbTag]:
     return db_tags
 
 
-def _select_ae_having_tags(tag_id: int):
+def _tag_association_column_corresponding_to_financial_entity_type(
+    financial_entity_type: type[FinancialData],
+) -> Column[int]:
+    if financial_entity_type == Ademe:
+        return TagAssociation.ademe
+    elif financial_entity_type == Ae:
+        return TagAssociation.financial_ae
+    elif financial_entity_type == Cp:
+        return TagAssociation.financial_cp
+    else:
+        raise NotImplementedError(
+            "Impossible de créer une association de tag pour l'entité"
+            f" de type {financial_entity_type.__class__.__name__}"
+        )
+
+
+def _select_financial_entity_ids_having_tags(tag_id: int, financial_entity_type: type[FinancialData]):
     """
-    Retourne la selection d'ae qui ont déjà au moins un tag tag_id appliqué
+    Retourne la selection d'entités financières qui ont déjà au moins un tag tag_id appliqué
     :param tag_id: l'id du tag
+    :param financial_entity_type: le type d'entité financière
     :return:
     """
-    return db.select(TagAssociation.financial_ae).where(TagAssociation.tag_id == tag_id).distinct()
+    column = _tag_association_column_corresponding_to_financial_entity_type(financial_entity_type)
+    stmt = db.select(column).where(TagAssociation.tag_id == tag_id).distinct()
+    return stmt
+
+
+def _new_tag_association(financial_entity_type: type[FinancialData], id: int, tag: Tags):
+    """Crée une association de tag pour une entité de donnée financière"""
+    association = TagAssociation()
+    association.tag_id = tag.id
+
+    fk_column = _tag_association_column_corresponding_to_financial_entity_type(financial_entity_type)
+    setattr(association, fk_column.key, id)
+
+    return association
 
 
 @dataclasses.dataclass
 class ApplyTagForAutomation:
     tag: DbTag
+
+    def _apply_tags_entity(self, whereclause, financial_entity_type: type[FinancialData]):
+        """
+        Applique un tag sur les entités financières retournées par le statement passé en paramètre
+        :param tag: le tag à appliquer
+        :param where_clause: le filtrage
+        :param entity_type: le type d'entité financière
+        :return:
+        """
+        stmt_entity_ids = (
+            db.select(financial_entity_type.id)
+            .where(whereclause)
+            .where(
+                financial_entity_type.id.not_in(
+                    _select_financial_entity_ids_having_tags(self.tag.id, financial_entity_type)
+                )
+            )
+        )
+        entity_ids = [row[0] for row in db.session.execute(stmt_entity_ids).all()]
+
+        if len(entity_ids) == 0:
+            logger.info(f"[TAGS][{self.tag.type}] Aucune nouvelle association détecté")
+            return self
+
+        # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
+        insert_to_commit = []
+        for entity_id in entity_ids:
+            association = _new_tag_association(financial_entity_type, entity_id, self.tag)
+            association.auto_applied = True  # type: ignore
+
+            insert_to_commit.append(
+                {
+                    TagAssociation.financial_ae.name: association.financial_ae,
+                    TagAssociation.financial_cp.name: association.financial_cp,
+                    TagAssociation.ademe.name: association.ademe,
+                    TagAssociation.tag_id.name: association.tag_id,
+                    TagAssociation.auto_applied.name: association.auto_applied,
+                }
+            )
+        db.session.execute(insert(TagAssociation), insert_to_commit)
+
+        db.session.commit()
+        logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags : {len(entity_ids)}")
+
+        return self
 
     def apply_tags_ae(self, whereclause):
         """
@@ -49,25 +127,16 @@ class ApplyTagForAutomation:
         :param where_clause: le filtrage
         :return:
         """
-        stmt_ae = db.select(Ae.id).where(whereclause).where(Ae.id.not_in(_select_ae_having_tags(self.tag.id)))
-        ae_ids = [row[0] for row in db.session.execute(stmt_ae).all()]
+        return self._apply_tags_entity(whereclause, Ae)
 
-        # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
-        if ae_ids:
-            insert_to_commit = []
-            for ae_id in ae_ids:
-                insert_to_commit.append(
-                    {
-                        TagAssociation.financial_ae.name: ae_id,
-                        TagAssociation.tag_id.name: self.tag.id,
-                        TagAssociation.auto_applied.name: True,
-                    }
-                )
-            db.session.execute(insert(TagAssociation), insert_to_commit)
-            db.session.commit()
-            logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags : {len(ae_ids)}")
-        else:
-            logger.info(f"[TAGS][{self.tag.type}] Aucune nouvelle association détecté")
+    def apply_tags_cp(self, whereclause):
+        """
+        Applique un tag sur les Financial CP retournée par le statement passé en paramètre
+        :param tag: le tag à appliquer
+        :param where_clause: le filtrage
+        :return:
+        """
+        return self._apply_tags_entity(whereclause, Cp)
 
 
 @dataclasses.dataclass

@@ -12,8 +12,6 @@ __all__ = ("France2030",)
 @dataclass
 class France2030(FinancialData, db.Model):
     __tablename__ = "france_2030"
-    # PK
-    id = Column(Integer, primary_key=True)
 
     date_dpm = Column(Date)
     operateur = Column(String(255))

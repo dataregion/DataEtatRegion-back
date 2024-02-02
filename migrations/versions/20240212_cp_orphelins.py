@@ -25,6 +25,9 @@ materialized_views_to_refresh = ["flatten_financial_lines"]
 
 
 def upgrade():
+    _upgrade_tags()
+    _upgrade_tags_association()
+
     for view in new_views:
         print(f"Création de la vue {view}")
         op.execute(_new_filecontent(f"{view}.sql"))
@@ -41,6 +44,9 @@ def downgrade():
         print(f"Drop de la vue {view}")
         op.execute(f"DROP VIEW IF EXISTS public.{view}")
 
+    _downgrade_tags_association()
+    _downgrade_tags()
+
     _refresh_materialized_views()
 
 
@@ -48,6 +54,50 @@ def _refresh_materialized_views():
     for view in materialized_views_to_refresh:
         print(f"refresh materialized view {view}")
         op.execute(f"REFRESH MATERIALIZED VIEW {view}")
+
+
+def _upgrade_tags_association():
+    print("Upgrade structure of tag association")
+    with op.batch_alter_table("tag_association", schema=None) as batch_op:
+        batch_op.add_column(sa.Column("financial_cp", sa.Integer(), nullable=True))
+        batch_op.create_index(batch_op.f("ix_tag_association_financial_cp"), ["financial_cp"], unique=False)
+        batch_op.create_foreign_key("tag_association_financial_cp_fkey", "financial_cp", ["financial_cp"], ["id"])
+
+    op.drop_constraint("line_fks_xor", table_name="tag_association")
+    op.create_check_constraint(
+        "line_fks_xor", table_name="tag_association", condition="num_nonnulls(ademe, financial_ae, financial_cp) = 1"
+    )
+
+
+def _downgrade_tags_association():
+    print("Downgrade structure of tag association")
+    op.drop_constraint("line_fks_xor", table_name="tag_association")
+    op.create_check_constraint(
+        "line_fks_xor", table_name="tag_association", condition="num_nonnulls(ademe, financial_ae) = 1"
+    )
+    with op.batch_alter_table("tag_association", schema=None) as batch_op:
+        batch_op.drop_constraint("tag_association_financial_cp_fkey", type_="foreignkey")
+        batch_op.drop_index(batch_op.f("ix_tag_association_financial_cp"))
+        batch_op.drop_column("financial_cp")
+
+
+def _upgrade_tags():
+    print("Ajout du tag cp-orphelin")
+    stmt = """
+    INSERT INTO tags
+    ("type", value, description, enable_rules_auto, created_at, updated_at, display_name)
+    VALUES('cp-orphelin', NULL, 'La ligne affichée est un crédit de paiement sans engagement attaché.', true, NULL, NULL, 'Crédit de paiement orphelin');
+    """
+    op.execute(stmt)
+
+
+def _downgrade_tags():
+    print("Delete du tag cp-orphelin")
+    stmt = """
+    DELETE FROM tags
+    WHERE type = 'cp-orphelin';
+    """
+    op.execute(stmt)
 
 
 def _new_filecontent(name: str):

@@ -46,6 +46,7 @@ class TagAssociation(Audit, db.Model):
 
     ademe = Column(Integer, ForeignKey("ademe.id"), nullable=True, index=True)
     financial_ae = Column(Integer, ForeignKey("financial_ae.id"), nullable=True, index=True)
+    financial_cp = Column(Integer, ForeignKey("financial_cp.id"), nullable=True, index=True)
 
     # indique si le tag a été appliqué par un script auto ou non
     auto_applied = Column(Boolean, default=False, nullable=False)

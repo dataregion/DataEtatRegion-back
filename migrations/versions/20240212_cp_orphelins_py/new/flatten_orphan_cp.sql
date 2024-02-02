@@ -86,5 +86,5 @@ SELECT
    LEFT JOIN ref_programmation rp on rp.code = root.referentiel_programmation
    LEFT JOIN ref_groupe_marchandise rgm on root.groupe_marchandise = rgm.code
    -- Uniquement cp_sans_ae
-   where root.n_ej is NULL
+   WHERE root.id_ae is NULL
 ;
