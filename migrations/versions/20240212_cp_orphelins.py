@@ -105,10 +105,13 @@ def _downgrade_tags_association():
 
 def _upgrade_tags():
     print("Ajout du tag cp-orphelin")
-    stmt = """
+    display_name = "Crédit de paiement orphelin"
+    description = f"La ligne est taguée « {display_name} » est un crédit de paiement sans engagement attaché."
+
+    stmt = f"""
     INSERT INTO tags
     ("type", value, description, enable_rules_auto, created_at, updated_at, display_name)
-    VALUES('cp-orphelin', NULL, 'La ligne affichée est un crédit de paiement sans engagement attaché.', true, NULL, NULL, 'Crédit de paiement orphelin');
+    VALUES('cp-orphelin', NULL, '{description}', true, NULL, NULL, '{display_name}');
     """
     op.execute(stmt)
 
