@@ -84,6 +84,13 @@ def _downgrade_tags_association():
     print("Downgrade structure of tag association")
 
     with op.batch_alter_table("tag_association", schema=None) as batch_op:
+        print("Suppression des associations concernant les CP")
+        stmt = """
+        delete from tag_association ta
+        where ta.financial_cp is not NULL;
+        """
+        op.execute(stmt)
+
         batch_op.drop_constraint("line_fks_xor")
         batch_op.create_check_constraint("line_fks_xor", condition="num_nonnulls(ademe, financial_ae) = 1")
 
