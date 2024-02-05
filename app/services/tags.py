@@ -33,13 +33,6 @@ def select_tags(tags: list[TagVO]) -> list[DbTag]:
     return db_tags
 
 
-def delete_associations_of_tag(tag: DbTag):
-    stmt = delete(TagAssociation).where(TagAssociation.tag_id == tag.id)
-    result = db.session.execute(stmt)
-    db.session.commit()
-    return result.rowcount
-
-
 def _tag_association_column_corresponding_to_financial_entity_type(
     financial_entity_type: type[FinancialData],
 ) -> Column[int]:
