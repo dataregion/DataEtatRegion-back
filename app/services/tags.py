@@ -1,5 +1,6 @@
 import logging
 import dataclasses
+from more_itertools import ichunked
 from app import db
 from app.models.financial import FinancialData
 from app.models.financial.FinancialAe import FinancialAe as Ae
@@ -7,7 +8,7 @@ from app.models.financial.FinancialCp import FinancialCp as Cp
 from app.models.financial.Ademe import Ademe
 from app.models.tags.Tags import TagVO, TagAssociation, Tags
 from app.models.tags.Tags import Tags as DbTag
-from sqlalchemy import Column, delete, and_, select, insert
+from sqlalchemy import Column, delete, and_, select, insert, join
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ def select_tags(tags: list[TagVO]) -> list[DbTag]:
 def delete_associations_of_tag(tag: DbTag):
     stmt = delete(TagAssociation).where(TagAssociation.tag_id == tag.id)
     result = db.session.execute(stmt)
+    db.session.commit()
     return result.rowcount
 
 
@@ -89,37 +91,47 @@ class ApplyTagForAutomation:
         :param entity_type: le type d'entité financière
         :return:
         """
+        # Selectionne les entités financières éligibles au tag auto qui n'ont pas d'association existantes
+        ta_column = _tag_association_column_corresponding_to_financial_entity_type(financial_entity_type)
         stmt_entity_ids = (
             db.select(financial_entity_type.id)
-            .where(whereclause)
-            .where(
-                financial_entity_type.id.not_in(
-                    _select_financial_entity_ids_having_tags(self.tag.id, financial_entity_type)
+            .select_from(
+                join(
+                    financial_entity_type,
+                    TagAssociation,
+                    (financial_entity_type.id == ta_column) & (TagAssociation.tag_id == self.tag.id),
+                    isouter=True,
                 )
             )
+            .where(whereclause)
+            .where(TagAssociation.id.is_(None))
         )
+
+        #
         entity_ids = [row[0] for row in db.session.execute(stmt_entity_ids).all()]
 
         if len(entity_ids) == 0:
             logger.info(f"[TAGS][{self.tag.type}] Aucune nouvelle association détecté")
             return self
 
-        # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
-        insert_to_commit = []
-        for entity_id in entity_ids:
-            association = _new_tag_association(financial_entity_type, entity_id, self.tag)
-            association.auto_applied = True  # type: ignore
+        chunks = ichunked(entity_ids, 10_000)
+        for chunk in chunks:
+            # on vérifie que la liste des lignes à ajouter est non vide. Sinon pas besoin d'insert de nouvelle Assocations
+            insert_to_commit = []
+            for entity_id in chunk:
+                association = _new_tag_association(financial_entity_type, entity_id, self.tag)
+                association.auto_applied = True  # type: ignore
 
-            insert_to_commit.append(
-                {
-                    TagAssociation.financial_ae.name: association.financial_ae,
-                    TagAssociation.financial_cp.name: association.financial_cp,
-                    TagAssociation.ademe.name: association.ademe,
-                    TagAssociation.tag_id.name: association.tag_id,
-                    TagAssociation.auto_applied.name: association.auto_applied,
-                }
-            )
-        db.session.execute(insert(TagAssociation), insert_to_commit)
+                insert_to_commit.append(
+                    {
+                        TagAssociation.financial_ae.name: association.financial_ae,
+                        TagAssociation.financial_cp.name: association.financial_cp,
+                        TagAssociation.ademe.name: association.ademe,
+                        TagAssociation.tag_id.name: association.tag_id,
+                        TagAssociation.auto_applied.name: association.auto_applied,
+                    }
+                )
+            db.session.execute(insert(TagAssociation), insert_to_commit)
 
         db.session.commit()
         logger.info(f"[TAGS][{self.tag.type}] Fin application auto du tags : {len(entity_ids)}")

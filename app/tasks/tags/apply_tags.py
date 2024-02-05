@@ -158,9 +158,10 @@ def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None):
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CP ORPHELIN id : {tag.id}")
 
     # Suppression des associations existantes
-    _logger.debug(f"[TAGS][{tag.type}] Suppression des associations relatives au tag : {tag.id}...")
-    n_deleted = delete_associations_of_tag(tag)
-    _logger.debug(f"[TAGS][{tag.type}] Supprimé {n_deleted} associations")
+    # TODO: supprimer de manière plus maligne
+    # _logger.debug(f"[TAGS][{tag.type}] Suppression des associations relatives au tag : {tag.id}...")
+    # n_deleted = delete_associations_of_tag(tag)
+    # _logger.debug(f"[TAGS][{tag.type}] Supprimé {n_deleted} associations")
 
     # Condition
     stmt_cp_orphelins = Cp.id_ae == None  # noqa: E711
