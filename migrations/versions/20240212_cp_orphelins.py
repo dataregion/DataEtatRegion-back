@@ -60,8 +60,19 @@ def _upgrade_tags_association():
     print("Upgrade structure of tag association")
     with op.batch_alter_table("tag_association", schema=None) as batch_op:
         batch_op.add_column(sa.Column("financial_cp", sa.Integer(), nullable=True))
+
         batch_op.create_index(batch_op.f("ix_tag_association_financial_cp"), ["financial_cp"], unique=False)
-        batch_op.create_foreign_key("tag_association_financial_cp_fkey", "financial_cp", ["financial_cp"], ["id"])
+
+        batch_op.drop_constraint("tag_association_financial_ae_fkey", type_="foreignkey")
+        batch_op.drop_constraint("tag_association_ademe_fkey", type_="foreignkey")
+
+        batch_op.create_foreign_key("tag_association_ademe_fkey", "ademe", ["ademe"], ["id"], ondelete="cascade")
+        batch_op.create_foreign_key(
+            "tag_association_financial_ae_fkey", "financial_ae", ["financial_ae"], ["id"], ondelete="cascade"
+        )
+        batch_op.create_foreign_key(
+            "tag_association_financial_cp_fkey", "financial_cp", ["financial_cp"], ["id"], ondelete="cascade"
+        )
 
     op.drop_constraint("line_fks_xor", table_name="tag_association")
     op.create_check_constraint(
@@ -71,14 +82,18 @@ def _upgrade_tags_association():
 
 def _downgrade_tags_association():
     print("Downgrade structure of tag association")
-    op.drop_constraint("line_fks_xor", table_name="tag_association")
-    op.create_check_constraint(
-        "line_fks_xor", table_name="tag_association", condition="num_nonnulls(ademe, financial_ae) = 1"
-    )
+
     with op.batch_alter_table("tag_association", schema=None) as batch_op:
-        batch_op.drop_constraint("tag_association_financial_cp_fkey", type_="foreignkey")
-        batch_op.drop_index(batch_op.f("ix_tag_association_financial_cp"))
+        batch_op.drop_constraint("line_fks_xor")
+        batch_op.create_check_constraint("line_fks_xor", condition="num_nonnulls(ademe, financial_ae) = 1")
+
         batch_op.drop_column("financial_cp")
+
+        batch_op.drop_constraint("tag_association_ademe_fkey", type_="foreignkey")
+        batch_op.drop_constraint("tag_association_financial_ae_fkey", type_="foreignkey")
+
+        batch_op.create_foreign_key("tag_association_ademe_fkey", "ademe", ["ademe"], ["id"])
+        batch_op.create_foreign_key("tag_association_financial_ae_fkey", "financial_ae", ["financial_ae"], ["id"])
 
 
 def _upgrade_tags():
