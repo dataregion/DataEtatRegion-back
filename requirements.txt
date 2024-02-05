@@ -134,6 +134,8 @@ marshmallow-jsonschema==0.13.0
     # via -r requirements.in
 marshmallow-sqlalchemy==0.30.0
     # via -r requirements.in
+more-itertools==10.2.0
+    # via -r requirements.in
 mypy-extensions==1.0.0
     # via typing-inspect
 nocodb==0.1.0
