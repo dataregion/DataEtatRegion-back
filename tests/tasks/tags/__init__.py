@@ -85,6 +85,14 @@ TAG_ACV = {
     "enable_rules_auto": True,
 }
 
+TAG_CP_SANS_AE = {
+    "type": "cp-orphelin",
+    "value": None,
+    "description": "La ligne affichée est un crédit de paiement sans engagement attaché.",
+    "display_name": "Crédit de paiement orphelin",
+    "enable_rules_auto": True,
+}
+
 
 def faked_tag_json(faker: Faker):
     """Génère un JSON représentant un tag random"""

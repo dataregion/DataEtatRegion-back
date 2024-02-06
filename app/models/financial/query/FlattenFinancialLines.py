@@ -100,6 +100,7 @@ class EnrichedFlattenFinancialLines(FlattenFinancialLines):
         primaryjoin=(
             "or_("
             "and_(EnrichedFlattenFinancialLines.id==TagAssociation.financial_ae, EnrichedFlattenFinancialLines.source=='FINANCIAL_DATA_AE'),"
+            "and_(EnrichedFlattenFinancialLines.id==TagAssociation.financial_cp, EnrichedFlattenFinancialLines.source=='FINANCIAL_DATA_CP'),"
             "and_(EnrichedFlattenFinancialLines.id==TagAssociation.ademe, EnrichedFlattenFinancialLines.source=='ADEME'),"
             ")"
         ),
