@@ -2,9 +2,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, Date, String, Float, UniqueConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 from app import db
 from app.models.financial import FinancialData
+from app.models.refs.siret import Siret
 
 __all__ = ("France2030",)
 
@@ -28,7 +29,7 @@ class France2030(FinancialData, db.Model):
 
     # FK
     siret = Column(String, db.ForeignKey("ref_siret.code"), nullable=True)
-    beneficiaire = relationship("Siret")
+    beneficiaire: Mapped[Siret] = relationship("Siret")
     code_nomenclature = Column(String, db.ForeignKey("nomenclature_france_2030.code"), nullable=True)
     nomenclature = relationship("NomenclatureFrance2030")
 

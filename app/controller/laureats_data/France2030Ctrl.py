@@ -28,7 +28,17 @@ auth = current_app.extensions["auth"]
 parser_get = get_pagination_parser(default_limit=6500)
 parser_get.add_argument("structures", type=str, action="split", help="Noms des structures")
 parser_get.add_argument("axes", type=str, action="split", help="Axes")
-parser_get.add_argument("territoires", type=str, action="split", help="Territoires (communes)")
+parser_get.add_argument("niveau_geo", type=str, help="le niveau géographique")
+parser_get.add_argument(
+    "code_geo",
+    type=str,
+    action="split",
+    help="Le code d'une commune (5 chiffres), "
+    "le numéro de département (2 caractères), "
+    "le code epci (9 chiffres), "
+    "le code d'arrondissement (3 ou 4 chiffres)"
+    "ou le crte (préfixé par 'crte-')",
+)
 
 
 parser_import_file = reqparse.RequestParser()
