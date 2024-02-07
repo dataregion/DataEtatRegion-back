@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-from typing import TypeVar, Generic
 
 from sqlalchemy import Column
 
@@ -8,35 +7,32 @@ from app.models.financial.France2030 import France2030
 from app.models.refs.commune import Commune
 from app.models.refs.siret import Siret
 
+from app.models.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
 
-T = TypeVar("T")
 
-
-class TypeCodeGeoToSqlAlchemyColumnResolver(Generic[T], metaclass=ABCMeta):
+class TypeCodeGeoToSqlAlchemyColumnResolver(metaclass=ABCMeta):
     """
     Classe qui résoud la colonne à utiliser pour filtrer le code geo
     dépendant du TypeCodeGeo ainsi que du modèle utilisé.
     """
 
-    def __init__(self, model: type[T]):
-        self._model = model
-
     @abstractmethod
-    def code_geo_column(self, type_geo: TypeCodeGeo) -> Column[str]:
+    def code_geo_column(self, type_geo: TypeCodeGeo) -> Column[str] | None:
         pass
 
-
-class TypeCodeGeoToFrance2030CodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolver[France2030]):
-    def __init__(self):
-        super().__init__(France2030)
-
-    def code_geo_column(self, niveau_geo: TypeCodeGeo | str) -> Column[str]:
+    def parse_niveau_geo(self, niveau_geo: TypeCodeGeo | str) -> TypeCodeGeo:
         if isinstance(niveau_geo, str):
             type_geo = TypeCodeGeo[niveau_geo.upper()]
         else:
             type_geo = niveau_geo
+        return type_geo
 
-        beneficiaire: type[Siret] = self._model.beneficiaire.property.mapper.class_
+
+class TypeCodeGeoToFrance2030CodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolver):
+    def code_geo_column(self, niveau_geo: TypeCodeGeo | str) -> Column[str] | None:
+        type_geo = self.parse_niveau_geo(niveau_geo)
+
+        beneficiaire: type[Siret] = France2030.beneficiaire.property.mapper.class_
         commune: type[Commune] = beneficiaire.ref_commune.property.mapper.class_
         column = commune.code
         match type_geo:
@@ -52,5 +48,49 @@ class TypeCodeGeoToFrance2030CodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolv
                 column = commune.code_arrondissement
             case TypeCodeGeo.QPV:
                 column = beneficiaire.code_qpv
+
+        return column
+
+
+class TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolver):
+    def code_geo_column(self, niveau_geo: TypeCodeGeo | str) -> Column[str] | None:
+        type_geo = self.parse_niveau_geo(niveau_geo)
+
+        column = None
+
+        match type_geo:
+            case TypeCodeGeo.REGION:
+                column = FinancialLines.localisationInterministerielle_commune_codeRegion
+            case TypeCodeGeo.DEPARTEMENT:
+                column = FinancialLines.localisationInterministerielle_commune_codeDepartement
+            case TypeCodeGeo.EPCI:
+                column = FinancialLines.localisationInterministerielle_commune_codeEpci
+            case TypeCodeGeo.CRTE:
+                column = FinancialLines.localisationInterministerielle_commune_codeCrte
+            case TypeCodeGeo.ARRONDISSEMENT:
+                column = FinancialLines.localisationInterministerielle_commune_arrondissement_code
+
+        return column
+
+
+class TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolver):
+    def code_geo_column(self, niveau_geo: TypeCodeGeo | str) -> Column[str] | None:
+        type_geo = self.parse_niveau_geo(niveau_geo)
+
+        column = FinancialLines.beneficiaire_commune_code
+
+        match type_geo:
+            case TypeCodeGeo.REGION:
+                column = FinancialLines.beneficiaire_commune_codeRegion
+            case TypeCodeGeo.DEPARTEMENT:
+                column = FinancialLines.beneficiaire_commune_codeDepartement
+            case TypeCodeGeo.EPCI:
+                column = FinancialLines.beneficiaire_commune_codeEpci
+            case TypeCodeGeo.CRTE:
+                column = FinancialLines.beneficiaire_commune_codeCrte
+            case TypeCodeGeo.ARRONDISSEMENT:
+                column = FinancialLines.beneficiaire_commune_arrondissement_code
+            case TypeCodeGeo.QPV:
+                column = FinancialLines.beneficiaire_qpv_code
 
         return column
