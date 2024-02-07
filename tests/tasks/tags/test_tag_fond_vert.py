@@ -73,7 +73,7 @@ def test_apply_fond_vert_when_no_tag(
     database, insert_financial_ae_for_tag_fond_vert, insert_financial_ae_for_other_tag, tag_fond_vert
 ):
     # DO
-    apply_tags_fonds_vert(tag_fond_vert.type, None)  # type: ignore
+    apply_tags_fonds_vert(tag_fond_vert.type, None, None)  # type: ignore
 
     # assert
     ## on a bien une association
@@ -98,7 +98,7 @@ def test_should_apply_tag_if_other_tag_associated(
     session.commit()
 
     # DO
-    apply_tags_fonds_vert(tag_fond_vert.type, None)  # type: ignore
+    apply_tags_fonds_vert(tag_fond_vert.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocations = (
@@ -135,7 +135,7 @@ def test_should_not_apply_tag_if_already_present(
     session.commit()
 
     # DO
-    apply_tags_fonds_vert(tag_fond_vert.type, None)  # type: ignore
+    apply_tags_fonds_vert(tag_fond_vert.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(

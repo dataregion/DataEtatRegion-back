@@ -88,7 +88,7 @@ def insert_two_financial_ae_for_tag_detr(database, session):
 
 def test_apply_detr_no_tag(insert_two_financial_ae_for_tag_detr, tag_detr):
     # DO
-    apply_tags_detr(tag_detr.type, None)  # type: ignore
+    apply_tags_detr(tag_detr.type, None, None)  # type: ignore
 
     # assert
     ## on a bien une association
@@ -126,7 +126,7 @@ def test_should_not_apply_tag_if_already_present(database, session, tag_detr, in
     ).scalar_one_or_none()
 
     # DO
-    apply_tags_detr(tag_detr.type, None)  # type: ignore
+    apply_tags_detr(tag_detr.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(

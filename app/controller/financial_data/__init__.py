@@ -40,7 +40,7 @@ def check_param_source_annee_import():
         @wraps(func)
         def inner_wrapper(*args, **kwargs):
             data = request.form
-            if "code_region" not in data or "annee" not in data:
+            if "annee" not in data:
                 raise BadRequestDataRegateNum("Missing Argument code_region or annee")
             if not isinstance(int(data["annee"]), int):
                 raise BadRequestDataRegateNum("Missing Argument code_region or annee")
@@ -68,7 +68,25 @@ def check_file_import():
 
     return wrapper
 
+def check_files_import():
+    """
+    Vérifie sur la request contient un attribut fichier
+    :return:
+    """
 
+    def wrapper(func):
+        @wraps(func)
+        def inner_wrapper(*args, **kwargs):
+            if "fichierAe" not in request.files and "fichierCp" not in request.files:
+                raise BadRequestDataRegateNum("Missing File")
+            return func(*args, **kwargs)
+
+        return inner_wrapper
+
+    return wrapper
+
+
+from app.controller.financial_data.FinancialDataCtrl import api as api_ae_cp  # noqa: E402
 from app.controller.financial_data.FinancialAeCtrl import api as api_ae  # noqa: E402
 from app.controller.financial_data.FinancialCpCtrl import api as api_cp  # noqa: E402
 from app.controller.financial_data.AdemeCtrl import api as api_ademe  # noqa: E402
@@ -103,6 +121,7 @@ model_tags_single_api = register_tags_schemamodel(api_v1)
 
 api_v1.add_namespace(api_auth)
 api_v1.add_namespace(api_tags)
+api_v1.add_namespace(api_ae_cp)
 api_v1.add_namespace(api_ae)
 api_v1.add_namespace(api_cp)
 api_v1.add_namespace(api_ademe)

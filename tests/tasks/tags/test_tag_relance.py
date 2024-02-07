@@ -80,7 +80,7 @@ def insert_financial_ae_for_tag_relance(database, session):
 
 def test_apply_relance_no_tag(insert_financial_ae_for_tag_relance, tag_relance):
     # DO
-    apply_tags_relance(tag_relance.type, None)  # type: ignore
+    apply_tags_relance(tag_relance.type, None, None)  # type: ignore
 
     # assert
     ## on a bien une association
@@ -113,7 +113,7 @@ def test_should_not_apply_tag_if_already_present(
     ).scalar_one_or_none()
 
     # DO
-    apply_tags_relance(tag_relance.type, None)  # type: ignore
+    apply_tags_relance(tag_relance.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(

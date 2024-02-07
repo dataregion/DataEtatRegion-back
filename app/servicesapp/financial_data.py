@@ -25,8 +25,41 @@ from app.models.tags.Tags import TagVO
 from app.services.data import BuilderStatementFinancialLine
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
+from app.tasks.files.file_task import split_csv_and_import_ae_and_cp
 
 
+def import_financial_data(file_ae, file_cp, source_region: str, annee: int, username=""):
+    # Sanitize des paramètres
+    source_region = _sanitize_source_region(source_region)
+    # Validation des fichiers 
+    save_path_ae = check_file_and_save(file_ae)
+    save_path_cp = check_file_and_save(file_cp)
+    _check_file(save_path_ae, FinancialAe.get_columns_files_ae())
+    _check_file(save_path_cp, FinancialCp.get_columns_files_cp())
+
+    # Nettoyage de la BDD
+    _delete_cp(annee, source_region)
+    _delete_ae(annee, source_region)
+
+    # Options pour pandas.read_csv()
+    csv_options = {"sep": ",", "skiprows": 8}
+
+    # Tâche d'import des AE et des CP
+    task = split_csv_and_import_ae_and_cp.delay(
+        str(save_path_ae),
+        str(save_path_cp),
+        json.dumps(csv_options),
+        source_region,
+        annee
+    )
+
+    db.session.add(AuditUpdateData(username=username, filename=file_ae.filename, data_type=DataType.FINANCIAL_DATA_AE))
+    db.session.add(AuditUpdateData(username=username, filename=file_cp.filename, data_type=DataType.FINANCIAL_DATA_CP))
+    db.session.commit()
+    return task
+
+
+# TODO : deprecated
 def import_ae(file_ae, source_region: str, annee: int, force_update: bool, username=""):
     save_path = check_file_and_save(file_ae)
 
@@ -43,13 +76,13 @@ def import_ae(file_ae, source_region: str, annee: int, force_update: bool, usern
         json.dumps(csv_options),
         source_region=source_region,
         annee=annee,
-        force_update=force_update,
     )
     db.session.add(AuditUpdateData(username=username, filename=file_ae.filename, data_type=DataType.FINANCIAL_DATA_AE))
     db.session.commit()
     return task
 
 
+# TODO : deprecated
 def import_cp(file_cp, source_region: str, annee: int, username=""):
     save_path = check_file_and_save(file_cp)
 
@@ -254,6 +287,19 @@ def _check_file(fichier, columns_name):
 
 def _sanitize_source_region(source_region):
     return source_region.lstrip("0") if source_region else None
+
+
+def _delete_ae(annee: int, source_region: str):
+    """
+    Supprimes AE d'une année comptable
+    :param annee:
+    :param source_region:
+    :return:
+    """
+    logging.info(f"[IMPORT FINANCIAL] Suppression des AE pour l'année {annee} et la source region {source_region}")
+    stmt = delete(FinancialAe).where(FinancialAe.annee == annee).where(FinancialAe.source_region == source_region)
+    db.session.execute(stmt)
+    db.session.commit()
 
 
 def _delete_cp(annee: int, source_region: str):

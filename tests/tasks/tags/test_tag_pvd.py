@@ -112,7 +112,7 @@ def test_apply_pvd_when_no_tag(
     tag_pvd,
 ):
     # DO
-    apply_tags_pvd(tag_pvd.type, None)  # type: ignore
+    apply_tags_pvd(tag_pvd.type, None, None)  # type: ignore
 
     # assert
     ## on a bien une association
@@ -137,7 +137,7 @@ def test_should_apply_tag_if_other_tag_associated(
     session.commit()
 
     # DO
-    apply_tags_pvd(tag_pvd.type, None)  # type: ignore
+    apply_tags_pvd(tag_pvd.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocations = (
@@ -172,7 +172,7 @@ def test_should_not_apply_tag_if_already_present(
     session.commit()
 
     # DO
-    apply_tags_pvd(tag_pvd.type, None)  # type: ignore
+    apply_tags_pvd(tag_pvd.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(

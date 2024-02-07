@@ -98,7 +98,7 @@ def insert_two_financial_ae_for_tag_cper_2015_20(database, session):
 
 def test_apply_cper_2015_20_no_tag(insert_two_financial_ae_for_tag_cper_2015_20, tag_cper_15_20):
     # DO
-    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20")  # type: ignore
+    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20", None)  # type: ignore
 
     # assert
     ## on a bien deux associations
