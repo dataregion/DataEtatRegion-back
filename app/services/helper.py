@@ -69,6 +69,8 @@ class TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver(TypeCodeGeo
                 column = FinancialLines.localisationInterministerielle_commune_codeCrte
             case TypeCodeGeo.ARRONDISSEMENT:
                 column = FinancialLines.localisationInterministerielle_commune_arrondissement_code
+            case TypeCodeGeo.COMMUNE:
+                column = FinancialLines.localisationInterministerielle_commune_code
 
         return column
 
