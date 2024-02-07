@@ -2,10 +2,11 @@ from marshmallow import fields
 from sqlalchemy import Column, String, JSON
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from app import db, ma
 from app.models.common.Audit import Audit
+from app.models.refs.commune import Commune
 
 JSONVariant = JSON().with_variant(JSONB(), "postgresql")
 
@@ -26,7 +27,7 @@ class Siret(Audit, db.Model):
     # Ajout de la partie Naf
     naf = Column(JSONVariant, nullable=True)
 
-    ref_commune = relationship("Commune", lazy="select")
+    ref_commune: Mapped[Commune] = relationship("Commune", lazy="select")
     ref_qpv = relationship("Qpv", lazy="joined")
     ref_categorie_juridique = relationship("CategorieJuridique", lazy="select", uselist=False)
     type_categorie_juridique = association_proxy("ref_categorie_juridique", "type")
