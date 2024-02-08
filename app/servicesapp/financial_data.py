@@ -31,7 +31,7 @@ from app.tasks.files.file_task import split_csv_and_import_ae_and_cp
 def import_financial_data(file_ae, file_cp, source_region: str, annee: int, username=""):
     # Sanitize des paramètres
     source_region = _sanitize_source_region(source_region)
-    # Validation des fichiers 
+    # Validation des fichiers
     save_path_ae = check_file_and_save(file_ae)
     save_path_cp = check_file_and_save(file_cp)
     _check_file(save_path_ae, FinancialAe.get_columns_files_ae())
@@ -46,11 +46,7 @@ def import_financial_data(file_ae, file_cp, source_region: str, annee: int, user
 
     # Tâche d'import des AE et des CP
     task = split_csv_and_import_ae_and_cp.delay(
-        str(save_path_ae),
-        str(save_path_cp),
-        json.dumps(csv_options),
-        source_region,
-        annee
+        str(save_path_ae), str(save_path_cp), json.dumps(csv_options), source_region, annee
     )
 
     db.session.add(AuditUpdateData(username=username, filename=file_ae.filename, data_type=DataType.FINANCIAL_DATA_AE))

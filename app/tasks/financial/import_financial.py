@@ -1,9 +1,8 @@
-from collections import defaultdict
 import datetime
 import shutil
 from celery import current_task, subtask
 from flask import current_app
-from sqlalchemy import insert, update, delete
+from sqlalchemy import update, delete
 from app import celeryapp, db
 from app.exceptions.exceptions import FinancialException
 import sqlalchemy.exc
@@ -172,7 +171,7 @@ def import_line_financial_ae(self, line: str, source_region: str, annee: int, in
         index = 0
         if cp_list is not None:
             for cp in cp_list:
-                _send_subtask_financial_cp(cp['data'], index, source_region, annee, cp['task'])
+                _send_subtask_financial_cp(cp["data"], index, source_region, annee, cp["task"])
                 index += 1
 
         # TAGS
@@ -332,9 +331,7 @@ def _update_financial_data(data, financial: FinancialData) -> FinancialData:
     return financial
 
 
-def _check_insert_update_financial(
-    financial_ae: FinancialData | None, line
-) -> FinancialData | bool:
+def _check_insert_update_financial(financial_ae: FinancialData | None, line) -> FinancialData | bool:
     """
     :param financial_ae: l'instance financière déjà présente ou non
     :param force_update:

@@ -68,6 +68,7 @@ def check_file_import():
 
     return wrapper
 
+
 def check_files_import():
     """
     Vérifie sur la request contient un attribut fichier

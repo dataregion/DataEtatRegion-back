@@ -4,7 +4,6 @@ import string
 from celery import subtask
 
 from app import celeryapp, db
-from app.models.financial import FinancialAe
 from app.models.tags.Tags import Tags
 
 celery = celeryapp.celery
