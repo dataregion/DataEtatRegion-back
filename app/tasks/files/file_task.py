@@ -1,4 +1,3 @@
-from collections import defaultdict
 import logging
 import os
 import json
@@ -60,7 +59,8 @@ def split_csv_and_import_ae_and_cp(
                     sep=",",
                     header=0,
                     names=FinancialAe.get_columns_files_ae(),
-                    dtype=defaultdict(str, n_poste_ej="int"),
+                    dtype=str,
+                    converters={"n_poste_ej": int},
                     chunksize=1000,
                 )
                 for chunk in data_chunk:
@@ -95,7 +95,7 @@ def split_csv_and_import_ae_and_cp(
                     sep=",",
                     header=0,
                     names=FinancialCp.get_columns_files_cp(),
-                    dtype=defaultdict(str, n_poste_ej="int"),
+                    dtype=str,
                     chunksize=1000,
                 )
                 for chunk in data_chunk:
