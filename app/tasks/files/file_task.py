@@ -59,8 +59,7 @@ def split_csv_and_import_ae_and_cp(
                     sep=",",
                     header=0,
                     names=FinancialAe.get_columns_files_ae(),
-                    dtype=str,
-                    converters={"n_poste_ej": int},
+                    dtype={"programme": str, "n_ej": str, "n_poste_ej": int, "fournisseur_titulaire": str, "siret": str},
                     chunksize=1000,
                 )
                 for chunk in data_chunk:
