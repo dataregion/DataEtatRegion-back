@@ -37,8 +37,8 @@ def _send_subtask_financial_ae(line: dict, source_region: str, annee: int, index
 
 
 @limiter_queue(queue_name="file")
-def _send_subtask_update_all_tags(id_ae: int):
-    subtask("update_all_tags_of_one").delay(id_ae)
+def _send_subtask_update_all_tags(taskname: str, id: int):
+    subtask(taskname).delay(id)
 
 
 celery = celeryapp.celery
@@ -175,7 +175,7 @@ def import_line_financial_ae(self, line: str, source_region: str, annee: int, in
                 index += 1
 
         # TAGS
-        _send_subtask_update_all_tags(new_financial_ae.id)
+        _send_subtask_update_all_tags("update_all_tags_of_ae", new_financial_ae.id)
 
         # LINKS TO EXISTING CP
         _make_link_ae_to_cp(new_financial_ae.id, new_financial_ae.n_ej, new_financial_ae.n_poste_ej)
@@ -206,7 +206,10 @@ def import_line_financial_cp(self, data_cp: str, index: int, source_region: str,
     # FINANCIAL_AE
     id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej)
     new_cp.id_ae = id_ae
-    _insert_financial_data(new_cp)
+    new_financial_cp = _insert_financial_data(new_cp)
+
+    # TAGS
+    _send_subtask_update_all_tags("update_all_tags_of_cp", new_financial_cp.id)
 
 
 @celery.task(bind=True, name="import_file_ademe_from_website")

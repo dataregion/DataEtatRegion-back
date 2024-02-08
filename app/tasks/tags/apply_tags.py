@@ -20,7 +20,7 @@ __all__ = ("apply_tags_fonds_vert", "apply_tags_relance", "apply_tags_detr", "ap
 
 
 @_celery.task(bind=True, name="apply_tags_fonds_vert")
-def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, id_ae: int | None):
+def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: dict | None):
     """
     Applique les tags Fond Vert
     :param self:
@@ -29,20 +29,23 @@ def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, id_ae: in
     :param financial_ae:
     :return:
     """
+    if context is not None and "only_ae" not in context:
+        return
+        
     _logger.info("[TAGS][Fond vert] Application auto du tags fond vert")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][Fond vert] Récupération du tag fond vert id : {tag.id}")
 
     condition = Ae.programme == "380"
-    if id_ae is not None:
-        condition = Ae.id == id_ae
+    if context is not None and "only_ae" in context and "id_ae" in context:
+        condition = Ae.id == context["id_ae"]
 
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(condition)
 
 
 @_celery.task(bind=True, name="apply_tags_relance")
-def apply_tags_relance(self, tag_type: str, _tag_value: str | None, id_ae: int | None):
+def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: dict | None):
     """
     Applique les tags Fond Vert
     :param self:
@@ -51,13 +54,16 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None, id_ae: int |
     :param financial_ae:
     :return:
     """
+    if context is not None and "only_ae" not in context:
+        return
+        
     _logger.info("[TAGS][Relance] Application auto du tags relance")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag relance id : {tag.id}")
 
     condition = None
-    if id_ae is not None:
-        condition = Ae.id == id_ae
+    if context is not None and "only_ae" in context and "id_ae" in context:
+        condition = Ae.id == context["id_ae"]
     else:
         stmt_programme_relance = (
             db.select(CodeProgramme.code).where(CodeProgramme.label_theme == "Plan de relance").distinct()
@@ -73,7 +79,7 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None, id_ae: int |
 
 
 @_celery.task(bind=True, name="apply_tags_detr")
-def apply_tags_detr(self, tag_type: str, _tag_value: str | None, id_ae: int | None):
+def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: dict | None):
     """
     Applique le tag DETR
     :param self:
@@ -82,13 +88,16 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None, id_ae: int | No
     :param financial_ae:
     :return:
     """
+    if context is not None and "only_ae" not in context:
+        return
+        
     _logger.info("[TAGS][DETR] Application auto du tags DETR")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag DETR id : {tag.id}")
 
     condition = None
-    if id_ae is not None:
-        condition = Ae.id == id_ae
+    if context is not None and "only_ae" in context and "id_ae" in context:
+        condition = Ae.id == context["id_ae"]
     else:
         stmt_ref_programmation = (
             db.select(ReferentielProgrammation.code).where(ReferentielProgrammation.label.ilike("detr")).distinct()
@@ -104,7 +113,7 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None, id_ae: int | No
 
 
 @_celery.task(bind=True, name="apply_tags_cper_2015_20")
-def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, id_ae: int | None):
+def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context: dict | None):
     """
     Applique le tag CEPR (Contrat plan Etat Region) entre 2015 et 2020
     :param self:
@@ -113,20 +122,23 @@ def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, id_ae: i
     :param financial_ae:
     :return:
     """
+    if context is not None and "only_ae" not in context:
+        return
+        
     _logger.info("[TAGS][CPER] Application auto du tags CPER 2015-20")
     tag = select_tag(TagVO.from_typevalue(tag_type, tag_value))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
 
     condition = (Ae.contrat_etat_region != "#") & (Ae.annee >= 2015) & (Ae.annee <= 2020)
-    if id_ae is not None:
-        condition = Ae.id == id_ae
+    if context is not None and "only_ae" in context and "id_ae" in context:
+        condition = Ae.id == context["id_ae"]
 
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(condition)
 
 
 @_celery.task(bind=True, name="apply_tags_cepr_2021_27")
-def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, id_ae: int | None):
+def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context: dict | None):
     """
     Applique le tag CEPR (Contrat plan Etat Region) entre 2021 et 2027
     :param self:
@@ -135,20 +147,23 @@ def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, id_ae: i
     :param financial_ae:
     :return:
     """
+    if context is not None and "only_ae" not in context:
+        return
+        
     _logger.info("[TAGS][CPER] Application auto du tags CPER 2021-27")
     tag = select_tag(TagVO.from_typevalue(tag_type, tag_value))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
 
     condition = (Ae.contrat_etat_region != "#") & (Ae.annee >= 2021) & (Ae.annee <= 2027)
-    if id_ae is not None:
-        condition = Ae.id == id_ae
+    if context is not None and "only_ae" in context and "id_ae" in context:
+        condition = Ae.id == context["id_ae"]
 
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(condition)
 
 
 @_celery.task(bind=True, name="apply_tags_pvd")
-def apply_tags_pvd(self, tag_type: str, tag_value: str | None, id_ae: int | None):
+def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: dict | None):
     """
     Applique le tag PVD (Petite Ville de Demain)
     :param self:
@@ -157,13 +172,16 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None, id_ae: int | None
     :param financial_ae:
     :return:
     """
+    if context is not None and "only_ae" not in context:
+        return
+
     _logger.info("[TAGS][PVD] Application auto du tags PVD")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag PVD id : {tag.id}")
 
     condition = None
-    if id_ae is not None:
-        condition = Ae.id == id_ae
+    if context is not None and "only_ae" in context and "id_ae" in context:
+        condition = Ae.id == context["id_ae"]
     else:
         # Récupération des codes des communes PVD
         stmt_communes_pvd = db.select(Commune.id, Commune.code).where(Commune.is_pvd == True)  # noqa: E712
@@ -183,20 +201,27 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None, id_ae: int | None
 
 
 @_celery.task(bind=True, name="apply_tags_cp_orphelin")
-def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None):
+def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: int | None):
+    if context is not None and "only_cp" not in context:
+        return
+
     _logger.info("[TAGS][cp-orphelin] Application auto du tags CP Orphelin")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CP ORPHELIN id : {tag.id}")
 
     # Condition
-    stmt_cp_orphelins = Cp.id_ae == None  # noqa: E711
+    condition = None
+    if context is not None and "only_cp" in context and "id_cp" in context:
+        condition = Cp.id == context["id_cp"]
+    else:
+        condition = Cp.id_ae == None  # noqa: E711
     # Application du tag aux entités
     apply_task = ApplyTagForAutomation(tag)
-    apply_task.apply_tags_cp(stmt_cp_orphelins)
+    apply_task.apply_tags_cp(condition)
 
 
 @_celery.task(bind=True, name="apply_tags_acv")
-def apply_tags_acv(self, tag_type: str, tag_value: str | None, id_ae: int | None):
+def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: dict | None):
     """
     Applique le tag ACV (Action Coeur de la Ville)
     :param self:
@@ -205,13 +230,16 @@ def apply_tags_acv(self, tag_type: str, tag_value: str | None, id_ae: int | None
     :param financial_ae:
     :return:
     """
+    if context is not None and "only_ae" not in context:
+        return
+    
     _logger.info("[TAGS][ACV] Application auto du tags ACV")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag ACV id : {tag.id}")
 
     condition = None
-    if id_ae is not None:
-        condition = Ae.id == id_ae
+    if context is not None and "only_ae" in context and "id_ae" in context:
+        condition = Ae.id == context["id_ae"]
     else:
         # Récupération des codes des communes ACV
         stmt_communes_acv = db.select(Commune.id, Commune.code).where(Commune.is_acv == True)  # noqa: E712

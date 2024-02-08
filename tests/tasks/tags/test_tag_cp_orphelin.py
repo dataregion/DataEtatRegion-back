@@ -53,7 +53,7 @@ def test_apply_cp_orphelin(
     tag_cp_orphan,
 ):
     # DO
-    apply_tags_cp_orphelin(tag_cp_orphan.type, None)  # type: ignore
+    apply_tags_cp_orphelin(tag_cp_orphan.type, None, None)  # type: ignore
 
     # assert
     ## On a bien une association
