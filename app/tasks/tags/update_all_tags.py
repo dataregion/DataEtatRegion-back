@@ -47,7 +47,9 @@ def update_all_tags_of_ae(self, id_ae: int):
     """
     LOGGER.info(f"[TAGS] Start - Application des tags pour l'AE {id_ae}")
 
-    stmt = db.select(Tags).where(Tags.enable_rules_auto == True).where(Tags.data_type == DataType.FINANCIAL_DATA_AE)  # noqa: E712
+    stmt = (
+        db.select(Tags).where(Tags.enable_rules_auto == True).where(Tags.data_type == DataType.FINANCIAL_DATA_AE)
+    )  # noqa: E712
     LOGGER.debug("[TAGS] Sélection des tags pour application auto")
 
     translator = str.maketrans(string.whitespace + "-", "_" * len(string.whitespace + "-"))
@@ -72,7 +74,9 @@ def update_all_tags_of_cp(self, id_cp: int):
     """
     LOGGER.info(f"[TAGS] Start - Application des tags pour le CP {id_cp}")
 
-    stmt = db.select(Tags).where(Tags.enable_rules_auto == True).where(Tags.data_type == DataType.FINANCIAL_DATA_CP)  # noqa: E712
+    stmt = (
+        db.select(Tags).where(Tags.enable_rules_auto == True).where(Tags.data_type == DataType.FINANCIAL_DATA_CP)
+    )  # noqa: E712
     LOGGER.debug("[TAGS] Sélection des tags pour application auto")
 
     translator = str.maketrans(string.whitespace + "-", "_" * len(string.whitespace + "-"))

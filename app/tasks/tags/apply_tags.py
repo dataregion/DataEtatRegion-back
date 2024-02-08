@@ -31,7 +31,7 @@ def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: 
     """
     if context is not None and "only_ae" not in context:
         return
-        
+
     _logger.info("[TAGS][Fond vert] Application auto du tags fond vert")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][Fond vert] Récupération du tag fond vert id : {tag.id}")
@@ -56,7 +56,7 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: dic
     """
     if context is not None and "only_ae" not in context:
         return
-        
+
     _logger.info("[TAGS][Relance] Application auto du tags relance")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag relance id : {tag.id}")
@@ -90,7 +90,7 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: dict |
     """
     if context is not None and "only_ae" not in context:
         return
-        
+
     _logger.info("[TAGS][DETR] Application auto du tags DETR")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag DETR id : {tag.id}")
@@ -124,7 +124,7 @@ def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context:
     """
     if context is not None and "only_ae" not in context:
         return
-        
+
     _logger.info("[TAGS][CPER] Application auto du tags CPER 2015-20")
     tag = select_tag(TagVO.from_typevalue(tag_type, tag_value))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
@@ -149,7 +149,7 @@ def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context:
     """
     if context is not None and "only_ae" not in context:
         return
-        
+
     _logger.info("[TAGS][CPER] Application auto du tags CPER 2021-27")
     tag = select_tag(TagVO.from_typevalue(tag_type, tag_value))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
@@ -232,7 +232,7 @@ def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: dict | N
     """
     if context is not None and "only_ae" not in context:
         return
-    
+
     _logger.info("[TAGS][ACV] Application auto du tags ACV")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag ACV id : {tag.id}")
