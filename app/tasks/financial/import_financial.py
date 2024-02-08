@@ -138,7 +138,7 @@ def import_line_financial_ae(self, line: str, source_region: str, annee: int, in
     try:
         financial_ae_instance = (
             db.session.query(FinancialAe)
-            .filter_by(n_ej=line[FinancialAe.n_ej.key], n_poste_ej=line[FinancialAe.n_poste_ej.key])
+            .filter_by(n_ej=line[FinancialAe.n_ej.key], n_poste_ej=int(line[FinancialAe.n_poste_ej.key]))
             .one_or_none()
         )
         financial_instance = _check_insert_update_financial(financial_ae_instance, line)
