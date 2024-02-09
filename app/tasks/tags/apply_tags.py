@@ -1,6 +1,5 @@
-from dataclasses import dataclass
-import json
 import logging
+from typing import NamedTuple
 
 from sqlalchemy import ColumnElement
 
@@ -22,14 +21,13 @@ _logger = logging.getLogger()
 __all__ = ("apply_tags_fonds_vert", "apply_tags_relance", "apply_tags_detr", "apply_tags_cper_2015_20")
 
 
-@dataclass
-class ContextApplyTags:
+class ContextApplyTags(NamedTuple):
     only: DataType
     id: int | None
 
 
 @_celery.task(bind=True, name="apply_tags_fonds_vert")
-def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: str | None):
+def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: ContextApplyTags | None):
     """
     Applique les tags Fond Vert
     :param self:
@@ -38,7 +36,6 @@ def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: 
     :param context:
     :return:
     """
-    context = json.loads(context) or None
     if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
         return
 
@@ -55,7 +52,7 @@ def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: 
 
 
 @_celery.task(bind=True, name="apply_tags_relance")
-def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: str | None):
+def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: ContextApplyTags | None):
     """
     Applique les tags Fond Vert
     :param self:
@@ -64,7 +61,6 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: str
     :param context:
     :return:
     """
-    context = json.loads(context) or None
     if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
         return
 
@@ -89,7 +85,7 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: str
 
 
 @_celery.task(bind=True, name="apply_tags_detr")
-def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: str | None):
+def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: ContextApplyTags | None):
     """
     Applique le tag DETR
     :param self:
@@ -98,7 +94,6 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: str | 
     :param context:
     :return:
     """
-    context = json.loads(context) or None
     if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
         return
 
@@ -123,7 +118,7 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: str | 
 
 
 @_celery.task(bind=True, name="apply_tags_cper_2015_20")
-def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context: str | None):
+def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context: ContextApplyTags | None):
     """
     Applique le tag CEPR (Contrat plan Etat Region) entre 2015 et 2020
     :param self:
@@ -132,7 +127,6 @@ def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context:
     :param context:
     :return:
     """
-    context = json.loads(context) or None
     if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
         return
 
@@ -149,7 +143,7 @@ def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context:
 
 
 @_celery.task(bind=True, name="apply_tags_cepr_2021_27")
-def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context: str | None):
+def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context: ContextApplyTags | None):
     """
     Applique le tag CEPR (Contrat plan Etat Region) entre 2021 et 2027
     :param self:
@@ -158,7 +152,6 @@ def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context:
     :param context:
     :return:
     """
-    context = json.loads(context) or None
     if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
         return
 
@@ -175,7 +168,7 @@ def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context:
 
 
 @_celery.task(bind=True, name="apply_tags_pvd")
-def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: str | None):
+def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: ContextApplyTags | None):
     """
     Applique le tag PVD (Petite Ville de Demain)
     :param self:
@@ -184,7 +177,6 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: str | No
     :param context:
     :return:
     """
-    context = json.loads(context) or None
     if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
         return
 
@@ -213,7 +205,7 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: str | No
 
 
 @_celery.task(bind=True, name="apply_tags_cp_orphelin")
-def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: str | None):
+def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: ContextApplyTags | None):
     """
     Applique le tag CP Orphelin sur un CP sans AE
     :param self:
@@ -222,7 +214,6 @@ def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: 
     :param context:
     :return:
     """
-    context = json.loads(context) or None
     if context is not None and context.only is not DataType.FINANCIAL_DATA_CP:
         return
 
@@ -240,7 +231,7 @@ def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: 
 
 
 @_celery.task(bind=True, name="apply_tags_acv")
-def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: str | None):
+def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: ContextApplyTags | None):
     """
     Applique le tag ACV (Action Coeur de la Ville)
     :param self:
@@ -249,7 +240,6 @@ def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: str | No
     :param context:
     :return:
     """
-    context = json.loads(context) or None
     if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
         return
 
