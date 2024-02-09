@@ -7,7 +7,12 @@ import datetime
 import pandas
 from celery import subtask, current_task
 from flask import current_app
-from app import celeryapp
+
+from sqlalchemy import delete
+
+from app import celeryapp, db
+from app.models.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
+from app.services.financial_data import delete_ae, delete_cp
 from app.tasks.financial import LineImportTechInfo
 
 from app.tasks.financial.import_financial import _send_subtask_financial_ae, _send_subtask_financial_cp
@@ -18,6 +23,28 @@ celery = celeryapp.celery
 
 
 DEFAULT_MAX_ROW = 10000  # 10K
+
+
+@celery.task(bind=True, name="delayed_inserts")
+def delayed_inserts(self):
+    # Si on trouve des tâches dans la table, on les récupère pour les éxécuter
+    tasks = db.session.execute(db.select(AuditInsertFinancialTasks)).scalars().fetchall()
+    for task in tasks:
+        # Nettoyage de la BDD
+        delete_cp(task.annee, task.source_region)
+        delete_ae(task.annee, task.source_region)
+        # Tâche d'import des AE et des CP
+        split_csv_and_import_ae_and_cp.delay(
+            task.fichier_ae,
+            task.fichier_cp,
+            json.dumps({"sep": ",", "skiprows": 8}),
+            source_region=task.source_region,
+            annee=task.annee,
+        )
+
+    # Suppression des tâches dans la table
+    db.session.execute(delete(AuditInsertFinancialTasks))
+    db.session.commit()
 
 
 @celery.task(bind=True, name="split_csv_and_import_ae_and_cp")

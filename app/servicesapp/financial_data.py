@@ -1,12 +1,13 @@
+import json
 import logging
 import pandas
-from sqlalchemy import delete, or_
+from sqlalchemy import or_
 
 from sqlalchemy.orm import contains_eager, selectinload
-import json
 
 from app import db
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
+from app.models.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
 from app.models.audit.AuditUpdateData import AuditUpdateData
 from app.models.enums.DataType import DataType
 from app.models.enums.TypeCodeGeo import TypeCodeGeo
@@ -25,10 +26,10 @@ from app.models.tags.Tags import TagVO
 from app.services.data import BuilderStatementFinancialLine
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
-from app.tasks.files.file_task import split_csv_and_import_ae_and_cp
+from app.services.financial_data import delete_cp
 
 
-def import_financial_data(file_ae, file_cp, source_region: str, annee: int, username=""):
+def import_financial_data(file_ae: str, file_cp: str, source_region: str, annee: int, username=""):
     # Sanitize des paramètres
     source_region = _sanitize_source_region(source_region)
     # Validation des fichiers
@@ -37,22 +38,13 @@ def import_financial_data(file_ae, file_cp, source_region: str, annee: int, user
     _check_file(save_path_ae, FinancialAe.get_columns_files_ae())
     _check_file(save_path_cp, FinancialCp.get_columns_files_cp())
 
-    # Nettoyage de la BDD
-    _delete_cp(annee, source_region)
-    _delete_ae(annee, source_region)
-
-    # Options pour pandas.read_csv()
-    csv_options = {"sep": ",", "skiprows": 8}
-
-    # Tâche d'import des AE et des CP
-    task = split_csv_and_import_ae_and_cp.delay(
-        str(save_path_ae), str(save_path_cp), json.dumps(csv_options), source_region, annee
+    # Enregistrement de l'import à effectuer
+    db.session.add(
+        AuditInsertFinancialTasks(
+            fichier_ae=save_path_ae, fichier_cp=save_path_cp, source_region=source_region, annee=annee
+        )
     )
-
-    db.session.add(AuditUpdateData(username=username, filename=file_ae.filename, data_type=DataType.FINANCIAL_DATA_AE))
-    db.session.add(AuditUpdateData(username=username, filename=file_cp.filename, data_type=DataType.FINANCIAL_DATA_CP))
     db.session.commit()
-    return task
 
 
 # TODO : deprecated
@@ -91,7 +83,7 @@ def import_cp(file_cp, source_region: str, annee: int, username=""):
         "skiprows": 8,
     }
 
-    _delete_cp(annee, source_region)
+    delete_cp(annee, source_region)
     from app.tasks.files.file_task import split_csv_files_and_run_task
 
     task = split_csv_files_and_run_task.delay(
@@ -283,32 +275,6 @@ def _check_file(fichier, columns_name):
 
 def _sanitize_source_region(source_region):
     return source_region.lstrip("0") if source_region else None
-
-
-def _delete_ae(annee: int, source_region: str):
-    """
-    Supprimes AE d'une année comptable
-    :param annee:
-    :param source_region:
-    :return:
-    """
-    logging.info(f"[IMPORT FINANCIAL] Suppression des AE pour l'année {annee} et la source region {source_region}")
-    stmt = delete(FinancialAe).where(FinancialAe.annee == annee).where(FinancialAe.source_region == source_region)
-    db.session.execute(stmt)
-    db.session.commit()
-
-
-def _delete_cp(annee: int, source_region: str):
-    """
-    Supprimes CP d'une année comptable
-    :param annee:
-    :param source_region:
-    :return:
-    """
-    logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour l'année {annee} et la source region {source_region}")
-    stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.source_region == source_region)
-    db.session.execute(stmt)
-    db.session.commit()
 
 
 def get_ligne_budgetaire(

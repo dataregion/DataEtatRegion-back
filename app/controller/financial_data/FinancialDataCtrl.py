@@ -42,8 +42,8 @@ class FinancialAe(Resource):
     @api.doc(security="Bearer")
     def post(self):
         """
-        Charge un fichier issue de Chorus pour enregistrer les lignes d'engagements
-        Les lignes sont insérés de façon asynchrone
+        Charge les fichiers issus de Chorus pour enregistrer les autorisations d'engagement (AE) et les crédits de paiement (CP)
+        Les lignes sont insérées de façon asynchrone
         """
         user = ConnectedUser.from_current_token_identity()
         source_region = user.current_region
@@ -52,13 +52,12 @@ class FinancialAe(Resource):
         file_cp = request.files["fichierCp"]
         annee = int(request.form["annee"])
 
-        task = import_financial_data(file_ae, file_cp, source_region, annee, user.username)
+        import_financial_data(file_ae, file_cp, source_region, annee, user.username)
         return jsonify(
             {
                 "status": 200,
                 "message": "Fichiers récupérés. Demande d'import des AE et des CP en cours.",
                 "source_region": source_region,
                 "annee": annee,
-                "task": task.id,
             }
         )

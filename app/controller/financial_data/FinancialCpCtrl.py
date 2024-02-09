@@ -14,6 +14,7 @@ api = Namespace(
 auth = current_app.extensions["auth"]
 
 
+# TODO : deprecated
 @api.route("/cp")
 class FinancialCpImport(Resource):
     @api.expect(parser_import)
