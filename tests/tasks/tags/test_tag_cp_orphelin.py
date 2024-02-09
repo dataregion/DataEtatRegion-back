@@ -1,8 +1,8 @@
+import json
 import pytest
-from app.models.enums.DataType import DataType
 from app.models.financial.FinancialCp import FinancialCp
 from app.models.tags.Tags import Tags, TagAssociation
-from app.tasks.tags.apply_tags import ContextApplyTags, apply_tags_cp_orphelin
+from app.tasks.tags.apply_tags import apply_tags_cp_orphelin
 
 from tests.tasks.tags import TAG_CP_SANS_AE
 
@@ -70,8 +70,8 @@ def test_apply_cp_orphelin(
 
 def test_should_apply_tag_if_context_is_ok(database, tag_cp_orphan, cp_orphelin):
     # DO
-    context = ContextApplyTags(DataType.FINANCIAL_DATA_CP, cp_orphelin.id)
-    apply_tags_cp_orphelin(tag_cp_orphan.type, None, context)  # type: ignore
+    context = {"only": "FINANCIAL_DATA_CP", "id": cp_orphelin.id}
+    apply_tags_cp_orphelin(tag_cp_orphan.type, None, json.dumps(context))  # type: ignore
 
     # ASSERT
     tag_assocation: TagAssociation = database.session.execute(
@@ -88,8 +88,8 @@ def test_should_apply_tag_if_context_is_ok(database, tag_cp_orphan, cp_orphelin)
 
 def test_should_not_apply_tag_if_context_is_not_ok(database, tag_cp_orphan, cp_orphelin):
     # DO
-    context = ContextApplyTags(DataType.FINANCIAL_DATA_AE, cp_orphelin.id)
-    apply_tags_cp_orphelin(tag_cp_orphan.type, None, context)  # type: ignore
+    context = {"only": "FINANCIAL_DATA_AE", "id": cp_orphelin.id}
+    apply_tags_cp_orphelin(tag_cp_orphan.type, None, json.dumps(context))  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(

@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import NamedTuple
 
@@ -27,7 +28,7 @@ class ContextApplyTags(NamedTuple):
 
 
 @_celery.task(bind=True, name="apply_tags_fonds_vert")
-def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: ContextApplyTags | None):
+def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: dict | None):
     """
     Applique les tags Fond Vert
     :param self:
@@ -36,7 +37,8 @@ def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: 
     :param context:
     :return:
     """
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
+    context = ContextApplyTags(**json.loads(context)) if context is not None else None
+    if context is not None and DataType(context.only) != DataType.FINANCIAL_DATA_AE:
         return
 
     _logger.info("[TAGS][Fond vert] Application auto du tags fond vert")
@@ -44,7 +46,7 @@ def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: 
     _logger.debug(f"[TAGS][Fond vert] Récupération du tag fond vert id : {tag.id}")
 
     condition = Ae.programme == "380"
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE and context.id is not None:
+    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
         condition &= Ae.id == context.id
 
     apply_task = ApplyTagForAutomation(tag)
@@ -52,7 +54,7 @@ def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: 
 
 
 @_celery.task(bind=True, name="apply_tags_relance")
-def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: ContextApplyTags | None):
+def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: str | None):
     """
     Applique les tags Fond Vert
     :param self:
@@ -61,7 +63,8 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: Con
     :param context:
     :return:
     """
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
+    context = ContextApplyTags(**json.loads(context)) if context is not None else None
+    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
         return
 
     _logger.info("[TAGS][Relance] Application auto du tags relance")
@@ -77,7 +80,7 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: Con
     _logger.debug(f"[TAGS][{tag.type}] Récupération des programmes appartement au theme Relance")
 
     condition = Ae.programme.in_(list_programme)
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE and context.id is not None:
+    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
         condition &= Ae.id == context.id
 
     apply_task = ApplyTagForAutomation(tag)
@@ -85,7 +88,7 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: Con
 
 
 @_celery.task(bind=True, name="apply_tags_detr")
-def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: ContextApplyTags | None):
+def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: str | None):
     """
     Applique le tag DETR
     :param self:
@@ -94,7 +97,8 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: Contex
     :param context:
     :return:
     """
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
+    context = ContextApplyTags(**json.loads(context)) if context is not None else None
+    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
         return
 
     _logger.info("[TAGS][DETR] Application auto du tags DETR")
@@ -110,7 +114,7 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: Contex
 
     condition = Ae.referentiel_programmation.in_(list_ref_programmation)
     _logger.debug(f"[TAGS][{tag.type}] Récupération des ref programmation DETR")
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE and context.id is not None:
+    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
         condition &= Ae.id == context.id
 
     apply_task = ApplyTagForAutomation(tag)
@@ -118,7 +122,7 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: Contex
 
 
 @_celery.task(bind=True, name="apply_tags_cper_2015_20")
-def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context: ContextApplyTags | None):
+def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context: str | None):
     """
     Applique le tag CEPR (Contrat plan Etat Region) entre 2015 et 2020
     :param self:
@@ -127,7 +131,8 @@ def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context:
     :param context:
     :return:
     """
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
+    context = ContextApplyTags(**json.loads(context)) if context is not None else None
+    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
         return
 
     _logger.info("[TAGS][CPER] Application auto du tags CPER 2015-20")
@@ -135,7 +140,7 @@ def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context:
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
 
     condition = (Ae.contrat_etat_region != "#") & (Ae.annee >= 2015) & (Ae.annee <= 2020)
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE and context.id is not None:
+    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
         condition &= Ae.id == context.id
 
     apply_task = ApplyTagForAutomation(tag)
@@ -143,7 +148,7 @@ def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context:
 
 
 @_celery.task(bind=True, name="apply_tags_cepr_2021_27")
-def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context: ContextApplyTags | None):
+def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context: str | None):
     """
     Applique le tag CEPR (Contrat plan Etat Region) entre 2021 et 2027
     :param self:
@@ -152,7 +157,8 @@ def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context:
     :param context:
     :return:
     """
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
+    context = ContextApplyTags(**json.loads(context)) if context is not None else None
+    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
         return
 
     _logger.info("[TAGS][CPER] Application auto du tags CPER 2021-27")
@@ -160,7 +166,7 @@ def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context:
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
 
     condition = (Ae.contrat_etat_region != "#") & (Ae.annee >= 2021) & (Ae.annee <= 2027)
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE and context.id is not None:
+    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
         condition &= Ae.id == context.id
 
     apply_task = ApplyTagForAutomation(tag)
@@ -168,7 +174,7 @@ def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context:
 
 
 @_celery.task(bind=True, name="apply_tags_pvd")
-def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: ContextApplyTags | None):
+def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: str | None):
     """
     Applique le tag PVD (Petite Ville de Demain)
     :param self:
@@ -177,7 +183,8 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: ContextA
     :param context:
     :return:
     """
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
+    context = ContextApplyTags(**json.loads(context)) if context is not None else None
+    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
         return
 
     _logger.info("[TAGS][PVD] Application auto du tags PVD")
@@ -196,7 +203,7 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: ContextA
     )
 
     condition = siret_condition | loc_condition
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE and context.id is not None:
+    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
         condition &= Ae.id == context.id
 
     # Application du tag aux AE
@@ -205,7 +212,7 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: ContextA
 
 
 @_celery.task(bind=True, name="apply_tags_cp_orphelin")
-def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: ContextApplyTags | None):
+def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: str | None):
     """
     Applique le tag CP Orphelin sur un CP sans AE
     :param self:
@@ -214,7 +221,8 @@ def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: 
     :param context:
     :return:
     """
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_CP:
+    context = ContextApplyTags(**json.loads(context)) if context is not None else None
+    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_CP:
         return
 
     _logger.info("[TAGS][cp-orphelin] Application auto du tags CP Orphelin")
@@ -222,7 +230,7 @@ def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: 
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CP ORPHELIN id : {tag.id}")
 
     condition = Cp.id_ae == None  # noqa: E711
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_CP and context.id is not None:
+    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_CP and context.id is not None:
         condition &= Cp.id == context.id
 
     # Application du tag aux entités
@@ -231,7 +239,7 @@ def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: 
 
 
 @_celery.task(bind=True, name="apply_tags_acv")
-def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: ContextApplyTags | None):
+def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: str | None):
     """
     Applique le tag ACV (Action Coeur de la Ville)
     :param self:
@@ -240,7 +248,8 @@ def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: ContextA
     :param context:
     :return:
     """
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE:
+    context = ContextApplyTags(**json.loads(context)) if context is not None else None
+    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
         return
 
     _logger.info("[TAGS][ACV] Application auto du tags ACV")
@@ -259,7 +268,7 @@ def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: ContextA
     )
 
     condition = siret_condition | loc_condition
-    if context is not None and context.only is not DataType.FINANCIAL_DATA_AE and context.id is not None:
+    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
         condition &= Ae.id == context.id
 
     # Application du tag aux AE

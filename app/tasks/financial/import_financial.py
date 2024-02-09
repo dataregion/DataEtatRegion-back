@@ -132,7 +132,6 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
     retry_kwargs={"max_retries": 4, "countdown": 10},
 )
 @_handle_exception_import("FINANCIAL_AE")
-@_handle_exception_import("FINANCIAL_CP")
 def import_line_financial_ae(self, line: str, source_region: str, annee: int, index: int, cp_list: list[dict] | None):
     line = json.loads(line)
     try:
@@ -146,39 +145,35 @@ def import_line_financial_ae(self, line: str, source_region: str, annee: int, in
         logger.exception(f"[IMPORT][FINANCIAL][AE] Erreur index {index} sur le check ligne")
         raise FinancialException(o) from o
 
-    if financial_instance is not False:
-        new_ae = FinancialAe(**line)
+    new_ae = FinancialAe(**line)
 
-        _check_ref(CodeProgramme, new_ae.programme)
-        _check_ref(CentreCouts, new_ae.centre_couts)
-        _check_ref(DomaineFonctionnel, new_ae.domaine_fonctionnel)
-        _check_ref(FournisseurTitulaire, new_ae.fournisseur_titulaire)
-        _check_ref(GroupeMarchandise, new_ae.groupe_marchandise)
-        _check_ref(LocalisationInterministerielle, new_ae.localisation_interministerielle)
-        _check_ref(ReferentielProgrammation, new_ae.referentiel_programmation)
+    _check_ref(CodeProgramme, new_ae.programme)
+    _check_ref(CentreCouts, new_ae.centre_couts)
+    _check_ref(DomaineFonctionnel, new_ae.domaine_fonctionnel)
+    _check_ref(FournisseurTitulaire, new_ae.fournisseur_titulaire)
+    _check_ref(GroupeMarchandise, new_ae.groupe_marchandise)
+    _check_ref(LocalisationInterministerielle, new_ae.localisation_interministerielle)
+    _check_ref(ReferentielProgrammation, new_ae.referentiel_programmation)
 
-        # SIRET
-        check_siret(new_ae.siret)
+    # SIRET
+    check_siret(new_ae.siret)
 
-        # FINANCIAL_AE
-        new_financial_ae = None
-        if financial_instance is True:
-            new_financial_ae = _insert_financial_data(new_ae)
-        else:
-            new_financial_ae = _update_financial_data(line, financial_instance)
+    # FINANCIAL_AE
+    new_financial_ae = None
+    if financial_instance is True:
+        new_financial_ae = _insert_financial_data(new_ae)
+    else:
+        new_financial_ae = _update_financial_data(line, financial_ae_instance)
 
-        # FINANCIAL_CP
-        index = 0
-        if cp_list is not None:
-            for cp in cp_list:
-                _send_subtask_financial_cp(cp["data"], index, source_region, annee, cp["task"])
-                index += 1
+    # FINANCIAL_CP
+    index = 0
+    if cp_list is not None:
+        for cp in cp_list:
+            _send_subtask_financial_cp(cp["data"], index, source_region, annee, cp["task"])
+            index += 1
 
-        # TAGS
-        _send_subtask_update_all_tags("update_all_tags_of_ae", new_financial_ae.id)
-
-        # LINKS TO EXISTING CP
-        _make_link_ae_to_cp(new_financial_ae.id, new_financial_ae.n_ej, new_financial_ae.n_poste_ej)
+    # TAGS
+    _send_subtask_update_all_tags("update_all_tags_of_ae", new_financial_ae.id)
 
 
 @celery.task(bind=True, name="import_line_financial_cp")

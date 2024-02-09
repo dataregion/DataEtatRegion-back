@@ -1,7 +1,7 @@
+import json
 import datetime
 
 import pytest
-from app.models.enums.DataType import DataType
 
 from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.theme import Theme
@@ -10,7 +10,7 @@ from ..tags import *  # noqa: F403
 from app import db
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.tags.Tags import TagAssociation, Tags
-from app.tasks.tags.apply_tags import ContextApplyTags, apply_tags_relance
+from app.tasks.tags.apply_tags import apply_tags_relance
 
 
 @pytest.fixture(autouse=True)
@@ -127,8 +127,8 @@ def test_should_not_apply_tag_if_already_present(
 
 def test_should_apply_tag_if_context_is_ok(database, tag_relance, insert_financial_ae_for_tag_relance):
     # DO
-    context = ContextApplyTags(DataType.FINANCIAL_DATA_AE, insert_financial_ae_for_tag_relance.id)
-    apply_tags_relance(tag_relance.type, None, context)  # type: ignore
+    context = {"only": "FINANCIAL_DATA_AE", "id": insert_financial_ae_for_tag_relance.id}
+    apply_tags_relance(tag_relance.type, None, json.dumps(context))  # type: ignore
 
     # ASSERT
     tag_assocation: TagAssociation = database.session.execute(
@@ -146,8 +146,8 @@ def test_should_apply_tag_if_context_is_ok(database, tag_relance, insert_financi
 
 def test_should_not_apply_tag_if_context_is_not_ok(database, tag_relance, insert_financial_ae_for_tag_relance):
     # DO
-    context = ContextApplyTags(DataType.FINANCIAL_DATA_CP, insert_financial_ae_for_tag_relance.id)
-    apply_tags_relance(tag_relance.type, None, context)  # type: ignore
+    context = {"only": "FINANCIAL_DATA_CP", "id": insert_financial_ae_for_tag_relance.id}
+    apply_tags_relance(tag_relance.type, None, json.dumps(context))  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(

@@ -5,7 +5,6 @@ import string
 from celery import subtask
 
 from app import celeryapp, db
-from app.models.enums.DataType import DataType
 from app.models.tags.Tags import Tags
 
 celery = celeryapp.celery
@@ -63,7 +62,7 @@ def update_all_tags_of_ae(self, id_ae: int):
         value = tag.value.lower().translate(translator) if tag.value is not None else None
         subtask_name = f"apply_tags_{type}" if value is None else f"apply_tags_{type}_{value}"
         LOGGER.debug(f"[TAGS ] envoi subtask {subtask_name}")
-        subtask(subtask_name).delay(tag.type, tag.value, json.dumps({"only": DataType.FINANCIAL_DATA_AE, "id": id_ae}))
+        subtask(subtask_name).delay(tag.type, tag.value, json.dumps({"only": "FINANCIAL_DATA_AE", "id": id_ae}))
 
     LOGGER.info(f"[TAGS] End - Application des tags pour l'AE {id_ae}")
 
@@ -88,6 +87,6 @@ def update_all_tags_of_cp(self, id_cp: int):
         value = tag.value.lower().translate(translator) if tag.value is not None else None
         subtask_name = f"apply_tags_{type}" if value is None else f"apply_tags_{type}_{value}"
         LOGGER.debug(f"[TAGS ] envoi subtask {subtask_name}")
-        subtask(subtask_name).delay(tag.type, tag.value, json.dumps({"only": DataType.FINANCIAL_DATA_CP, "id": id_cp}))
+        subtask(subtask_name).delay(tag.type, tag.value, json.dumps({"only": "FINANCIAL_DATA_CP", "id": id_cp}))
 
     LOGGER.info(f"[TAGS] End - Application des tags pour le CP {id_cp}")

@@ -1,10 +1,9 @@
+import json
 import datetime
 
 import pytest
-from app.models.enums.DataType import DataType
 
 from app.tasks.tags import apply_tags_cper_2015_20
-from app.tasks.tags.apply_tags import ContextApplyTags
 from ..tags import *  # noqa: F403
 
 from app import db
@@ -123,8 +122,8 @@ def test_apply_cper_2015_20_no_tag(insert_two_financial_ae_for_tag_cper_2015_20,
 
 def test_should_apply_tag_if_context_is_ok(database, tag_cper_15_20, insert_two_financial_ae_for_tag_cper_2015_20):
     # DO
-    context = ContextApplyTags(DataType.FINANCIAL_DATA_AE, insert_two_financial_ae_for_tag_cper_2015_20[0].id)
-    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20", context)  # type: ignore
+    context = {"only": "FINANCIAL_DATA_AE", "id": insert_two_financial_ae_for_tag_cper_2015_20[0].id}
+    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20", json.dumps(context))  # type: ignore
 
     # ASSERT
     tag_assocation: TagAssociation = database.session.execute(
@@ -144,8 +143,8 @@ def test_should_not_apply_tag_if_context_is_not_ok(
     database, tag_cper_15_20, insert_two_financial_ae_for_tag_cper_2015_20
 ):
     # DO
-    context = ContextApplyTags(DataType.FINANCIAL_DATA_CP, insert_two_financial_ae_for_tag_cper_2015_20[0].id)
-    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20", context)  # type: ignore
+    context = {"only": "FINANCIAL_DATA_CP", "id": insert_two_financial_ae_for_tag_cper_2015_20[0].id}
+    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20", json.dumps(context))  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(
