@@ -5,7 +5,7 @@ from flask_restx._http import HTTPStatus
 
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
-from app.controller.financial_data import check_param_source_annee_import, parser_import, check_files_import
+from app.controller.financial_data import check_param_annee_import, parser_import, check_files_import
 from app.controller.financial_data.schema_model import (
     register_financial_ae_schemamodel,
     register_financial_cp_schemamodel,
@@ -37,7 +37,7 @@ class FinancialAe(Resource):
     @api.expect(parser_import)
     @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
-    @check_param_source_annee_import()
+    @check_param_annee_import()
     @check_files_import()
     @api.doc(security="Bearer")
     def post(self):

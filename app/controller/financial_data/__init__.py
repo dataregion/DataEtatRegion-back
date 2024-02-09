@@ -30,9 +30,9 @@ parser_import.add_argument(
 )
 
 
-def check_param_source_annee_import():
+def check_param_annee_import():
     """
-    Vérifie sur la request contient les paramètres code_region et annee
+    Vérifie sur la request contient le paramètre annee
     :return:
     """
 
@@ -41,9 +41,9 @@ def check_param_source_annee_import():
         def inner_wrapper(*args, **kwargs):
             data = request.form
             if "annee" not in data:
-                raise BadRequestDataRegateNum("Missing Argument code_region or annee")
+                raise BadRequestDataRegateNum("Missing Argument annee")
             if not isinstance(int(data["annee"]), int):
-                raise BadRequestDataRegateNum("Missing Argument code_region or annee")
+                raise BadRequestDataRegateNum("Bad Argument annee")
             return func(*args, **kwargs)
 
         return inner_wrapper

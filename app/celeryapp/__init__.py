@@ -35,7 +35,10 @@ def create_celery_app(_app=None) -> Celery:
     celery.conf.task_routes = [
         {
             "import_file_*": {"queue": "file"},
-            "update_all_*": {"queue": "file"},
+            "update_all_siret_task": {"queue": "file"},
+            "update_all_tags": {"queue": "file"},
+            "update_all_tags_of_ae": {"queue": "line"},
+            "update_all_tags_of_cp": {"queue": "line"},
             "share_*": {"queue": "line"},
             "import_line_*": {"queue": "line"},
             "update_siret_*": {"queue": "line"},
