@@ -18,9 +18,6 @@ parser_import.add_argument(
     "annee", type=int, help="Année d'engagement du fichier Chorus", location="files", required=True
 )
 parser_import.add_argument(
-    "code_region", type=str, help="Code de la region concerné par l'import", location="files", required=True
-)
-parser_import.add_argument(
     "force_update",
     type=inputs.boolean,
     required=False,

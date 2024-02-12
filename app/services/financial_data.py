@@ -8,7 +8,7 @@ from app.models.financial.FinancialCp import FinancialCp
 from app.models.financial.FinancialAe import FinancialAe
 
 
-def delete_ae(annee: int, source_region: str):
+def delete_ae_annee_region(annee: int, source_region: str):
     """
     Supprime AE d'une année comptable d'une région
     :param annee:
@@ -21,7 +21,7 @@ def delete_ae(annee: int, source_region: str):
     db.session.commit()
 
 
-def delete_cp(annee: int, source_region: str):
+def delete_cp_annee_region(annee: int, source_region: str):
     """
     Supprime CP d'une année comptable d'une région
     :param annee:

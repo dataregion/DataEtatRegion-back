@@ -23,7 +23,9 @@ __all__ = ("apply_tags_fonds_vert", "apply_tags_relance", "apply_tags_detr", "ap
 
 
 class ContextApplyTags(NamedTuple):
+    # Type de données pour lesquelles appliquer le tag
     only: DataType
+    # Si id spécifié, on applique le tag uniquement sur l'entité (DataType) correspondante
     id: int | None
 
 

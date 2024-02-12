@@ -26,7 +26,7 @@ from app.models.tags.Tags import TagVO
 from app.services.data import BuilderStatementFinancialLine
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
-from app.services.financial_data import delete_cp
+from app.services.financial_data import delete_cp_annee_region
 
 
 def import_financial_data(file_ae: str, file_cp: str, source_region: str, annee: int, username=""):
@@ -83,7 +83,7 @@ def import_cp(file_cp, source_region: str, annee: int, username=""):
         "skiprows": 8,
     }
 
-    delete_cp(annee, source_region)
+    delete_cp_annee_region(annee, source_region)
     from app.tasks.files.file_task import split_csv_files_and_run_task
 
     task = split_csv_files_and_run_task.delay(
