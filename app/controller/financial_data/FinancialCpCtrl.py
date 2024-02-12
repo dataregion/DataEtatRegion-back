@@ -2,7 +2,7 @@ from flask import jsonify, current_app, request
 from flask_restx import Namespace, Resource
 
 from app.controller.Decorators import check_permission
-from app.controller.financial_data import check_param_source_annee_import, parser_import, check_file_import
+from app.controller.financial_data import check_param_annee_import, parser_import, check_file_import
 from app.models.enums.AccountRole import AccountRole
 from app.servicesapp.authentication import ConnectedUser
 from app.servicesapp.financial_data import import_cp
@@ -14,12 +14,13 @@ api = Namespace(
 auth = current_app.extensions["auth"]
 
 
+# TODO : deprecated
 @api.route("/cp")
 class FinancialCpImport(Resource):
     @api.expect(parser_import)
     @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
-    @check_param_source_annee_import()
+    @check_param_annee_import()
     @check_file_import()
     @api.doc(security="Bearer")
     def post(self):

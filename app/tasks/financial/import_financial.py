@@ -2,7 +2,7 @@ import datetime
 import shutil
 from celery import current_task, subtask
 from flask import current_app
-from sqlalchemy import delete, update
+from sqlalchemy import update, delete
 from app import celeryapp, db
 from app.exceptions.exceptions import FinancialException
 import sqlalchemy.exc
@@ -32,15 +32,21 @@ from app.tasks.financial.errors import _handle_exception_import
 
 
 @limiter_queue(queue_name="line")
-def _send_subtask_financial_ae(line, index, force_update):
-    subtask("import_line_financial_ae").delay(line, index, force_update)
+def _send_subtask_financial_ae(line: dict, source_region: str, annee: int, index: int, cp: list[dict] | None):
+    subtask("import_line_financial_ae").delay(line, source_region, annee, index, cp)
+
+
+@limiter_queue(queue_name="file")
+def _send_subtask_update_all_tags(taskname: str, id: int):
+    subtask(taskname).delay(id)
 
 
 celery = celeryapp.celery
 
 
+# TODO : deprecated
 @celery.task(bind=True, name="import_file_ae_financial")
-def import_file_ae_financial(self, fichier: str, source_region: str, annee: int, force_update: bool):
+def import_file_ae_financial(self, fichier: str, source_region: str, annee: int):
     # get file
     logger.info(f"[IMPORT][FINANCIAL][AE] Start for region {source_region}, year {annee}, file {fichier}")
     timestamp = datetime.datetime.now().strftime("%Y%m%d")
@@ -59,7 +65,7 @@ def import_file_ae_financial(self, fichier: str, source_region: str, annee: int,
 
         for chunk in data_chunk:
             for index, line in chunk.iterrows():
-                _send_subtask_financial_ae(pandas.concat([line, series]).to_json(), index, force_update)
+                _send_subtask_financial_ae(pandas.concat([line, series]).to_json(), source_region, annee, index, [])
 
         move_folder = os.path.join(move_folder, timestamp)
         if not os.path.exists(move_folder):
@@ -73,6 +79,7 @@ def import_file_ae_financial(self, fichier: str, source_region: str, annee: int,
         raise e
 
 
+# TODO : deprecated
 @celery.task(bind=True, name="import_file_cp_financial")
 def import_file_cp_financial(self, fichier: str, source_region: str, annee: int):
     # get file
@@ -125,46 +132,53 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
     retry_kwargs={"max_retries": 4, "countdown": 10},
 )
 @_handle_exception_import("FINANCIAL_AE")
-def import_line_financial_ae(self, dict_financial: str, index: int, force_update: bool):
-    line = json.loads(dict_financial)
+def import_line_financial_ae(self, line: str, source_region: str, annee: int, index: int, cp_list: list[dict] | None):
+    line = json.loads(line)
     try:
         financial_ae_instance = (
             db.session.query(FinancialAe)
-            .filter_by(n_ej=line[FinancialAe.n_ej.key], n_poste_ej=line[FinancialAe.n_poste_ej.key])
+            .filter_by(n_ej=line[FinancialAe.n_ej.key], n_poste_ej=int(line[FinancialAe.n_poste_ej.key]))
             .one_or_none()
         )
-        financial_instance = _check_insert_update_financial(financial_ae_instance, line, force_update)
+        financial_instance = _check_insert_update_financial(financial_ae_instance, line)
     except sqlalchemy.exc.OperationalError as o:
         logger.exception(f"[IMPORT][FINANCIAL][AE] Erreur index {index} sur le check ligne")
         raise FinancialException(o) from o
 
-    if financial_instance is not False:
-        new_ae = FinancialAe(**line)
+    new_ae = FinancialAe(**line)
 
-        _check_ref(CodeProgramme, new_ae.programme)
-        _check_ref(CentreCouts, new_ae.centre_couts)
-        _check_ref(DomaineFonctionnel, new_ae.domaine_fonctionnel)
-        _check_ref(FournisseurTitulaire, new_ae.fournisseur_titulaire)
-        _check_ref(GroupeMarchandise, new_ae.groupe_marchandise)
-        _check_ref(LocalisationInterministerielle, new_ae.localisation_interministerielle)
-        _check_ref(ReferentielProgrammation, new_ae.referentiel_programmation)
+    _check_ref(CodeProgramme, new_ae.programme)
+    _check_ref(CentreCouts, new_ae.centre_couts)
+    _check_ref(DomaineFonctionnel, new_ae.domaine_fonctionnel)
+    _check_ref(FournisseurTitulaire, new_ae.fournisseur_titulaire)
+    _check_ref(GroupeMarchandise, new_ae.groupe_marchandise)
+    _check_ref(LocalisationInterministerielle, new_ae.localisation_interministerielle)
+    _check_ref(ReferentielProgrammation, new_ae.referentiel_programmation)
 
-        # SIRET
-        check_siret(new_ae.siret)
+    # SIRET
+    check_siret(new_ae.siret)
 
-        # FINANCIAL_AE
-        new_financial_ae = None
-        if financial_instance is True:
-            new_financial_ae = _insert_financial_data(new_ae)
-        else:
-            new_financial_ae = _update_financial_data(line, financial_instance)
+    # FINANCIAL_AE
+    new_financial_ae = None
+    if financial_instance is True:
+        new_financial_ae = _insert_financial_data(new_ae)
+    else:
+        new_financial_ae = _update_financial_data(line, financial_ae_instance)
 
-        _make_link_ae_to_cp(new_financial_ae.id, new_financial_ae.n_ej, new_financial_ae.n_poste_ej)
+    # FINANCIAL_CP
+    index = 0
+    if cp_list is not None:
+        for cp in cp_list:
+            _send_subtask_financial_cp(cp["data"], index, source_region, annee, cp["task"])
+            index += 1
+
+    # TAGS
+    _send_subtask_update_all_tags("update_all_tags_of_ae", new_financial_ae.id)
 
 
 @celery.task(bind=True, name="import_line_financial_cp")
 @_handle_exception_import("FINANCIAL_CP")
-def import_line_financial_cp(self, data_cp, index, source_region: str, annee: int, tech_info_list: list):
+def import_line_financial_cp(self, data_cp: str, index: int, source_region: str, annee: int, tech_info_list: list):
     tech_info = LineImportTechInfo(*tech_info_list)
 
     line = json.loads(data_cp)
@@ -187,7 +201,10 @@ def import_line_financial_cp(self, data_cp, index, source_region: str, annee: in
     # FINANCIAL_AE
     id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej)
     new_cp.id_ae = id_ae
-    _insert_financial_data(new_cp)
+    new_financial_cp = _insert_financial_data(new_cp)
+
+    # TAGS
+    _send_subtask_update_all_tags("update_all_tags_of_cp", new_financial_cp.id)
 
 
 @celery.task(bind=True, name="import_file_ademe_from_website")
@@ -312,9 +329,7 @@ def _update_financial_data(data, financial: FinancialData) -> FinancialData:
     return financial
 
 
-def _check_insert_update_financial(
-    financial_ae: FinancialData | None, line, force_update: bool
-) -> FinancialData | bool:
+def _check_insert_update_financial(financial_ae: FinancialData | None, line) -> FinancialData | bool:
     """
     :param financial_ae: l'instance financière déjà présente ou non
     :param force_update:
@@ -324,9 +339,6 @@ def _check_insert_update_financial(
     """
 
     if financial_ae:
-        if force_update:
-            logger.info("[IMPORT][FINANCIAL] Doublon trouvé, Force Update")
-            return financial_ae
         if financial_ae.should_update(line):
             logger.info("[IMPORT][FINANCIAL] Doublon trouvé, MAJ à faire")
             return financial_ae

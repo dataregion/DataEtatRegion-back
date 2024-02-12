@@ -1,3 +1,4 @@
+import json
 import datetime
 
 import pytest
@@ -98,7 +99,7 @@ def insert_two_financial_ae_for_tag_cper_2015_20(database, session):
 
 def test_apply_cper_2015_20_no_tag(insert_two_financial_ae_for_tag_cper_2015_20, tag_cper_15_20):
     # DO
-    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20")  # type: ignore
+    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20", None)  # type: ignore
 
     # assert
     ## on a bien deux associations
@@ -117,3 +118,39 @@ def test_apply_cper_2015_20_no_tag(insert_two_financial_ae_for_tag_cper_2015_20,
     )
     assert tag_assocations[0].ademe is None and tag_assocations[1].ademe is None
     assert tag_assocations[0].auto_applied and tag_assocations[1].auto_applied
+
+
+def test_should_apply_tag_if_context_is_ok(database, tag_cper_15_20, insert_two_financial_ae_for_tag_cper_2015_20):
+    # DO
+    context = {"only": "FINANCIAL_DATA_AE", "id": insert_two_financial_ae_for_tag_cper_2015_20[0].id}
+    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20", json.dumps(context))  # type: ignore
+
+    # ASSERT
+    tag_assocation: TagAssociation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_cper_15_20.id,
+            TagAssociation.financial_ae == insert_two_financial_ae_for_tag_cper_2015_20[0].id,
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is not None
+    assert tag_assocation.ademe is None
+    assert tag_assocation.financial_cp is None
+    assert tag_assocation.financial_ae == insert_two_financial_ae_for_tag_cper_2015_20[0].id
+    assert tag_assocation.auto_applied is True
+
+
+def test_should_not_apply_tag_if_context_is_not_ok(
+    database, tag_cper_15_20, insert_two_financial_ae_for_tag_cper_2015_20
+):
+    # DO
+    context = {"only": "FINANCIAL_DATA_CP", "id": insert_two_financial_ae_for_tag_cper_2015_20[0].id}
+    apply_tags_cper_2015_20(tag_cper_15_20.type, "2015-20", json.dumps(context))  # type: ignore
+
+    # ASSERT
+    tag_assocation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_cper_15_20.id,
+            TagAssociation.financial_ae == insert_two_financial_ae_for_tag_cper_2015_20[0].id,
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is None
