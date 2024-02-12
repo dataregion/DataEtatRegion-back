@@ -4,6 +4,7 @@ from sqlalchemy import ColumnElement
 
 from app import celeryapp, db
 from app.models.financial.FinancialAe import FinancialAe as Ae
+from app.models.financial.FinancialCp import FinancialCp as Cp
 from app.models.refs.commune import Commune
 from app.models.refs.siret import Siret
 from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
@@ -148,6 +149,19 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None):
     # Application du tag aux AE
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(siret_condition | loc_condition)
+
+
+@_celery.task(bind=True, name="apply_tags_cp_orphelin")
+def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None):
+    _logger.info("[TAGS][cp-orphelin] Application auto du tags CP Orphelin")
+    tag = select_tag(TagVO.from_typevalue(tag_type))
+    _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CP ORPHELIN id : {tag.id}")
+
+    # Condition
+    stmt_cp_orphelins = Cp.id_ae == None  # noqa: E711
+    # Application du tag aux entités
+    apply_task = ApplyTagForAutomation(tag)
+    apply_task.apply_tags_cp(stmt_cp_orphelins)
 
 
 @_celery.task(bind=True, name="apply_tags_acv")

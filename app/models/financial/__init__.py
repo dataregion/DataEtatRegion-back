@@ -1,4 +1,6 @@
 from abc import abstractmethod
+
+from sqlalchemy import Column, Integer
 from app.models.common.Audit import Audit
 from marshmallow import fields
 
@@ -15,6 +17,9 @@ from app.models.refs.siret import Siret
 
 
 class FinancialData(Audit):
+    # PK
+    id = Column(Integer, primary_key=True)
+
     def __setattr__(self, key, value):
         if (
             (key == "centre_couts" or key == "referentiel_programmation")

@@ -9,6 +9,10 @@ from app.database import db
 
 from app.models.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
 from app.models.tags.Tags import TagVO, Tags
+from app.services.helper import (
+    TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver,
+    TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver,
+)
 
 
 class BuilderStatementFinancialLine:
@@ -19,6 +23,11 @@ class BuilderStatementFinancialLine:
     def __init__(self) -> None:
         stmt: Select = select(FinancialLines)
         self._stmt = stmt
+
+        self._code_geo_column_locinterministerielle_resolver = (
+            TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver()
+        )
+        self._code_geo_column_benef_resolver = TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver()
 
     def themes_in(self, themes: list[str] | None = None):
         self._stmt_where_field_in(FinancialLines.programme_theme, themes)
@@ -83,31 +92,11 @@ class BuilderStatementFinancialLine:
         if list_code_geo is None:
             return self
 
-        column_codegeo_commune_loc_inter = None
-        column_codegeo_commune_beneficiaire = None
-        match type_geo:
-            case TypeCodeGeo.REGION:
-                column_codegeo_commune_loc_inter = FinancialLines.localisationInterministerielle_commune_codeRegion
-                column_codegeo_commune_beneficiaire = FinancialLines.beneficiaire_commune_codeRegion
-            case TypeCodeGeo.DEPARTEMENT:
-                column_codegeo_commune_loc_inter = FinancialLines.localisationInterministerielle_commune_codeDepartement
-                column_codegeo_commune_beneficiaire = FinancialLines.beneficiaire_commune_codeDepartement
-            case TypeCodeGeo.EPCI:
-                column_codegeo_commune_loc_inter = FinancialLines.localisationInterministerielle_commune_codeEpci
-                column_codegeo_commune_beneficiaire = FinancialLines.beneficiaire_commune_codeEpci
-            case TypeCodeGeo.CRTE:
-                column_codegeo_commune_loc_inter = FinancialLines.localisationInterministerielle_commune_codeCrte
-                column_codegeo_commune_beneficiaire = FinancialLines.beneficiaire_commune_codeCrte
-            case TypeCodeGeo.ARRONDISSEMENT:
-                column_codegeo_commune_loc_inter = (
-                    FinancialLines.localisationInterministerielle_commune_arrondissement_code
-                )
-                column_codegeo_commune_beneficiaire = FinancialLines.beneficiaire_commune_arrondissement_code
-            case TypeCodeGeo.QPV:
-                column_codegeo_commune_beneficiaire = FinancialLines.beneficiaire_qpv_code
-            case _:
-                column_codegeo_commune_beneficiaire = FinancialLines.beneficiaire_commune_code
-                # return self._where_geo(self._alias_commune_siret.code, Commune.code, list_code_geo)
+        column_codegeo_commune_loc_inter = self._code_geo_column_locinterministerielle_resolver.code_geo_column(
+            type_geo
+        )
+        column_codegeo_commune_beneficiaire = self._code_geo_column_benef_resolver.code_geo_column(type_geo)
+
         self._where_geo(
             type_geo,
             list_code_geo,

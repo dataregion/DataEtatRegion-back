@@ -16,8 +16,6 @@ __all__ = ("Ademe", "AdemeSchema")
 @dataclass
 class Ademe(FinancialData, db.Model):
     __tablename__ = "ademe"
-    # PK
-    id: Column[int] = Column(Integer, primary_key=True)
     date_convention: Column[date] = Column(Date)
 
     reference_decision = Column(String(255), nullable=False)
