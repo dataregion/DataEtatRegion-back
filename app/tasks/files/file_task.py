@@ -11,6 +11,7 @@ from flask import current_app
 from sqlalchemy import delete
 
 from app import celeryapp, db
+from app.models.audit import AuditUpdateData
 from app.models.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
 from app.models.enums.DataType import DataType
 from app.services.financial_data import delete_ae_annee_region, delete_cp_annee_region
@@ -41,6 +42,21 @@ def delayed_inserts(self):
             json.dumps({"sep": ",", "skiprows": 8}),
             source_region=task.source_region,
             annee=task.annee,
+        )
+        # Historique de chargement des données
+        db.session.add(
+            AuditUpdateData(
+                username=task.username,
+                filename=os.path.basename(task.fichier_ae.filename),
+                data_type=DataType.FINANCIAL_DATA_AE,
+            )
+        )
+        db.session.add(
+            AuditUpdateData(
+                username=task.username,
+                filename=os.path.basename(task.fichier_cp.filename),
+                data_type=DataType.FINANCIAL_DATA_CP,
+            )
         )
 
     # Suppression des tâches dans la table
