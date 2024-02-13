@@ -15,3 +15,4 @@ class AuditInsertFinancialTasks(db.Model):
     fichier_cp: Column[str] = Column(String, nullable=False)
     source_region: Column[str] = Column(String, nullable=False)
     annee: Column[int] = Column(Integer, nullable=False)
+    username: Column[str] = Column(String, nullable=False)

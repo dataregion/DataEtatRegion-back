@@ -41,7 +41,11 @@ def import_financial_data(file_ae: str, file_cp: str, source_region: str, annee:
     # Enregistrement de l'import à effectuer
     db.session.add(
         AuditInsertFinancialTasks(
-            fichier_ae=save_path_ae, fichier_cp=save_path_cp, source_region=source_region, annee=annee
+            fichier_ae=save_path_ae,
+            fichier_cp=save_path_cp,
+            source_region=source_region,
+            annee=annee,
+            username=username,
         )
     )
     db.session.commit()
