@@ -11,10 +11,10 @@ from flask import current_app
 from sqlalchemy import delete
 
 from app import celeryapp, db
-from app.models.audit import AuditUpdateData
+from app.models.audit.AuditUpdateData import AuditUpdateData
 from app.models.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
 from app.models.enums.DataType import DataType
-from app.services.financial_data import delete_ae_annee_region, delete_cp_annee_region
+from app.services.financial_data import delete_ae_no_cp_annee_region, delete_cp_annee_region
 from app.tasks.financial import LineImportTechInfo
 
 from app.tasks.financial.import_financial import _send_subtask_financial_ae, _send_subtask_financial_cp
@@ -34,7 +34,7 @@ def delayed_inserts(self):
     for task in tasks:
         # Nettoyage de la BDD
         delete_cp_annee_region(task.annee, task.source_region)
-        delete_ae_annee_region(task.annee, task.source_region)
+        delete_ae_no_cp_annee_region(task.annee, task.source_region)
         # Tâche d'import des AE et des CP
         split_csv_and_import_ae_and_cp.delay(
             task.fichier_ae,
@@ -47,14 +47,14 @@ def delayed_inserts(self):
         db.session.add(
             AuditUpdateData(
                 username=task.username,
-                filename=os.path.basename(task.fichier_ae.filename),
+                filename=os.path.basename(task.fichier_ae),
                 data_type=DataType.FINANCIAL_DATA_AE,
             )
         )
         db.session.add(
             AuditUpdateData(
                 username=task.username,
-                filename=os.path.basename(task.fichier_cp.filename),
+                filename=os.path.basename(task.fichier_cp),
                 data_type=DataType.FINANCIAL_DATA_CP,
             )
         )
