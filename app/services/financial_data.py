@@ -2,21 +2,32 @@ import logging
 
 from app import db
 
-from sqlalchemy import delete
+from sqlalchemy import select, delete, and_
 
 from app.models.financial.FinancialCp import FinancialCp
 from app.models.financial.FinancialAe import FinancialAe
 
 
-def delete_ae_annee_region(annee: int, source_region: str):
+def delete_ae_no_cp_annee_region(annee: int, source_region: str):
     """
-    Supprime AE d'une année comptable d'une région
+    Supprime les AE sans CP d'une année comptable d'une région
     :param annee:
     :param source_region:
     :return:
     """
-    logging.info(f"[IMPORT FINANCIAL] Suppression des AE pour l'année {annee} et la région {source_region}")
-    stmt = delete(FinancialAe).where(FinancialAe.annee == annee).where(FinancialAe.source_region == source_region)
+    logging.info(
+        f"[IMPORT FINANCIAL] Suppression des AE n'ayant aucun CP en BDD pour l'année {annee} et la région {source_region}"
+    )
+    subquery = (
+        select(FinancialAe).join(
+            FinancialCp, and_(FinancialCp.id_ae == FinancialAe.id, FinancialCp.annee != FinancialAe.annee)
+        )
+    ).exists()
+    stmt = (
+        delete(FinancialAe)
+        .where(~subquery)
+        .where(FinancialAe.annee == annee, FinancialAe.source_region == source_region)
+    )
     db.session.execute(stmt)
     db.session.commit()
 
