@@ -149,8 +149,8 @@ def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context:
     apply_task.apply_tags_ae(condition)
 
 
-@_celery.task(bind=True, name="apply_tags_cepr_2021_27")
-def apply_tags_cepr_2021_27(self, tag_type: str, tag_value: str | None, context: str | None):
+@_celery.task(bind=True, name="apply_tags_cper_2021_27")
+def apply_tags_cper_2021_27(self, tag_type: str, tag_value: str | None, context: str | None):
     """
     Applique le tag CEPR (Contrat plan Etat Region) entre 2021 et 2027
     :param self:

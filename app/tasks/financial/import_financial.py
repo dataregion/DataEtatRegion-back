@@ -36,7 +36,7 @@ def _send_subtask_financial_ae(line: dict, source_region: str, annee: int, index
     subtask("import_line_financial_ae").delay(line, source_region, annee, index, cp)
 
 
-@limiter_queue(queue_name="file")
+@limiter_queue(queue_name="line")
 def _send_subtask_update_all_tags(taskname: str, id: int):
     subtask(taskname).delay(id)
 
