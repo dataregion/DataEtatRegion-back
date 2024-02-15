@@ -29,7 +29,7 @@ PUT_TAGS_CSV_HEADERS = _headers_type(
 """Headers CSV nécessaires pour la commande de put des tags"""
 PUT_TAGS_CSV_CHUNKSIZE = 1_000
 """Taille du chunk pour la lecture du fichier de commande de maj de tags"""
-PUT_TAGS_CSV_SPLIT_REGEX = "[|\s]+"
+PUT_TAGS_CSV_SPLIT_REGEX = r"[|\s]+"
 """Regex utilisé pour split les valeurs de tag"""
 
 
