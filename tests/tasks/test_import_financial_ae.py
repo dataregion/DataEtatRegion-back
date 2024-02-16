@@ -6,7 +6,7 @@ import pytest
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.financial.FinancialCp import FinancialCp
 from app.models.refs.siret import Siret
-from app.tasks.files.file_task import split_csv_and_import_ae_and_cp
+from app.tasks.files.file_task import read_csv_and_import_ae_cp
 from app.tasks.financial.import_financial import import_file_ae_financial
 from app.tasks.financial.import_financial import import_line_financial_ae
 from tests import TESTS_PATH
@@ -29,7 +29,7 @@ _chorus_split = _chorus / "split"
 def test_split_csv_and_import_ae_and_cp(mock_subtask):
     # DO
     with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
-        split_csv_and_import_ae_and_cp(
+        read_csv_and_import_ae_cp(
             _chorus / "chorus_ae.csv", _chorus / "financial_cp.csv", json.dumps({"sep": ",", "skiprows": 8}), "32", 2022
         )
     assert 6 == mock_subtask.call_count

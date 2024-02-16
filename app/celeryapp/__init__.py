@@ -48,6 +48,7 @@ def create_celery_app(_app=None) -> Celery:
             "maj_materialized_view": {"queue": "file"},
             "update_link_*": {"queue": "file"},
             "split_csv_*": {"queue": "file"},
+            "read_csv_*": {"queue": "file"},
             "delayed_inserts": {"queue": "file"},
         }
     ]

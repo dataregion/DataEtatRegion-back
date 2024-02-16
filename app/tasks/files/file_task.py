@@ -47,7 +47,7 @@ def delayed_inserts(self):
         delete_cp_annee_region(task.annee, task.source_region)
         delete_ae_no_cp_annee_region(task.annee, task.source_region)
         # Tâche d'import des AE et des CP
-        split_csv_and_import_ae_and_cp.delay(
+        read_csv_and_import_ae_cp.delay(
             task.fichier_ae,
             task.fichier_cp,
             json.dumps({"sep": ",", "skiprows": 8}),
@@ -75,18 +75,8 @@ def delayed_inserts(self):
     db.session.commit()
 
 
-@celery.task(bind=True, name="split_csv_and_import_ae_and_cp")
-def split_csv_and_import_ae_and_cp(
-    self, fichierAe: str, fichierCp: str, csv_options: str, source_region: str, annee: int
-):
-    """
-    Split un fichier en plusieurs fichiers et autant de tâches qu'il y a de fichier
-    :param self:
-    :param fichier: le fichier à splitter
-    :param tastk_name:  le nom de la task à lancer pour chaque fichier
-    :param kwargs:    la liste des args pour la sous tâche
-    :return:
-    """
+@celery.task(bind=True, name="read_csv_and_import_ae_cp")
+def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options: str, source_region: str, annee: int):
     move_folder = os.path.join(current_app.config["UPLOAD_FOLDER"], "save", datetime.datetime.now().strftime("%Y%m%d"))
     if not os.path.exists(move_folder):
         os.makedirs(move_folder)
@@ -105,15 +95,21 @@ def split_csv_and_import_ae_and_cp(
 
     # Import de toutes les AE ainsi que leur CP associés
     index = 0
-    for key in ae_list:
-        for ae in ae_list[key]["ae"]:
-            _send_subtask_financial_ae(ae, source_region, annee, index, ae_list[key]["cp"])
+    while ae_list:
+        _, struct = ae_list.popitem()
+        lines = struct["ae"]
+        for line in lines:
+            line_cp = struct["cp"]
+            _send_subtask_financial_ae(line, source_region, annee, index, line_cp)
             index += 1
 
     # Import de tous les CP ans AE
     index = 0
-    for key in cp_list:
-        _send_subtask_financial_cp(cp_list[key]["data"], key, source_region, annee, cp_list[key]["task"])
+    while cp_list:
+        k, struct = cp_list.popitem()
+        line = struct["data"]
+        task = struct["task"]
+        _send_subtask_financial_cp(line, k, source_region, annee, task)
         index += 1
 
 
