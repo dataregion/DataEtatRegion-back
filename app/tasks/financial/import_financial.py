@@ -163,7 +163,7 @@ def import_line_financial_ae(self, line: str, source_region: str, annee: int, in
     if financial_instance is True:
         new_financial_ae = _insert_financial_data(new_ae)
     else:
-        new_financial_ae = _update_financial_data(line, financial_ae_instance)
+        new_financial_ae = _update_financial_data(line, financial_ae_instance)  # noqa: F841
 
     # FINANCIAL_CP
     index = 0
@@ -202,7 +202,7 @@ def import_line_financial_cp(self, data_cp: str, index: int, source_region: str,
     # FINANCIAL_AE
     id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej)
     new_cp.id_ae = id_ae
-    new_financial_cp = _insert_financial_data(new_cp)
+    new_financial_cp = _insert_financial_data(new_cp)  # noqa: F841
 
     # XXX: Cela prend beaucoup de temps. on désactive la mécanique
     # TAGS
