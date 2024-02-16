@@ -97,10 +97,11 @@ def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options:
     index = 0
     while ae_list:
         _, struct = ae_list.popitem()
-        line = struct["ae"]
-        line_cp = struct["cp"]
-        _send_subtask_financial_ae(line, source_region, annee, index, line_cp)
-        index += 1
+        lines = struct["ae"]
+        for line in lines:
+            line_cp = struct["cp"]
+            _send_subtask_financial_ae(line, source_region, annee, index, line_cp)
+            index += 1
 
     # Import de tous les CP ans AE
     index = 0
