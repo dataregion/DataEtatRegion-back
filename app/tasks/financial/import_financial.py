@@ -172,8 +172,9 @@ def import_line_financial_ae(self, line: str, source_region: str, annee: int, in
             _send_subtask_financial_cp(cp["data"], index, source_region, annee, cp["task"])
             index += 1
 
+    # XXX : Cela prend beaucoup de temps. on désactive la mécanique
     # TAGS
-    _send_subtask_update_all_tags("update_all_tags_of_ae", new_financial_ae.id)
+    # _send_subtask_update_all_tags("update_all_tags_of_ae", new_financial_ae.id)
 
 
 @celery.task(bind=True, name="import_line_financial_cp")
@@ -203,8 +204,9 @@ def import_line_financial_cp(self, data_cp: str, index: int, source_region: str,
     new_cp.id_ae = id_ae
     new_financial_cp = _insert_financial_data(new_cp)
 
+    # XXX: Cela prend beaucoup de temps. on désactive la mécanique
     # TAGS
-    _send_subtask_update_all_tags("update_all_tags_of_cp", new_financial_cp.id)
+    # _send_subtask_update_all_tags("update_all_tags_of_cp", new_financial_cp.id)
 
 
 @celery.task(bind=True, name="import_file_ademe_from_website")
