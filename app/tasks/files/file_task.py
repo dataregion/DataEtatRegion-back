@@ -47,7 +47,7 @@ def delayed_inserts(self):
         delete_cp_annee_region(task.annee, task.source_region)
         delete_ae_no_cp_annee_region(task.annee, task.source_region)
         # Tâche d'import des AE et des CP
-        split_csv_and_import_ae_and_cp.delay(
+        read_csv_and_import_ae_cp.delay(
             task.fichier_ae,
             task.fichier_cp,
             json.dumps({"sep": ",", "skiprows": 8}),
@@ -75,18 +75,8 @@ def delayed_inserts(self):
     db.session.commit()
 
 
-@celery.task(bind=True, name="split_csv_and_import_ae_and_cp")
-def split_csv_and_import_ae_and_cp(
-    self, fichierAe: str, fichierCp: str, csv_options: str, source_region: str, annee: int
-):
-    """
-    Split un fichier en plusieurs fichiers et autant de tâches qu'il y a de fichier
-    :param self:
-    :param fichier: le fichier à splitter
-    :param tastk_name:  le nom de la task à lancer pour chaque fichier
-    :param kwargs:    la liste des args pour la sous tâche
-    :return:
-    """
+@celery.task(bind=True, name="read_csv_and_import_ae_cp")
+def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options: str, source_region: str, annee: int):
     move_folder = os.path.join(current_app.config["UPLOAD_FOLDER"], "save", datetime.datetime.now().strftime("%Y%m%d"))
     if not os.path.exists(move_folder):
         os.makedirs(move_folder)
