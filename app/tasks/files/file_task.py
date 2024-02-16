@@ -8,7 +8,7 @@ import pandas
 from celery import subtask, current_task
 from flask import current_app
 
-from sqlalchemy import delete
+from sqlalchemy import delete, select, asc
 
 from app import celeryapp, db
 from app.models.audit.AuditUpdateData import AuditUpdateData
@@ -30,8 +30,19 @@ DEFAULT_MAX_ROW = 10000  # 10K
 @celery.task(bind=True, name="delayed_inserts")
 def delayed_inserts(self):
     # Si on trouve des tâches dans la table, on les récupère pour les éxécuter
-    tasks = db.session.execute(db.select(AuditInsertFinancialTasks)).scalars().fetchall()
-    for task in tasks:
+    # On dépile en fifo pour chaque region
+    result = db.session.execute(select(AuditInsertFinancialTasks.source_region).distinct())
+    regions = [row[0] for row in result.fetchall()]
+
+    for region in regions:
+        stmt = (
+            select(AuditInsertFinancialTasks)
+            .where(AuditInsertFinancialTasks.source_region == region)
+            .order_by(asc(AuditInsertFinancialTasks.id))
+            .limit(1)
+        )
+        task = db.session.execute(stmt).scalar()
+
         # Nettoyage de la BDD
         delete_cp_annee_region(task.annee, task.source_region)
         delete_ae_no_cp_annee_region(task.annee, task.source_region)
@@ -59,8 +70,8 @@ def delayed_inserts(self):
             )
         )
 
-    # Suppression des tâches dans la table
-    db.session.execute(delete(AuditInsertFinancialTasks))
+        # Suppression de la tâche dans la table
+        db.session.execute(delete(AuditInsertFinancialTasks).where(AuditInsertFinancialTasks.id == task.id))
     db.session.commit()
 
 
