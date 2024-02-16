@@ -48,14 +48,14 @@ def import_refs_task(self, file: str, model_name: str, columns: List, is_csv=Tru
         for index, row in df.iterrows():
             if row.isna().code:  # si le code est nan ou none, on passe
                 continue
-            send_subtask(task_name, model_name=model_name, data=row.to_json())
+            _send_subtask(task_name, model_name=model_name, data=row.to_json())
     except LimitQueueException as e:
         LOGGER.exception("[IMPORT][REFS] Error limit queue exception", e)
         raise e
 
 
 @limiter_queue(queue_name="line")
-def send_subtask(task_name, model_name, data):
+def _send_subtask(task_name, model_name, data):
     subtask(task_name).delay(model_name=model_name, data=data)
 
 
