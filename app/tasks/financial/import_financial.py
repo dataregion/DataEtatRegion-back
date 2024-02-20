@@ -31,6 +31,9 @@ from app.tasks.financial import logger, LineImportTechInfo
 from app.tasks.financial.errors import _handle_exception_import
 
 
+from app.utilities.observability import gauge_of_currently_executing, summary_of_time
+
+
 @limiter_queue(queue_name="line")
 def _send_subtask_financial_ae(line: dict, source_region: str, annee: int, index: int, cp: list[dict] | None):
     subtask("import_line_financial_ae").delay(line, source_region, annee, index, cp)
@@ -126,6 +129,8 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
     autoretry_for=(FinancialException,),
     retry_kwargs={"max_retries": 4, "countdown": 10},
 )
+@gauge_of_currently_executing()
+@summary_of_time()
 @_handle_exception_import("FINANCIAL_AE")
 def import_line_financial_ae(self, line: str, source_region: str, annee: int, index: int, cp_list: list[dict] | None):
     line = json.loads(line)
