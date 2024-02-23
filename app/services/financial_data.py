@@ -2,7 +2,7 @@ import logging
 
 from app import db
 
-from sqlalchemy import select, delete, and_
+from sqlalchemy import select, delete
 
 from app.models.financial.FinancialCp import FinancialCp
 from app.models.financial.FinancialAe import FinancialAe
@@ -18,11 +18,7 @@ def delete_ae_no_cp_annee_region(annee: int, source_region: str):
     logging.info(
         f"[IMPORT FINANCIAL] Suppression des AE n'ayant aucun CP en BDD pour l'année {annee} et la région {source_region}"
     )
-    subquery = (
-        select(FinancialAe).join(
-            FinancialCp, and_(FinancialCp.id_ae == FinancialAe.id, FinancialCp.annee != FinancialAe.annee)
-        )
-    ).exists()
+    subquery = (select(FinancialCp).where(FinancialCp.id_ae == FinancialAe.id)).exists()
     stmt = (
         delete(FinancialAe)
         .where(~subquery)

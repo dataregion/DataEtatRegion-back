@@ -50,7 +50,7 @@ def delayed_inserts(self):
         read_csv_and_import_ae_cp.delay(
             task.fichier_ae,
             task.fichier_cp,
-            json.dumps({"sep": ",", "skiprows": 8}),
+            json.dumps({"sep": ",", "skiprows": 7}),
             source_region=task.source_region,
             annee=task.annee,
         )
