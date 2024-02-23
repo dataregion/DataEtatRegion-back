@@ -160,6 +160,7 @@ def _expose_endpoint(app: Flask):
             api_laureats,
         )
         from app.controller.administration import api_administration
+        from app.controller.demarches import api_demarches
         from app.controller.ref_controller import api_ref
         from app.controller.apis_externes import api_apis_externes
         from app.controller.task_management import api_task
@@ -173,6 +174,7 @@ def _expose_endpoint(app: Flask):
         app.register_blueprint(api_apis_externes, url_prefix="/apis-externes")
         app.register_blueprint(api_task, url_prefix="/task-management")
         app.register_blueprint(api_visuterritoire_v1, url_prefix="/visuterritoire")
+        app.register_blueprint(api_demarches, url_prefix="/data-demarches")
 
         #
         app.register_blueprint(api_laureats, url_prefix="/laureats-data")

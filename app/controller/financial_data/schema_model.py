@@ -2,6 +2,7 @@ import logging
 from flask_restx import Api, Namespace, SchemaModel
 from marshmallow_jsonschema import JSONSchema
 from app.models.financial.Ademe import AdemeSchema
+from app.models.demarches.demarche import DemarcheSchema
 from app.models.financial.FinancialAe import FinancialAeSchema
 from app.models.financial.FinancialCp import FinancialCpSchema
 from app.models.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLinesSchema
@@ -56,6 +57,16 @@ def register_ademe_schemamodel(api: Api | Namespace) -> SchemaModel:
     schema = AdemeSchema()
     model_json = JSONSchema().dump(schema)["definitions"]["AdemeSchema"]  # type: ignore
     model_single_api = api.schema_model("Ademe", model_json)
+    _fix_schemamodel(model_single_api)
+    return model_single_api
+
+
+def register_demarche_schemamodel(api: Api | Namespace) -> SchemaModel:
+    """Enregistre le modèle Ademe auprès du swagger"""
+
+    schema = DemarcheSchema()
+    model_json = JSONSchema().dump(schema)["definitions"]["DemarcheSchema"]  # type: ignore
+    model_single_api = api.schema_model("Demarche", model_json)
     _fix_schemamodel(model_single_api)
     return model_single_api
 
