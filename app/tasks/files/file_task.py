@@ -148,7 +148,6 @@ def _parse_file(
             # Construire le nom de fichier de sortie
             output_file = os.path.join(current_app.config["UPLOAD_FOLDER"], f"{filename}_{chunk_index}.csv")
             df.to_csv(output_file, index=False)
-            os.chmod(output_file, 744)
             logging.info(f"[IMPORT][SPLIT] Création du fichier {output_file} de {min(max_lines, len(df.index))} lignes")
             try:
                 if data_type is DataType.FINANCIAL_DATA_AE:
