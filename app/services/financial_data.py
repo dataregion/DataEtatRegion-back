@@ -19,9 +19,7 @@ def delete_ae_no_cp_annee_region(annee: int, source_region: str):
         f"[IMPORT FINANCIAL] Suppression des AE n'ayant aucun CP en BDD pour l'année {annee} et la région {source_region}"
     )
     subquery = (
-        select(FinancialAe).join(
-            FinancialCp, and_(FinancialCp.id_ae == FinancialAe.id, FinancialCp.annee != FinancialAe.annee)
-        )
+        select(FinancialCp).where(FinancialCp.id_ae == FinancialAe.id)
     ).exists()
     stmt = (
         delete(FinancialAe)
