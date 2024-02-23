@@ -57,7 +57,7 @@ AS SELECT 'FINANCIAL_DATA_CP'::text AS source,
     root.updated_at,
     root.created_at,
     rcc.code as "centreCouts_code",
-    rcc.code as "centreCouts_label"
+    rcc.label as "centreCouts_label"
    FROM financial_cp root
      LEFT JOIN ref_siret rs ON root.siret::text = rs.code::text
      LEFT JOIN ref_categorie_juridique rs_rcj ON rs.categorie_juridique::text = rs_rcj.code::text
