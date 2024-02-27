@@ -20,5 +20,6 @@ class Demarche(db.Model):
 class DemarcheSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Demarche
+
     number = fields.Integer(required=True)
     title = fields.String(required=True)

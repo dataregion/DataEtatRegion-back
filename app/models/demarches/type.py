@@ -18,5 +18,6 @@ class Type(db.Model):
 class SectionSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Type
+
     name = fields.String(required=True)
     type = fields.String(required=True)
