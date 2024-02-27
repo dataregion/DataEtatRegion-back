@@ -10,11 +10,13 @@ _tests_path = TESTS_PATH
 file_path = _tests_path / "database.db"
 settings_path = _tests_path / "settings.db"
 audit_path = _tests_path / "meta_audit.db"
+demarches_simplifiees_path = _tests_path / "demarches_simplifiees.db"
 
 extra_config = {
     "SQLALCHEMY_BINDS": {
         "settings": f"sqlite:///{settings_path.as_posix()}",
         "audit": f"sqlite:///{audit_path.as_posix()}",
+        "demarches_simplifiees": f"sqlite:///{audit_path.as_posix()}",
     },
     "SQLALCHEMY_DATABASE_URI": f"sqlite:///{file_path.as_posix()}",
     "SECRET_KEY": "secret",
