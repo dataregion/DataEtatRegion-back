@@ -11,6 +11,7 @@ from app.models.demarches.dossier import Dossier
 from app.models.demarches.donnee import Donnee
 from app.servicesapp.api_externes import ApisExternesService
 from app.services.demarches import (
+    commit_demarche,
     demarche_exists,
     save_demarche,
     save_dossier,
@@ -144,4 +145,5 @@ class DemarcheSimplifie(Resource):
 
             logging.info("[API DEMARCHES] Sauvegarde des dossiers en BDD")
 
+        commit_demarche()
         return {"message": "Démarche sauvegardée", "status": HTTPStatus.OK}

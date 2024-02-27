@@ -24,7 +24,7 @@ def save_demarche(demarche: Demarche) -> Demarche:
     :return: Commune
     """
     db.session.add(demarche)
-    db.session.commit()
+    db.session.flush()
     return demarche
 
 
@@ -36,7 +36,7 @@ def save_dossier(dossier: Dossier) -> Dossier:
     :return: Commune
     """
     db.session.add(dossier)
-    db.session.commit()
+    db.session.flush()
     return dossier
 
 
@@ -47,7 +47,7 @@ def get_or_create_section(section_name: str) -> Section:
         return section
     section = Section(**{"name": section_name})
     db.session.add(section)
-    db.session.commit()
+    db.session.flush()
     return section
 
 
@@ -58,7 +58,7 @@ def get_or_create_type(type_name: str) -> Type:
         return type
     type = Type(**{"name": type_name})
     db.session.add(type)
-    db.session.commit()
+    db.session.flush()
     return type
 
 
@@ -80,12 +80,16 @@ def get_or_create_donnee(champ: dict, section_name: str, demarche_number: int) -
         }
     )
     db.session.add(donnee)
-    db.session.commit()
+    db.session.flush()
     return donnee
 
 
 def save_valeur_donnee(dossier_number: int, donnee_id: int, value: str) -> ValeurDonnee:
     valeur = ValeurDonnee(**{"dossier_number": dossier_number, "donnee_id": donnee_id, "valeur": value})
     db.session.add(valeur)
-    db.session.commit()
+    db.session.flush()
     return valeur
+
+
+def commit_demarche() -> None:
+    db.session.commit()
