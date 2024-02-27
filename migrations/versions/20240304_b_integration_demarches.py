@@ -1,7 +1,7 @@
 """empty message
 
-Revision ID: dc2dcf3d1f7f
-Revises: 20240212_zzzz_col_username
+Revision ID: 20240304_b_integration_demarches
+Revises: 20240304_a_centres_couts
 Create Date: 2024-02-23 17:37:04.977511
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '20240304_b_integration_demarches'
-down_revision = '20240212_zzzz_col_username'
+down_revision = '20240304_a_centres_couts'
 branch_labels = None
 depends_on = None
 
