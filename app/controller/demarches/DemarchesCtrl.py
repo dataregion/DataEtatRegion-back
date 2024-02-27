@@ -90,7 +90,15 @@ class DemarcheSimplifie(Resource):
         logging.info("[API DEMARCHES] Récupération de la Démarche")
 
         # Sauvegarde des données de la démarche dans notre BDD
-        demarche_data = {"number": request.form["id"], "title": demarche_dict["data"]["demarche"]["title"]}
+        demarche_data = {
+            "number": request.form["id"],
+            "title": demarche_dict["data"]["demarche"]["title"],
+            "centre_couts": demarche_dict["data"]["demarche"]["chorusConfiguration"]["centreDeCout"],
+            "domaine_fonctionnel": demarche_dict["data"]["demarche"]["chorusConfiguration"]["domaineFonctionnel"],
+            "referentiel_programmation": demarche_dict["data"]["demarche"]["chorusConfiguration"][
+                "referentielDeProgrammation"
+            ],
+        }
         demarche: Demarche = save_demarche(Demarche(**demarche_data))
         logging.info("[API DEMARCHES] Sauvegarde de la Démarche en BDD")
 

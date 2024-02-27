@@ -23,6 +23,9 @@ def upgrade():
         "demarches",
         sa.Column("number", sa.Integer(), nullable=False),
         sa.Column("title", sa.String(), nullable=False),
+        sa.Column("centre_couts", sa.String(), nullable=False),
+        sa.Column("domaine_fonctionnel", sa.String(), nullable=False),
+        sa.Column("referentiel_programmation", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("number"),
         schema="demarches_simplifiees",
     )

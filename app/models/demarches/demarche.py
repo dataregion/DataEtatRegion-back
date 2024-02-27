@@ -15,6 +15,9 @@ class Demarche(db.Model):
 
     number: Column[int] = Column(Integer, primary_key=True, nullable=False)
     title: Column[str] = Column(String, nullable=False)
+    centre_couts: Column[str] = Column(String, nullable=False)
+    domaine_fonctionnel: Column[str] = Column(String, nullable=False)
+    referentiel_programmation: Column[str] = Column(String, nullable=False)
 
 
 class DemarcheSchema(ma.SQLAlchemyAutoSchema):
@@ -23,3 +26,6 @@ class DemarcheSchema(ma.SQLAlchemyAutoSchema):
 
     number = fields.Integer(required=True)
     title = fields.String(required=True)
+    centre_couts = fields.String(required=True)
+    domaine_fonctionnel = fields.String(required=True)
+    referentiel_programmation = fields.String(required=True)
