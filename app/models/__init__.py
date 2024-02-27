@@ -5,3 +5,4 @@ from app.models.audit import *  # noqa: F403
 from app.models.tags import *  # noqa: F403
 from app.models.financial import *  # noqa: F403
 from app.models.preference import *  # noqa: F403
+from app.models.demarches import *  # noqa: F403
