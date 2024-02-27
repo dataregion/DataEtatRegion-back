@@ -1,5 +1,3 @@
-from marshmallow import fields
-
 from sqlalchemy import Column, String, ForeignKey, Integer
 from sqlalchemy.orm import relationship, Mapped
 
@@ -29,8 +27,3 @@ class ValeurDonnee(db.Model):
 class DonneeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ValeurDonnee
-
-    id = fields.Integer(required=True)
-    dossier_number = fields.Integer(required=True)
-    donnee_id = fields.Integer(required=True)
-    valeur = fields.Integer(required=True)

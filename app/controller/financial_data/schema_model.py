@@ -62,7 +62,7 @@ def register_ademe_schemamodel(api: Api | Namespace) -> SchemaModel:
 
 
 def register_demarche_schemamodel(api: Api | Namespace) -> SchemaModel:
-    """Enregistre le modèle Ademe auprès du swagger"""
+    """Enregistre le modèle Demarches auprès du swagger"""
 
     schema = DemarcheSchema()
     model_json = JSONSchema().dump(schema)["definitions"]["DemarcheSchema"]  # type: ignore

@@ -1,5 +1,4 @@
 from app import db, ma
-from marshmallow import fields
 from sqlalchemy import Column, String
 
 
@@ -17,5 +16,3 @@ class Section(db.Model):
 class SectionSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Section
-
-    name = fields.String(required=True)

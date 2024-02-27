@@ -23,7 +23,7 @@ api = Namespace(
     name="Démarches", path="/", description="Api de gestion des données récupérées de l'API Démarches Simplifiées"
 )
 
-model_ademe_single_api = register_demarche_schemamodel(api)
+model_demarche_single_api = register_demarche_schemamodel(api)
 
 auth = current_app.extensions["auth"]
 

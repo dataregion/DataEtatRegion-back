@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from marshmallow import fields
-
 from sqlalchemy import Column, String, ForeignKey, Integer, DateTime
 from sqlalchemy.orm import relationship, Mapped
 
@@ -30,9 +28,3 @@ class Dossier(db.Model):
 class DossierSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Dossier
-
-    number = fields.Integer(required=True)
-    demarche_number = fields.Integer(required=True)
-    state = fields.Boolean(required=True)
-    date_derniere_modification = fields.DateTime(required=True)
-    siret = fields.String(required=True)

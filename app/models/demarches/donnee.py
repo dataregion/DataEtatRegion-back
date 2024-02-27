@@ -1,5 +1,3 @@
-from marshmallow import fields
-
 from sqlalchemy import Column, String, ForeignKey, Integer
 from sqlalchemy.orm import relationship, Mapped
 
@@ -32,9 +30,3 @@ class Donnee(db.Model):
 class DonneeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Donnee
-
-    id = fields.Integer(required=True)
-    demarche_number = fields.Integer(required=True)
-    section_name = fields.String(required=True)
-    type_name = fields.String(required=True)
-    label = fields.String(required=True)
