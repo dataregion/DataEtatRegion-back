@@ -85,6 +85,10 @@ class FlattenFinancialLines(db.Model):
     updated_at = Column(DateTime)
     created_at = Column(DateTime)
 
+    centreCouts_code = Column(String)
+    centreCouts_label = Column(String)
+    centreCouts_description = Column(String)
+
 
 class EnrichedFlattenFinancialLines(FlattenFinancialLines):
     """

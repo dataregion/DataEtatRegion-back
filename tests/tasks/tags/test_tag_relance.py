@@ -1,3 +1,4 @@
+import json
 import datetime
 
 import pytest
@@ -80,7 +81,7 @@ def insert_financial_ae_for_tag_relance(database, session):
 
 def test_apply_relance_no_tag(insert_financial_ae_for_tag_relance, tag_relance):
     # DO
-    apply_tags_relance(tag_relance.type, None)  # type: ignore
+    apply_tags_relance(tag_relance.type, None, None)  # type: ignore
 
     # assert
     ## on a bien une association
@@ -113,7 +114,7 @@ def test_should_not_apply_tag_if_already_present(
     ).scalar_one_or_none()
 
     # DO
-    apply_tags_relance(tag_relance.type, None)  # type: ignore
+    apply_tags_relance(tag_relance.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(
@@ -122,3 +123,37 @@ def test_should_not_apply_tag_if_already_present(
     assert tag_assocation.ademe is None
     assert tag_assocation.financial_ae == insert_financial_ae_for_tag_relance.id
     assert not tag_assocation.auto_applied
+
+
+def test_should_apply_tag_if_context_is_ok(database, tag_relance, insert_financial_ae_for_tag_relance):
+    # DO
+    context = {"only": "FINANCIAL_DATA_AE", "id": insert_financial_ae_for_tag_relance.id}
+    apply_tags_relance(tag_relance.type, None, json.dumps(context))  # type: ignore
+
+    # ASSERT
+    tag_assocation: TagAssociation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_relance.id,
+            TagAssociation.financial_ae == insert_financial_ae_for_tag_relance.id,
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is not None
+    assert tag_assocation.ademe is None
+    assert tag_assocation.financial_cp is None
+    assert tag_assocation.financial_ae == insert_financial_ae_for_tag_relance.id
+    assert tag_assocation.auto_applied is True
+
+
+def test_should_not_apply_tag_if_context_is_not_ok(database, tag_relance, insert_financial_ae_for_tag_relance):
+    # DO
+    context = {"only": "FINANCIAL_DATA_CP", "id": insert_financial_ae_for_tag_relance.id}
+    apply_tags_relance(tag_relance.type, None, json.dumps(context))  # type: ignore
+
+    # ASSERT
+    tag_assocation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_relance.id,
+            TagAssociation.financial_ae == insert_financial_ae_for_tag_relance.id,
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is None

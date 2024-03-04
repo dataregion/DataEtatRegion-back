@@ -1,3 +1,4 @@
+import json
 import pytest
 from app.models.financial.FinancialCp import FinancialCp
 from app.models.tags.Tags import Tags, TagAssociation
@@ -53,7 +54,7 @@ def test_apply_cp_orphelin(
     tag_cp_orphan,
 ):
     # DO
-    apply_tags_cp_orphelin(tag_cp_orphan.type, None)  # type: ignore
+    apply_tags_cp_orphelin(tag_cp_orphan.type, None, None)  # type: ignore
 
     # assert
     ## On a bien une association
@@ -65,3 +66,35 @@ def test_apply_cp_orphelin(
     assert tag_assocation.financial_cp == cp_orphelin.id
     assert tag_assocation.ademe is None
     assert tag_assocation.financial_ae is None
+
+
+def test_should_apply_tag_if_context_is_ok(database, tag_cp_orphan, cp_orphelin):
+    # DO
+    context = {"only": "FINANCIAL_DATA_CP", "id": cp_orphelin.id}
+    apply_tags_cp_orphelin(tag_cp_orphan.type, None, json.dumps(context))  # type: ignore
+
+    # ASSERT
+    tag_assocation: TagAssociation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_cp_orphan.id, TagAssociation.financial_cp == cp_orphelin.id
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is not None
+    assert tag_assocation.ademe is None
+    assert tag_assocation.financial_cp == cp_orphelin.id
+    assert tag_assocation.financial_ae is None
+    assert tag_assocation.auto_applied is True
+
+
+def test_should_not_apply_tag_if_context_is_not_ok(database, tag_cp_orphan, cp_orphelin):
+    # DO
+    context = {"only": "FINANCIAL_DATA_AE", "id": cp_orphelin.id}
+    apply_tags_cp_orphelin(tag_cp_orphan.type, None, json.dumps(context))  # type: ignore
+
+    # ASSERT
+    tag_assocation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_cp_orphan.id, TagAssociation.financial_cp == cp_orphelin.id
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is None

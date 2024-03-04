@@ -15,7 +15,7 @@ class FinancialCp(FinancialData, db.Model):
     n_dp: Column[str] = Column(String, nullable=False)
 
     # FK AE
-    id_ae: int = Column(Integer, ForeignKey("financial_ae.id"), nullable=True)
+    id_ae: int = Column(Integer, ForeignKey("financial_ae.id", ondelete="cascade"), nullable=True)
 
     # liens vers les AE
     n_ej: Column[str] = Column(String, nullable=True)

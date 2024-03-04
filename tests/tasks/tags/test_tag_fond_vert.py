@@ -1,6 +1,8 @@
+import json
 import datetime
 
 import pytest
+
 from ..tags import *  # noqa: F403
 
 from app.models.financial.FinancialAe import FinancialAe
@@ -73,7 +75,7 @@ def test_apply_fond_vert_when_no_tag(
     database, insert_financial_ae_for_tag_fond_vert, insert_financial_ae_for_other_tag, tag_fond_vert
 ):
     # DO
-    apply_tags_fonds_vert(tag_fond_vert.type, None)  # type: ignore
+    apply_tags_fonds_vert(tag_fond_vert.type, None, None)  # type: ignore
 
     # assert
     ## on a bien une association
@@ -98,7 +100,7 @@ def test_should_apply_tag_if_other_tag_associated(
     session.commit()
 
     # DO
-    apply_tags_fonds_vert(tag_fond_vert.type, None)  # type: ignore
+    apply_tags_fonds_vert(tag_fond_vert.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocations = (
@@ -135,7 +137,7 @@ def test_should_not_apply_tag_if_already_present(
     session.commit()
 
     # DO
-    apply_tags_fonds_vert(tag_fond_vert.type, None)  # type: ignore
+    apply_tags_fonds_vert(tag_fond_vert.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(
@@ -144,3 +146,37 @@ def test_should_not_apply_tag_if_already_present(
     assert tag_assocation.ademe is None
     assert tag_assocation.financial_ae == insert_financial_ae_for_tag_fond_vert.id
     assert not tag_assocation.auto_applied
+
+
+def test_should_apply_tag_if_context_is_ok(database, tag_fond_vert, insert_financial_ae_for_tag_fond_vert):
+    # DO
+    context = {"only": "FINANCIAL_DATA_AE", "id": insert_financial_ae_for_tag_fond_vert.id}
+    apply_tags_fonds_vert(tag_fond_vert.type, None, json.dumps(context))  # type: ignore
+
+    # ASSERT
+    tag_assocation: TagAssociation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_fond_vert.id,
+            TagAssociation.financial_ae == insert_financial_ae_for_tag_fond_vert.id,
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is not None
+    assert tag_assocation.ademe is None
+    assert tag_assocation.financial_cp is None
+    assert tag_assocation.financial_ae == insert_financial_ae_for_tag_fond_vert.id
+    assert tag_assocation.auto_applied is True
+
+
+def test_should_not_apply_tag_if_context_is_not_ok(database, tag_fond_vert, insert_financial_ae_for_tag_fond_vert):
+    # DO
+    context = {"only": "FINANCIAL_DATA_CP", "id": insert_financial_ae_for_tag_fond_vert.id}
+    apply_tags_fonds_vert(tag_fond_vert.type, None, json.dumps(context))  # type: ignore
+
+    # ASSERT
+    tag_assocation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_fond_vert.id,
+            TagAssociation.financial_ae == insert_financial_ae_for_tag_fond_vert.id,
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is None

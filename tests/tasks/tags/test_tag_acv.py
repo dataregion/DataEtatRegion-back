@@ -1,3 +1,4 @@
+import json
 import datetime
 
 import pytest
@@ -112,7 +113,7 @@ def test_apply_acv_when_no_tag(
     tag_acv,
 ):
     # DO
-    apply_tags_acv(tag_acv.type, None)  # type: ignore
+    apply_tags_acv(tag_acv.type, None, None)  # type: ignore
 
     # assert
     ## on a bien une association
@@ -137,7 +138,7 @@ def test_should_apply_tag_if_other_tag_associated(
     session.commit()
 
     # DO
-    apply_tags_acv(tag_acv.type, None)  # type: ignore
+    apply_tags_acv(tag_acv.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocations = (
@@ -157,9 +158,7 @@ def test_should_apply_tag_if_other_tag_associated(
         assert t.financial_ae == insert_financial_ae_for_tag_acv.id
 
 
-def test_should_not_apply_tag_if_already_present(
-    database, session, tag_acv, insert_financial_ae_for_tag_acv: FinancialAe
-):
+def test_should_not_apply_tag_if_already_present(database, session, tag_acv, insert_financial_ae_for_tag_acv):
     # given affection du tag acv à l'AE
     tag_assoc = TagAssociation(
         **{
@@ -172,7 +171,7 @@ def test_should_not_apply_tag_if_already_present(
     session.commit()
 
     # DO
-    apply_tags_acv(tag_acv.type, None)  # type: ignore
+    apply_tags_acv(tag_acv.type, None, None)  # type: ignore
 
     # ASSERT
     tag_assocation = database.session.execute(
@@ -181,3 +180,39 @@ def test_should_not_apply_tag_if_already_present(
     assert tag_assocation.ademe is None
     assert tag_assocation.financial_ae == insert_financial_ae_for_tag_acv.id
     assert not tag_assocation.auto_applied
+
+
+def test_should_apply_tag_if_context_is_ok(
+    database, tag_acv, add_commune_pontivy, add_siret_pontivy, insert_financial_ae_for_tag_acv
+):
+    # DO
+    context = {"only": "FINANCIAL_DATA_AE", "id": insert_financial_ae_for_tag_acv.id}
+    apply_tags_acv(tag_acv.type, None, json.dumps(context))  # type: ignore
+
+    # ASSERT
+    tag_assocation: TagAssociation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_acv.id, TagAssociation.financial_ae == insert_financial_ae_for_tag_acv.id
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is not None
+    assert tag_assocation.ademe is None
+    assert tag_assocation.financial_cp is None
+    assert tag_assocation.financial_ae == insert_financial_ae_for_tag_acv.id
+    assert tag_assocation.auto_applied is True
+
+
+def test_should_not_apply_tag_if_context_is_not_ok(
+    database, tag_acv, add_commune_pontivy, add_siret_pontivy, insert_financial_ae_for_tag_acv
+):
+    # DO
+    context = {"only": "FINANCIAL_DATA_CP", "id": insert_financial_ae_for_tag_acv.id}
+    apply_tags_acv(tag_acv.type, None, json.dumps(context))  # type: ignore
+
+    # ASSERT
+    tag_assocation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_acv.id, TagAssociation.financial_ae == insert_financial_ae_for_tag_acv.id
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is None
