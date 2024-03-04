@@ -87,6 +87,7 @@ class FlattenFinancialLines(db.Model):
 
     centreCouts_code = Column(String)
     centreCouts_label = Column(String)
+    centreCouts_description = Column(String)
 
 
 class EnrichedFlattenFinancialLines(FlattenFinancialLines):
