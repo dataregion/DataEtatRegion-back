@@ -17,7 +17,7 @@ class Dossier(db.Model):
 
     number: Column[int] = Column(Integer, primary_key=True, nullable=False)
 
-    demarche_number: Column[int] = Column(Integer, ForeignKey("demarches.number"), nullable=False)
+    demarche_number: Column[int] = Column(Integer, ForeignKey("demarches.number", ondelete="CASCADE"), nullable=False)
     demarche: Mapped[Demarche] = relationship("Demarche", lazy="select")
 
     state: Column[str] = Column(String, nullable=False)
