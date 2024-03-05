@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '20240212_zzzz_col_username'
-down_revision = '20240212_zzz_delayed_ins_tasks'
+revision = "20240212_zzzz_col_username"
+down_revision = "20240212_zzz_delayed_ins_tasks"
 branch_labels = None
 depends_on = None
 

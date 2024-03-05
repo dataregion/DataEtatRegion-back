@@ -29,7 +29,8 @@ def upgrade():
         VALUES
         ('pvd', 'La ligne est taguée PVD si la commune du SIRET ou la commune de la localisation interministérielle est dans la liste des "Petite Ville de Demain".', true, 'PVD'),
         ('acv', 'La ligne est taguée ACV si la commune du n° SIRET ou de la localisation interministérielle du bénéficiaire est dans la liste des "Action Coeur de Ville".', true, 'ACV');
-    """)
+    """
+    )
 
     # Foreign key on delete cascade
     with op.batch_alter_table("tag_association", schema=None) as batch_op:

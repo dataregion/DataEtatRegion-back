@@ -29,7 +29,7 @@ def create_app_migrate():
     import app.models
 
     app = create_app_base(oidc_enable=False, expose_endpoint=False)
-    migrate = Migrate()
+    migrate = Migrate(directory="migrations.old")
 
     migrate.init_app(app, db)
     return app
