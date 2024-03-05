@@ -12,7 +12,7 @@ class MontantFinancialAe(Audit, db.Model):
     id: int = Column(Integer, primary_key=True)
 
     # FK
-    id_financial_ae: int = Column(Integer, db.ForeignKey("financial_ae.id"), nullable=False)
+    id_financial_ae: int = Column(Integer, db.ForeignKey("financial_ae.id"), nullable=False, index=True)
     montant: float = Column(Float)
     annee: int = Column(Integer, nullable=False)
 
