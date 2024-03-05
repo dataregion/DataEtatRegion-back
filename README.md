@@ -72,6 +72,8 @@ En utilisant flask db migrate. Voici la commande:
 env FLASK_APP=app:create_app_migrate flask db migrate -m "Message plus long" --rev-id "20231026_cequefaitlescript"
 ```
 
+En savoir plus sur [la migration de database](./README-dbmigration.md) pour le développeur.
+
 ## Mode Api
 
 ```bash
