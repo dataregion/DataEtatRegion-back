@@ -17,6 +17,7 @@ depends_on = None
 
 _data_folder = Path(__file__).resolve().parent / __name__
 
+
 def upgrade():
     # Upgrade des vues flatten financial
     for view in ["_flatten_financial_lines", "flatten_orphan_cp", "flatten_ae", "flatten_ademe"]:

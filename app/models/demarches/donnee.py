@@ -17,11 +17,11 @@ class Donnee(db.Model):
 
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
 
-    demarche_number: Column[int] = Column(Integer, ForeignKey("demarches.number"), nullable=False)
+    demarche_number: Column[int] = Column(Integer, ForeignKey("demarches.number", ondelete="CASCADE"), nullable=False)
     demarche: Mapped[Demarche] = relationship("Demarche", lazy="select")
-    section_name: Column[str] = Column(String, ForeignKey("sections.name"), nullable=False)
+    section_name: Column[str] = Column(String, ForeignKey("sections.name", ondelete="CASCADE"), nullable=False)
     section: Mapped[Section] = relationship("Section", lazy="select")
-    type_name: Column[str] = Column(String, ForeignKey("types.name"), nullable=False)
+    type_name: Column[str] = Column(String, ForeignKey("types.name", ondelete="CASCADE"), nullable=False)
     type: Mapped[Type] = relationship("Type", lazy="select")
 
     label: Column[str] = Column(String, nullable=False)

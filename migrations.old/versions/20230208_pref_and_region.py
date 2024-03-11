@@ -26,10 +26,13 @@ url_csv = "https://www.data.gouv.fr/fr/datasets/r/c850b7d0-bc8f-44a2-b495-1debc4
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 class _Base(orm.DeclarativeBase):
     pass
+
+
 class _Region(_Base):
-    __tablename__ = 'ref_region'
+    __tablename__ = "ref_region"
     id = Column(sa.Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     label = Column(String)
@@ -42,11 +45,19 @@ def upgrade():
     # Audit preference
     #
 
-    query_column_date_creation = "ALTER TABLE settings.preference_users ADD COLUMN date_creation timestamptz DEFAULT CURRENT_TIMESTAMP"
-    query_column_dernier_acces = "ALTER TABLE settings.preference_users ADD COLUMN dernier_acces timestamptz DEFAULT NULL"
-    query_column_nombre_utilisation = "ALTER TABLE settings.preference_users ADD COLUMN nombre_utilisation INTEGER DEFAULT 0"
+    query_column_date_creation = (
+        "ALTER TABLE settings.preference_users ADD COLUMN date_creation timestamptz DEFAULT CURRENT_TIMESTAMP"
+    )
+    query_column_dernier_acces = (
+        "ALTER TABLE settings.preference_users ADD COLUMN dernier_acces timestamptz DEFAULT NULL"
+    )
+    query_column_nombre_utilisation = (
+        "ALTER TABLE settings.preference_users ADD COLUMN nombre_utilisation INTEGER DEFAULT 0"
+    )
     query_column_email_send = "ALTER TABLE settings.share_preference ADD COLUMN email_send BOOLEAN DEFAULT False"
-    query_column_application = "ALTER TABLE settings.preference_users ADD COLUMN application_host VARCHAR  NOT NULL DEFAULT ''"
+    query_column_application = (
+        "ALTER TABLE settings.preference_users ADD COLUMN application_host VARCHAR  NOT NULL DEFAULT ''"
+    )
 
     op.execute(query_column_date_creation)
     op.execute(query_column_dernier_acces)
@@ -69,9 +80,7 @@ def upgrade():
     _insert_ref()
 
     op.add_column("data_chorus", sa.Column("source_region", sa.String(), nullable=True))
-    op.create_foreign_key(
-        None, "data_chorus", "ref_region", ["source_region"], ["code"]
-    )
+    op.create_foreign_key(None, "data_chorus", "ref_region", ["source_region"], ["code"])
     # ### end Alembic commands ###
 
 
@@ -80,12 +89,9 @@ def downgrade():
     #
     # Ref region
     #
-    op.drop_constraint(
-        "data_chorus_source_region_fkey", "data_chorus", type_="foreignkey"
-    )
+    op.drop_constraint("data_chorus_source_region_fkey", "data_chorus", type_="foreignkey")
     op.drop_column("data_chorus", "source_region")
     op.drop_table("ref_region")
-
 
     #
     # Audit preferences
@@ -96,7 +102,6 @@ def downgrade():
     query_column_email_send = "ALTER TABLE settings.share_preference DROP COLUMN email_send "
 
     query_column_application = "ALTER TABLE settings.preference_users DROP COLUMN application_host"
-
 
     op.execute(query_column_date_creation)
     op.execute(query_column_dernier_acces)
@@ -122,19 +127,14 @@ def _insert_ref():
             code_insee = str(region["REG"])
             libelle = str(region["LIBELLE"])
 
-            region = (
-                session.query(_Region).filter_by(**{"code": code_insee}).one_or_none()
-            )
+            region = session.query(_Region).filter_by(**{"code": code_insee}).one_or_none()
 
             if region is None:
                 region = _Region(code=code_insee, label=libelle)
                 session.add(region)
                 session.commit()
             else:
-                logger.info(
-                    f"Ignore ligne {index}"
-                    ", code insee: {region['REG']}, label: {region['LIBELLE']}"
-                )
+                logger.info(f"Ignore ligne {index}" ", code insee: {region['REG']}, label: {region['LIBELLE']}")
     except Exception as e:
         logger.exception(e)
         raise
