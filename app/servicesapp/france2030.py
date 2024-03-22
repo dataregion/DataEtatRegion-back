@@ -36,19 +36,6 @@ class TerritoirePayload:
     CodeInsee: int
 
 
-def _extract_territoire_str(france2030: France2030):
-    """Extrait la chaine correspondant au territoire"""
-    territoire = ""
-
-    try:
-        territoire = france2030.beneficiaire.ref_commune.label_commune
-    except AttributeError:
-        # Un NPE. ie -> pas de beneficiaire ou de commune associée
-        pass
-
-    return territoire
-
-
 def _map_france_2030_row_laureats(france2030: France2030):
     """Mappe une ligne france 2030 en une ligne pour l'application laureats"""
     dict = {}
@@ -57,7 +44,23 @@ def _map_france_2030_row_laureats(france2030: France2030):
         dict["Structure"] = france2030.nom_beneficiaire
         dict["Num\u00e9roDeSiretSiConnu"] = france2030.siret
         dict["SubventionAccord\u00e9e"] = france2030.montant_subvention
-        dict["territoire"] = _extract_territoire_str(france2030)
+
+        # Données géographiques du bénéficiaire
+        benef_provided = france2030.beneficiaire is not None and france2030.beneficiaire.ref_commune is not None
+        dict["code_region"] = france2030.beneficiaire.ref_commune.code_region if benef_provided else ""
+        dict["label_region"] = france2030.beneficiaire.ref_commune.label_region if benef_provided else ""
+        dict["code_departement"] = france2030.beneficiaire.ref_commune.code_departement if benef_provided else ""
+        dict["label_departement"] = france2030.beneficiaire.ref_commune.label_departement if benef_provided else ""
+        dict["code_epci"] = france2030.beneficiaire.ref_commune.code_epci if benef_provided else ""
+        dict["label_epci"] = france2030.beneficiaire.ref_commune.label_epci if benef_provided else ""
+        dict["code_commune"] = france2030.beneficiaire.ref_commune.code if benef_provided else ""
+        dict["label_commune"] = france2030.beneficiaire.ref_commune.label_commune if benef_provided else ""
+        dict["code_arrondissement"] = (
+            france2030.beneficiaire.ref_commune.ref_arrondissement.code if benef_provided else ""
+        )
+        dict["label_arrondissement"] = (
+            france2030.beneficiaire.ref_commune.ref_arrondissement.label if benef_provided else ""
+        )
 
     if france2030 is not None and france2030.nomenclature is not None:
         dict["axe"] = f"{france2030.nomenclature.code} - {france2030.nomenclature.mot}"
