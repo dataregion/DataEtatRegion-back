@@ -9,7 +9,7 @@ WHERE "LauréatOuCandidat" = 'Lauréat'
 UNION
 SELECT 'FR30'::text AS source,
        annee as annee,
-       nom_beneficiaire AS laureat,
+       nom_beneficiaire AS nom_laureat,
        siret AS numero_siret,
        montant_aide AS montant_accorde
 FROM public.france_2030;
