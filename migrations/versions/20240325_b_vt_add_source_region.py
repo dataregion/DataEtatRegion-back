@@ -26,9 +26,12 @@ def upgrade_():
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_m_summary_annee_geo_type_bop")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_budget_summary")
 
-    logging.info("Recreating views Visuterritoires")
+    logging.info("Recreating views visuterritoires")
     op.execute(_filecontent("vt_views_visuterritoire.sql"))
-    logging.info("Recreate just finished")
+
+    logging.info("Creating new view : union relance + 2030")
+    op.execute(_filecontent("vt_relance_2030.sql"))
+    logging.info("Finished")
     # ### end Alembic commands ###
 
 
