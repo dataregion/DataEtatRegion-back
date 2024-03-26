@@ -90,6 +90,7 @@ SELECT
    FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
+     AND fce.source = s.source
      AND (fce.code_commune = s.code_commune
           OR fce.code_commune_loc_inter = s.code_commune)
      AND (fce.categorie_juridique = s.categorie_juridique
@@ -100,6 +101,7 @@ SELECT
    FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
+     AND fce.source = s.source
      AND (fce.code_commune = s.code_commune
           OR fce.code_commune_loc_inter = s.code_commune)
      AND (fce.categorie_juridique = s.categorie_juridique
@@ -124,6 +126,7 @@ SELECT
    FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
+     AND fce.source = s.source
      AND (fce.code_departement = s.code_departement
           OR fce.code_departement_loc_inter = s.code_departement)
      AND (fce.categorie_juridique = s.categorie_juridique
@@ -134,6 +137,7 @@ SELECT
    FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
+     AND fce.source = s.source
      AND (fce.code_departement = s.code_departement
           OR fce.code_departement_loc_inter = s.code_departement)
      AND (fce.categorie_juridique = s.categorie_juridique
@@ -158,6 +162,7 @@ SELECT
    FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
+     AND fce.source = s.source
      AND (fce.code_epci = s.code_epci
           OR fce.code_epci_loc_inter = s.code_epci)
      AND (fce.categorie_juridique = s.categorie_juridique
@@ -168,6 +173,7 @@ SELECT
    FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
+     AND fce.source = s.source
      AND (fce.code_epci = s.code_epci
           OR fce.code_epci_loc_inter = s.code_epci)
      AND (fce.categorie_juridique = s.categorie_juridique
@@ -192,6 +198,7 @@ SELECT
    FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
+     AND fce.source = s.source
      AND (fce.code_crte = s.code_crte
           OR fce.code_crte_loc_inter = s.code_crte)
      AND (fce.categorie_juridique = s.categorie_juridique
@@ -202,6 +209,7 @@ SELECT
    FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
+     AND fce.source = s.source
      AND (fce.code_crte = s.code_crte
           OR fce.code_crte_loc_inter = s.code_crte)
      AND (fce.categorie_juridique = s.categorie_juridique
@@ -226,6 +234,7 @@ SELECT
    FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
+     AND fce.source = s.source
      AND fce.code_qpv = s.code_qpv
      AND (fce.categorie_juridique = s.categorie_juridique
           OR (fce.categorie_juridique IS NULL
@@ -235,6 +244,7 @@ SELECT
    FROM vt_budget_summary fce
    WHERE fce.code_programme = s.code_programme
      AND fce.annee = s.annee
+     AND fce.source = s.source
      AND fce.code_qpv = s.code_qpv
      AND (fce.categorie_juridique = s.categorie_juridique
           OR (fce.categorie_juridique IS NULL
