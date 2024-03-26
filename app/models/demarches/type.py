@@ -11,7 +11,7 @@ class Type(db.Model):
     __bind_key__ = "demarches_simplifiees"
 
     name: Column[str] = Column(String, primary_key=True, nullable=False)
-    type: Column[str] = Column(String, nullable=False)
+    type: Column[str] = Column(String, nullable=True)
 
 
 class SectionSchema(ma.SQLAlchemyAutoSchema):
