@@ -21,6 +21,8 @@ class MontantParNiveauBopAnneeType(db.Model):
 
     annee = Column(Integer, nullable=True, primary_key=True)
 
+    source = Column(String, nullable=True, primary_key=True)
+
     programme = Column(String, nullable=True, primary_key=True)
     code = Column(String, nullable=True, primary_key=True)
     type = Column(String, nullable=True, primary_key=True)
