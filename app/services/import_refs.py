@@ -67,7 +67,7 @@ LIST_REF_TASK_IMPORT: list[RefTaskImportChorus] = [
         columns=["domaine", "segment", "code", "label", "description", "code_pce", "label_pce"],
         usecols=[1, 3, 4, 5, 7, 10, 11],
         sheet_name="19 - Groupe Marchandise",
-        skiprows=8,
+        skiprows=9,
     ),
     RefTaskImportChorus(
         cls_name="ReferentielProgrammation",
