@@ -47,6 +47,7 @@ def _map_france_2030_row_laureats(france2030: France2030):
 
         # Données géographiques du bénéficiaire
         benef_provided = france2030.beneficiaire is not None and france2030.beneficiaire.ref_commune is not None
+        arr_provided = benef_provided and france2030.beneficiaire.ref_commune.ref_arrondissement is not None
         dict["code_region"] = france2030.beneficiaire.ref_commune.code_region if benef_provided else ""
         dict["label_region"] = france2030.beneficiaire.ref_commune.label_region if benef_provided else ""
         dict["code_departement"] = france2030.beneficiaire.ref_commune.code_departement if benef_provided else ""
@@ -56,10 +57,10 @@ def _map_france_2030_row_laureats(france2030: France2030):
         dict["code_commune"] = france2030.beneficiaire.ref_commune.code if benef_provided else ""
         dict["label_commune"] = france2030.beneficiaire.ref_commune.label_commune if benef_provided else ""
         dict["code_arrondissement"] = (
-            france2030.beneficiaire.ref_commune.ref_arrondissement.code if benef_provided else ""
+            france2030.beneficiaire.ref_commune.ref_arrondissement.code if arr_provided else ""
         )
         dict["label_arrondissement"] = (
-            france2030.beneficiaire.ref_commune.ref_arrondissement.label if benef_provided else ""
+            france2030.beneficiaire.ref_commune.ref_arrondissement.label if arr_provided else ""
         )
 
     if france2030 is not None and france2030.nomenclature is not None:
