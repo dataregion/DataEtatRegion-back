@@ -73,7 +73,7 @@ def get_or_create_section(section_name: str) -> Section:
 def get_or_create_type(type_name: str) -> Type:
     """
     Retourne un type de champ (création si non présent en BDD)
-    :param type_name: Nom du type de champ 
+    :param type_name: Nom du type de champ
     :return: Type
     """
     stmt = db.select(Type).where(Type.name == type_name)
@@ -89,9 +89,9 @@ def get_or_create_type(type_name: str) -> Type:
 def get_or_create_donnee(champ: dict, section_name: str, demarche_number: int) -> Donnee:
     """
     Retourne un champ par section et démarche (création si non présent en BDD)
-    :param champ: Caractéristiques du champ 
+    :param champ: Caractéristiques du champ
     :param section_name: Section (champ ou annotation ...)
-    :param demarche_number: Numéro de la démarche associée au champ 
+    :param demarche_number: Numéro de la démarche associée au champ
     :return: Donnee
     """
     stmt = db.select(Donnee).where(
@@ -114,6 +114,7 @@ def get_or_create_donnee(champ: dict, section_name: str, demarche_number: int) -
     db.session.flush()
     return donnee
 
+
 # Nom des champs additionnels à récupérer en fonction du type du champ
 _mappingTypes = {
     "DateChamp": ["date"],
@@ -133,12 +134,13 @@ _mappingTypes = {
     "SiretChamp": ["etablissement"],
 }
 
+
 def save_valeur_donnee(dossier_number: int, donnee_id: int, champ: dict) -> ValeurDonnee:
     """
     Créé en BDD une valeur d'un champ pour un dossier
     :param dossier_number: Numéro du dossier associé
     :param donnee_id: ID de la donnée associée
-    :param champ: Caractéristique du champ 
+    :param champ: Caractéristique du champ
     :return: Donnee
     """
     # Récupération des données additionnelles en fonction du type du champ
@@ -147,13 +149,15 @@ def save_valeur_donnee(dossier_number: int, donnee_id: int, champ: dict) -> Vale
         for field in _mappingTypes[champ["__typename"]]:
             additional_data[field] = champ[field]
 
-    # Création de la valeur en BDD 
-    valeur = ValeurDonnee(**{
-        "dossier_number": dossier_number,
-        "donnee_id": donnee_id,
-        "valeur": champ["stringValue"],
-        "additional_data": additional_data
-    })
+    # Création de la valeur en BDD
+    valeur = ValeurDonnee(
+        **{
+            "dossier_number": dossier_number,
+            "donnee_id": donnee_id,
+            "valeur": champ["stringValue"],
+            "additional_data": additional_data,
+        }
+    )
     db.session.add(valeur)
     db.session.flush()
     return valeur

@@ -48,7 +48,6 @@ class DemarcheSimplifie(Resource):
     @api.doc(security="Bearer")
     @api.expect(reqpars_get_demarche)
     def post(self):
-
         # Vérification si la démarche existe déjà en BDD, si oui on la supprime
         demarche_number = int(request.form["id"])
         demarche = find_demarche(demarche_number)
@@ -86,7 +85,6 @@ class DemarcheSimplifie(Resource):
 
         # Sauvegarde des dossiers de la démarche
         if len(demarche_dict["data"]["demarche"]["dossiers"]):
-        
             # Récupération de la révision du dossir
             revision_id = demarche_dict["data"]["demarche"]["dossiers"]["nodes"][0]["demarche"]["revision"]["id"]
             revision = next(r for r in demarche_dict["data"]["demarche"]["revisions"] if r["id"] == revision_id)

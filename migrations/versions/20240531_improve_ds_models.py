@@ -8,7 +8,6 @@ Create Date: 2024-05-31 12:41:27.006803
 from alembic import op
 import sqlalchemy as sa
 import logging
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20240531_improve_ds_models'
