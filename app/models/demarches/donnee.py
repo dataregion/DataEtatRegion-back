@@ -3,8 +3,6 @@ from sqlalchemy.orm import relationship, Mapped
 
 from app import db, ma
 from app.models.demarches.demarche import Demarche
-from app.models.demarches.section import Section
-from app.models.demarches.type import Type
 
 
 class Donnee(db.Model):
@@ -20,9 +18,7 @@ class Donnee(db.Model):
     demarche_number: Column[int] = Column(Integer, ForeignKey("demarches.number", ondelete="CASCADE"), nullable=False)
     demarche: Mapped[Demarche] = relationship("Demarche", lazy="select")
     section_name: Column[str] = Column(String, ForeignKey("sections.name", ondelete="CASCADE"), nullable=False)
-    section: Mapped[Section] = relationship("Section", lazy="select")
     type_name: Column[str] = Column(String, ForeignKey("types.name", ondelete="CASCADE"), nullable=False)
-    type: Mapped[Type] = relationship("Type", lazy="select")
 
     label: Column[str] = Column(String, nullable=False)
 

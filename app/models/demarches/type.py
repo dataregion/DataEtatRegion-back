@@ -14,6 +14,6 @@ class Type(db.Model):
     type: Column[str] = Column(String, nullable=True)
 
 
-class SectionSchema(ma.SQLAlchemyAutoSchema):
+class TypeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Type

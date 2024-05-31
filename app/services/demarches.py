@@ -11,29 +11,43 @@ from app.models.demarches.valeur_donnee import ValeurDonnee
 logger = logging.getLogger(__name__)
 
 
-def demarche_exists(number: int) -> bool:
+def find_demarche(number: int) -> Demarche:
+    """
+    Vérifie si une Demarche est présente en BDD
+    :param number: Numéro de la démarche à rechercher
+    :return: bool
+    """
     stmt = db.select(Demarche).where(Demarche.number == number)
-    return db.session.execute(stmt).one_or_none() is not None
+    return db.session.execute(stmt).scalar_one_or_none()
 
 
 def save_demarche(demarche: Demarche) -> Demarche:
     """
-    Retourne l'objet Commune à partir du code et du nom de la commune
-    :param code: Code de la commune
-    :param label: Nom de la commune
-    :return: Commune
+    Sauvegarde un objet Demarche
+    :param demarche: Objet à sauvegarder
+    :return: Demarche
     """
     db.session.add(demarche)
     db.session.flush()
     return demarche
 
 
+def delete_demarche(demarche: Demarche) -> None:
+    """
+    Supprime un objet Demarche
+    :param Demarche: Démarche à supprimer
+    :return: None
+    """
+    db.session.delete(demarche)
+    db.session.flush()
+    db.session.commit()
+
+
 def save_dossier(dossier: Dossier) -> Dossier:
     """
-    Retourne l'objet Commune à partir du code et du nom de la commune
-    :param code: Code de la commune
-    :param label: Nom de la commune
-    :return: Commune
+    Sauvegarde un objet Dossier
+    :param dossier: Objet à sauvegarder
+    :return: Dossier
     """
     db.session.add(dossier)
     db.session.flush()
@@ -41,6 +55,11 @@ def save_dossier(dossier: Dossier) -> Dossier:
 
 
 def get_or_create_section(section_name: str) -> Section:
+    """
+    Retourne une section (création si non présent en BDD)
+    :param section_name: Nom de la section
+    :return: Section
+    """
     stmt = db.select(Section).where(Section.name == section_name)
     section = db.session.execute(stmt).scalar_one_or_none()
     if section is not None:
@@ -52,6 +71,11 @@ def get_or_create_section(section_name: str) -> Section:
 
 
 def get_or_create_type(type_name: str) -> Type:
+    """
+    Retourne un type de champ (création si non présent en BDD)
+    :param type_name: Nom du type de champ 
+    :return: Type
+    """
     stmt = db.select(Type).where(Type.name == type_name)
     type = db.session.execute(stmt).scalar_one_or_none()
     if type is not None:
@@ -63,6 +87,13 @@ def get_or_create_type(type_name: str) -> Type:
 
 
 def get_or_create_donnee(champ: dict, section_name: str, demarche_number: int) -> Donnee:
+    """
+    Retourne un champ par section et démarche (création si non présent en BDD)
+    :param champ: Caractéristiques du champ 
+    :param section_name: Section (champ ou annotation ...)
+    :param demarche_number: Numéro de la démarche associée au champ 
+    :return: Donnee
+    """
     stmt = db.select(Donnee).where(
         Donnee.label == champ["label"], Donnee.section_name == section_name, Donnee.type_name == champ["__typename"]
     )
@@ -83,13 +114,54 @@ def get_or_create_donnee(champ: dict, section_name: str, demarche_number: int) -
     db.session.flush()
     return donnee
 
+# Nom des champs additionnels à récupérer en fonction du type du champ
+_mappingTypes = {
+    "DateChamp": ["date"],
+    "DatetimeChamp": ["datetime"],
+    "CheckboxChamp": ["checked"],
+    "DecimalNumberChamp": ["decimalNumber"],
+    "IntegerNumberChamp": ["integerNumber"],
+    "CiviliteChamp": ["civilite"],
+    "LinkedDropDownListChamp": ["primaryValue", "secondaryValue"],
+    "MultipleDropDownListChamp": ["values"],
+    "PieceJustificativeChamp": ["files"],
+    "AddressChamp": ["address"],
+    "CommuneChamp": ["commune", "departement"],
+    "DepartementChamp": ["departement"],
+    "RegionChamp": ["region"],
+    "PaysChamp": ["pays"],
+    "SiretChamp": ["etablissement"],
+}
 
-def save_valeur_donnee(dossier_number: int, donnee_id: int, value: str) -> ValeurDonnee:
-    valeur = ValeurDonnee(**{"dossier_number": dossier_number, "donnee_id": donnee_id, "valeur": value})
+def save_valeur_donnee(dossier_number: int, donnee_id: int, champ: dict) -> ValeurDonnee:
+    """
+    Créé en BDD une valeur d'un champ pour un dossier
+    :param dossier_number: Numéro du dossier associé
+    :param donnee_id: ID de la donnée associée
+    :param champ: Caractéristique du champ 
+    :return: Donnee
+    """
+    # Récupération des données additionnelles en fonction du type du champ
+    additional_data = {}
+    if champ["__typename"] in _mappingTypes.keys():
+        for field in _mappingTypes[champ["__typename"]]:
+            additional_data[field] = champ[field]
+
+    # Création de la valeur en BDD 
+    valeur = ValeurDonnee(**{
+        "dossier_number": dossier_number,
+        "donnee_id": donnee_id,
+        "valeur": champ["stringValue"],
+        "additional_data": additional_data
+    })
     db.session.add(valeur)
     db.session.flush()
     return valeur
 
 
 def commit_demarche() -> None:
+    """
+    Commit tous les changement effectués en BDD
+    :return: None
+    """
     db.session.commit()
