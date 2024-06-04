@@ -104,7 +104,7 @@ class DemarcheSimplifie(Resource):
                     "demarche_number": demarche_number,
                     "revision_id": revision_id,
                     "state": dossier_dict["state"],
-                    "siret": dossier_dict["demandeur"]["siret"],
+                    "siret": dossier_dict["demandeur"]["siret"] if "siret" in dossier_dict["demandeur"] else None,
                     "date_depot": dossier_dict["dateDepot"],
                     "date_derniere_modification": dossier_dict["dateDerniereModification"],
                 }
