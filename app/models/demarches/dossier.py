@@ -16,13 +16,14 @@ class Dossier(db.Model):
     __bind_key__ = "demarches_simplifiees"
 
     number: Column[int] = Column(Integer, primary_key=True, nullable=False)
-
     demarche_number: Column[int] = Column(Integer, ForeignKey("demarches.number", ondelete="CASCADE"), nullable=False)
-    demarche: Mapped[Demarche] = relationship("Demarche", lazy="select")
-
+    revision_id: Column[str] = Column(String, primary_key=True, nullable=False)
     state: Column[str] = Column(String, nullable=False)
+    siret: Column[str] = Column(String, nullable=True)
+    date_depot: Column[datetime] = Column(DateTime, nullable=False)
     date_derniere_modification: Column[datetime] = Column(DateTime, nullable=False)
-    siret: Column[str] = Column(String, nullable=False)
+
+    demarche: Mapped[Demarche] = relationship("Demarche", lazy="select")
 
 
 class DossierSchema(ma.SQLAlchemyAutoSchema):

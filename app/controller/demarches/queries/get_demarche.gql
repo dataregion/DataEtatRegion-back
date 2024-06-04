@@ -1,0 +1,141 @@
+query getDemarche($demarcheNumber: Int!) {
+    demarche(number: $demarcheNumber) {
+        number
+        title
+        state
+        dateCreation
+        dateFermeture
+        chorusConfiguration {
+            centreDeCout
+            domaineFonctionnel
+            referentielDeProgrammation
+        }
+        revisions {
+            id
+            champDescriptors {
+                id
+                label
+                __typename
+            }
+            annotationDescriptors {
+                id
+                label
+                __typename
+            }
+        }
+        activeRevision {
+            id
+        }
+        dossiers {
+            nodes {
+                number
+                state
+                dateDepot
+                dateDerniereModification
+                demarche {
+                    revision {
+                        id
+                    }
+                }
+                champs {
+                    label
+                    __typename
+                    stringValue
+                    ... on DateChamp {
+                        date
+                    }
+                    ... on DatetimeChamp {
+                        datetime
+                    }
+                    ... on CheckboxChamp {
+                        checked: value
+                    }
+                    ... on DecimalNumberChamp {
+                        decimalNumber: value
+                    }
+                    ... on IntegerNumberChamp {
+                        integerNumber: value
+                    }
+                    ... on CiviliteChamp {
+                        civilite: value
+                    }
+                    ... on LinkedDropDownListChamp {
+                        primaryValue
+                        secondaryValue
+                    }
+                    ... on MultipleDropDownListChamp {
+                        values
+                    }
+                    ... on PieceJustificativeChamp {
+                        files {
+                            filename
+                            contentType
+                            checksum
+                            byteSize: byteSizeBigInt
+                            url
+                        }
+                    }
+                    ... on AddressChamp {
+                        address {
+                            label
+                            type
+                            streetAddress
+                            streetNumber
+                            streetName
+                            postalCode
+                            cityName
+                            cityCode
+                            departmentName
+                            departmentCode
+                            regionName
+                            regionCode
+                        }
+                    }
+                    ... on CommuneChamp {
+                        commune {
+                            name
+                            code
+                        }
+                        departement {
+                            name
+                            code
+                        }
+                    }
+                    ... on DepartementChamp {
+                        departement {
+                            name
+                            code
+                        }
+                    }
+                    ... on RegionChamp {
+                        region {
+                            name
+                            code
+                        }
+                    }
+                    ... on PaysChamp {
+                        pays {
+                            name
+                            code
+                        }
+                    }
+                    ... on SiretChamp {
+                        etablissement {
+                            siret
+                        }
+                    }
+                }
+                annotations {
+                    label
+                    __typename
+                    stringValue
+                }
+                demandeur {
+                    ... on PersonneMorale {
+                        siret
+                    }
+                }
+            }
+        }
+    }
+}
