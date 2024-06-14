@@ -117,66 +117,21 @@ def get_or_create_donnee(champ: dict, section_name: str, demarche_number: int) -
 
 # Nom des champs additionnels à récupérer en fonction du type du champ
 _mappingTypes = [
-    {
-        "types": ["DateChamp"],
-        "fields": ["date"]
-    },
-    {
-        "types": ["DatetimeChamp"],
-        "fields": ["datetime"]
-    },
-    {
-        "types": ["CheckboxChamp"],
-        "fields": ["checked"]
-    },
-    {
-        "types": ["DecimalNumberChamp"],
-        "fields": ["decimalNumber"]
-    },
-    {
-        "types": ["IntegerNumberChamp", "NumberChamp"],
-        "fields": ["integerNumber"]
-    },
-    {
-        "types": ["CiviliteChamp"],
-        "fields": ["civilite"]
-    },
-    {
-        "types": ["LinkedDropDownListChamp"],
-        "fields": ["primaryValue", "secondaryValue"]
-    },
-    {
-        "types": ["MultipleDropDownListChamp"],
-        "fields": ["values"]
-    },
-    {
-        "types": ["PieceJustificativeChamp"],
-        "fields": ["files"]
-    },
-    {
-        "types": ["AddressChamp"],
-        "fields": ["address"]
-    },
-    {
-        "types": ["CommuneChamp"],
-        "fields": ["commune", "departement"]
-    },
-    {
-        "types": ["DepartementChamp"],
-        "fields": ["departement"]
-    },
-    {
-        "types": ["RegionChamp"],
-        "fields": ["region"]
-    },
-    {
-        "types": ["PaysChamp"],
-        "fields": ["pays"]
-    },
-    {
-        "types": ["SiretChamp"],
-        "fields": ["etablissement"]
-    }
+    {"types": ["DateChamp"], "fields": ["date"]},
+    {"types": ["DatetimeChamp"], "fields": ["datetime"]},
+    {"types": ["CheckboxChamp"], "fields": ["checked"]},
+    {"types": ["DecimalNumberChamp"], "fields": ["decimalNumber"]},
+    {"types": ["IntegerNumberChamp", "NumberChamp"], "fields": ["integerNumber"]},
+    {"types": ["CiviliteChamp"], "fields": ["civilite"]},
+    {"types": ["LinkedDropDownListChamp"], "fields": ["primaryValue", "secondaryValue"]},
+    {"types": ["MultipleDropDownListChamp"], "fields": ["values"]},
+    {"types": ["PieceJustificativeChamp"], "fields": ["files"]},
+    {"types": ["AddressChamp"], "fields": ["address"]},
+    {"types": ["CommuneChamp"], "fields": ["commune", "departement"]},
+    {"types": ["DepartementChamp"], "fields": ["departement"]},
+    {"types": ["RegionChamp"], "fields": ["region"]},
+    {"types": ["PaysChamp"], "fields": ["pays"]},
+    {"types": ["SiretChamp"], "fields": ["etablissement"]},
 ]
 
 
