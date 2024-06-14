@@ -116,23 +116,68 @@ def get_or_create_donnee(champ: dict, section_name: str, demarche_number: int) -
 
 
 # Nom des champs additionnels à récupérer en fonction du type du champ
-_mappingTypes = {
-    "DateChamp": ["date"],
-    "DatetimeChamp": ["datetime"],
-    "CheckboxChamp": ["checked"],
-    "DecimalNumberChamp": ["decimalNumber"],
-    "IntegerNumberChamp": ["integerNumber"],
-    "CiviliteChamp": ["civilite"],
-    "LinkedDropDownListChamp": ["primaryValue", "secondaryValue"],
-    "MultipleDropDownListChamp": ["values"],
-    "PieceJustificativeChamp": ["files"],
-    "AddressChamp": ["address"],
-    "CommuneChamp": ["commune", "departement"],
-    "DepartementChamp": ["departement"],
-    "RegionChamp": ["region"],
-    "PaysChamp": ["pays"],
-    "SiretChamp": ["etablissement"],
-}
+_mappingTypes = [
+    {
+        "types": ["DateChamp"],
+        "fields": ["date"]
+    },
+    {
+        "types": ["DatetimeChamp"],
+        "fields": ["datetime"]
+    },
+    {
+        "types": ["CheckboxChamp"],
+        "fields": ["checked"]
+    },
+    {
+        "types": ["DecimalNumberChamp"],
+        "fields": ["decimalNumber"]
+    },
+    {
+        "types": ["IntegerNumberChamp", "NumberChamp"],
+        "fields": ["integerNumber"]
+    },
+    {
+        "types": ["CiviliteChamp"],
+        "fields": ["civilite"]
+    },
+    {
+        "types": ["LinkedDropDownListChamp"],
+        "fields": ["primaryValue", "secondaryValue"]
+    },
+    {
+        "types": ["MultipleDropDownListChamp"],
+        "fields": ["values"]
+    },
+    {
+        "types": ["PieceJustificativeChamp"],
+        "fields": ["files"]
+    },
+    {
+        "types": ["AddressChamp"],
+        "fields": ["address"]
+    },
+    {
+        "types": ["CommuneChamp"],
+        "fields": ["commune", "departement"]
+    },
+    {
+        "types": ["DepartementChamp"],
+        "fields": ["departement"]
+    },
+    {
+        "types": ["RegionChamp"],
+        "fields": ["region"]
+    },
+    {
+        "types": ["PaysChamp"],
+        "fields": ["pays"]
+    },
+    {
+        "types": ["SiretChamp"],
+        "fields": ["etablissement"]
+    }
+]
 
 
 def save_valeur_donnee(dossier_number: int, donnee_id: int, champ: dict) -> ValeurDonnee:
@@ -145,9 +190,10 @@ def save_valeur_donnee(dossier_number: int, donnee_id: int, champ: dict) -> Vale
     """
     # Récupération des données additionnelles en fonction du type du champ
     additional_data = {}
-    if champ["__typename"] in _mappingTypes.keys():
-        for field in _mappingTypes[champ["__typename"]]:
-            additional_data[field] = champ[field]
+    for mapping in _mappingTypes:
+        if champ["__typename"] in mapping["types"]:
+            for field in mapping["fields"]:
+                additional_data[field] = champ[field]
 
     # Création de la valeur en BDD
     valeur = ValeurDonnee(

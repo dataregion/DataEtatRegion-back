@@ -85,20 +85,30 @@ class DemarcheSimplifie(Resource):
 
         # Sauvegarde des dossiers de la démarche
         if len(demarche_dict["data"]["demarche"]["dossiers"]):
-            # Récupération de la révision du dossir
-            revision_id = demarche_dict["data"]["demarche"]["dossiers"]["nodes"][0]["demarche"]["revision"]["id"]
-            revision = next(r for r in demarche_dict["data"]["demarche"]["revisions"] if r["id"] == revision_id)
 
-            # Récupération des champs et des annotations en amont de l'insert des dossiers
-            donnees: dict[Donnee] = []
-            for champ in revision["champDescriptors"]:
-                donnees.append(get_or_create_donnee(champ, "champ", demarche.number))
-            for annotation in revision["annotationDescriptors"]:
-                donnees.append(get_or_create_donnee(annotation, "annotation", demarche.number))
-            logging.info("[API DEMARCHES] Récupération des champs et annotations des dossiers")
+            # Cache de la revision utilisée
+            current_revision = None
 
             # Insertion des dossiers et des valeurs des champs du dossier
             for dossier_dict in demarche_dict["data"]["demarche"]["dossiers"]["nodes"]:
+
+                donnees: dict[Donnee] = []
+
+                # Récupération de la révision du dossier
+                if current_revision != dossier_dict["demarche"]["revision"]["id"]:
+                    revision_id = dossier_dict["demarche"]["revision"]["id"]
+                    revision = next(r for r in demarche_dict["data"]["demarche"]["revisions"] if r["id"] == revision_id)
+                    current_revision = dossier_dict["demarche"]["revision"]["id"]
+
+                    # Récupération des champs et des annotations en amont de l'insert des dossiers
+                    for champ in revision["champDescriptors"]:
+                        donnees.append(get_or_create_donnee(champ, "champ", demarche.number))
+                    for annotation in revision["annotationDescriptors"]:
+                        donnees.append(get_or_create_donnee(annotation, "annotation", demarche.number))
+                    logging.info(f"[API DEMARCHES] Récupération des champs et annotations du dossier {dossier_dict['number']}")
+                else:
+                    logging.info(f"[API DEMARCHES] Même révision, on travaille avec les mêmes données pour le dossier {dossier_dict['number']}")
+
                 dossier_data = {
                     "number": dossier_dict["number"],
                     "demarche_number": demarche_number,
@@ -116,7 +126,7 @@ class DemarcheSimplifie(Resource):
                             d
                             for d in donnees
                             if d.section_name == "champ"
-                            and d.type_name == champ["__typename"] + "Descriptor"
+                            and d.type_name == (champ["__typename"] + "Descriptor" if not str(champ["__typename"]).endswith("NumberChamp") else "NumberChampDescriptor") 
                             and d.label == champ["label"]
                         ),
                         None,
@@ -130,13 +140,13 @@ class DemarcheSimplifie(Resource):
                             d
                             for d in donnees
                             if d.section_name == "annotation"
-                            and d.type_name == champ["__typename"] + "Descriptor"
-                            and d.label == champ["label"]
+                            and d.type_name == (annot["__typename"] + "Descriptor" if not str(annot["__typename"]).endswith("NumberChamp") else "NumberChampDescriptor") 
+                            and d.label == annot["label"]
                         ),
                         None,
                     )
                     if donnee is not None:
-                        save_valeur_donnee(dossier.number, donnee.id, annot["stringValue"])
+                        save_valeur_donnee(dossier.number, donnee.id, annot)
 
             logging.info("[API DEMARCHES] Sauvegarde des dossiers en BDD")
 
