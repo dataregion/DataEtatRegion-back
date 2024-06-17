@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, ForeignKey, Integer
+from sqlalchemy import Column, String, JSON, ForeignKey, Integer
 from sqlalchemy.orm import relationship, Mapped
 
 from app import db, ma
@@ -21,7 +21,8 @@ class ValeurDonnee(db.Model):
     donnee_id: Column[int] = Column(Integer, ForeignKey("donnees.id", ondelete="CASCADE"), nullable=False)
     donnee: Mapped[Donnee] = relationship("Donnee", lazy="select")
 
-    valeur: Column[str] = Column(String, nullable=False)
+    valeur: Column[str] = Column(String, nullable=True)
+    additional_data: Column[str] = Column(JSON, nullable=True)
 
 
 class DonneeSchema(ma.SQLAlchemyAutoSchema):
