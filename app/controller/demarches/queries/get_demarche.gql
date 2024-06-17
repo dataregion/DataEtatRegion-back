@@ -129,6 +129,89 @@ query getDemarche($demarcheNumber: Int!) {
                     label
                     __typename
                     stringValue
+                    ... on DateChamp {
+                        date
+                    }
+                    ... on DatetimeChamp {
+                        datetime
+                    }
+                    ... on CheckboxChamp {
+                        checked: value
+                    }
+                    ... on DecimalNumberChamp {
+                        decimalNumber: value
+                    }
+                    ... on IntegerNumberChamp {
+                        integerNumber: value
+                    }
+                    ... on CiviliteChamp {
+                        civilite: value
+                    }
+                    ... on LinkedDropDownListChamp {
+                        primaryValue
+                        secondaryValue
+                    }
+                    ... on MultipleDropDownListChamp {
+                        values
+                    }
+                    ... on PieceJustificativeChamp {
+                        files {
+                            filename
+                            contentType
+                            checksum
+                            byteSize: byteSizeBigInt
+                            url
+                        }
+                    }
+                    ... on AddressChamp {
+                        address {
+                            label
+                            type
+                            streetAddress
+                            streetNumber
+                            streetName
+                            postalCode
+                            cityName
+                            cityCode
+                            departmentName
+                            departmentCode
+                            regionName
+                            regionCode
+                        }
+                    }
+                    ... on CommuneChamp {
+                        commune {
+                            name
+                            code
+                        }
+                        departement {
+                            name
+                            code
+                        }
+                    }
+                    ... on DepartementChamp {
+                        departement {
+                            name
+                            code
+                        }
+                    }
+                    ... on RegionChamp {
+                        region {
+                            name
+                            code
+                        }
+                    }
+                    ... on PaysChamp {
+                        pays {
+                            name
+                            code
+                        }
+                    }
+                    ... on SiretChamp {
+                        etablissement {
+                            siret
+                        }
+                    }
                 }
                 demandeur {
                     ... on PersonneMorale {
