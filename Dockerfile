@@ -1,4 +1,4 @@
-FROM python:3.12.1-alpine
+FROM python:3.12.4-alpine
 
 # Install postgres c dependencies
 RUN \
