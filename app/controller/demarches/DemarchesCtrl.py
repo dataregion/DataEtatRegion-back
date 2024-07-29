@@ -55,8 +55,8 @@ class DemarcheSimplifie(Resource):
     def post(self):
         # Vérification si la démarche existe déjà en BDD, si oui on la supprime
         demarche_number = int(request.form["id"])
-        demarche = DemarcheService.exists(demarche_number)
-        if DemarcheService.exists(demarche_number):
+        demarche = DemarcheService.find(demarche_number)
+        if demarche is not None:
             DemarcheService.delete(demarche)
             logging.info("[API DEMARCHES] La démarche existait déjà en BDD, maintenant supprimée pour réintégration")
 
@@ -87,10 +87,10 @@ class DemarcheSimplifie(Resource):
                 logging.info(f"[API DEMARCHES] Sauvegarde du dossier {dossier_dict['number']}")
 
                 for champ in dossier_dict["champs"]:
-                    ValeurService.save(dossier.number, map(lambda d: d.section_name == "champ", donnees), champ)
+                    ValeurService.save(dossier.number, [d for d in donnees if d.section_name == "champ"], champ)
 
                 for annot in dossier_dict["annotations"]:
-                    ValeurService.save(dossier.number, map(lambda d: d.section_name == "annotation", donnees), champ)
+                    ValeurService.save(dossier.number, [d for d in donnees if d.section_name == "annotation"], annot)
 
             logging.info("[API DEMARCHES] Sauvegarde des dossiers en BDD")
 
