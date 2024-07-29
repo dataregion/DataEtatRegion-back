@@ -1,12 +1,16 @@
+from dataclasses import dataclass
 from app import db, ma
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, JSON, ForeignKey
+from typing import List
+from sqlalchemy.orm import relationship, Mapped
 
 
+@dataclass
 class Demarche(db.Model):
     """
-    Modèle pour stocker les tâches d'insert de données financières à effectuer
+    Modèle pour stocker les démarches DS
     """
 
     __tablename__ = "demarches"
@@ -20,6 +24,9 @@ class Demarche(db.Model):
     referentiel_programmation: Column[str] = Column(String, nullable=False)
     date_creation: Column[datetime] = Column(DateTime, nullable=False)
     date_fermeture: Column[datetime] = Column(DateTime, nullable=True)
+    date_import: Column[datetime] = Column(DateTime, nullable=True)
+    reconciliation: Column[str] = Column(JSON, nullable=True)
+    affichage: Column[str] = Column(JSON, nullable=True)
 
 
 class DemarcheSchema(ma.SQLAlchemyAutoSchema):

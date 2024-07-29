@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import Column, String, ForeignKey, Integer, DateTime
@@ -7,6 +8,7 @@ from app import db, ma
 from app.models.demarches.demarche import Demarche
 
 
+@dataclass
 class Dossier(db.Model):
     """
     Modèle pour stocker les tâches d'insert de données financières à effectuer
