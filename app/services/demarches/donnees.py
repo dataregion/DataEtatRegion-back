@@ -1,4 +1,3 @@
-from datetime import datetime
 import logging
 
 from app import db
@@ -12,12 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 class DonneeService:
-
     @staticmethod
     def find_by_demarche(demarche_number: int) -> list[Donnee]:
         stmt = db.select(Donnee).where(Donnee.demarche_number == demarche_number)
         return db.session.execute(stmt).scalars()
-
 
     @staticmethod
     def get_or_create(champ: dict, section_name: str, demarche_number: int) -> Donnee:
@@ -47,4 +44,3 @@ class DonneeService:
         db.session.add(donnee)
         db.session.flush()
         return donnee
-

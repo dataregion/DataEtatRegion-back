@@ -1,8 +1,8 @@
 from app import db
 from app.models.demarches.type import Type
 
-class TypeService:
 
+class TypeService:
     @staticmethod
     def get_or_create(type_name: str) -> Type:
         """

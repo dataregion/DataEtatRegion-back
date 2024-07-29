@@ -41,7 +41,6 @@ def get_query_from_file(query_filename: str):
 
 @api.route("/demarche")
 class DemarcheSimplifie(Resource):
-
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     def get(self):
@@ -50,7 +49,6 @@ class DemarcheSimplifie(Resource):
         demarche: Demarche = DemarcheService.find(demarche_number)
         return make_response(jsonify(demarche), HTTPStatus.OK)
 
-    
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     @api.expect(reqpars_get_demarche)
@@ -78,13 +76,11 @@ class DemarcheSimplifie(Resource):
 
         # Sauvegarde des dossiers de la démarche
         if len(demarche_dict["data"]["demarche"]["dossiers"]):
-            # Cache de la revision utilisée
-            current_revision = None
-
             # Insertion des dossiers et des valeurs des champs du dossier
             for dossier_dict in demarche_dict["data"]["demarche"]["dossiers"]["nodes"]:
-
-                donnees: list[Donnee] = DossierService.get_donnees(dossier_dict, demarche.number, demarche_dict["data"]["demarche"]["revisions"])
+                donnees: list[Donnee] = DossierService.get_donnees(
+                    dossier_dict, demarche.number, demarche_dict["data"]["demarche"]["revisions"]
+                )
 
                 # Sauvegarde du dossier
                 dossier: Dossier = DossierService.save(demarche_number, dossier_dict)
@@ -108,7 +104,6 @@ class DemarchesReconciliation(Resource):
     @api.doc(security="Bearer")
     @api.expect(reqpars_get_demarche)
     def post(self):
-
         # Vérification si la démarche existe déjà en BDD, si oui on la supprime
         demarche_number = int(request.form["id"])
         if not DemarcheService.exists(demarche_number):
@@ -130,7 +125,7 @@ class DemarchesReconciliation(Resource):
                 reconciliation["refProg"] = request.form["refProg"]
             if "annee" in request.form:
                 reconciliation["annee"] = request.form["annee"]
-                
+
             if "commune" in request.form:
                 reconciliation["commune"] = request.form["commune"]
             if "epci" in request.form:
@@ -155,7 +150,6 @@ class DemarchesAffichage(Resource):
     @api.doc(security="Bearer")
     @api.expect(reqpars_get_demarche)
     def post(self):
-
         # Vérification si la démarche existe déjà en BDD, si oui on la supprime
         demarche_number = int(request.form["id"])
         if not DemarcheService.exists(demarche_number):
@@ -189,8 +183,6 @@ class DemarchesAffichage(Resource):
 
 @api.route("/donnees")
 class Donnees(Resource):
-
-
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     def get(self):
@@ -214,9 +206,9 @@ class ValeurDonneeSimplifie(Resource):
         """
         demarche_number = int(request.args["idDemarche"])
         statutDossier = request.args["statutDossier"]
-        idDonnees: list[str] = request.args["idDonnees"].split(',')
+        idDonnees: list[str] = request.args["idDonnees"].split(",")
         dossiers: list[int] = [row.number for row in DossierService.find_by_demarche(demarche_number, statutDossier)]
-        
+
         valeurs: list[ValeurDonnee] = []
         for idDonnee in idDonnees:
             valeurs.extend(ValeurService.find_by_dossiers(dossiers, int(idDonnee)))

@@ -32,7 +32,7 @@ class BuilderStatementFinancialLine:
     def n_ej_in(self, n_ej: list[str] | None = None):
         self._stmt_where_field_in(FinancialLines.n_ej, n_ej)
         return self
-        
+
     def source_is(self, source: str | None = None):
         if source is not None:
             self._stmt = self._stmt.where(FinancialLines.source == source)

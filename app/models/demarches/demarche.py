@@ -2,9 +2,7 @@ from dataclasses import dataclass
 from app import db, ma
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, JSON, ForeignKey
-from typing import List
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy import Column, Integer, String, DateTime, JSON
 
 
 @dataclass

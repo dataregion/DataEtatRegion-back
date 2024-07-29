@@ -1,4 +1,3 @@
-from datetime import datetime
 import logging
 
 from app import db
@@ -9,31 +8,23 @@ from app.services.demarches.donnees import DonneeService
 
 
 class DossierService:
-
     @staticmethod
     def find_by_demarche(demarche_number: int, statut: str) -> list[Dossier]:
         stmt = db.select(Dossier).where(Dossier.demarche_number == demarche_number, Dossier.state == statut)
         return db.session.execute(stmt).scalars()
 
-
     @staticmethod
-    def get_donnees(dossier_dict: dict, demarche_number : str, revisions: list[dict]):
-        
+    def get_donnees(dossier_dict: dict, demarche_number: str, revisions: list[dict]):
         donnees: dict[Donnee] = []
-        # Récupération de la révision du dossier
-        if current_revision != dossier_dict["demarche"]["revision"]["id"]:
-            revision = next(r for r in revisions if r["id"] == dossier_dict["demarche"]["revision"]["id"])
-            current_revision = dossier_dict["demarche"]["revision"]["id"]
+        revision = next(r for r in revisions if r["id"] == dossier_dict["demarche"]["revision"]["id"])
 
-            # Récupération des champs et des annotations en amont de l'insert des dossiers
-            for champ in revision["champDescriptors"]:
-                donnees.append(DonneeService.get_or_create(champ, "champ", demarche_number))
-            for annotation in revision["annotationDescriptors"]:
-                donnees.append(DonneeService.get_or_create(annotation, "annotation", demarche_number))
-            logging.info(f"[API DEMARCHES] Récupération des champs du dossier {dossier_dict['number']}")
-        else:
-            logging.info(f"[API DEMARCHES] Même révision, mêmes données du dossier {dossier_dict['number']}")
-
+        # Récupération des champs et des annotations en amont de l'insert des dossiers
+        for champ in revision["champDescriptors"]:
+            donnees.append(DonneeService.get_or_create(champ, "champ", demarche_number))
+        for annotation in revision["annotationDescriptors"]:
+            donnees.append(DonneeService.get_or_create(annotation, "annotation", demarche_number))
+        logging.info(f"[API DEMARCHES] Récupération des champs du dossier {dossier_dict['number']}")
+        return donnees
 
     @staticmethod
     def save(demarche_number: str, dossier_dict: dict) -> Dossier:
@@ -55,4 +46,3 @@ class DossierService:
         db.session.add(dossier)
         db.session.flush()
         return dossier
-

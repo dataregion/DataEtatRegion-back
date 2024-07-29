@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship, Mapped
 from app import db, ma
 from app.models.demarches.demarche import Demarche
 
+
 @dataclass
 class Donnee(db.Model):
     """

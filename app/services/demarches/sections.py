@@ -1,9 +1,8 @@
-
 from app import db
 from app.models.demarches.section import Section
 
-class SectionService:
 
+class SectionService:
     @staticmethod
     def get_or_create(section_name: str) -> Section:
         """
@@ -19,4 +18,3 @@ class SectionService:
         db.session.add(section)
         db.session.flush()
         return section
-

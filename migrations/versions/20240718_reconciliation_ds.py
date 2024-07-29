@@ -8,7 +8,6 @@ Create Date: 2024-07-18 11:40:25.257289
 from alembic import op
 import sqlalchemy as sa
 import logging
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20240718_reconciliation_ds'

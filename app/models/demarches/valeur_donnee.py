@@ -7,6 +7,7 @@ from marshmallow import fields
 from app.models.demarches.donnee import Donnee
 from app.models.demarches.dossier import Dossier
 
+
 @dataclass
 class ValeurDonnee(db.Model):
     """
@@ -35,4 +36,3 @@ class ValeurDonneeSchema(ma.SQLAlchemyAutoSchema):
     dossier_number = fields.Integer()
     donnee_id = fields.Integer()
     valeur = fields.String()
-    

@@ -18,7 +18,6 @@ def commit_session() -> None:
 
 
 class DemarcheService:
-
     @staticmethod
     def exists(number: int) -> Demarche:
         """
@@ -27,7 +26,6 @@ class DemarcheService:
         :return: bool
         """
         return db.session.query(Demarche.query.filter(Demarche.number == number).exists()).scalar()
-
 
     @staticmethod
     def find(number: int) -> Demarche:
@@ -38,7 +36,6 @@ class DemarcheService:
         """
         stmt = db.select(Demarche).where(Demarche.number == number)
         return db.session.execute(stmt).scalar_one_or_none()
-
 
     @staticmethod
     def save(demarche_number: str, demarche_dict: dict) -> Demarche:
@@ -58,13 +55,12 @@ class DemarcheService:
             ],
             "date_creation": demarche_dict["data"]["demarche"]["dateCreation"],
             "date_fermeture": demarche_dict["data"]["demarche"]["dateFermeture"],
-            "date_import": datetime.now()
+            "date_import": datetime.now(),
         }
         demarche: Demarche = Demarche(**demarche_data)
         db.session.add(demarche)
         db.session.flush()
         return demarche
-
 
     @staticmethod
     def update_reconciliation(number: int, reconciliation: dict) -> None:
@@ -74,15 +70,10 @@ class DemarcheService:
         :param reconciliation: Paramètres de la réconciliation
         :return: Demarche
         """
-        stmt = (
-            update(Demarche)
-            .where(Demarche.number == number)
-            .values(reconciliation=reconciliation)
-        )
-        demarche = db.session.execute(stmt)
+        stmt = update(Demarche).where(Demarche.number == number).values(reconciliation=reconciliation)
+        db.session.execute(stmt)
         db.session.flush()
         db.session.commit()
-
 
     @staticmethod
     def update_affichage(number: int, affichage: dict) -> None:
@@ -92,15 +83,10 @@ class DemarcheService:
         :param reconciliation: Paramètres de la réconciliation
         :return: Demarche
         """
-        stmt = (
-            update(Demarche)
-            .where(Demarche.number == number)
-            .values(affichage=affichage)
-        )
+        stmt = update(Demarche).where(Demarche.number == number).values(affichage=affichage)
         db.session.execute(stmt)
         db.session.flush()
         db.session.commit()
-
 
     @staticmethod
     def delete(demarche: Demarche) -> None:
@@ -112,5 +98,3 @@ class DemarcheService:
         db.session.delete(demarche)
         db.session.flush()
         db.session.commit()
-
-

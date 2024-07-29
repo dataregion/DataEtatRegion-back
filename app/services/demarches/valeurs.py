@@ -4,14 +4,14 @@ from app.models.demarches.valeur_donnee import ValeurDonnee, ValeurDonneeSchema
 
 
 class ValeurService:
-
     @staticmethod
     def find_by_dossiers(idDossiers: list[int], idDonnee: int) -> list[ValeurDonnee]:
-        stmt = db.select(ValeurDonnee).where(ValeurDonnee.dossier_number.in_(idDossiers), ValeurDonnee.donnee_id == idDonnee)
+        stmt = db.select(ValeurDonnee).where(
+            ValeurDonnee.dossier_number.in_(idDossiers), ValeurDonnee.donnee_id == idDonnee
+        )
         valeur_schema = ValeurDonneeSchema(many=True)
         return valeur_schema.dump(db.session.execute(stmt).scalars())
 
-    
     @staticmethod
     def save(dossier_number: int, donnees: list[Donnee], champ: dict) -> ValeurDonnee:
         """
