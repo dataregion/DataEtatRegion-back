@@ -1,4 +1,5 @@
 import logging
+from sqlalchemy import exc
 
 from app import db
 from app.models.demarches.dossier import Dossier
@@ -7,11 +8,16 @@ from app.models.demarches.donnee import Donnee
 from app.services.demarches.donnees import DonneeService
 
 
+class DossierExistsException(Exception):
+    def __init__(self):
+        super().__init__("Le dossier existe déjà en BDD")
+
+
 class DossierService:
     @staticmethod
     def find_by_demarche(demarche_number: int, statut: str) -> list[Dossier]:
         stmt = db.select(Dossier).where(Dossier.demarche_number == demarche_number, Dossier.state == statut)
-        return db.session.execute(stmt).scalars()
+        return db.session.execute(stmt).all()
 
     @staticmethod
     def get_donnees(dossier_dict: dict, demarche_number: str, revisions: list[dict]):
@@ -33,16 +39,21 @@ class DossierService:
         :param dossier: Objet à sauvegarder
         :return: Dossier
         """
-        dossier_data = {
-            "number": dossier_dict["number"],
-            "demarche_number": demarche_number,
-            "revision_id": dossier_dict["demarche"]["revision"]["id"],
-            "state": dossier_dict["state"],
-            "siret": dossier_dict["demandeur"]["siret"] if "siret" in dossier_dict["demandeur"] else None,
-            "date_depot": dossier_dict["dateDepot"],
-            "date_derniere_modification": dossier_dict["dateDerniereModification"],
-        }
-        dossier: Dossier = Dossier(**dossier_data)
-        db.session.add(dossier)
-        db.session.flush()
+        dossier: Dossier = None
+        try:
+            dossier_data = {
+                "number": dossier_dict["number"],
+                "demarche_number": demarche_number,
+                "revision_id": dossier_dict["demarche"]["revision"]["id"],
+                "state": dossier_dict["state"],
+                "siret": dossier_dict["demandeur"]["siret"] if "siret" in dossier_dict["demandeur"] else None,
+                "date_depot": dossier_dict["dateDepot"],
+                "date_derniere_modification": dossier_dict["dateDerniereModification"],
+            }
+            dossier: Dossier = Dossier(**dossier_data)
+            db.session.add(dossier)
+            db.session.flush()
+        except exc.IntegrityError:
+            db.session.rollback()
+            raise DossierExistsException()
         return dossier

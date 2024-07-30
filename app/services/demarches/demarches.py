@@ -3,10 +3,15 @@ import logging
 
 from app import db
 from app.models.demarches.demarche import Demarche
-from sqlalchemy import update
+from sqlalchemy import update, exc
 
 
 logger = logging.getLogger(__name__)
+
+
+class DemarcheExistsException(Exception):
+    def __init__(self):
+        super().__init__("La démarche existe déjà en BDD")
 
 
 def commit_session() -> None:
@@ -44,22 +49,27 @@ class DemarcheService:
         :param demarche: Objet à sauvegarder
         :return: Demarche
         """
-        demarche_data = {
-            "number": demarche_number,
-            "title": demarche_dict["data"]["demarche"]["title"],
-            "state": demarche_dict["data"]["demarche"]["state"],
-            "centre_couts": demarche_dict["data"]["demarche"]["chorusConfiguration"]["centreDeCout"],
-            "domaine_fonctionnel": demarche_dict["data"]["demarche"]["chorusConfiguration"]["domaineFonctionnel"],
-            "referentiel_programmation": demarche_dict["data"]["demarche"]["chorusConfiguration"][
-                "referentielDeProgrammation"
-            ],
-            "date_creation": demarche_dict["data"]["demarche"]["dateCreation"],
-            "date_fermeture": demarche_dict["data"]["demarche"]["dateFermeture"],
-            "date_import": datetime.now(),
-        }
-        demarche: Demarche = Demarche(**demarche_data)
-        db.session.add(demarche)
-        db.session.flush()
+        demarche: Demarche = None
+        try:
+            demarche_data = {
+                "number": demarche_number,
+                "title": demarche_dict["data"]["demarche"]["title"],
+                "state": demarche_dict["data"]["demarche"]["state"],
+                "centre_couts": demarche_dict["data"]["demarche"]["chorusConfiguration"]["centreDeCout"],
+                "domaine_fonctionnel": demarche_dict["data"]["demarche"]["chorusConfiguration"]["domaineFonctionnel"],
+                "referentiel_programmation": demarche_dict["data"]["demarche"]["chorusConfiguration"][
+                    "referentielDeProgrammation"
+                ],
+                "date_creation": demarche_dict["data"]["demarche"]["dateCreation"],
+                "date_fermeture": demarche_dict["data"]["demarche"]["dateFermeture"],
+                "date_import": datetime.now(),
+            }
+            demarche = Demarche(**demarche_data)
+            db.session.add(demarche)
+            db.session.flush()
+        except exc.IntegrityError:
+            db.session.rollback()
+            raise DemarcheExistsException()
         return demarche
 
     @staticmethod
