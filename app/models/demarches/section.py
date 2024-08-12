@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from app import db, ma
 from sqlalchemy import Column, String
 
 
+@dataclass
 class Section(db.Model):
     """
     Modèle pour stocker les tâches d'insert de données financières à effectuer

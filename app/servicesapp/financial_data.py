@@ -299,6 +299,8 @@ def get_ligne_budgetaire(
 
 
 def search_lignes_budgetaires(
+    n_ej: list | None = None,
+    source: str | None = None,
     code_programme: list | None = None,
     theme: list | None = None,
     siret_beneficiaire: list | None = None,
@@ -329,6 +331,8 @@ def search_lignes_budgetaires(
         .domaine_fonctionnel_in(domaine_fonctionnel)
         .referentiel_programmation_in(referentiel_programmation)
         .source_region_in([source_region])
+        .n_ej_in(n_ej)
+        .source_is(source)
     )
 
     if niveau_geo is not None and code_geo is not None:

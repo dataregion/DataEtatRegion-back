@@ -16,7 +16,7 @@ extra_config = {
     "SQLALCHEMY_BINDS": {
         "settings": f"sqlite:///{settings_path.as_posix()}",
         "audit": f"sqlite:///{audit_path.as_posix()}",
-        "demarches_simplifiees": f"sqlite:///{audit_path.as_posix()}",
+        "demarches_simplifiees": f"sqlite:///{demarches_simplifiees_path.as_posix()}",
     },
     "SQLALCHEMY_DATABASE_URI": f"sqlite:///{file_path.as_posix()}",
     "SECRET_KEY": "secret",
@@ -62,10 +62,12 @@ def connections(app):
         engine = db.engines[None]
         engine_settings = db.engines["settings"]
         engine_audit = db.engines["audit"]
+        engine_ds = db.engines["demarches_simplifiees"]
         connections = {
             "database": engine.connect(),
             "settings": engine_settings.connect(),
             "audit": engine_audit.connect(),
+            "demarches_simplifiees": engine_ds.connect(),
         }
 
         yield connections
@@ -73,6 +75,7 @@ def connections(app):
         connections["database"].close()
         connections["settings"].close()
         connections["audit"].close()
+        connections["demarches_simplifiees"].close()
         # fermerture des connections et des bases
         db.session.close()
         engine.dispose()
@@ -81,6 +84,7 @@ def connections(app):
         os.remove(file_path)
         os.remove(audit_path)
         os.remove(settings_path)
+        os.remove(demarches_simplifiees_path)
 
 
 @pytest.fixture(scope="session")

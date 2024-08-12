@@ -1,11 +1,14 @@
+from dataclasses import dataclass
 from sqlalchemy import Column, String, JSON, ForeignKey, Integer
 from sqlalchemy.orm import relationship, Mapped
 
 from app import db, ma
+from marshmallow import fields
 from app.models.demarches.donnee import Donnee
 from app.models.demarches.dossier import Dossier
 
 
+@dataclass
 class ValeurDonnee(db.Model):
     """
     Modèle pour stocker les tâches d'insert de données financières à effectuer
@@ -25,6 +28,11 @@ class ValeurDonnee(db.Model):
     additional_data: Column[str] = Column(JSON, nullable=True)
 
 
-class DonneeSchema(ma.SQLAlchemyAutoSchema):
+class ValeurDonneeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ValeurDonnee
+        exclude = ("additional_data",)
+
+    dossier_number = fields.Integer()
+    donnee_id = fields.Integer()
+    valeur = fields.String()
