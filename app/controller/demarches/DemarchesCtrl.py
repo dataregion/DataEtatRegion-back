@@ -207,7 +207,7 @@ class ValeurDonneeSimplifie(Resource):
         demarche_number = int(request.args["idDemarche"])
         statutDossier = request.args["statutDossier"]
         idDonnees: list[str] = request.args["idDonnees"].split(",")
-        dossiers: list[int] = [row.number for row in DossierService.find_by_demarche(demarche_number, statutDossier)]
+        dossiers: list[int] = [dossier[0].number for dossier in DossierService.find_by_demarche(demarche_number, statutDossier)]
 
         valeurs: list[ValeurDonnee] = []
         for idDonnee in idDonnees:
