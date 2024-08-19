@@ -97,6 +97,7 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
     move_folder = current_app.config["UPLOAD_FOLDER"] + "/save/"
+    batch_size = 10 if "IMPORT_BATCH_SIZE" not in current_app.config else current_app.config["IMPORT_BATCH_SIZE"]
 
     try:
         current_taskid = current_task.request.id
@@ -115,12 +116,25 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
             },
             chunksize=1000,
         )
+
+        cp_batch = []
         i = 0
+        index = 0
+
         for chunk in data_chunk:
-            for index, line in chunk.iterrows():
+            for _, line in chunk.iterrows():
                 i += 1
                 tech_info = LineImportTechInfo(current_taskid, i)
-                _send_subtask_financial_cp(line.to_json(), index, source_region, annee, tech_info)
+                cp_batch.append({"data": line.to_json(), "task": tech_info})
+
+                if len(cp_batch) == batch_size:
+                    _send_subtask_financial_cp(cp_batch, source_region, annee, index)
+                    cp_batch = []  # Reset the batch
+                    index += batch_size
+
+        # Send any remaining lines in the batch
+        if cp_batch:
+            _send_subtask_financial_cp(cp_batch, source_region, annee, index)
 
         move_folder = os.path.join(move_folder, timestamp)
         if not os.path.exists(move_folder):
@@ -197,8 +211,9 @@ def import_line_financial_ae(
     if cp_list is not None:
         cp_batch = []
         index = start_index  # Assurez-vous que l'index commence correctement
-        while cp_list:
-            k, struct = cp_list.popitem()
+
+        # Itération sur la liste cp_list
+        for struct in cp_list:
             cp_batch.append(struct)
             if len(cp_batch) == batch_size:
                 _send_subtask_financial_cp(cp_batch, source_region, annee, index)
