@@ -2,14 +2,14 @@ import datetime
 import shutil
 from celery import current_task, subtask
 from flask import current_app
-from sqlalchemy import update, delete
+from sqlalchemy import tuple_, delete
 from app import celeryapp, db
 from app.exceptions.exceptions import FinancialException
 import sqlalchemy.exc
-from app.models.financial import FinancialData
 from app.models.financial.Ademe import Ademe
-from app.models.financial.FinancialAe import FinancialAe
+from app.models.financial.FinancialAe import COLUMN_MONTANT_NAME, FinancialAe
 from app.models.financial.FinancialCp import FinancialCp
+from app.models.financial.MontantFinancialAe import MontantFinancialAe
 from app.models.refs.centre_couts import CentreCouts
 from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
@@ -171,6 +171,7 @@ def import_lines_financial_ae(
     try:
         # Préparation des données pour insertion et mise à jour en bulk
         new_aes = []
+        montant_aes = []
         update_mappings = []
 
         for line_data in line_data_list:
@@ -208,11 +209,36 @@ def import_lines_financial_ae(
     if new_aes:
         logger.debug(f"Insertion en bulk de {len(new_aes)} nouvelles instances de FinancialAe.")
         db.session.bulk_save_objects(new_aes)
+        db.session.flush()  # Flush pour obtenir les IDs des nouvelles instances
+
+        # Récupérer les nouvelles instances de FinancialAe pour s'assurer que les IDs sont bien générés
+        ej_poste_ej_pairs = [(ae.n_ej, ae.n_poste_ej) for ae in new_aes]
+        new_aes = (
+            db.session.query(FinancialAe)
+            .filter(tuple_(FinancialAe.n_ej, FinancialAe.n_poste_ej).in_(ej_poste_ej_pairs))
+            .all()
+        )
+
+        # Maintenant que les IDs sont disponibles, créer les objets MontantFinancialAe
+        for new_ae, line_data in zip(new_aes, line_data_list):
+            montant_raw = line_data[COLUMN_MONTANT_NAME]
+            if isinstance(montant_raw, str):
+                montant = float(montant_raw.replace(",", "."))
+            else:
+                montant = float(montant_raw)
+            montant_ae = MontantFinancialAe(montant=montant, annee=line_data[FinancialAe.annee.key])
+            montant_ae.id_financial_ae = new_ae.id  # Associer l'ID de FinancialAe à MontantFinancialAe
+            montant_aes.append(montant_ae)
 
     # Mise à jour en bulk pour les instances existantes
     if update_mappings:
         logger.debug(f"Mise à jour en bulk de {len(update_mappings)} instances existantes de FinancialAe.")
         db.session.bulk_update_mappings(FinancialAe, update_mappings)
+
+    # Insertion des montants associés
+    if montant_aes:
+        logger.debug(f"Insertion de {len(montant_aes)} montants associés à FinancialAe.")
+        db.session.bulk_save_objects(montant_aes)
 
     # Commit une seule fois après toutes les opérations
     db.session.commit()
@@ -468,66 +494,6 @@ def _send_subtask_financial_cp(cp_batch: list[dict], source_region: str, annee: 
     subtask("import_lines_financial_cp").delay(cp_batch, start_index, source_region, annee)
 
 
-def _get_ref_instance(model, code):
-    """Vérifie si une instance avec le code spécifié existe dans la base de données."""
-    return db.session.query(model).filter_by(code=str(code)).one_or_none()
-
-
-def _insert_ref_instance(model, code):
-    """Insère une nouvelle instance dans la base de données si elle n'existe pas."""
-    instance = model(**{"code": code})
-    logger.info(f"[IMPORT][REF] Ajout ref {model.__tablename__} code {code}")
-    try:
-        db.session.add(instance)
-        db.session.commit()
-    except (
-        Exception
-    ) as e:  # Le type exact d'exception peut varier selon la base de données, donc on attrape toutes les exceptions.
-        logger.exception(f"[IMPORT][REF] Error sur ajout ref {model.__tablename__} code {code}")
-        raise e
-    return instance
-
-
-def _check_ref(model, code):
-    """Vérifie si une instance existe, et l'insère si ce n'est pas le cas."""
-    instance = _get_ref_instance(model, code)
-    if not instance:
-        instance = _insert_ref_instance(model, code)
-    return instance
-
-
-def _update_financial_data(data, financial: FinancialData) -> FinancialData:
-    financial.update_attribute(data)
-    db.session.commit()
-    return financial
-
-
-def _check_insert_update_financial(financial_ae: FinancialData | None, line) -> FinancialData | bool:
-    """
-    :param financial_ae: l'instance financière déjà présente ou non
-    :param force_update:
-    :return: True -> Objet à créer
-             False -> rien à faire
-             Instance FINANCIAL -> Objet à update
-    """
-
-    if financial_ae:
-        if financial_ae.should_update(line):
-            logger.info("[IMPORT][FINANCIAL] Doublon trouvé, MAJ à faire")
-            return financial_ae
-        else:
-            logger.info("[IMPORT][FINANCIAL] Doublon trouvé, Pas de maj")
-            return False
-    return True
-
-
-def _insert_financial_data(data: FinancialData) -> FinancialData:
-    db.session.add(data)
-    logger.info("[IMPORT][FINANCIAL] Ajout ligne financière")
-    db.session.commit()
-    return data
-
-
 def _get_ae_for_cp(n_ej: str, n_poste_ej: int) -> int | None:
     """
     Récupère le bon AE pour le lié au CP
@@ -540,25 +506,6 @@ def _get_ae_for_cp(n_ej: str, n_poste_ej: int) -> int | None:
 
     financial_ae = FinancialAe.query.filter_by(n_ej=str(n_ej), n_poste_ej=int(n_poste_ej)).one_or_none()
     return financial_ae.id if financial_ae is not None else None
-
-
-def _make_link_ae_to_cp(id_financial_ae: int, n_ej: str, n_poste_ej: int):
-    """
-    Lance une requête update pour faire le lien entre une AE et des CP
-    :param id_financial_ae: l'id d'une AE
-    :param n_ej : le numero d'ej
-    :parman n_poste_ej : le poste ej
-    :return:
-    """
-
-    stmt = (
-        update(FinancialCp)
-        .where(FinancialCp.n_ej == n_ej)
-        .where(FinancialCp.n_poste_ej == n_poste_ej)
-        .values(id_ae=id_financial_ae)
-    )
-    db.session.execute(stmt)
-    db.session.commit()
 
 
 def _delete_ademe():

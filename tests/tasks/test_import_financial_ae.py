@@ -81,9 +81,9 @@ def test_import_new_line_ae(database, session):
     assert data.n_poste_ej == 5
     assert data.centre_couts == "DREETS0035"
     assert data.referentiel_programmation == "010300000108"
-    # assert len(data.montant_ae) == 1
-    # assert data.montant_ae[0].montant == 22500.12
-    # assert data.montant_ae[0].annee == 2023
+    assert len(data.montant_ae) == 1
+    assert data.montant_ae[0].montant == 22500.12
+    assert data.montant_ae[0].annee == 2023
 
 
 def test_import_update_line_montant_positive_ae(database, session):
