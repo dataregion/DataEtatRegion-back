@@ -174,7 +174,6 @@ def import_lines_financial_ae(
         update_mappings = []
 
         for line_data in line_data_list:
-
             financial_ae_instance = (
                 db.session.query(FinancialAe)
                 .filter_by(n_ej=line_data[FinancialAe.n_ej.key], n_poste_ej=int(line_data[FinancialAe.n_poste_ej.key]))
