@@ -24,6 +24,7 @@ extra_config = {
     "TESTING": True,
     "SERVER_NAME": "localhost",
     "UPLOAD_FOLDER": "/tmp/",
+    "IMPORT_BATCH_SIZE": 10,
 }
 
 

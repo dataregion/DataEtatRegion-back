@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch, call, ANY
+from unittest.mock import patch
 
 import pytest
 
@@ -9,7 +9,7 @@ from app.models.financial.FinancialCp import FinancialCp
 from app.models.refs.siret import Siret
 from app.tasks.financial import LineImportTechInfo
 from app.tasks.financial.import_financial import import_file_cp_financial
-from app.tasks.financial.import_financial import import_line_financial_cp
+from app.tasks.financial.import_financial import import_lines_financial_cp
 from tests import TESTS_PATH
 
 _chorus = TESTS_PATH / "data" / "chorus"
@@ -84,7 +84,7 @@ def test_import_new_line_cp_without_ae(session):
         "app.services.siret.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "81412098400016", "code_commune": "35099"}),
     ):
-        import_line_financial_cp([{"data": data, "task": _next_tech_info()}], 0, "35", 2023)
+        import_lines_financial_cp([{"data": data, "task": _next_tech_info()}], 0, "35", 2023)
 
         # ASSERT
 
@@ -104,7 +104,7 @@ def test_import_new_line_cp_with_siret_empty(session):
     data = '{"programme":"102","domaine_fonctionnel":"0102-01","centre_couts":"BG00\\/DSJCARE035","referentiel_programmation":"BG00\\/010101010113","n_ej":"#","n_poste_ej":"#","n_dp":1222,"date_base_dp":"31.12.2022","date_derniere_operation_dp":"25.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":1001477845,"fournisseur_paye_label":"SANS AE","siret":"#","compte_code":"PCE\\/6512300000","compte_budgetaire":"Transferts aux m\\u00e9nag","groupe_marchandise":"#","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N","montant":"28,26"}'
 
     # DO
-    import_line_financial_cp([{"data": data, "task": _next_tech_info()}], 0, "35", 2023)
+    import_lines_financial_cp([{"data": data, "task": _next_tech_info()}], 0, "35", 2023)
 
     # ASSERT
     data = session.execute(db.select(FinancialCp).filter_by(n_dp="1222")).scalar_one_or_none()
@@ -120,7 +120,7 @@ def test_import_new_line_cp_with_date_empty(session):
         "app.services.siret.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "11111111111111", "code_commune": "35099"}),
     ):
-        import_line_financial_cp([{"data": data, "task": _next_tech_info()}], 0, "35", 2023)
+        import_lines_financial_cp([{"data": data, "task": _next_tech_info()}], 0, "35", 2023)
 
     # ASSERT
     data = session.execute(db.select(FinancialCp).filter_by(n_dp="100004682")).scalar_one_or_none()
@@ -141,8 +141,7 @@ def test_import_line_with_dp_exist(session):
         "app.services.siret.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "2121212", "code_commune": "35099"}),
     ):
-
-        import_line_financial_cp([{"data": data_new_cp, "task": _next_tech_info()}], 0, "35", 2023)
+        import_lines_financial_cp([{"data": data_new_cp, "task": _next_tech_info()}], 0, "35", 2023)
 
     # ASSERT
     data = session.execute(db.select(FinancialCp).filter_by(n_dp="12")).all()
@@ -162,7 +161,7 @@ def test_import_new_line_cp_with_ae(session):
         "app.services.siret.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "00000002121212", "code_commune": "35099"}),
     ):
-        import_line_financial_cp([{"data": data_cp, "task": _next_tech_info()}], 0, "35", 2023)
+        import_lines_financial_cp([{"data": data_cp, "task": _next_tech_info()}], 0, "35", 2023)
 
     financial_cp = session.execute(db.select(FinancialCp).filter_by(n_dp="100011636")).scalar_one_or_none()
     assert financial_cp.id_ae == financial_ae.id

@@ -39,12 +39,13 @@ def _send_subtask_financial_ae(
     ae_batch: list[dict], source_region: str, annee: int, start_index: int, cp_lists: list[dict]
 ):
     # Envoyer le lot à la sous-tâche
-    subtask("import_line_financial_ae").delay(ae_batch, source_region, annee, start_index, cp_lists)
+    subtask("import_lines_financial_ae").delay(ae_batch, source_region, annee, start_index, cp_lists)
 
 
 celery = celeryapp.celery
 
 
+# TODO : deprecated
 @celery.task(bind=True, name="import_file_ae_financial")
 def import_file_ae_financial(self, fichier: str, source_region: str, annee: int):
     logger.debug(f"[IMPORT][FINANCIAL][AE] Start for region {source_region}, year {annee}, file {fichier}")
@@ -91,6 +92,7 @@ def import_file_ae_financial(self, fichier: str, source_region: str, annee: int)
         raise e
 
 
+# TODO : deprecated
 @celery.task(bind=True, name="import_file_cp_financial")
 def import_file_cp_financial(self, fichier: str, source_region: str, annee: int):
     logger.debug(f"[IMPORT][FINANCIAL][CP] Start for region {source_region}, year {annee}, file {fichier}")
@@ -151,30 +153,34 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
 
 @celery.task(
     bind=True,
-    name="import_line_financial_ae",
+    name="import_lines_financial_ae",
     autoretry_for=(FinancialException,),
     retry_kwargs={"max_retries": 4, "countdown": 10},
 )
 @gauge_of_currently_executing()
 @summary_of_time()
 @_handle_exception_import("FINANCIAL_AE")
-def import_line_financial_ae(
+def import_lines_financial_ae(
     self, lines: list[str], source_region: str, annee: int, start_index: int, cp_list: list[dict] | None
 ):
     # Désérialisation de toutes les lignes en JSON
     line_data_list = [json.loads(line) for line in lines]
 
+    perf_counter_retrieve_ae_instance = SummaryOfTimePerfCounter("import_line_financial_ae_retrieve_ae_instance")
+    perf_counter_retrieve_ae_instance.start()
     try:
         # Préparation des données pour insertion et mise à jour en bulk
         new_aes = []
         update_mappings = []
 
         for line_data in line_data_list:
+
             financial_ae_instance = (
                 db.session.query(FinancialAe)
                 .filter_by(n_ej=line_data[FinancialAe.n_ej.key], n_poste_ej=int(line_data[FinancialAe.n_poste_ej.key]))
                 .one_or_none()
             )
+
             if financial_ae_instance:
                 # Préparer les données pour la mise à jour
                 update_mapping = financial_ae_instance.update_attribute(line_data)
@@ -186,11 +192,18 @@ def import_line_financial_ae(
                 new_aes.append(new_ae)
 
     except sqlalchemy.exc.OperationalError as o:
-        logger.exception(f"[IMPORT][FINANCIAL][AE] Erreur sur le check des lignes")
+        logger.exception("[IMPORT][FINANCIAL][AE] Erreur sur le check des lignes")
         raise FinancialException(o) from o
+    perf_counter_retrieve_ae_instance.observe()
 
+    perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_ae_check_refs")
+    perf_counter_check_refs.start()
     # Insertion des références en bulk
     _bulk_insert_references(new_aes)
+    perf_counter_check_refs.observe()
+
+    perf_insert_or_update_ae = SummaryOfTimePerfCounter("import_line_financial_ae_insert_or_update_ae")
+    perf_insert_or_update_ae.start()
 
     # Insertion en bulk pour les nouvelles instances
     if new_aes:
@@ -204,6 +217,11 @@ def import_line_financial_ae(
 
     # Commit une seule fois après toutes les opérations
     db.session.commit()
+
+    perf_insert_or_update_ae.observe()
+
+    perf_trigger_cp = SummaryOfTimePerfCounter("import_line_financial_ae_trigger_cps")
+    perf_trigger_cp.start()
 
     batch_size = 10 if "IMPORT_BATCH_SIZE" not in current_app.config else current_app.config["IMPORT_BATCH_SIZE"]
 
@@ -223,6 +241,7 @@ def import_line_financial_ae(
         # Envoyer tout reste non envoyé
         if cp_batch:
             _send_subtask_financial_cp(cp_batch, source_region, annee, index)
+    perf_trigger_cp.observe()
 
 
 def _bulk_insert_references(new_aes):
@@ -313,14 +332,17 @@ def _bulk_insert_references(new_aes):
         db.session.commit()
 
     except Exception as e:  # Attrape toutes les exceptions possibles
-        logger.exception(f"[IMPORT][REF] Error lors de l'insertion en bulk des références.")
+        logger.exception("[IMPORT][REF] Error lors de l'insertion en bulk des références.")
         raise e
 
 
-@celery.task(bind=True, name="import_line_financial_cp")
+@celery.task(bind=True, name="import_lines_financial_cp")
 @summary_of_time()
 @_handle_exception_import("FINANCIAL_CP")
-def import_line_financial_cp(self, cp_batch: list[dict], start_index: int, source_region: str, annee: int):
+def import_lines_financial_cp(self, cp_batch: list[dict], start_index: int, source_region: str, annee: int):
+    perf_counter_create_cp_instance = SummaryOfTimePerfCounter("import_line_financial_cp_create_cp_instance")
+    perf_counter_create_cp_instance.start()
+
     new_cps = []
     for i, cp in enumerate(cp_batch):
         line = json.loads(cp["data"])
@@ -332,11 +354,19 @@ def import_line_financial_cp(self, cp_batch: list[dict], start_index: int, sourc
         new_cp.file_import_lineno = tech_info.lineno
         new_cp.id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej)
         new_cps.append(new_cp)
+    perf_counter_create_cp_instance.observe()
 
+    perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_cp_check_refs")
+    perf_counter_check_refs.start()
     _bulk_insert_references(new_cps)
+    perf_counter_check_refs.observe()
+    perf_counter_get_insert_cp = SummaryOfTimePerfCounter("import_line_financial_cp_insert_cp")
+    perf_counter_get_insert_cp.start()
 
     db.session.bulk_save_objects(new_cps)
     db.session.commit()
+
+    perf_counter_get_insert_cp.observe()
 
 
 @celery.task(bind=True, name="import_file_ademe_from_website")
@@ -436,7 +466,7 @@ def _send_subtask_ademe(data_ademe: str, tech_info: LineImportTechInfo):
 @limiter_queue(queue_name="line")
 def _send_subtask_financial_cp(cp_batch: list[dict], source_region: str, annee: int, start_index: int):
     # Envoyer le lot complet à la sous-tâche
-    subtask("import_line_financial_cp").delay(cp_batch, start_index, source_region, annee)
+    subtask("import_lines_financial_cp").delay(cp_batch, start_index, source_region, annee)
 
 
 def _get_ref_instance(model, code):
