@@ -95,7 +95,7 @@ def test_import_new_line_ae(database, session):
 
 def test_import_new_line_ae_with_commit_fail(database, session):
     # Données pour le test
-    data = '{"date_replication":"10.01.2023","montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105756","n_poste_ej":5,"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200018","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
+    data = '{"date_replication":"10.01.2023","montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105756","n_poste_ej":5,"programme":"303","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200018","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
 
     # Simulation du siret
     with patch(
@@ -114,7 +114,7 @@ def test_import_new_line_ae_with_commit_fail(database, session):
     data = session.execute(database.select(FinancialAe).where(FinancialAe.n_ej == "2103105756")).scalar_one_or_none()
     assert data is None
 
-    programme = session.execute(database.select(CodeProgramme).where(CodeProgramme.code == "103")).scalar_one_or_none()
+    programme = session.execute(database.select(CodeProgramme).where(CodeProgramme.code == "303")).scalar_one_or_none()
     assert programme is None
 
 
