@@ -353,9 +353,6 @@ def _bulk_insert_references(new_aes):
         if referentiel_programmation_instances:
             db.session.bulk_save_objects(referentiel_programmation_instances)
 
-        # Commit une seule fois après toutes les opérations
-        db.session.commit()
-
     except Exception as e:  # Attrape toutes les exceptions possibles
         logger.exception("[IMPORT][REF] Error lors de l'insertion en bulk des références.")
         raise e

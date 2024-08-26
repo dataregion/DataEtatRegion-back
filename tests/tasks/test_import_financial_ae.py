@@ -1,3 +1,4 @@
+from sqlite3 import IntegrityError
 from unittest.mock import patch
 import json
 
@@ -5,6 +6,7 @@ import pytest
 
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.financial.FinancialCp import FinancialCp
+from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.siret import Siret
 from app.tasks.files.file_task import read_csv_and_import_ae_cp
 from app.tasks.financial.import_financial import import_file_ae_financial
@@ -76,6 +78,11 @@ def test_import_new_line_ae(database, session):
 
     # ASSERT
     data = session.execute(database.select(FinancialAe).where(FinancialAe.n_ej == "2103105755")).scalar_one_or_none()
+    programme = session.execute(database.select(CodeProgramme).where(CodeProgramme.code == "103")).scalar_one_or_none()
+
+    assert programme.id is not None
+    assert programme.code == "103"
+
     assert data.id is not None
     assert data.annee == 2023
     assert data.n_poste_ej == 5
@@ -84,6 +91,31 @@ def test_import_new_line_ae(database, session):
     assert len(data.montant_ae) == 1
     assert data.montant_ae[0].montant == 22500.12
     assert data.montant_ae[0].annee == 2023
+
+
+def test_import_new_line_ae_with_commit_fail(database, session):
+    # Données pour le test
+    data = '{"date_replication":"10.01.2023","montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105756","n_poste_ej":5,"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200018","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
+
+    # Simulation du siret
+    with patch(
+        "app.services.siret.update_siret_from_api_entreprise",
+        return_value=Siret(**{"code": "85129663200018", "code_commune": "35099"}),
+    ):
+        # Simulation d'une exception lors du commit
+        with patch(
+            "app.tasks.financial.import_financial.db.session.commit",
+            side_effect=IntegrityError("Simulated IntegrityError", "params", "orig"),
+        ):
+            with pytest.raises(IntegrityError):
+                import_lines_financial_ae([data], "35", 2023, 0, [])
+
+    # Vérification qu'aucune donnée n'a été effectivement insérée dans la base de données
+    data = session.execute(database.select(FinancialAe).where(FinancialAe.n_ej == "2103105756")).scalar_one_or_none()
+    assert data is None
+
+    programme = session.execute(database.select(CodeProgramme).where(CodeProgramme.code == "103")).scalar_one_or_none()
+    assert programme is None
 
 
 def test_import_update_line_montant_positive_ae(database, session):
