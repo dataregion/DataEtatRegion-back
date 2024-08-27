@@ -17,7 +17,7 @@ from app.models.enums.DataType import DataType
 from app.services.financial_data import delete_ae_no_cp_annee_region, delete_cp_annee_region
 from app.tasks.financial import LineImportTechInfo
 
-from app.tasks.financial.import_financial import _send_subtask_financial_ae, _send_subtask_financial_cp
+from app.tasks.financial.import_financial import _send_subtask_financial_ae, _send_subtask_financial_cp, BATCH_SIZE
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.financial.FinancialCp import FinancialCp
 
@@ -78,7 +78,6 @@ def delayed_inserts(self):
 @celery.task(bind=True, name="read_csv_and_import_ae_cp")
 def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options: str, source_region: str, annee: int):
     move_folder = os.path.join(current_app.config["UPLOAD_FOLDER"], "save", datetime.datetime.now().strftime("%Y%m%d"))
-    batch_size = 10 if "IMPORT_BATCH_SIZE" not in current_app.config else current_app.config["IMPORT_BATCH_SIZE"]
 
     if not os.path.exists(move_folder):
         os.makedirs(move_folder)
@@ -105,12 +104,12 @@ def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options:
         for line in lines:
             ae_batch.append(line)
             cp_lists.extend(struct["cp"])  # Ajouter les CP associés directement à cp_lists
-            if len(ae_batch) == batch_size:
+            if len(ae_batch) == BATCH_SIZE:
                 # Envoyer le lot de lignes à la sous-tâche
                 _send_subtask_financial_ae(ae_batch, source_region, annee, index, cp_lists)
                 ae_batch = []
                 cp_lists = []
-                index += batch_size
+                index += BATCH_SIZE
 
     # Envoyer tout reste non envoyé
     if ae_batch:
@@ -124,10 +123,10 @@ def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options:
         k, struct = cp_list.popitem()
         cp_batch.append(struct)  # Ajouter l'objet struct complet au lot
 
-        if len(cp_batch) == batch_size:
+        if len(cp_batch) == BATCH_SIZE:
             _send_subtask_financial_cp(cp_batch, source_region, annee, index)
             cp_batch = []  # Réinitialiser le lot
-            index += batch_size
+            index += BATCH_SIZE
 
     # Envoyer tout reste non envoyé
     if cp_batch:

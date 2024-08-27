@@ -33,6 +33,8 @@ from app.tasks.financial.errors import _handle_exception_import
 
 from app.utilities.observability import gauge_of_currently_executing, summary_of_time, SummaryOfTimePerfCounter
 
+BATCH_SIZE = current_app.config.get("IMPORT_BATCH_SIZE", 10)
+
 
 @limiter_queue(queue_name="line")
 def _send_subtask_financial_ae(
@@ -52,7 +54,6 @@ def import_file_ae_financial(self, fichier: str, source_region: str, annee: int)
     timestamp = datetime.datetime.now().strftime("%Y%m%d")
 
     move_folder = current_app.config["UPLOAD_FOLDER"] + "/save/"
-    batch_size = 10 if "IMPORT_BATCH_SIZE" not in current_app.config else current_app.config["IMPORT_BATCH_SIZE"]
     try:
         data_chunk = pandas.read_csv(
             fichier,
@@ -71,10 +72,10 @@ def import_file_ae_financial(self, fichier: str, source_region: str, annee: int)
             for _, line in chunk.iterrows():
                 ae_data = pandas.concat([line, series]).to_json()
                 batch.append((ae_data, []))  # Ajouter une paire (AE data, CP list) au lot
-                if len(batch) == batch_size:
+                if len(batch) == BATCH_SIZE:
                     _send_subtask_financial_ae(batch, source_region, annee, index, [])  # Envoi du lot
                     batch = []  # Réinitialise le lot
-                    index += batch_size
+                    index += BATCH_SIZE
 
         # Envoie les lignes restantes dans le lot
         if batch:
@@ -99,7 +100,6 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
     move_folder = current_app.config["UPLOAD_FOLDER"] + "/save/"
-    batch_size = 10 if "IMPORT_BATCH_SIZE" not in current_app.config else current_app.config["IMPORT_BATCH_SIZE"]
 
     try:
         current_taskid = current_task.request.id
@@ -129,10 +129,10 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
                 tech_info = LineImportTechInfo(current_taskid, i)
                 cp_batch.append({"data": line.to_json(), "task": tech_info})
 
-                if len(cp_batch) == batch_size:
+                if len(cp_batch) == BATCH_SIZE:
                     _send_subtask_financial_cp(cp_batch, source_region, annee, index)
                     cp_batch = []  # Reset the batch
-                    index += batch_size
+                    index += BATCH_SIZE
 
         # Send any remaining lines in the batch
         if cp_batch:
@@ -248,8 +248,6 @@ def import_lines_financial_ae(
     perf_trigger_cp = SummaryOfTimePerfCounter("import_line_financial_ae_trigger_cps")
     perf_trigger_cp.start()
 
-    batch_size = 10 if "IMPORT_BATCH_SIZE" not in current_app.config else current_app.config["IMPORT_BATCH_SIZE"]
-
     # Traitement des cp_list si nécessaire
     if cp_list is not None:
         cp_batch = []
@@ -258,10 +256,10 @@ def import_lines_financial_ae(
         # Itération sur la liste cp_list
         for struct in cp_list:
             cp_batch.append(struct)
-            if len(cp_batch) == batch_size:
+            if len(cp_batch) == BATCH_SIZE:
                 _send_subtask_financial_cp(cp_batch, source_region, annee, index)
                 cp_batch = []
-                index += batch_size
+                index += BATCH_SIZE
 
         # Envoyer tout reste non envoyé
         if cp_batch:
