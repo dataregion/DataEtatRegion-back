@@ -16,7 +16,7 @@ from app.servicesapp.authentication import ConnectedUser
 
 from keycloak import KeycloakAdmin
 
-REQUESTED_GROUP_NAME = "REQUESTED"
+SOFT_DISABLED_KEY = "soft-disabled"
 
 api = Namespace(name="users", path="/users", description="API de gestion des utilisateurs")
 parser_get = get_pagination_parser()
@@ -67,24 +67,18 @@ class UsersManagement(Resource):
 
         logging.debug(f"[USERS] Call users get with limit {limit}, page {page_number}, only_disable {only_disable}")
         source_region = user.current_region
-        all_groups_ids = _fetch_groups_ids(source_region, include_requested_group=True)
+        source_region_groups_ids = _fetch_groups_ids(source_region)
         keycloak_admin = make_or_get_keycloack_admin()
         users = []
-        for group_id in all_groups_ids:
+        for group_id in source_region_groups_ids:
             users = users + keycloak_admin.get_group_members(group_id, {"briefRepresentation": False})
 
-        enabled_groups_ids = _fetch_groups_ids(source_region, include_requested_group=False)
-        enabled_users = []
-        for group_id in enabled_groups_ids:
-            enabled_users = enabled_users + keycloak_admin.get_group_members(group_id, {"briefRepresentation": False})
-
         for user in users:
-            user["softEnabled"] = False
-        for enabled_user in enabled_users:
-            id = enabled_user["id"]
-            user = _find_first_by_attribute(users, "id", id)
-            if user is not None:
-                user["softEnabled"] = True
+            user["softEnabled"] = True
+            is_soft_disabled = user.get("attributes", {}).get(SOFT_DISABLED_KEY, [False])[0] == "true"
+            is_disabled = user.get("enabled", True) is False
+            if is_soft_disabled or is_disabled:
+                user["softEnabled"] = False
 
         if only_disable:
             logging.debug("[USERS] get only disabled users")
@@ -119,7 +113,7 @@ class UserDelete(Resource):
         keycloak_admin = make_or_get_keycloack_admin()
         # on récupère l'utilisateur
         user = keycloak_admin.get_user(uuid)
-        _detach_user_from_region(uuid, source_region, keep_requested_service=False)
+        _soft_disable_an_user(uuid, source_region, keep_groups=False)
 
         return "Success", HTTPStatus.OK
 
@@ -146,7 +140,7 @@ class UsersDisable(Resource):
         if user.sub == uuid:
             return abort(message="Vous ne pouvez désactiver votre utilisateur", code=HTTPStatus.FORBIDDEN)
 
-        _detach_user_from_region(uuid, source_region)
+        _soft_disable_an_user(uuid, source_region)
         return make_response("", 200)
 
 
@@ -164,7 +158,7 @@ class UsersEnable(Resource):
         logging.debug(f"[USERS] Call enable users {uuid}")
         source_region = user.current_region
 
-        _attach_user_to_region(uuid, source_region)
+        _soft_enable_user(uuid, source_region)
         return make_response("", 200)
 
 
@@ -183,25 +177,21 @@ def _fetch_subgroups(keycloak_admin: KeycloakAdmin, parent_id):
     return requests.get(endpoint, headers=headers).json()
 
 
-def _fetch_groups_ids(source_region: str, include_requested_group=None) -> list:
-    groups = _fetch_groups(source_region, include_requested_group=include_requested_group)
+def _fetch_groups_ids(source_region: str) -> list:
+    groups = _fetch_groups(source_region)
     groups_ids = []
     for group in groups:
         groups_ids.append(group["id"])
     return groups_ids
 
 
-def _fetch_groups(source_region: str, include_requested_group=None) -> list:
+def _fetch_groups(source_region: str) -> list:
     """
     Récupérer les groupes ids d'une région
     :param source_region:
-    :param include_requested_group: Inclue le sous-groupe "REQUESTED"
+    :param include_soft_disabled: Inclue les utilisateurs soft-disabled
     :return: une grappe de groupe avec la racine en première position
     """
-
-    if include_requested_group is None:
-        include_requested_group = True
-
     keycloak_admin = make_or_get_keycloack_admin()
     logging.debug(f"[USERS] Get groups for region {source_region}")
 
@@ -213,8 +203,6 @@ def _fetch_groups(source_region: str, include_requested_group=None) -> list:
     if groups[0]["subGroupCount"] != 0:
         subgroups = _fetch_subgroups(keycloak_admin, groups[0]["id"])
         for subgroup in subgroups:
-            if subgroup["name"] == REQUESTED_GROUP_NAME and not include_requested_group:
-                continue
             assembled_groups.append(subgroup)
     return assembled_groups
 
@@ -231,25 +219,27 @@ def _user_belong_region(uuid, source_region: str) -> bool:
     groups_belong_user = keycloak_admin.get_user_groups(uuid)
     groups_id_belong_user = [g["id"] for g in groups_belong_user]
     # on récupère les groups de la region
-    groups_id_region = _fetch_groups_ids(source_region, include_requested_group=False)
+    groups_id_region = _fetch_groups_ids(source_region)
     return bool(set(groups_id_belong_user) & set(groups_id_region))
 
 
-def _detach_user_from_region(uuid, source_region: str, keep_requested_service=None):
-    if keep_requested_service is None:
-        keep_requested_service = True
-    include_requested_group = not keep_requested_service
+def _soft_disable_an_user(uuid, source_region: str, keep_groups=None):
+    if keep_groups is None:
+        keep_groups = True
+    erase_groups = not keep_groups
 
     keycloak_admin = make_or_get_keycloack_admin()
-    source_region_groups = _fetch_groups(
-        source_region, include_requested_group=include_requested_group
-    )  # XXX: On garde l'appartenance au groupe de requêtage initial.
 
-    for group in source_region_groups:
-        keycloak_admin.group_user_remove(uuid, group["id"])
+    user = keycloak_admin.get_user(uuid)
+    user["attributes"][SOFT_DISABLED_KEY] = ["true"]
+    keycloak_admin.update_user(uuid, payload=user)
+    if erase_groups:
+        region_groups = _fetch_groups(source_region)
+        for group in region_groups:
+            keycloak_admin.group_user_remove(uuid, group["id"])
 
 
-def _attach_user_to_region(uuid, source_region: str):
+def _soft_enable_user(uuid, source_region: str):
     groups = _fetch_groups(source_region)
     if len(groups) < 1:
         return (
@@ -261,9 +251,10 @@ def _attach_user_to_region(uuid, source_region: str):
     groupe_racine_id = groupe_racine["id"]
 
     keycloak_admin = make_or_get_keycloack_admin()
-    keycloak_admin.update_user(
-        user_id=uuid, payload={"enabled": True}
-    )  # XXX Pour la retrocompatibilité avec les anciens comptes
+    user = keycloak_admin.get_user(user_id=uuid)
+    user["attributes"][SOFT_DISABLED_KEY] = ["false"]
+    user["enabled"] = True
+    keycloak_admin.update_user(user_id=uuid, payload=user)  # XXX enabled True nécessaire pour la retro compatiblité.
     add_response = keycloak_admin.group_user_add(uuid, groupe_racine_id)
     logging.info(f"Ajout de l'utilisateur {uuid} au groupe {groupe_racine['path']}")
     logging.debug(f"Keycloak response: {add_response}")
