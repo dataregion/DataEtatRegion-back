@@ -78,10 +78,6 @@ class UsersManagement(Resource):
         for group_id in enabled_groups_ids:
             enabled_users = enabled_users + keycloak_admin.get_group_members(group_id, {"briefRepresentation": False})
 
-        if only_disable:
-            logging.debug("[USERS] get only disabled users")
-            users = list(filter(lambda user: user["enabled"] is False, users))
-
         for user in users:
             user["softEnabled"] = False
         for enabled_user in enabled_users:
@@ -89,6 +85,10 @@ class UsersManagement(Resource):
             user = _find_first_by_attribute(users, "id", id)
             if user is not None:
                 user["softEnabled"] = True
+
+        if only_disable:
+            logging.debug("[USERS] get only disabled users")
+            users = list(filter(lambda user: user["softEnabled"] is False, users))
 
         users = _filter_unique_by_attribute(users, "id")
 
