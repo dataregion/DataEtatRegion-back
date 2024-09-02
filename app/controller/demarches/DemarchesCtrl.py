@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 
-from flask import current_app, request
+from flask import current_app, request, jsonify, make_response
 from flask_restx import Namespace, Resource, reqparse
 from flask_restx._http import HTTPStatus
 
@@ -10,16 +10,13 @@ from app.controller.financial_data.schema_model import register_demarche_schemam
 from app.models.demarches.demarche import Demarche
 from app.models.demarches.dossier import Dossier
 from app.models.demarches.donnee import Donnee
+from app.models.demarches.valeur_donnee import ValeurDonnee
 from app.servicesapp.api_externes import ApisExternesService
-from app.services.demarches import (
-    commit_demarche,
-    find_demarche,
-    save_demarche,
-    delete_demarche,
-    save_dossier,
-    get_or_create_donnee,
-    save_valeur_donnee,
-)
+from app.services.demarches.demarches import DemarcheService, commit_session
+from app.services.demarches.donnees import DonneeService
+from app.services.demarches.dossiers import DossierService
+from app.services.demarches.valeurs import ValeurService
+
 
 api = Namespace(
     name="Démarches", path="/", description="Api de gestion des données récupérées de l'API Démarches Simplifiées"
@@ -42,23 +39,29 @@ def get_query_from_file(query_filename: str):
     return query_str
 
 
-@api.route("/save")
+@api.route("/demarche")
 class DemarcheSimplifie(Resource):
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def get(self):
+        # Vérification si la démarche existe déjà en BDD, si oui on la supprime
+        demarche_number = int(request.args["id"])
+        demarche: Demarche = DemarcheService.find(demarche_number)
+        return make_response(jsonify(demarche), HTTPStatus.OK)
+
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
     @api.expect(reqpars_get_demarche)
     def post(self):
         # Vérification si la démarche existe déjà en BDD, si oui on la supprime
         demarche_number = int(request.form["id"])
-        demarche = find_demarche(demarche_number)
+        demarche = DemarcheService.find(demarche_number)
         if demarche is not None:
-            delete_demarche(demarche)
+            DemarcheService.delete(demarche)
             logging.info("[API DEMARCHES] La démarche existait déjà en BDD, maintenant supprimée pour réintégration")
 
-        # Requête GraphQL pour l'API Démarches Simplifiées
-        query = get_query_from_file("get_demarche.gql")
-
         # Récupération des données de la démarche via l'API Démarches Simplifiées
+        query = get_query_from_file("get_demarche.gql")
         data = {
             "operationName": "getDemarche",
             "query": query,
@@ -67,100 +70,149 @@ class DemarcheSimplifie(Resource):
         demarche_dict = service.api_demarche_simplifie.do_post(json.dumps(data))
         logging.info("[API DEMARCHES] Récupération de la Démarche")
 
-        # Sauvegarde des données de la démarche dans notre BDD
-        demarche_data = {
-            "number": demarche_number,
-            "title": demarche_dict["data"]["demarche"]["title"],
-            "state": demarche_dict["data"]["demarche"]["state"],
-            "centre_couts": demarche_dict["data"]["demarche"]["chorusConfiguration"]["centreDeCout"],
-            "domaine_fonctionnel": demarche_dict["data"]["demarche"]["chorusConfiguration"]["domaineFonctionnel"],
-            "referentiel_programmation": demarche_dict["data"]["demarche"]["chorusConfiguration"][
-                "referentielDeProgrammation"
-            ],
-            "date_creation": demarche_dict["data"]["demarche"]["dateCreation"],
-            "date_fermeture": demarche_dict["data"]["demarche"]["dateFermeture"],
-        }
-        demarche: Demarche = save_demarche(Demarche(**demarche_data))
-        logging.info("[API DEMARCHES] Sauvegarde de la Démarche en BDD")
+        # Sauvegarde de la démarche
+        demarche: Demarche = DemarcheService.save(demarche_number, demarche_dict)
+        logging.info(f"[API DEMARCHES] Sauvegarde de la démarche {demarche_number}")
 
         # Sauvegarde des dossiers de la démarche
         if len(demarche_dict["data"]["demarche"]["dossiers"]):
-            # Cache de la revision utilisée
-            current_revision = None
-
             # Insertion des dossiers et des valeurs des champs du dossier
             for dossier_dict in demarche_dict["data"]["demarche"]["dossiers"]["nodes"]:
-                donnees: dict[Donnee] = []
+                donnees: list[Donnee] = DossierService.get_donnees(
+                    dossier_dict, demarche.number, demarche_dict["data"]["demarche"]["revisions"]
+                )
 
-                # Récupération de la révision du dossier
-                if current_revision != dossier_dict["demarche"]["revision"]["id"]:
-                    revision_id = dossier_dict["demarche"]["revision"]["id"]
-                    revision = next(r for r in demarche_dict["data"]["demarche"]["revisions"] if r["id"] == revision_id)
-                    current_revision = dossier_dict["demarche"]["revision"]["id"]
-
-                    # Récupération des champs et des annotations en amont de l'insert des dossiers
-                    for champ in revision["champDescriptors"]:
-                        donnees.append(get_or_create_donnee(champ, "champ", demarche.number))
-                    for annotation in revision["annotationDescriptors"]:
-                        donnees.append(get_or_create_donnee(annotation, "annotation", demarche.number))
-                    logging.info(
-                        f"[API DEMARCHES] Récupération des champs et annotations du dossier {dossier_dict['number']}"
-                    )
-                else:
-                    logging.info(
-                        f"[API DEMARCHES] Même révision, on travaille avec les mêmes données pour le dossier {dossier_dict['number']}"
-                    )
-
-                dossier_data = {
-                    "number": dossier_dict["number"],
-                    "demarche_number": demarche_number,
-                    "revision_id": revision_id,
-                    "state": dossier_dict["state"],
-                    "siret": dossier_dict["demandeur"]["siret"] if "siret" in dossier_dict["demandeur"] else None,
-                    "date_depot": dossier_dict["dateDepot"],
-                    "date_derniere_modification": dossier_dict["dateDerniereModification"],
-                }
-                dossier: Dossier = save_dossier(Dossier(**dossier_data))
+                # Sauvegarde du dossier
+                dossier: Dossier = DossierService.save(demarche_number, dossier_dict)
+                logging.info(f"[API DEMARCHES] Sauvegarde du dossier {dossier_dict['number']}")
 
                 for champ in dossier_dict["champs"]:
-                    donnee: Donnee = next(
-                        (
-                            d
-                            for d in donnees
-                            if d.section_name == "champ"
-                            and d.type_name
-                            == (
-                                champ["__typename"] + "Descriptor"
-                                if not str(champ["__typename"]).endswith("NumberChamp")
-                                else "NumberChampDescriptor"
-                            )
-                            and d.label == champ["label"]
-                        ),
-                        None,
-                    )
-                    if donnee is not None:
-                        save_valeur_donnee(dossier.number, donnee.id, champ)
+                    ValeurService.save(dossier.number, [d for d in donnees if d.section_name == "champ"], champ)
 
                 for annot in dossier_dict["annotations"]:
-                    donnee: Donnee = next(
-                        (
-                            d
-                            for d in donnees
-                            if d.section_name == "annotation"
-                            and d.type_name
-                            == (
-                                annot["__typename"] + "Descriptor"
-                                if not str(annot["__typename"]).endswith("NumberChamp")
-                                else "NumberChampDescriptor"
-                            )
-                            and d.label == annot["label"]
-                        ),
-                        None,
-                    )
-                    if donnee is not None:
-                        save_valeur_donnee(dossier.number, donnee.id, annot)
+                    ValeurService.save(dossier.number, [d for d in donnees if d.section_name == "annotation"], annot)
 
             logging.info("[API DEMARCHES] Sauvegarde des dossiers en BDD")
 
-        commit_demarche()
-        return {"message": "Démarche sauvegardée", "status": HTTPStatus.OK}
+        commit_session()
+        return make_response(jsonify(demarche), HTTPStatus.OK)
+
+
+@api.route("/reconciliation")
+class DemarchesReconciliation(Resource):
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    @api.expect(reqpars_get_demarche)
+    def post(self):
+        # Vérification si la démarche existe déjà en BDD, si oui on la supprime
+        demarche_number = int(request.form["id"])
+        if not DemarcheService.exists(demarche_number):
+            logging.info("[API DEMARCHES] La démarche n'existe pas")
+            return HTTPStatus.NOT_FOUND
+
+        # Récupération des données de la démarche via l'API Démarches Simplifiées
+        reconciliation = {}
+        if "champEJ" in request.form:
+            reconciliation["champEJ"] = request.form["champEJ"]
+        elif "champDS" in request.form:
+            reconciliation["champDS"] = request.form["champDS"]
+        elif "champSiret" in request.form and "champMontant" in request.form:
+            if "centreCouts" in request.form:
+                reconciliation["centreCouts"] = request.form["centreCouts"]
+            if "domaineFonctionnel" in request.form:
+                reconciliation["domaineFonctionnel"] = request.form["domaineFonctionnel"]
+            if "refProg" in request.form:
+                reconciliation["refProg"] = request.form["refProg"]
+            if "annee" in request.form:
+                reconciliation["annee"] = request.form["annee"]
+
+            if "commune" in request.form:
+                reconciliation["commune"] = request.form["commune"]
+            if "epci" in request.form:
+                reconciliation["epci"] = request.form["epci"]
+            if "departement" in request.form:
+                reconciliation["departement"] = request.form["departement"]
+            if "region" in request.form:
+                reconciliation["region"] = request.form["region"]
+
+            reconciliation["champSiret"] = request.form["champSiret"]
+            reconciliation["champMontant"] = request.form["champMontant"]
+
+        DemarcheService.update_reconciliation(demarche_number, reconciliation)
+        logging.info("[API DEMARCHES] Sauvegarde de la reconciliation de la Démarche en BDD")
+
+        return make_response(jsonify(DemarcheService.find(demarche_number)), HTTPStatus.OK)
+
+
+@api.route("/affichage")
+class DemarchesAffichage(Resource):
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    @api.expect(reqpars_get_demarche)
+    def post(self):
+        # Vérification si la démarche existe déjà en BDD, si oui on la supprime
+        demarche_number = int(request.form["id"])
+        if not DemarcheService.exists(demarche_number):
+            logging.info("[API DEMARCHES] La démarche n'existe pas")
+            return HTTPStatus.NOT_FOUND
+
+        # Récupération des données de la démarche via l'API Démarches Simplifiées
+        affichage = {}
+        if "nomProjet" in request.form:
+            affichage["nomProjet"] = request.form["nomProjet"]
+        if "descriptionProjet" in request.form:
+            affichage["descriptionProjet"] = request.form["descriptionProjet"]
+        if "categorieProjet" in request.form:
+            affichage["categorieProjet"] = request.form["categorieProjet"]
+        if "coutProjet" in request.form:
+            affichage["coutProjet"] = request.form["coutProjet"]
+        if "montantDemande" in request.form:
+            affichage["montantDemande"] = request.form["montantDemande"]
+        if "montantAccorde" in request.form:
+            affichage["montantAccorde"] = request.form["montantAccorde"]
+        if "dateFinProjet" in request.form:
+            affichage["dateFinProjet"] = request.form["dateFinProjet"]
+        if "contact" in request.form:
+            affichage["contact"] = request.form["contact"]
+
+        DemarcheService.update_affichage(demarche_number, affichage)
+        logging.info("[API DEMARCHES] Sauvegarde de la reconciliation de la Démarche en BDD")
+
+        return make_response(jsonify(DemarcheService.find(demarche_number)), HTTPStatus.OK)
+
+
+@api.route("/donnees")
+class Donnees(Resource):
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def get(self):
+        """
+        Récupération des données d'une démarche
+        Returns: Response
+        """
+        demarche_number = int(request.args["id"])
+        donnees: list[Donnee] = [row for row in DonneeService.find_by_demarche(demarche_number)]
+        return make_response(jsonify(donnees), HTTPStatus.OK)
+
+
+@api.route("/valeurs")
+class ValeurDonneeSimplifie(Resource):
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def get(self):
+        """
+        Récupération des valeurs d
+        Returns: Response
+        """
+        demarche_number = int(request.args["idDemarche"])
+        statutDossier = request.args["statutDossier"]
+        idDonnees: list[str] = request.args["idDonnees"].split(",")
+        dossiers: list[int] = [
+            dossier[0].number for dossier in DossierService.find_by_demarche(demarche_number, statutDossier)
+        ]
+
+        valeurs: list[ValeurDonnee] = []
+        for idDonnee in idDonnees:
+            valeurs.extend(ValeurService.find_by_dossiers(dossiers, int(idDonnee)))
+
+        return make_response(jsonify(valeurs), HTTPStatus.OK)

@@ -1,0 +1,27 @@
+
+[
+    {
+        "name": "TextChampDescriptor"
+    },
+    {
+        "name": "EngagementJuridiqueChampDescriptor"
+    },
+    {
+        "name": "PhoneChampDescriptor"
+    },
+    {
+        "name": "EmailChampDescriptor"
+    },
+    {
+        "name": "IntegerNumberChampDescriptor"
+    },
+    {
+        "name": "DecimalNumberChampDescriptor"
+    },
+    {
+        "name": "YesNoChampDescriptor"
+    },
+    {
+        "name": "AddressChampDescriptor"
+    }
+]
