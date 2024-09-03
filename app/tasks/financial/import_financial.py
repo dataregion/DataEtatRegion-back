@@ -33,7 +33,9 @@ from app.tasks.financial.errors import _handle_exception_import
 
 from app.utilities.observability import gauge_of_currently_executing, summary_of_time, SummaryOfTimePerfCounter
 
-BATCH_SIZE = current_app.config.get("IMPORT_BATCH_SIZE", 10)
+
+def get_batch_size():
+    return current_app.config.get("IMPORT_BATCH_SIZE", 10)
 
 
 @limiter_queue(queue_name="line")
@@ -72,10 +74,10 @@ def import_file_ae_financial(self, fichier: str, source_region: str, annee: int)
             for _, line in chunk.iterrows():
                 ae_data = pandas.concat([line, series]).to_json()
                 batch.append((ae_data, []))  # Ajouter une paire (AE data, CP list) au lot
-                if len(batch) == BATCH_SIZE:
+                if len(batch) == get_batch_size():
                     _send_subtask_financial_ae(batch, source_region, annee, index, [])  # Envoi du lot
                     batch = []  # Réinitialise le lot
-                    index += BATCH_SIZE
+                    index += get_batch_size()
 
         # Envoie les lignes restantes dans le lot
         if batch:
@@ -129,10 +131,10 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
                 tech_info = LineImportTechInfo(current_taskid, i)
                 cp_batch.append({"data": line.to_json(), "task": tech_info})
 
-                if len(cp_batch) == BATCH_SIZE:
+                if len(cp_batch) == get_batch_size():
                     _send_subtask_financial_cp(cp_batch, source_region, annee, index)
                     cp_batch = []  # Reset the batch
-                    index += BATCH_SIZE
+                    index += get_batch_size()
 
         # Send any remaining lines in the batch
         if cp_batch:
@@ -165,6 +167,8 @@ def import_lines_financial_ae(
 ):
     # Désérialisation de toutes les lignes en JSON
     line_data_list = [json.loads(line) for line in lines]
+
+    # si doublon => j'appelle une methode qui va faire des commits pour chaque ligne
 
     perf_counter_retrieve_ae_instance = SummaryOfTimePerfCounter("import_line_financial_ae_retrieve_ae_instance")
     perf_counter_retrieve_ae_instance.start()
@@ -256,10 +260,10 @@ def import_lines_financial_ae(
         # Itération sur la liste cp_list
         for struct in cp_list:
             cp_batch.append(struct)
-            if len(cp_batch) == BATCH_SIZE:
+            if len(cp_batch) == get_batch_size():
                 _send_subtask_financial_cp(cp_batch, source_region, annee, index)
                 cp_batch = []
-                index += BATCH_SIZE
+                index += get_batch_size()
 
         # Envoyer tout reste non envoyé
         if cp_batch:
