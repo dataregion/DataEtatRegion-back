@@ -5,6 +5,8 @@ import pytest
 
 from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.theme import Theme
+from tests import delete_references
+from tests.tasks.tags.test_tag_acv import add_references
 from ..tags import *  # noqa: F403
 
 from app import db
@@ -43,11 +45,12 @@ def insert_financial_ae_for_tag_relance(database, session):
             "domaine_fonctionnel": "0380-01-01",
             "centre_couts": "BG00\\/DREETS0035",
             "referentiel_programmation": "BG00\\/010300000108",
-            "fournisseur_titulaire": 1001465507,
+            "fournisseur_titulaire": "1001465507",
             "localisation_interministerielle": "N35",
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         }
     )
     bad_ae = FinancialAe(
@@ -59,20 +62,24 @@ def insert_financial_ae_for_tag_relance(database, session):
             "domaine_fonctionnel": "0380-01-01",
             "centre_couts": "BG00\\/DREETS0035",
             "referentiel_programmation": "BG00\\/010300000108",
-            "fournisseur_titulaire": 1001465507,
+            "fournisseur_titulaire": "1001465507",
             "localisation_interministerielle": "N35",
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         }
     )
     session.add(programme_t_relance_1)
     session.add(programme_t_relance_2)
     session.add(programme_t_autre)
+    add_references(ae, session, region="53")
+    add_references(bad_ae, session, region="53")
     session.add(ae)
     session.add(bad_ae)
     session.commit()
     yield ae
+    delete_references(session)
     session.execute(database.delete(FinancialAe))
     session.execute(database.delete(Theme))
     session.execute(database.delete(CodeProgramme))

@@ -14,9 +14,13 @@ _data = TESTS_PATH / "data"
 
 @pytest.fixture(scope="function")
 def add_comune_belley(database):
-    commune_belley = Commune(**{"code": "01034", "label_commune": "Belley", "code_departement": "01"})
-    database.session.add(commune_belley)
-    database.session.commit()
+    commune_belley = database.session.query(Commune).filter_by(code="01035").one_or_none()
+
+    if not commune_belley:
+        commune_belley = Commune(**{"code": "01035", "label_commune": "Belley", "code_departement": "01"})
+        database.session.add(commune_belley)
+        database.session.commit()
+
     yield commune_belley
     database.session.execute(database.delete(Commune))
     database.session.commit()
@@ -24,9 +28,13 @@ def add_comune_belley(database):
 
 @pytest.fixture(scope="function")
 def add_comune_angers(database):
-    commune = Commune(**{"code": "0000", "label_commune": "Angers", "code_departement": "49"})
-    database.session.add(commune)
-    database.session.commit()
+    commune = database.session.query(Commune).filter_by(code="0000").one_or_none()
+
+    if not commune:
+        commune = Commune(**{"code": "0000", "label_commune": "Angers", "code_departement": "49"})
+        database.session.add(commune)
+        database.session.commit()
+
     yield commune
     database.session.execute(database.delete(Commune))
     database.session.commit()
@@ -77,6 +85,9 @@ def test_import_insert_localisation(database, session, add_comune_belley):
     assert d_to_update.niveau == "NATIONAL"
     assert d_to_update.code_parent == "S120594"
 
+    database.session.execute(database.delete(LocalisationInterministerielle))
+    database.session.commit()
+
 
 def test_import_insert_localisation_inter_exist(app, database, add_comune_belley, add_comune_angers):
     # WHEN Insert loc inter à Belley
@@ -117,13 +128,16 @@ def test_import_insert_localisation_inter_exist(app, database, add_comune_belley
         assert d_to_update.niveau == "NATIONAL"
         assert d_to_update.code_parent == "XXXX"
 
+    database.session.execute(database.delete(LocalisationInterministerielle))
+    database.session.commit()
+
 
 def test_import_insert_localisation_interministerielle_niveau_commune(database, session, add_comune_belley):
     # DO
     import_line_ref_localisation_interministerielle(
         data=json.dumps(
             {
-                "code": "N8401034",
+                "code": "N8401035",
                 "niveau": "COMMUNE",
                 "code_departement": None,
                 "commune": None,
@@ -135,10 +149,13 @@ def test_import_insert_localisation_interministerielle_niveau_commune(database, 
     )
     # ASSERT
     d_to_update = session.execute(
-        database.select(LocalisationInterministerielle).filter_by(code="N8401034")
+        database.select(LocalisationInterministerielle).filter_by(code="N8401035")
     ).scalar_one_or_none()
 
     assert d_to_update.commune.label_commune == "Belley"
     assert d_to_update.commune_id == add_comune_belley.id
     assert d_to_update.niveau == "COMMUNE"
     assert d_to_update.code_parent == "N84"
+
+    database.session.execute(database.delete(LocalisationInterministerielle))
+    database.session.commit()
