@@ -7,3 +7,4 @@ pip-tools ~= 7.3
 pre-commit ~= 3.6
 faker ~= 21.0
 ruff ~= 0.1
+testcontainers ~= 3.4

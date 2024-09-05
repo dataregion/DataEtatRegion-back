@@ -3,6 +3,9 @@ import datetime
 
 import pytest
 
+from tests import delete_references
+from tests.tasks.tags.test_tag_acv import add_references
+
 from ..tags import *  # noqa: F403
 
 from app.models.financial.FinancialAe import FinancialAe
@@ -32,16 +35,19 @@ def insert_financial_ae_for_tag_fond_vert(database, session):
             "domaine_fonctionnel": "0380-01-01",
             "centre_couts": "BG00\\/DREETS0035",
             "referentiel_programmation": "BG00\\/010300000108",
-            "fournisseur_titulaire": 1001465507,
+            "fournisseur_titulaire": "1001465507",
             "localisation_interministerielle": "N35",
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         }
     )
+    add_references(ae, session, region="53")
     session.add(ae)
     session.commit()
     yield ae
+    delete_references(session)
     session.execute(database.delete(FinancialAe))
     session.commit()
 
@@ -57,16 +63,19 @@ def insert_financial_ae_for_other_tag(database, session):
             "domaine_fonctionnel": "0380-01-01",
             "centre_couts": "BG00\\/DREETS0035",
             "referentiel_programmation": "BG00\\/010300000108",
-            "fournisseur_titulaire": 1001465507,
+            "fournisseur_titulaire": "1001465507",
             "localisation_interministerielle": "N35",
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         }
     )
+    add_references(ae, session, region="53")
     session.add(ae)
     session.commit()
     yield ae
+    delete_references(session)
     session.execute(database.delete(FinancialAe))
     session.commit()
 

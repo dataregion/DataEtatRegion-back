@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from app.models.refs.commune import Commune
+from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
 from app.services.communes import select_commune
 from app.tasks.refs.update_ref_communes import import_file_acv
 from tests import TESTS_PATH
@@ -24,6 +25,7 @@ def add_commune_la_gacilly(database):
     database.session.add(commune)
     database.session.commit()
     yield commune
+    database.session.execute(database.delete(LocalisationInterministerielle))
     database.session.execute(database.delete(Commune))
     database.session.commit()
 
