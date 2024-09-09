@@ -24,7 +24,7 @@ run_tests:
 
 run_black:
   stage: 🧪 test
-  image: pyfound/black:23.7.0
+  image: pyfound/black:24.8.0
   only:
     - develop
     - /^chore.*$/

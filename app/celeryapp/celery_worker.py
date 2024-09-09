@@ -4,6 +4,7 @@ Run using the command:
 python celery -A app.celeryapp.celery_worker.celery worker --concurrency=2 -E -l info
 python celery -A app.celeryapp.celery_worker.celery worker --pool=solo --loglevel=info -n worker1@%h
 """
+
 from prometheus_client import start_http_server
 from app import celeryapp, create_app_base
 

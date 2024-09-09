@@ -115,10 +115,12 @@ class CommuneField(fields.Field):
             "label_epci": value.ref_commune.label_epci,
             "code_crte": value.ref_commune.code_crte,
             "label_crte": value.ref_commune.label_crte,
-            "arrondissement": {
-                "code": value.ref_commune.ref_arrondissement.code,
-                "label": value.ref_commune.ref_arrondissement.label,
-            }
-            if value.ref_commune.ref_arrondissement is not None
-            else None,
+            "arrondissement": (
+                {
+                    "code": value.ref_commune.ref_arrondissement.code,
+                    "label": value.ref_commune.ref_arrondissement.label,
+                }
+                if value.ref_commune.ref_arrondissement is not None
+                else None
+            ),
         }

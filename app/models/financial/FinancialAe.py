@@ -272,12 +272,14 @@ class SiretField(fields.Field):
             "nom_beneficiare": obj.ref_siret.denomination,
             "code": code,
             "categorie_juridique": obj.ref_siret.type_categorie_juridique,
-            "qpv": {
-                "code": obj.ref_siret.ref_qpv.code,
-                "label": obj.ref_siret.ref_qpv.label,
-            }
-            if obj.ref_siret.ref_qpv is not None
-            else None,
+            "qpv": (
+                {
+                    "code": obj.ref_siret.ref_qpv.code,
+                    "label": obj.ref_siret.ref_qpv.label,
+                }
+                if obj.ref_siret.ref_qpv is not None
+                else None
+            ),
         }
 
 

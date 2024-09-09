@@ -86,7 +86,6 @@ class BudgetCtrl(Resource):
 
 @api_ns.route("/budget/<source>/<id>")
 class GetBudgetCtrl(Resource):
-
     """
     Récupére les infos budgetaires en fonction de son identifiant technique
     :return:
