@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
-alembic==1.13.1
+alembic==1.13.2
     # via flask-migrate
 amqp==5.2.0
     # via kombu
@@ -12,9 +12,13 @@ aniso8601==9.0.1
     # via flask-restx
 annotated-types==0.7.0
     # via pydantic
+anyio==4.4.0
+    # via httpx
 api-entreprise==3.4.5
     # via -r requirements.in
-attrs==23.2.0
+async-property==0.2.2
+    # via python-keycloak
+attrs==24.2.0
     # via
     #   jsonschema
     #   referencing
@@ -28,9 +32,12 @@ celery[gevent]==5.4.0
     # via
     #   -r requirements.in
     #   flower
-certifi==2024.6.2
-    # via requests
-cffi==1.16.0
+certifi==2024.8.30
+    # via
+    #   httpcore
+    #   httpx
+    #   requests
+cffi==1.17.1
     # via cryptography
 charset-normalizer==3.3.2
     # via requests
@@ -47,7 +54,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==42.0.8
+cryptography==43.0.1
     # via
     #   jwcrypto
     #   oic
@@ -70,11 +77,11 @@ flask==3.0.3
     #   flask-restx
     #   flask-sqlalchemy
     #   prometheus-flask-exporter
-flask-caching==2.1.0
+flask-caching==2.3.0
     # via -r requirements.in
-flask-cors==4.0.1
+flask-cors==5.0.0
     # via -r requirements.in
-flask-marshmallow==0.15.0
+flask-marshmallow==1.2.1
     # via -r requirements.in
 flask-migrate==4.0.7
     # via -r requirements.in
@@ -96,11 +103,20 @@ greenlet==3.0.3
     # via
     #   gevent
     #   sqlalchemy
-humanize==4.9.0
+h11==0.14.0
+    # via httpcore
+httpcore==1.0.5
+    # via httpx
+httpx==0.27.2
+    # via python-keycloak
+humanize==4.10.0
     # via flower
-idna==3.7
-    # via requests
-importlib-resources==6.4.0
+idna==3.8
+    # via
+    #   anyio
+    #   httpx
+    #   requests
+importlib-resources==6.4.4
     # via
     #   flask-pyoidc
     #   flask-restx
@@ -108,13 +124,13 @@ itsdangerous==2.2.0
     # via flask
 jinja2==3.1.4
     # via flask
-jsonschema==4.22.0
+jsonschema==4.23.0
     # via flask-restx
 jsonschema-specifications==2023.12.1
     # via jsonschema
 jwcrypto==1.5.6
     # via python-keycloak
-kombu==5.3.7
+kombu==5.4.0
     # via celery
 mako==1.3.5
     # via
@@ -125,41 +141,39 @@ markupsafe==2.1.5
     #   jinja2
     #   mako
     #   werkzeug
-marshmallow==3.21.3
+marshmallow==3.22.0
     # via
     #   api-entreprise
     #   flask-marshmallow
     #   marshmallow-dataclass
     #   marshmallow-jsonschema
     #   marshmallow-sqlalchemy
-marshmallow-dataclass==8.6.1
+marshmallow-dataclass==8.7.0
     # via
     #   -r requirements.in
     #   api-entreprise
 marshmallow-jsonschema==0.13.0
     # via -r requirements.in
-marshmallow-sqlalchemy==0.30.0
+marshmallow-sqlalchemy==1.1.0
     # via -r requirements.in
-more-itertools==10.3.0
+more-itertools==10.4.0
     # via -r requirements.in
 mypy-extensions==1.0.0
     # via typing-inspect
 nocodb==0.1.0
     # via -r requirements.in
-numpy==2.0.0
+numpy==2.1.1
     # via pandas
 odfpy==1.4.1
     # via -r requirements.in
 oic==1.6.1
     # via flask-pyoidc
-openpyxl==3.1.4
+openpyxl==3.1.5
     # via -r requirements.in
 packaging==24.1
     # via
     #   deprecation
-    #   flask-marshmallow
     #   marshmallow
-    #   marshmallow-sqlalchemy
 pandas==2.2.2
     # via -r requirements.in
 pika==1.3.2
@@ -168,13 +182,13 @@ prometheus-client==0.20.0
     # via
     #   flower
     #   prometheus-flask-exporter
-prometheus-flask-exporter==0.23.0
+prometheus-flask-exporter==0.23.1
     # via -r requirements.in
 prompt-toolkit==3.0.47
     # via click-repl
-psycopg==3.1.19
+psycopg==3.2.1
     # via -r requirements.in
-psycopg-binary==3.1.19
+psycopg-binary==3.2.1
     # via -r requirements.in
 pycparser==2.22
     # via cffi
@@ -182,11 +196,11 @@ pycryptodomex==3.20.0
     # via
     #   oic
     #   pyjwkest
-pydantic==2.7.4
+pydantic==2.8.2
     # via pydantic-settings
-pydantic-core==2.18.4
+pydantic-core==2.20.1
     # via pydantic
-pydantic-settings==2.3.3
+pydantic-settings==2.4.0
     # via oic
 pyjwkest==1.4.2
     # via oic
@@ -200,14 +214,14 @@ python-dateutil==2.9.0.post0
     #   pandas
 python-dotenv==1.0.1
     # via pydantic-settings
-python-keycloak==3.12.0
+python-keycloak==4.3.0
     # via -r requirements.in
 pytz==2024.1
     # via
     #   flask-restx
     #   flower
     #   pandas
-pyyaml==6.0.1
+pyyaml==6.0.2
     # via -r requirements.in
 redis==4.6.0
     # via
@@ -229,7 +243,7 @@ requests==2.32.3
     #   requests-toolbelt
 requests-toolbelt==1.0.0
     # via python-keycloak
-rpds-py==0.18.1
+rpds-py==0.20.0
     # via
     #   jsonschema
     #   referencing
@@ -237,18 +251,24 @@ six==1.16.0
     # via
     #   pyjwkest
     #   python-dateutil
+sniffio==1.3.1
+    # via
+    #   anyio
+    #   httpx
 sqlalchemy==2.0.23
     # via
     #   -r requirements.in
     #   alembic
     #   flask-sqlalchemy
     #   marshmallow-sqlalchemy
-sqlparse==0.5.0
+sqlparse==0.5.1
     # via -r requirements.in
-tenacity==8.4.1
+tenacity==9.0.0
     # via -r requirements.in
 tornado==6.4.1
     # via flower
+typeguard==4.0.1
+    # via marshmallow-dataclass
 typing-extensions==4.12.2
     # via
     #   alembic
@@ -273,11 +293,11 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-waitress==2.1.2
+waitress==3.0.0
     # via -r requirements.in
 wcwidth==0.2.13
     # via prompt-toolkit
-werkzeug==3.0.3
+werkzeug==3.0.4
     # via
     #   flask
     #   flask-restx
@@ -287,7 +307,7 @@ xlrd==2.0.1
     # via -r requirements.in
 zope-event==5.0
     # via gevent
-zope-interface==6.4.post2
+zope-interface==7.0.3
     # via gevent
 
 # The following packages are considered to be unsafe in a requirements file:

@@ -5,6 +5,7 @@ The `preference` and `preference_get` models are used to define the expected inp
 
 The `PreferenceUsers` class, which inherits from `Resource`, is responsible for handling the `post` and `get` methods, and it has the decorators to handle the request validation, token validation, and request/response serialization.
 """
+
 import datetime
 import logging
 from http import HTTPStatus
