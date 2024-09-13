@@ -2,14 +2,13 @@ import datetime
 import shutil
 from celery import current_task, subtask
 from flask import current_app
-from sqlalchemy import tuple_, delete
+from sqlalchemy import delete
 from app import celeryapp, db
 from app.exceptions.exceptions import FinancialException
 import sqlalchemy.exc
 from app.models.financial.Ademe import Ademe
-from app.models.financial.FinancialAe import COLUMN_MONTANT_NAME, FinancialAe
+from app.models.financial.FinancialAe import FinancialAe
 from app.models.financial.FinancialCp import FinancialCp
-from app.models.financial.MontantFinancialAe import MontantFinancialAe
 from app.models.refs.centre_couts import CentreCouts
 from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
@@ -193,6 +192,9 @@ def import_lines_financial_ae(
             else:
                 # Préparer une nouvelle instance pour l'insertion
                 new_ae = FinancialAe(**line_data)
+                _insert_references(new_ae)
+                db.session.add(new_ae)
+                db.session.flush()
                 new_aes.append(new_ae)
 
     except sqlalchemy.exc.OperationalError as o:
@@ -200,39 +202,8 @@ def import_lines_financial_ae(
         raise FinancialException(o) from o
     perf_counter_retrieve_ae_instance.observe()
 
-    perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_ae_check_refs")
-    perf_counter_check_refs.start()
-    # Insertion des références en bulk
-    _bulk_insert_references(new_aes)
-    perf_counter_check_refs.observe()
-
     perf_insert_or_update_ae = SummaryOfTimePerfCounter("import_line_financial_ae_insert_or_update_ae")
     perf_insert_or_update_ae.start()
-
-    # Insertion en bulk pour les nouvelles instances
-    if new_aes:
-        logger.debug(f"Insertion en bulk de {len(new_aes)} nouvelles instances de FinancialAe.")
-        db.session.bulk_save_objects(new_aes)
-        db.session.flush()  # Flush pour obtenir les IDs des nouvelles instances
-
-        # Récupérer les nouvelles instances de FinancialAe pour s'assurer que les IDs sont bien générés
-        ej_poste_ej_pairs = [(ae.n_ej, ae.n_poste_ej) for ae in new_aes]
-        new_aes = (
-            db.session.query(FinancialAe)
-            .filter(tuple_(FinancialAe.n_ej, FinancialAe.n_poste_ej).in_(ej_poste_ej_pairs))
-            .all()
-        )
-
-        # Maintenant que les IDs sont disponibles, créer les objets MontantFinancialAe
-        for new_ae, line_data in zip(new_aes, line_data_list):
-            montant_raw = line_data[COLUMN_MONTANT_NAME]
-            if isinstance(montant_raw, str):
-                montant = float(montant_raw.replace(",", "."))
-            else:
-                montant = float(montant_raw)
-            montant_ae = MontantFinancialAe(montant=montant, annee=line_data[FinancialAe.annee.key])
-            montant_ae.id_financial_ae = new_ae.id  # Associer l'ID de FinancialAe à MontantFinancialAe
-            montant_aes.append(montant_ae)
 
     # Mise à jour en bulk pour les instances existantes
     if update_mappings:
@@ -271,91 +242,45 @@ def import_lines_financial_ae(
     perf_trigger_cp.observe()
 
 
-def _bulk_insert_references(new_aes):
-    # Ensembles pour stocker les codes uniques à insérer
-    code_programme_codes = set()
-    centre_couts_codes = set()
-    domaine_fonctionnel_codes = set()
-    fournisseur_titulaire_codes = set()
-    groupe_marchandise_codes = set()
-    localisation_interministerielle_codes = set()
-    referentiel_programmation_codes = set()
+def _insert_references(new_ae):
+    # Start performance counter
+    perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_ae_check_refs")
+    perf_counter_check_refs.start()
+    if hasattr(new_ae, "fournisseur_titulaire"):
+        fournisseur_titulaire = new_ae.fournisseur_titulaire
+    else:
+        fournisseur_titulaire = new_ae.fournisseur_paye
+
+    # Mapping between reference types and their corresponding model classes and codes
+    reference_mapping = {
+        "programme": (CodeProgramme, new_ae.programme),
+        "centre_couts": (CentreCouts, new_ae.centre_couts),
+        "domaine_fonctionnel": (DomaineFonctionnel, new_ae.domaine_fonctionnel),
+        "fournisseur_titulaire": (FournisseurTitulaire, fournisseur_titulaire),
+        "groupe_marchandise": (GroupeMarchandise, new_ae.groupe_marchandise),
+        "localisation_interministerielle": (LocalisationInterministerielle, new_ae.localisation_interministerielle),
+        "referentiel_programmation": (ReferentielProgrammation, new_ae.referentiel_programmation),
+    }
+
+    # Keep track of instances to bulk save
+    instances_to_save = []
 
     try:
-        for new_ae in new_aes:
-            # Vérification pour CodeProgramme
-            if not db.session.query(CodeProgramme).filter_by(code=str(new_ae.programme)).one_or_none():
-                code_programme_codes.add(str(new_ae.programme))
+        # Check and add references if they don't exist
+        for ref_name, (model, code) in reference_mapping.items():
+            if not db.session.query(model).filter_by(code=str(code)).one_or_none():
+                instances_to_save.append(model(code=str(code)))
 
-            # Vérification pour CentreCouts
-            if not db.session.query(CentreCouts).filter_by(code=str(new_ae.centre_couts)).one_or_none():
-                centre_couts_codes.add(str(new_ae.centre_couts))
+        check_siret(new_ae.siret)
 
-            # Vérification pour DomaineFonctionnel
-            if not db.session.query(DomaineFonctionnel).filter_by(code=str(new_ae.domaine_fonctionnel)).one_or_none():
-                domaine_fonctionnel_codes.add(str(new_ae.domaine_fonctionnel))
+        # Bulk save all new instances
+        if instances_to_save:
+            db.session.bulk_save_objects(instances_to_save)
 
-            # Vérification pour FournisseurTitulaire
-            if hasattr(new_ae, "fournisseur_titulaire"):
-                fournisseur_titulaire = new_ae.fournisseur_titulaire
-            else:
-                fournisseur_titulaire = new_ae.fournisseur_paye
+        # Observe performance counter
+        perf_counter_check_refs.observe()
 
-            if not db.session.query(FournisseurTitulaire).filter_by(code=str(fournisseur_titulaire)).one_or_none():
-                fournisseur_titulaire_codes.add(str(fournisseur_titulaire))
-
-            # Vérification pour GroupeMarchandise
-            if not db.session.query(GroupeMarchandise).filter_by(code=str(new_ae.groupe_marchandise)).one_or_none():
-                groupe_marchandise_codes.add(str(new_ae.groupe_marchandise))
-
-            # Vérification pour LocalisationInterministerielle
-            if (
-                not db.session.query(LocalisationInterministerielle)
-                .filter_by(code=str(new_ae.localisation_interministerielle))
-                .one_or_none()
-            ):
-                localisation_interministerielle_codes.add(str(new_ae.localisation_interministerielle))
-
-            # Vérification pour ReferentielProgrammation
-            if (
-                not db.session.query(ReferentielProgrammation)
-                .filter_by(code=str(new_ae.referentiel_programmation))
-                .one_or_none()
-            ):
-                referentiel_programmation_codes.add(str(new_ae.referentiel_programmation))
-
-            check_siret(new_ae.siret)
-
-        # Conversion des ensembles en objets de modèle
-        code_programme_instances = [CodeProgramme(code=code) for code in code_programme_codes]
-        centre_couts_instances = [CentreCouts(code=code) for code in centre_couts_codes]
-        domaine_fonctionnel_instances = [DomaineFonctionnel(code=code) for code in domaine_fonctionnel_codes]
-        fournisseur_titulaire_instances = [FournisseurTitulaire(code=code) for code in fournisseur_titulaire_codes]
-        groupe_marchandise_instances = [GroupeMarchandise(code=code) for code in groupe_marchandise_codes]
-        localisation_interministerielle_instances = [
-            LocalisationInterministerielle(code=code) for code in localisation_interministerielle_codes
-        ]
-        referentiel_programmation_instances = [
-            ReferentielProgrammation(code=code) for code in referentiel_programmation_codes
-        ]
-
-        # Insertion en bulk pour les nouvelles instances
-        if code_programme_instances:
-            db.session.bulk_save_objects(code_programme_instances)
-        if centre_couts_instances:
-            db.session.bulk_save_objects(centre_couts_instances)
-        if domaine_fonctionnel_instances:
-            db.session.bulk_save_objects(domaine_fonctionnel_instances)
-        if fournisseur_titulaire_instances:
-            db.session.bulk_save_objects(fournisseur_titulaire_instances)
-        if groupe_marchandise_instances:
-            db.session.bulk_save_objects(groupe_marchandise_instances)
-        if localisation_interministerielle_instances:
-            db.session.bulk_save_objects(localisation_interministerielle_instances)
-        if referentiel_programmation_instances:
-            db.session.bulk_save_objects(referentiel_programmation_instances)
-
-    except Exception as e:  # Attrape toutes les exceptions possibles
+    except Exception as e:
         logger.exception("[IMPORT][REF] Error lors de l'insertion en bulk des références.")
         raise e
 
@@ -382,7 +307,7 @@ def import_lines_financial_cp(self, cp_batch: list[dict], start_index: int, sour
 
     perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_cp_check_refs")
     perf_counter_check_refs.start()
-    _bulk_insert_references(new_cps)
+    _insert_references(new_cp)
     perf_counter_check_refs.observe()
     perf_counter_get_insert_cp = SummaryOfTimePerfCounter("import_line_financial_cp_insert_cp")
     perf_counter_get_insert_cp.start()

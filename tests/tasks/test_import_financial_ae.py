@@ -72,13 +72,9 @@ def test_import_new_line_ae(database, session):
     # AJout Somme positive
     data = '{"date_replication":"10.01.2023","montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105755","n_poste_ej":5,"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200117","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
     # DO
-    with patch(
-        "app.services.siret.update_siret_from_api_entreprise",
-        return_value=Siret(**{"code": "85129663200017", "code_commune": "35099"}),
-    ):
-        add_references(FinancialAe(**json.loads(data)), session, region="35")
+    add_references(FinancialAe(**json.loads(data)), session, region="35")
 
-        import_lines_financial_ae([data], "35", 2023, 0, [])
+    import_lines_financial_ae([data], "35", 2023, 0, [])
 
     # ASSERT
     data = session.execute(database.select(FinancialAe).where(FinancialAe.n_ej == "2103105755")).scalar_one_or_none()
@@ -95,6 +91,43 @@ def test_import_new_line_ae(database, session):
     assert len(data.montant_ae) == 1
     assert data.montant_ae[0].montant == 22500.12
     assert data.montant_ae[0].annee == 2023
+
+    delete_references(session)
+
+
+def test_import_lines_ae_with_duplicate_key(database, session):
+    # AJout Somme positive
+    data = '{"date_replication":"10.01.2023","montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105755","n_poste_ej":5,"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200017","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
+    # DO
+    add_references(FinancialAe(**json.loads(data)), session, region="35")
+
+    import_lines_financial_ae(
+        [
+            '{"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","n_ej":"2103105755","date_replication":"10.01.2023","n_poste_ej":5,"date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200017","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53","montant":"22500,12","annee":2023,"source_region":"35"}',
+            '{"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","n_ej":"2103105755","date_replication":"10.01.2023","n_poste_ej":5,"date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200017","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53","montant":"15000","annee":2023,"source_region":"35"}',
+            '{"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","n_ej":"2103105755","date_replication":"10.01.2023","n_poste_ej":5,"date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"NOT FOUND","siret":"#","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53","montant":"15000","annee":2023,"source_region":"35"}',
+        ],
+        "35",
+        2023,
+        0,
+        [],
+    )
+
+    # ASSERT
+    data = session.execute(database.select(FinancialAe).where(FinancialAe.n_ej == "2103105755")).scalar_one_or_none()
+    programme = session.execute(database.select(CodeProgramme).where(CodeProgramme.code == "103")).scalar_one_or_none()
+
+    assert programme.id is not None
+    assert programme.code == "103"
+
+    assert data.id is not None
+    assert data.annee == 2023
+    assert data.n_poste_ej == 5
+    assert data.centre_couts == "DREETS0035"
+    assert data.referentiel_programmation == "010300000108"
+    assert len(data.montant_ae) == 1
+    assert data.montant_ae[0].annee == 2023
+    assert data.montant_ae[0].montant == 15000
 
     delete_references(session)
 
