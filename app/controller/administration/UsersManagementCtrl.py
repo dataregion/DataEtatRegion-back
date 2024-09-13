@@ -16,6 +16,8 @@ from app.servicesapp.authentication import ConnectedUser
 
 from keycloak import KeycloakAdmin
 
+SOFT_DISABLED_KEY = "soft-disabled"
+
 api = Namespace(name="users", path="/users", description="API de gestion des utilisateurs")
 parser_get = get_pagination_parser()
 parser_get.add_argument(
@@ -65,15 +67,24 @@ class UsersManagement(Resource):
 
         logging.debug(f"[USERS] Call users get with limit {limit}, page {page_number}, only_disable {only_disable}")
         source_region = user.current_region
-        groups_id = _fetch_groups(source_region)
+        source_region_groups_ids = _fetch_groups_ids(source_region)
         keycloak_admin = make_or_get_keycloack_admin()
         users = []
-        for group_id in groups_id:
+        for group_id in source_region_groups_ids:
             users = users + keycloak_admin.get_group_members(group_id, {"briefRepresentation": False})
+
+        for user in users:
+            user["softEnabled"] = True
+            is_soft_disabled = user.get("attributes", {}).get(SOFT_DISABLED_KEY, [False])[0] == "true"
+            is_disabled = user.get("enabled", True) is False
+            if is_soft_disabled or is_disabled:
+                user["softEnabled"] = False
 
         if only_disable:
             logging.debug("[USERS] get only disabled users")
-            users = list(filter(lambda user: user["enabled"] is False, users))
+            users = list(filter(lambda user: user["softEnabled"] is False, users))
+
+        users = _filter_unique_by_attribute(users, "id")
 
         debut_index = (page_number - 1) * limit
         fin_index = debut_index + limit
@@ -102,18 +113,7 @@ class UserDelete(Resource):
         keycloak_admin = make_or_get_keycloack_admin()
         # on récupère l'utilisateur
         user = keycloak_admin.get_user(uuid)
-
-        # on check si l'utilisateur est bien désactivé
-        if user["enabled"] is True:
-            return (
-                ErrorController("L'utilisateur est actif. Merci de le désactiver dans un premier temps").to_json(),
-                HTTPStatus.BAD_REQUEST,
-            )
-
-        groups_id_region = _fetch_groups(source_region)
-
-        for group_id in groups_id_region:
-            keycloak_admin.group_user_remove(uuid, group_id)
+        _soft_disable_an_user(uuid, source_region, keep_groups=False)
 
         return "Success", HTTPStatus.OK
 
@@ -139,7 +139,8 @@ class UsersDisable(Resource):
 
         if user.sub == uuid:
             return abort(message="Vous ne pouvez désactiver votre utilisateur", code=HTTPStatus.FORBIDDEN)
-        _update_enable_user(uuid, False)
+
+        _soft_disable_an_user(uuid, source_region)
         return make_response("", 200)
 
 
@@ -156,21 +157,9 @@ class UsersEnable(Resource):
         user = ConnectedUser.from_current_token_identity()
         logging.debug(f"[USERS] Call enable users {uuid}")
         source_region = user.current_region
-        # on check si l'utilisateur est bien dans un groupes de la région
-        if not _user_belong_region(uuid, source_region):
-            return ErrorController("L'utilisateur ne fait pas partie de la région").to_json(), HTTPStatus.BAD_REQUEST
 
-        _update_enable_user(uuid, True)
+        _soft_enable_user(uuid, source_region)
         return make_response("", 200)
-
-
-def _update_enable_user(user_uuid: str, enable: bool):
-    """
-    Update the enabled status of a user.
-    """
-    keycloak_admin = make_or_get_keycloack_admin()
-    response = keycloak_admin.update_user(user_id=user_uuid, payload={"enabled": enable})
-    return response
 
 
 def _fetch_subgroups(keycloak_admin: KeycloakAdmin, parent_id):
@@ -188,11 +177,20 @@ def _fetch_subgroups(keycloak_admin: KeycloakAdmin, parent_id):
     return requests.get(endpoint, headers=headers).json()
 
 
+def _fetch_groups_ids(source_region: str) -> list:
+    groups = _fetch_groups(source_region)
+    groups_ids = []
+    for group in groups:
+        groups_ids.append(group["id"])
+    return groups_ids
+
+
 def _fetch_groups(source_region: str) -> list:
     """
     Récupérer les groupes ids d'une région
     :param source_region:
-    :return:
+    :param include_soft_disabled: Inclue les utilisateurs soft-disabled
+    :return: une grappe de groupe avec la racine en première position
     """
     keycloak_admin = make_or_get_keycloack_admin()
     logging.debug(f"[USERS] Get groups for region {source_region}")
@@ -201,12 +199,12 @@ def _fetch_groups(source_region: str) -> list:
     if groups is None:
         logging.warning(f"[USERS] Group for region {source_region} not found")
         return abort(message="admin_exception.message", code=HTTPStatus.BAD_REQUEST)
-    groups_id = [groups[0]["id"]]
+    assembled_groups = [groups[0]]
     if groups[0]["subGroupCount"] != 0:
         subgroups = _fetch_subgroups(keycloak_admin, groups[0]["id"])
         for subgroup in subgroups:
-            groups_id.append(subgroup["id"])
-    return groups_id
+            assembled_groups.append(subgroup)
+    return assembled_groups
 
 
 def _user_belong_region(uuid, source_region: str) -> bool:
@@ -221,5 +219,62 @@ def _user_belong_region(uuid, source_region: str) -> bool:
     groups_belong_user = keycloak_admin.get_user_groups(uuid)
     groups_id_belong_user = [g["id"] for g in groups_belong_user]
     # on récupère les groups de la region
-    groups_id_region = _fetch_groups(source_region)
+    groups_id_region = _fetch_groups_ids(source_region)
     return bool(set(groups_id_belong_user) & set(groups_id_region))
+
+
+def _soft_disable_an_user(uuid, source_region: str, keep_groups=None):
+    if keep_groups is None:
+        keep_groups = True
+    erase_groups = not keep_groups
+
+    keycloak_admin = make_or_get_keycloack_admin()
+
+    user = keycloak_admin.get_user(uuid)
+    user["attributes"][SOFT_DISABLED_KEY] = ["true"]
+    keycloak_admin.update_user(uuid, payload=user)
+    if erase_groups:
+        region_groups = _fetch_groups(source_region)
+        for group in region_groups:
+            keycloak_admin.group_user_remove(uuid, group["id"])
+
+
+def _soft_enable_user(uuid, source_region: str):
+    groups = _fetch_groups(source_region)
+    if len(groups) < 1:
+        return (
+            ErrorController(f"Pas de groupe correspondant à la source region {source_region}").to_json(),
+            HTTPStatus.BAD_REQUEST,
+        )
+
+    groupe_racine = groups[0]
+    groupe_racine_id = groupe_racine["id"]
+
+    keycloak_admin = make_or_get_keycloack_admin()
+    user = keycloak_admin.get_user(user_id=uuid)
+    user["attributes"][SOFT_DISABLED_KEY] = ["false"]
+    user["enabled"] = True
+    keycloak_admin.update_user(user_id=uuid, payload=user)  # XXX enabled True nécessaire pour la retro compatiblité.
+    add_response = keycloak_admin.group_user_add(uuid, groupe_racine_id)
+    logging.info(f"Ajout de l'utilisateur {uuid} au groupe {groupe_racine['path']}")
+    logging.debug(f"Keycloak response: {add_response}")
+
+
+def _filter_unique_by_attribute(data, attribute):
+    seen = set()
+    unique_data = []
+
+    for item in data:
+        attr_value = item[attribute]
+        if attr_value not in seen:
+            unique_data.append(item)
+            seen.add(attr_value)
+
+    return unique_data
+
+
+def _find_first_by_attribute(data, attribute, value):
+    for item in data:
+        if item[attribute] == value:
+            return item
+    return None  # If no match is found

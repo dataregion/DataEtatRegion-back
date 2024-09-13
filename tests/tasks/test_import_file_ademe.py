@@ -5,6 +5,7 @@ from app.models.financial.Ademe import Ademe
 from app.models.refs.siret import Siret
 from app.tasks.financial.import_financial import import_line_ademe, import_file_ademe
 from tests import TESTS_PATH
+from tests import delete_references
 
 _ademe = TESTS_PATH / "data" / "ademe"
 
@@ -30,7 +31,9 @@ def test_import_file_ademe(mock_subtask: MagicMock):
 def test_import_line_ademe(app, database, session):
     # GIVEN
     data = '{"Nom de l attribuant":"ADEME","idAttribuant":"38529030900454","dateConvention":"2021-05-05","referenceDecision":"21BRD0090","nomBeneficiaire":"MEGO ! - MEGO","idBeneficiaire":82815371800014,"objet":"TREMPLIN pour la transition \u00e9cologique des PME","montant":400.1,"nature":"aide en num\u00e9raire","conditionsVersement":"Echelonn\u00e9","datesPeriodeVersement":"2021-05-11_2023-01-05","idRAE":null,"notificationUE":"NON","pourcentageSubvention":1}'
-
+    siret = Siret(**{"code": "82815371800014"})
+    session.add(siret)
+    session.commit()
     # DO
     with patch(
         "app.services.siret.update_siret_from_api_entreprise",
@@ -47,3 +50,4 @@ def test_import_line_ademe(app, database, session):
     assert data.siret_beneficiaire == "82815371800014"
     assert data.siret_attribuant == "38529030900454"
     assert data.dates_periode_versement == "2021-05-11_2023-01-05"
+    delete_references(session)

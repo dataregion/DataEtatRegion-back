@@ -1,9 +1,10 @@
 from unittest.mock import patch, MagicMock, call, ANY
 
 from app.models.financial.France2030 import France2030
+from app.models.refs.nomenclature_france_2030 import NomenclatureFrance2030
 from app.models.refs.siret import Siret
 from app.tasks.financial.import_france_2030 import import_file_france_2030, import_line_france_2030
-from tests import TESTS_PATH
+from tests import TESTS_PATH, delete_references
 
 _data = TESTS_PATH / "data"
 
@@ -32,6 +33,9 @@ def test_import_import_file(mock_subtask: MagicMock):
 
 def test_import_ligne_france_2030(database, session):
     # GIVEN
+    nomenclature = NomenclatureFrance2030(**{"code": "Objectif 7", "numero": 1, "mot": "test", "phrase": "test"})
+    session.add(nomenclature)
+    session.commit()
     data = '{"date_dpm":1631318400000,"operateur":"BPI","procedure":"Contractualisation directe","nom_projet":"RONSARD 2","nom_beneficiaire":"RECIPHARM MONTS","siret":"39922695000026","typologie":"Petites et moyennes entreprises","regions":"CVL","localisation_geo":37,"acteur_emergent":null,"nom_strategie":"Capacity building","code_nomenclature":"Objectif 7","nomemclature":"Produire en France au moins 20 bio-m\\u00e9dicaments, notamment contre les cancers, les maladies chroniques et d\\u00e9velopper et produire des dispositifs m\\u00e9dicaux innovants","montant_subvention":null,"montant_avance_remboursable":23372935.0,"montant_aide":23372935.0,"annee":2023}'
     # DO
 
@@ -49,3 +53,5 @@ def test_import_ligne_france_2030(database, session):
     assert data.nom_projet == "RONSARD 2"
     assert data.siret == "39922695000026"
     assert data.code_nomenclature == "Objectif 7"
+
+    delete_references(session)

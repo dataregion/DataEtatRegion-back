@@ -4,6 +4,8 @@ import datetime
 import pytest
 
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
+from tests import delete_references
+from tests.tasks.tags.test_tag_acv import add_references
 from ..tags import *  # noqa: F403
 
 from app import db
@@ -25,8 +27,8 @@ def tag_detr(database):
 
 @pytest.fixture(scope="function")
 def insert_two_financial_ae_for_tag_detr(database, session):
-    ref_detr = ReferentielProgrammation(**{"code": "BGOO/DETR", "label": "DETR"})
-    ref_autre = ReferentielProgrammation(**{"code": "dddd", "label": "pasbonref"})
+    ref_prog_detr = ReferentielProgrammation(**{"code": "code_detr", "label": "DETR"})
+
     ae_1 = FinancialAe(
         **{
             "annee": 2020,
@@ -35,12 +37,13 @@ def insert_two_financial_ae_for_tag_detr(database, session):
             "programme": "155",  #
             "domaine_fonctionnel": "0380-01-01",
             "centre_couts": "BG00\\/DREETS0035",
-            "referentiel_programmation": "BGOO/DETR",
-            "fournisseur_titulaire": 1001465507,
+            "referentiel_programmation": "code_detr",
+            "fournisseur_titulaire": "1001465507",
             "localisation_interministerielle": "N35",
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         }
     )
     ae_2 = FinancialAe(
@@ -51,12 +54,13 @@ def insert_two_financial_ae_for_tag_detr(database, session):
             "programme": "165",  #
             "domaine_fonctionnel": "0380-01-01",
             "centre_couts": "BG00\\/DREETS0035",
-            "referentiel_programmation": "BGOO/DETR",
-            "fournisseur_titulaire": 1001465507,
+            "referentiel_programmation": "code_detr",
+            "fournisseur_titulaire": "1001465507",
             "localisation_interministerielle": "N35",
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         }
     )
     bad_ae = FinancialAe(
@@ -68,20 +72,24 @@ def insert_two_financial_ae_for_tag_detr(database, session):
             "domaine_fonctionnel": "0380-01-01",
             "centre_couts": "BG00\\/DREETS0035",
             "referentiel_programmation": "dddd",
-            "fournisseur_titulaire": 1001465507,
+            "fournisseur_titulaire": "1001465507",
             "localisation_interministerielle": "N35",
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         }
     )
-    session.add(ref_detr)
-    session.add(ref_autre)
+    session.add(ref_prog_detr)
+    add_references(ae_1, session, region="53")
+    add_references(ae_2, session, region="53")
+    add_references(bad_ae, session, region="53")
     session.add(ae_1)
     session.add(ae_2)
     session.add(bad_ae)
     session.commit()
     yield [ae_1, ae_2]
+    delete_references(session)  # noqa: F405
     session.execute(database.delete(FinancialAe))
     session.execute(database.delete(ReferentielProgrammation))
     session.commit()

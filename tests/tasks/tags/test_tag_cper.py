@@ -4,6 +4,8 @@ import datetime
 import pytest
 
 from app.tasks.tags import apply_tags_cper_2015_20
+from tests import delete_references
+from tests.tasks.tags.test_tag_acv import add_references
 from ..tags import *  # noqa: F403
 
 from app import db
@@ -45,11 +47,12 @@ def insert_two_financial_ae_for_tag_cper_2015_20(database, session):
             "domaine_fonctionnel": "0380-01-01",
             "centre_couts": "BG00\\/DREETS0035",
             "referentiel_programmation": "BGOO/DETR",
-            "fournisseur_titulaire": 1001465507,
+            "fournisseur_titulaire": "1001465507",
             "localisation_interministerielle": "N35",
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         }
     )
     ae_2019 = FinancialAe(
@@ -62,11 +65,12 @@ def insert_two_financial_ae_for_tag_cper_2015_20(database, session):
             "domaine_fonctionnel": "0380-01-01",
             "centre_couts": "BG00\\/DREETS0035",
             "referentiel_programmation": "BGOO/DETR",
-            "fournisseur_titulaire": 1001465507,
+            "fournisseur_titulaire": "1001465507",
             "localisation_interministerielle": "N35",
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         }
     )
 
@@ -80,19 +84,25 @@ def insert_two_financial_ae_for_tag_cper_2015_20(database, session):
             "domaine_fonctionnel": "0380-01-01",
             "centre_couts": "BG00\\/DREETS0035",
             "referentiel_programmation": "BGOO/DETR",
-            "fournisseur_titulaire": 1001465507,
+            "fournisseur_titulaire": "1001465507",
             "localisation_interministerielle": "N35",
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         }
     )
+
+    add_references(ae_2020, session, region="53")
+    add_references(ae_2019, session, region="53")
+    add_references(bad_ae_1, session, region="53")
 
     session.add(ae_2020)
     session.add(ae_2019)
     session.add(bad_ae_1)
     session.commit()
     yield [ae_2020, ae_2019]
+    delete_references(session)
     session.execute(database.delete(FinancialAe))
     session.commit()
 
