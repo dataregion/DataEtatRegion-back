@@ -78,7 +78,6 @@ def delayed_inserts(self):
 @celery.task(bind=True, name="read_csv_and_import_ae_cp")
 def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options: str, source_region: str, annee: int):
     move_folder = os.path.join(current_app.config["UPLOAD_FOLDER"], "save", datetime.datetime.now().strftime("%Y%m%d"))
-
     if not os.path.exists(move_folder):
         os.makedirs(move_folder)
 
@@ -159,17 +158,16 @@ def _parse_file(
     max_lines = (
         DEFAULT_MAX_ROW if "SPLIT_FILE_LINE" not in current_app.config else current_app.config["SPLIT_FILE_LINE"]
     )
-    logging.debug(f"[IMPORT][SPLIT][{data_type}] Split du fichier en chunk de {max_lines} lignes")
+    logging.info(f"[IMPORT][SPLIT][{data_type}] Split du fichier en chunk de {max_lines} lignes")
 
     try:
         chunk_index = 1
         chunks = pandas.read_csv(fichier, chunksize=max_lines, **json.loads(csv_options))
         for df in chunks:
+            # Construire le nom de fichier de sortie
             output_file = os.path.join(current_app.config["UPLOAD_FOLDER"], f"{filename}_{chunk_index}.csv")
             df.to_csv(output_file, index=False)
-            logging.debug(
-                f"[IMPORT][SPLIT] Création du fichier {output_file} de {min(max_lines, len(df.index))} lignes"
-            )
+            logging.info(f"[IMPORT][SPLIT] Création du fichier {output_file} de {min(max_lines, len(df.index))} lignes")
             try:
                 if data_type is DataType.FINANCIAL_DATA_AE:
                     ae_list = _parse_file_ae(output_file, source_region, annee, ae_list)
@@ -178,7 +176,7 @@ def _parse_file(
                         output_file, source_region, annee, chunk_index, max_lines, ae_list, cp_list
                     )
                 shutil.copy(output_file, move_folder)
-                logging.debug(
+                logging.info(
                     f"[IMPORT][FINANCIAL][{data_type}] Sauvegarde du chunk {output_file} dans le dossier {move_folder}"
                 )
             except Exception as e:
@@ -188,7 +186,7 @@ def _parse_file(
     except Exception as e:
         logging.exception(f"[IMPORT][FINANCIAL][{data_type}] Error lors de l'import du fichier {fichier}")
         raise e
-    logging.debug(f"[IMPORT][SPLIT][{data_type}] Fichier traité : {chunk_index - 1} fichier(s) créé(s)")
+    logging.info(f"[IMPORT][SPLIT][{data_type}] Fichier traité : {chunk_index - 1} fichier(s) créé(s)")
     return ae_list, cp_list
 
 
@@ -281,7 +279,7 @@ def split_csv_files_and_run_task(self, fichier: str, task_name: str, csv_options
     )
     file_name = os.path.splitext(os.path.basename(fichier))[0]
 
-    logging.debug(f"[SPLIT] Start split file for task {task_name} in {max_lines} lines")
+    logging.info(f"[SPLIT] Start split file for task {task_name} in {max_lines} lines")
 
     chunks = pandas.read_csv(fichier, chunksize=max_lines, **json.loads(csv_options))
     index = 1
@@ -289,13 +287,13 @@ def split_csv_files_and_run_task(self, fichier: str, task_name: str, csv_options
         # Construire le nom de fichier de sortie
         output_file = os.path.join(current_app.config["UPLOAD_FOLDER"], f"{file_name}_{index}.csv")
         df.to_csv(output_file, index=False)
-        logging.debug(f"[SPLIT] Send task {task_name} with file {output_file} with param {kwargs}")
+        logging.info(f"[SPLIT] Send task {task_name} with file {output_file} with param {kwargs}")
 
         subtask(task_name).delay(output_file, **kwargs)
         index += 1
 
     _move_file(fichier, current_app.config["UPLOAD_FOLDER"] + "/save/")
-    logging.debug(f"[SPLIT] End split file for task {task_name}")
+    logging.info(f"[SPLIT] End split file for task {task_name}")
 
 
 def _move_file(fichier: str, move_folder: str):
@@ -304,5 +302,5 @@ def _move_file(fichier: str, move_folder: str):
     if not os.path.exists(move_folder):
         os.makedirs(move_folder)
 
-    logging.debug(f"[FILE] Sauvegarde du fichier {fichier} dans le dossier {move_folder}")
+    logging.info(f"[FILE] Sauvegarde du fichier {fichier} dans le dossier {move_folder}")
     shutil.move(fichier, move_folder)

@@ -51,7 +51,8 @@ celery = celeryapp.celery
 # TODO : deprecated
 @celery.task(bind=True, name="import_file_ae_financial")
 def import_file_ae_financial(self, fichier: str, source_region: str, annee: int):
-    logger.debug(f"[IMPORT][FINANCIAL][AE] Start for region {source_region}, year {annee}, file {fichier}")
+    # get file
+    logger.info(f"[IMPORT][FINANCIAL][AE] Start for region {source_region}, year {annee}, file {fichier}")
     timestamp = datetime.datetime.now().strftime("%Y%m%d")
 
     move_folder = current_app.config["UPLOAD_FOLDER"] + "/save/"
@@ -85,9 +86,9 @@ def import_file_ae_financial(self, fichier: str, source_region: str, annee: int)
         move_folder = os.path.join(move_folder, timestamp)
         if not os.path.exists(move_folder):
             os.makedirs(move_folder)
-        logger.debug(f"[IMPORT][FINANCIAL][AE] Save file {fichier} in {move_folder}")
+        logger.info(f"[IMPORT][FINANCIAL][AE] Save file {fichier} in {move_folder}")
         shutil.move(fichier, move_folder)
-        logger.debug("[IMPORT][FINANCIAL][AE] End")
+        logger.info("[IMPORT][FINANCIAL][AE] End")
         return True
     except Exception as e:
         logger.exception(f"[IMPORT][FINANCIAL][AE] Error lors de l'import du fichier {fichier}")
@@ -97,7 +98,8 @@ def import_file_ae_financial(self, fichier: str, source_region: str, annee: int)
 # TODO : deprecated
 @celery.task(bind=True, name="import_file_cp_financial")
 def import_file_cp_financial(self, fichier: str, source_region: str, annee: int):
-    logger.debug(f"[IMPORT][FINANCIAL][CP] Start for region {source_region}, year {annee}, file {fichier}")
+    # get file
+    logger.info(f"[IMPORT][FINANCIAL][CP] Start for region {source_region}, year {annee}, file {fichier}")
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
     move_folder = current_app.config["UPLOAD_FOLDER"] + "/save/"
@@ -334,6 +336,7 @@ def import_file_ademe_from_website(self, url: str):
 
 @celery.task(bind=True, name="import_file_ademe")
 def import_file_ademe(self, fichier: str):
+    # get file
     logger.info(f"[IMPORT][ADEME] Start for file {fichier}")
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
