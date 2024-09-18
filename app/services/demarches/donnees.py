@@ -23,7 +23,7 @@ class DonneeService:
         :param demarche_number: Numéro de la démarche associée au champ
         :return: Donnee
         """
-        stmt = db.select(Donnee).where(Donnee.id_ds == champ["id"])
+        stmt = db.select(Donnee).where(Donnee.id_ds == champ["id"]).where(Donnee.demarche_number == demarche_number)
         donnee = db.session.execute(stmt).scalar_one_or_none()
         if donnee is not None:
             return donnee
