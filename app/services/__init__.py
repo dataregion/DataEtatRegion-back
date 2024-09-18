@@ -8,12 +8,12 @@ from sqlalchemy import Select, or_, Column, desc
 from sqlalchemy.orm import selectinload, contains_eager, aliased
 
 from app.database import db
+from app.models.financial.FinancialAe import FinancialAe as Ae
+from app.models.financial.FinancialCp import FinancialCp as Cp
+from app.models.financial.MontantFinancialAe import MontantFinancialAe as MontantAe
 from ..models.enums.TypeCodeGeo import TypeCodeGeo
 from ..models.refs.categorie_juridique import CategorieJuridique
 from ..models.refs.code_programme import CodeProgramme
-from app.models.financial.FinancialAe import FinancialAe as Ae
-from app.models.financial.MontantFinancialAe import MontantFinancialAe as MontantAe
-from app.models.financial.FinancialCp import FinancialCp as Cp
 from ..models.refs.commune import Commune
 from ..models.refs.domaine_fonctionnel import DomaineFonctionnel
 from ..models.refs.groupe_marchandise import GroupeMarchandise
@@ -119,6 +119,17 @@ class BuilderStatementFinancial:
 
         if n_ej is not None and n_poste_ej is not None:
             self._stmt = self._stmt.where(Ae.n_ej == n_ej).where(Ae.n_poste_ej == n_poste_ej)
+        return self
+
+    def where_n_ej(self, n_ej: str):
+        """
+        Ajoute une condition Where pour filter sur le numéro ej
+        :param n_ej: le numéro EJ
+        :return:  L'instance courante de BuilderStatementFinancialAe.
+        """
+
+        if n_ej is not None:
+            self._stmt = self._stmt.where(Ae.n_ej == n_ej)
         return self
 
     def by_ae_id(self, id: int):
@@ -258,6 +269,13 @@ class BuilderStatementFinancial:
         """
         return db.session.execute(self._stmt).scalar_one_or_none()
 
+    def do_all(self):
+        """
+        Effectue la recherche et retourne tous les résultats
+        :return:
+        """
+        return db.session.execute(self._stmt).scalars()
+
     def _where_qpv(self, list_code_geo: list):
         """
         Recherche selon le QPV
@@ -319,6 +337,37 @@ class BuilderStatementFinancial:
         self._stmt = self._stmt.where(
             alias_column.in_(list_code_geo) | Ae.localisation_interministerielle.in_(subquery)
         )
+        return self
+
+    def where_siret(self, siret: str):
+        """
+        Ajoute une condition Where pour filter sur le siret
+        :param siret: le numéro siret
+        :return:  L'instance courante de BuilderStatementFinancialAe.
+        """
+
+        if siret is not None:
+            self._stmt = self._stmt.where(Ae.siret == siret)
+        return self
+
+    def join_montant(self):
+        """
+        Effectue une jointure avec la table montant ae
+
+        :return: L'instance courante de BuilderStatementFinancialAe.
+        """
+        self._stmt = self._stmt.join(Ae.montant_ae)
+        return self
+
+    def where_montant(self, montant: float):
+        """
+        Ajoute une condition Where pour filter sur le montant
+        :param montant: le montant
+        :return:  L'instance courante de BuilderStatementFinancialAe.
+        """
+
+        if montant is not None:
+            self._stmt = self._stmt.where(MontantAe.montant == montant)
         return self
 
 

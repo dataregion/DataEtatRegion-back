@@ -13,6 +13,27 @@ class ValeurService:
         return valeur_schema.dump(db.session.execute(stmt).scalars())
 
     @staticmethod
+    def find_by_dossier_and_id_donnees(id_dossier: int, id_donnees: list[int]) -> list[ValeurDonnee]:
+        stmt = db.select(ValeurDonnee).where(
+            ValeurDonnee.dossier_number == id_dossier, ValeurDonnee.donnee_id.in_(id_donnees)
+        )
+        valeur_schema = ValeurDonneeSchema(many=True)
+        return valeur_schema.dump(db.session.execute(stmt).scalars())
+
+    @staticmethod
+    def get_dict_valeurs(id_dossier: int, dict_id_donnees: dict):
+        id_donnees = []
+        for id_donnee in dict_id_donnees.values():
+            id_donnees.append(int(id_donnee))
+
+        valeurs = ValeurService.find_by_dossier_and_id_donnees(id_dossier, id_donnees)
+
+        dict_valeurs = dict()
+        for valeur in valeurs:
+            dict_valeurs[valeur["donnee_id"]] = valeur["valeur"]
+        return dict_valeurs
+
+    @staticmethod
     def save(dossier_number: int, donnees: list[Donnee], champ: dict) -> ValeurDonnee:
         """
         Créé en BDD une valeur d'un champ pour un dossier

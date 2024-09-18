@@ -1,10 +1,11 @@
 import logging
+
 from sqlalchemy import exc
 
 from app import db
-from app.models.demarches.dossier import Dossier
 from app.models.demarches.donnee import Donnee
-
+from app.models.demarches.dossier import Dossier
+from app.models.demarches.reconciliation import Reconciliation
 from app.services.demarches.donnees import DonneeService
 
 
@@ -18,6 +19,15 @@ class DossierService:
     def find_by_demarche(demarche_number: int, statut: str) -> list[Dossier]:
         stmt = db.select(Dossier).where(Dossier.demarche_number == demarche_number, Dossier.state == statut)
         return db.session.execute(stmt).all()
+
+    @staticmethod
+    def find_by_financial_ae_id(financial_ae_id) -> Dossier:
+        stmt = (
+            db.select(Dossier)
+            .join(Reconciliation, Dossier.number == Reconciliation.dossier_number)
+            .where(Reconciliation.financial_ae_id == financial_ae_id)
+        )
+        return db.session.execute(stmt).scalar_one_or_none()
 
     @staticmethod
     def get_donnees(dossier_dict: dict, demarche_number: str, revisions: list[dict]):

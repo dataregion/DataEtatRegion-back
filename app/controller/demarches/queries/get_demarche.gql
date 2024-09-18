@@ -38,6 +38,7 @@ query getDemarche($demarcheNumber: Int!) {
                     }
                 }
                 champs {
+                    id
                     label
                     __typename
                     stringValue
@@ -126,6 +127,7 @@ query getDemarche($demarcheNumber: Int!) {
                     }
                 }
                 annotations {
+                    id
                     label
                     __typename
                     stringValue
