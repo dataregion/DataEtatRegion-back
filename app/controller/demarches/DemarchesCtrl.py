@@ -119,8 +119,7 @@ class DemarchesReconciliation(Resource):
             champs_reconciliation["champEJ"] = int(request.form["champEJ"])
         elif "champDS" in request.form:
             champs_reconciliation["champDS"] = int(request.form["champDS"])
-        elif "champSiret" in request.form and "champMontant" in request.form:
-            champs_reconciliation["champSiret"] = int(request.form["champSiret"])
+        elif "champMontant" in request.form:
             champs_reconciliation["champMontant"] = int(request.form["champMontant"])
             if "centreCouts" in request.form:
                 cadre["centreCouts"] = request.form["centreCouts"]

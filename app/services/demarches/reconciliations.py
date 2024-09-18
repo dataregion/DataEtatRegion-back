@@ -65,7 +65,7 @@ class ReconciliationService:
             valeurs = ValeurService.get_dict_valeurs(dossier.number, champs_reconciliation)
 
             lignes_chorus = ReconciliationService.get_lignes_chorus_par_type_reconciliation(
-                champs_reconciliation, valeurs, cadre
+                dossier, champs_reconciliation, valeurs, cadre
             )
 
             if lignes_chorus:
@@ -81,19 +81,19 @@ class ReconciliationService:
         return reconciliations
 
     @staticmethod
-    def get_lignes_chorus_par_type_reconciliation(reconciliation_params, valeurs, cadre):
+    def get_lignes_chorus_par_type_reconciliation(dossier, reconciliation_params, valeurs, cadre):
         lignes_chorus = []
         if "champEJ" in reconciliation_params:
             if reconciliation_params["champEJ"] in valeurs:
                 valeur_champ_ej = valeurs[reconciliation_params["champEJ"]]
                 lignes_chorus = ReconciliationService.get_lignes_chorus_num_ej(valeur_champ_ej)
-        elif "champSiret" in reconciliation_params and "champMontant" in reconciliation_params:
-            if reconciliation_params["champSiret"] in valeurs and reconciliation_params["champMontant"] in valeurs:
-                valeur_champ_siret = valeurs[reconciliation_params["champSiret"]]
+        elif "champMontant" in reconciliation_params:
+            if reconciliation_params["champMontant"] in valeurs:
                 valeur_champ_montant = valeurs[reconciliation_params["champMontant"]]
-                lignes_chorus = ReconciliationService.get_lignes_chorus_siret_montant(
-                    valeur_champ_siret, float(valeur_champ_montant), cadre
-                )
+                if valeur_champ_montant is not None and valeur_champ_montant != "":
+                    lignes_chorus = ReconciliationService.get_lignes_chorus_siret_montant(
+                        dossier.siret, float(valeur_champ_montant), cadre
+                    )
         else:
             # TODO Implémenter les méthodes de réconciliation manquantes
             logger.info("Méthode de réconciliation non implémentée")
@@ -114,9 +114,14 @@ class ReconciliationService:
             .do_all()
             .all()
         )
-        lignes = filter(
-            lambda ligne: ReconciliationService.filter_lignes_chorus_par_param_reconciliation(ligne, cadre), lignes
+        lignes = list(
+            filter(
+                lambda ligne: ReconciliationService.filter_lignes_chorus_par_param_reconciliation(ligne, cadre), lignes
+            )
         )
+        # On ne réconcilie pas si on a plusieurs résultats
+        if len(lignes) > 1:
+            return []
         return lignes
 
     @staticmethod
