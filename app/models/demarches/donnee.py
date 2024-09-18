@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from sqlalchemy import Column, String, ForeignKey, Integer
 from sqlalchemy.orm import relationship, Mapped
 
@@ -16,6 +17,7 @@ class Donnee(db.Model):
     __bind_key__ = "demarches_simplifiees"
 
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
+    id_ds: Column[str] = Column(String, nullable=False, index=True, unique=True)
     label: Column[str] = Column(String, nullable=False)
 
     demarche_number: Column[int] = Column(Integer, ForeignKey("demarches.number", ondelete="CASCADE"), nullable=False)
