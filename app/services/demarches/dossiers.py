@@ -30,8 +30,8 @@ class DossierService:
         return db.session.execute(stmt).scalar_one_or_none()
 
     @staticmethod
-    def get_donnees(dossier_dict: dict, demarche_number: str, revisions: list[dict]):
-        donnees: dict[Donnee] = []
+    def get_donnees(dossier_dict: dict, demarche_number: int, revisions: list[dict]):
+        donnees: list[Donnee] = []
         revision = next(r for r in revisions if r["id"] == dossier_dict["demarche"]["revision"]["id"])
 
         # Récupération des champs et des annotations en amont de l'insert des dossiers
@@ -43,13 +43,13 @@ class DossierService:
         return donnees
 
     @staticmethod
-    def save(demarche_number: str, dossier_dict: dict) -> Dossier:
+    def save(demarche_number: int, dossier_dict: dict) -> Dossier:
         """
         Sauvegarde un objet Dossier
-        :param dossier: Objet à sauvegarder
+        :param dossier_dict:
+        :param demarche_number:
         :return: Dossier
         """
-        dossier: Dossier = None
         try:
             dossier_data = {
                 "number": dossier_dict["number"],

@@ -1,12 +1,22 @@
-from datetime import datetime
+import json
 import logging
+import string
+from datetime import datetime
+from pathlib import Path
+
+from sqlalchemy import update, exc
 
 from app import db
 from app.models.demarches.demarche import Demarche
-from sqlalchemy import update, exc
-
+from app.models.demarches.donnee import Donnee
+from app.models.demarches.dossier import Dossier
+from app.services.demarches.dossiers import DossierService
+from app.services.demarches.valeurs import ValeurService
+from app.servicesapp.api_externes import ApisExternesService
 
 logger = logging.getLogger(__name__)
+
+service = ApisExternesService()
 
 
 class DemarcheExistsException(Exception):
@@ -43,13 +53,13 @@ class DemarcheService:
         return db.session.execute(stmt).scalar_one_or_none()
 
     @staticmethod
-    def save(demarche_number: str, demarche_dict: dict) -> Demarche:
+    def save(demarche_number: int, demarche_dict: dict) -> Demarche:
         """
         Sauvegarde un objet Demarche
-        :param demarche: Objet à sauvegarder
+        :param demarche_dict:
+        :param demarche_number:
         :return: Demarche
         """
-        demarche: Demarche = None
         try:
             demarche_data = {
                 "number": demarche_number,
@@ -90,7 +100,7 @@ class DemarcheService:
         """
         Mets à jour la reconciliation d'une Demarche
         :param number: ID de la démarche
-        :param reconciliation: Paramètres de la réconciliation
+        :param affichage:
         :return: Demarche
         """
         stmt = update(Demarche).where(Demarche.number == number).values(affichage=affichage)
@@ -102,9 +112,85 @@ class DemarcheService:
     def delete(demarche: Demarche) -> None:
         """
         Supprime un objet Demarche
-        :param Demarche: Démarche à supprimer
+        :param demarche: Démarche à supprimer
         :return: None
         """
         db.session.delete(demarche)
         db.session.flush()
         db.session.commit()
+
+    @staticmethod
+    def integrer_demarche(demarche_number: int):
+        # Vérification si la démarche existe déjà en BDD, si oui on la supprime
+        demarche = DemarcheService.find(demarche_number)
+        if demarche is not None:
+            DemarcheService.delete(demarche)
+            logging.info("[API DEMARCHES] La démarche existait déjà en BDD, maintenant supprimée pour réintégration")
+
+        demarche_dict = DemarcheService.query_demarche(demarche_number)
+
+        # Sauvegarde de la démarche
+        demarche: Demarche = DemarcheService.save(demarche_number, demarche_dict)
+        logging.info(f"[API DEMARCHES] Sauvegarde de la démarche {demarche_number}")
+
+        # Sauvegarde des dossiers de la démarche
+        DemarcheService.save_dossiers(
+            demarche,
+            demarche_dict["data"]["demarche"]["dossiers"]["nodes"],
+            demarche_dict["data"]["demarche"]["revisions"],
+        )
+        logging.info("[API DEMARCHES] Sauvegarde des dossiers en BDD")
+        commit_session()
+        return demarche
+
+    @staticmethod
+    def query_demarche(demarche_number: int):
+        # Récupération des données de la démarche via l'API Démarches Simplifiées
+        query = DemarcheService.get_query_from_file("get_demarche.gql")
+        demarche_dict = DemarcheService.query(query, demarche_number, None)
+
+        page_info_dict = demarche_dict["data"]["demarche"]["dossiers"]["pageInfo"]
+        while page_info_dict["hasNextPage"] is True:
+            new_demarche_dict = DemarcheService.query(query, demarche_number, page_info_dict["endCursor"])
+            dossiers: list[dict] = demarche_dict["data"]["demarche"]["dossiers"]["nodes"]
+            dossiers += new_demarche_dict["data"]["demarche"]["dossiers"]["nodes"]
+            page_info_dict = new_demarche_dict["data"]["demarche"]["dossiers"]["pageInfo"]
+
+        logging.info("[API DEMARCHES] Récupération de la Démarche")
+        return demarche_dict
+
+    @staticmethod
+    def query(query: string, demarche_number: int, after: string):
+        data = {
+            "operationName": "getDemarche",
+            "query": query,
+            "variables": {
+                "demarcheNumber": demarche_number,
+                "includeRevision": True,
+                "after": after if after is not None else "",
+            },
+        }
+        return service.api_demarche_simplifie.do_post(json.dumps(data))
+
+    @staticmethod
+    def save_dossiers(demarche: Demarche, dossiers_dict: list[dict], revisions_dict: list[dict]):
+        # Insertion des dossiers et des valeurs des champs du dossier
+        for dossier_dict in dossiers_dict:
+            donnees: list[Donnee] = DossierService.get_donnees(dossier_dict, demarche.number, revisions_dict)
+
+            # Sauvegarde du dossier
+            dossier: Dossier = DossierService.save(demarche.number, dossier_dict)
+            logging.info(f"[API DEMARCHES] Sauvegarde du dossier {dossier_dict['number']}")
+
+            for champ in dossier_dict["champs"]:
+                ValeurService.save(dossier.number, [d for d in donnees if d.section_name == "champ"], champ)
+
+            for annot in dossier_dict["annotations"]:
+                ValeurService.save(dossier.number, [d for d in donnees if d.section_name == "annotation"], annot)
+
+    @staticmethod
+    def get_query_from_file(query_filename: str):
+        p = Path(__file__).resolve().parent / "queries" / query_filename
+        with p.open("r") as f:
+            query_str = f.read()
+        return query_str
