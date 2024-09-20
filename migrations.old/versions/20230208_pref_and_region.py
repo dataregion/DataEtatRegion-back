@@ -9,7 +9,6 @@ import logging
 import pandas
 from alembic import op
 import sqlalchemy as sa
-import wget
 from sqlalchemy import orm
 from sqlalchemy import Column, String
 
