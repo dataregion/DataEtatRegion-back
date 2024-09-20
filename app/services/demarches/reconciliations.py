@@ -1,4 +1,6 @@
 import logging
+import re
+import string
 from datetime import datetime
 
 from sqlalchemy import delete, select
@@ -17,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class ReconciliationService:
     @staticmethod
-    def find_by_demarche_number(demarche_number) -> list[Reconciliation]:
+    def find_by_demarche_number(demarche_number: int) -> list[Reconciliation]:
         stmt = (
             db.select(Reconciliation)
             .join(Dossier, Dossier.number == Reconciliation.dossier_number)
@@ -26,7 +28,7 @@ class ReconciliationService:
         return db.session.execute(stmt).scalars()
 
     @staticmethod
-    def save(reconciliation) -> Reconciliation:
+    def save(reconciliation: Reconciliation) -> Reconciliation:
         """
         Sauvegarde un objet Demarche
         :param reconciliation: Objet à sauvegarder
@@ -81,18 +83,22 @@ class ReconciliationService:
         return reconciliations
 
     @staticmethod
-    def get_lignes_chorus_par_type_reconciliation(dossier, reconciliation_params, valeurs, cadre):
+    def get_lignes_chorus_par_type_reconciliation(
+        dossier: Dossier, champs_reconciliation: dict, valeurs: dict, cadre: dict
+    ):
         lignes_chorus = []
-        if "champEJ" in reconciliation_params:
-            if reconciliation_params["champEJ"] in valeurs:
-                valeur_champ_ej = valeurs[reconciliation_params["champEJ"]]
+        if "champEJ" in champs_reconciliation:
+            if champs_reconciliation["champEJ"] in valeurs:
+                valeur_champ_ej = valeurs[champs_reconciliation["champEJ"]]
                 lignes_chorus = ReconciliationService.get_lignes_chorus_num_ej(valeur_champ_ej)
-        elif "champMontant" in reconciliation_params:
-            if reconciliation_params["champMontant"] in valeurs:
-                valeur_champ_montant = valeurs[reconciliation_params["champMontant"]]
+        elif "champMontant" in champs_reconciliation:
+            if champs_reconciliation["champMontant"] in valeurs:
+                valeur_champ_montant = ReconciliationService.convert_valeur_to_float(
+                    valeurs[champs_reconciliation["champMontant"]]
+                )
                 if valeur_champ_montant is not None and valeur_champ_montant != "":
                     lignes_chorus = ReconciliationService.get_lignes_chorus_siret_montant(
-                        dossier.siret, float(valeur_champ_montant), cadre
+                        dossier.siret, valeur_champ_montant, cadre
                     )
         else:
             # TODO Implémenter les méthodes de réconciliation manquantes
@@ -100,11 +106,21 @@ class ReconciliationService:
         return lignes_chorus
 
     @staticmethod
-    def get_lignes_chorus_num_ej(num_ej):
+    def convert_valeur_to_float(valeur: string):
+        valeur = re.sub(
+            r"[^0-9.,]", "", valeur.replace(",", ".")
+        )  # On adapte la valeur si besoin pour la convertir en float
+        try:
+            return float(valeur)
+        except ValueError:
+            return None
+
+    @staticmethod
+    def get_lignes_chorus_num_ej(num_ej: string):
         return BuilderStatementFinancial().select_ae().where_n_ej(num_ej).do_all()
 
     @staticmethod
-    def get_lignes_chorus_siret_montant(siret, montant, cadre):
+    def get_lignes_chorus_siret_montant(siret: string, montant: float, cadre: dict):
         lignes = (
             BuilderStatementFinancial()
             .select_ae()
@@ -125,7 +141,7 @@ class ReconciliationService:
         return lignes
 
     @staticmethod
-    def filter_lignes_chorus_par_param_reconciliation(financial_ae: FinancialAe, cadre):
+    def filter_lignes_chorus_par_param_reconciliation(financial_ae: FinancialAe, cadre: dict):
         centre_couts = cadre.get("centreCouts")
         match_centre_couts = centre_couts is None or financial_ae.centre_couts == centre_couts
 
