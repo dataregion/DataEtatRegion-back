@@ -164,6 +164,29 @@ def test_import_new_line_ae_with_commit_fail(database, session):
     delete_references(session)
 
 
+def test_import_changing_ref(database, session):
+    # Données pour le test
+    data_wout_siret = '{"date_replication":"10.01.2023","montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105756","n_poste_ej":5,"programme":"303","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"#","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
+    data_w_siret = '{"date_replication":"10.01.2023","montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105756","n_poste_ej":5,"programme":"303","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200018","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
+
+    get_or_create(session, Region, code="35")
+
+    session.commit()
+
+    # Simulation du siret
+    with patch(
+        "app.services.siret.update_siret_from_api_entreprise",
+        return_value=Siret(**{"code": "85129663200018", "code_commune": "35099"}),
+    ):
+        import_lines_financial_ae([data_wout_siret, data_wout_siret, data_w_siret], "35", 2023, 0, [])
+
+    # Vérification que le siret a été inséré
+    siret = session.execute(database.select(Siret)).scalar_one_or_none()
+    assert siret is not None, "Le siret doit être inseré."
+
+    delete_references(session)
+
+
 def test_import_update_line_montant_positive_ae(database, session):
     # WHEN
     data = '{"annee":2020,"montant":"22500","source_region":"35","n_ej":"ej_to_update","n_poste_ej":5,"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire": "1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200017","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
