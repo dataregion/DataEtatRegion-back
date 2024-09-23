@@ -242,24 +242,27 @@ def import_lines_financial_ae(
     perf_trigger_cp.observe()
 
 
-def _insert_references(new_ae):
+def _insert_references(new_ae_or_cp: FinancialAe | FinancialCp):
     # Start performance counter
     perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_ae_check_refs")
     perf_counter_check_refs.start()
-    if hasattr(new_ae, "fournisseur_titulaire"):
-        fournisseur_titulaire = new_ae.fournisseur_titulaire
+    if hasattr(new_ae_or_cp, "fournisseur_titulaire"):
+        fournisseur_titulaire = new_ae_or_cp.fournisseur_titulaire
     else:
-        fournisseur_titulaire = new_ae.fournisseur_paye
+        fournisseur_titulaire = new_ae_or_cp.fournisseur_paye
 
     # Mapping between reference types and their corresponding model classes and codes
     reference_mapping = {
-        "programme": (CodeProgramme, new_ae.programme),
-        "centre_couts": (CentreCouts, new_ae.centre_couts),
-        "domaine_fonctionnel": (DomaineFonctionnel, new_ae.domaine_fonctionnel),
+        "programme": (CodeProgramme, new_ae_or_cp.programme),
+        "centre_couts": (CentreCouts, new_ae_or_cp.centre_couts),
+        "domaine_fonctionnel": (DomaineFonctionnel, new_ae_or_cp.domaine_fonctionnel),
         "fournisseur_titulaire": (FournisseurTitulaire, fournisseur_titulaire),
-        "groupe_marchandise": (GroupeMarchandise, new_ae.groupe_marchandise),
-        "localisation_interministerielle": (LocalisationInterministerielle, new_ae.localisation_interministerielle),
-        "referentiel_programmation": (ReferentielProgrammation, new_ae.referentiel_programmation),
+        "groupe_marchandise": (GroupeMarchandise, new_ae_or_cp.groupe_marchandise),
+        "localisation_interministerielle": (
+            LocalisationInterministerielle,
+            new_ae_or_cp.localisation_interministerielle,
+        ),
+        "referentiel_programmation": (ReferentielProgrammation, new_ae_or_cp.referentiel_programmation),
     }
 
     # Keep track of instances to bulk save
@@ -271,7 +274,7 @@ def _insert_references(new_ae):
             if not db.session.query(model).filter_by(code=str(code)).one_or_none():
                 instances_to_save.append(model(code=str(code)))
 
-        check_siret(new_ae.siret)
+        check_siret(new_ae_or_cp.siret)
 
         # Bulk save all new instances
         if instances_to_save:
