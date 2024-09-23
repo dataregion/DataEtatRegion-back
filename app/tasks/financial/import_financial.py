@@ -186,24 +186,27 @@ def import_lines_financial_ae(
         update_mappings = []
 
         for line_data in line_data_list:
-            financial_ae_instance = (
+            curr_ae = FinancialAe(**line_data)
+            existing_ae = (
                 db.session.query(FinancialAe)
                 .filter_by(n_ej=line_data[FinancialAe.n_ej.key], n_poste_ej=int(line_data[FinancialAe.n_poste_ej.key]))
                 .one_or_none()
             )
 
-            if financial_ae_instance:
+            is_update = existing_ae is not None
+
+            _insert_references(curr_ae)
+
+            if is_update:
                 # Préparer les données pour la mise à jour
-                update_mapping = financial_ae_instance.update_attribute(line_data)
+                update_mapping = existing_ae.update_attribute(line_data)
                 if update_mapping:
                     update_mappings.append(update_mapping)
             else:
                 # Préparer une nouvelle instance pour l'insertion
-                new_ae = FinancialAe(**line_data)
-                _insert_references(new_ae)
-                db.session.add(new_ae)
+                db.session.add(curr_ae)
                 db.session.flush()
-                new_aes.append(new_ae)
+                new_aes.append(curr_ae)
 
     except sqlalchemy.exc.OperationalError as o:
         logger.exception("[IMPORT][FINANCIAL][AE] Erreur sur le check des lignes")
