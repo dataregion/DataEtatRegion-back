@@ -47,7 +47,7 @@ class _Theme(_Base):
 
 def upgrade():
     session = orm.Session(bind=op.get_bind())
-    code_programme_file = f"migrations/data/{revision}/code_programme_theme.csv"
+    code_programme_file = f"migrations.old/data/{revision}/code_programme_theme.csv"
     df_programme = pandas.read_csv(
         code_programme_file,
         sep=",",

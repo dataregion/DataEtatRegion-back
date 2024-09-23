@@ -9,7 +9,6 @@ import logging
 import pandas
 from alembic import op
 import sqlalchemy as sa
-import wget
 from sqlalchemy import orm
 from sqlalchemy import Column, String
 
@@ -19,9 +18,6 @@ revision = "20230208_pref_and_region"
 down_revision = "20230113_preference"
 branch_labels = None
 depends_on = None
-
-# Liste des regions millésime 2022
-url_csv = "https://www.data.gouv.fr/fr/datasets/r/c850b7d0-bc8f-44a2-b495-1debc438789d"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -112,8 +108,7 @@ def downgrade():
 
 
 def _insert_ref():
-    file_regions = "migrations/data/ref_regions.csv"
-    wget.download(url_csv, out=file_regions)
+    file_regions = f"migrations.old/data/{revision}/ref_regions.csv"
 
     session = orm.Session(bind=op.get_bind())
     data_frame = pandas.read_csv(
