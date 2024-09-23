@@ -169,8 +169,6 @@ def import_lines_financial_ae(
     # Désérialisation de toutes les lignes en JSON
     line_data_list = [json.loads(line) for line in lines]
 
-    # si doublon => j'appelle une methode qui va faire des commits pour chaque ligne
-
     perf_counter_retrieve_ae_instance = SummaryOfTimePerfCounter("import_line_financial_ae_retrieve_ae_instance")
     perf_counter_retrieve_ae_instance.start()
     try:
