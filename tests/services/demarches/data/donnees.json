@@ -1,14 +1,16 @@
 [
-    {
-        "demarche_number": "49721",
-        "section_name": "champ",
-        "type_name": "EmailChampDescriptor",
-        "label": "Email du référent"
-    },
-    {
-        "demarche_number": "49721",
-        "section_name": "annotation",
-        "type_name": "EngagementJuridiqueChampDescriptor",
-        "label": "EJ"
-    }
+  {
+    "id_ds": "a",
+    "demarche_number": "49721",
+    "section_name": "champ",
+    "type_name": "EmailChampDescriptor",
+    "label": "Email du référent"
+  },
+  {
+    "id_ds": "b",
+    "demarche_number": "49721",
+    "section_name": "annotation",
+    "type_name": "EngagementJuridiqueChampDescriptor",
+    "label": "EJ"
+  }
 ]

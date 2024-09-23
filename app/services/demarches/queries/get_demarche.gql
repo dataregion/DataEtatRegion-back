@@ -1,4 +1,7 @@
-query getDemarche($demarcheNumber: Int!) {
+query getDemarche(
+    $demarcheNumber: Int!
+    $after: String
+) {
     demarche(number: $demarcheNumber) {
         number
         title
@@ -26,7 +29,11 @@ query getDemarche($demarcheNumber: Int!) {
         activeRevision {
             id
         }
-        dossiers {
+        dossiers(first: 100, after: $after) {
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
             nodes {
                 number
                 state
@@ -38,6 +45,7 @@ query getDemarche($demarcheNumber: Int!) {
                     }
                 }
                 champs {
+                    id
                     label
                     __typename
                     stringValue
@@ -126,6 +134,7 @@ query getDemarche($demarcheNumber: Int!) {
                     }
                 }
                 annotations {
+                    id
                     label
                     __typename
                     stringValue

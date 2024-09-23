@@ -2,10 +2,8 @@ import logging
 
 from app import db
 from app.models.demarches.donnee import Donnee
-
 from app.services.demarches.sections import SectionService
 from app.services.demarches.types import TypeService
-
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +23,7 @@ class DonneeService:
         :param demarche_number: Numéro de la démarche associée au champ
         :return: Donnee
         """
-        stmt = db.select(Donnee).where(
-            Donnee.label == champ["label"], Donnee.section_name == section_name, Donnee.type_name == champ["__typename"]
-        )
+        stmt = db.select(Donnee).where(Donnee.id_ds == champ["id"]).where(Donnee.demarche_number == demarche_number)
         donnee = db.session.execute(stmt).scalar_one_or_none()
         if donnee is not None:
             return donnee
@@ -35,6 +31,7 @@ class DonneeService:
         type = TypeService.get_or_create(champ["__typename"])
         donnee = Donnee(
             **{
+                "id_ds": champ["id"],
                 "demarche_number": demarche_number,
                 "section_name": section.name,
                 "type_name": type.name,

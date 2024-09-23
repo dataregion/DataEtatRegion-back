@@ -35,7 +35,7 @@ tenacity ~= 9.0
 
 flower~=2.0
 
-python-keycloak ~= 4.3
+python-keycloak ~= 3.12
 uuid ~= 1.30
 
 openpyxl ~= 3.1.2

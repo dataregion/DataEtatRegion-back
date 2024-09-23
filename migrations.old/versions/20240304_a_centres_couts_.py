@@ -23,7 +23,6 @@ def _rattrapage_upgrade():
     """Upgrade de rattrapage de migration oubliées précédement"""
 
     with op.batch_alter_table("financial_ae", schema=None) as batch_op:
-        batch_op.drop_index("ix_annee")
         batch_op.drop_column("montant")
 
     with op.batch_alter_table("financial_cp", schema=None) as batch_op:
@@ -56,7 +55,6 @@ def _rattrapage_downgrade():
                 nullable=True,
             )
         )
-        batch_op.create_index("ix_annee", ["annee"], unique=False)
 
 
 def upgrade():

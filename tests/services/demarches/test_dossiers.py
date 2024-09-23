@@ -1,18 +1,16 @@
-from datetime import datetime
 import json
 import os
+from datetime import datetime
 from pathlib import Path
+
 import pytest
 
 from app.models.demarches.demarche import Demarche
 from app.models.demarches.donnee import Donnee
 from app.models.demarches.dossier import Dossier
-
 from app.models.demarches.section import Section
 from app.models.demarches.type import Type
-
 from app.services.demarches.dossiers import DossierExistsException, DossierService
-
 
 _data = Path(os.path.dirname(__file__)) / "data"
 
@@ -109,8 +107,12 @@ def test_dossiers_get_donnees(init_dossiers):
                 [
                     {
                         "id": "okokok",
-                        "champDescriptors": [{"label": "Email du référent", "__typename": "EmailChampDescriptor"}],
-                        "annotationDescriptors": [{"label": "EJ", "__typename": "EngagementJuridiqueChampDescriptor"}],
+                        "champDescriptors": [
+                            {"id": "a", "label": "Email du référent", "__typename": "EmailChampDescriptor"}
+                        ],
+                        "annotationDescriptors": [
+                            {"id": "b", "label": "EJ", "__typename": "EngagementJuridiqueChampDescriptor"}
+                        ],
                     }
                 ],
             )
