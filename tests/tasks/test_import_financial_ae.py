@@ -1,4 +1,3 @@
-from sqlite3 import IntegrityError
 from unittest.mock import patch
 import json
 
@@ -96,7 +95,6 @@ def test_import_new_line_ae(database, session):
 
 
 def test_import_lines_ae_with_duplicate_key(database, session):
-    # AJout Somme positive
     data = '{"date_replication":"10.01.2023","montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105755","n_poste_ej":5,"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200017","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
     # DO
     add_references(FinancialAe(**json.loads(data)), session, region="35")
@@ -132,6 +130,12 @@ def test_import_lines_ae_with_duplicate_key(database, session):
     delete_references(session)
 
 
+class _TestTriggeredException(Exception):
+    """Exception personnalisée pour le test qui suit"""
+
+    pass
+
+
 def test_import_new_line_ae_with_commit_fail(database, session):
     # Données pour le test
     data = '{"date_replication":"10.01.2023","montant":"22500,12","annee":2023,"source_region":"35","n_ej":"2103105756","n_poste_ej":5,"programme":"303","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200018","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53"}'
@@ -145,11 +149,11 @@ def test_import_new_line_ae_with_commit_fail(database, session):
     ):
         # Simulation d'une exception lors du commit
         with patch(
-            "app.tasks.financial.import_financial.db.session.commit",
-            side_effect=IntegrityError("Simulated IntegrityError", "params", "orig"),
+            "app.tasks.financial.import_financial._import_lines_financial_ae__before_commit_aes",
+            side_effect=_TestTriggeredException("Une exception artificielle avant de sauvegarder le bulk d'AE"),
         ):
-            with pytest.raises(IntegrityError):
-                import_lines_financial_ae([data], "35", 2023, 0, [])
+            with pytest.raises(_TestTriggeredException):
+                import_lines_financial_ae([data, data, data], "35", 2023, 0, [])
 
     # Vérification qu'aucune donnée n'a été effectivement insérée dans la base de données
     data = session.execute(database.select(FinancialAe).where(FinancialAe.n_ej == "2103105756")).scalar_one_or_none()

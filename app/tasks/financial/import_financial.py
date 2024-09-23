@@ -154,6 +154,14 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
         raise e
 
 
+def _import_lines_financial_ae__before_commit_aes():
+    """
+    Hook pour les tests white box.
+    Appelé juste avant de persister l'ensemble des AEs.
+    """
+    pass
+
+
 @celery.task(
     bind=True,
     name="import_lines_financial_ae",
@@ -216,6 +224,7 @@ def import_lines_financial_ae(
         db.session.bulk_save_objects(montant_aes)
 
     # Commit une seule fois après toutes les opérations
+    _import_lines_financial_ae__before_commit_aes()
     db.session.commit()
 
     perf_insert_or_update_ae.observe()
