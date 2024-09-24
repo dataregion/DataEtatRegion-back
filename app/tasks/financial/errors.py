@@ -71,8 +71,9 @@ def _handle_exception_import(name):
                 logger.debug(f"On retry avec countdown {e.delai}, max_retries {nb_retries} et le jitter")
                 caller.retry(countdown=e.delai, max_retries=nb_retries, retry_jitter=True)
 
-            except AnnuleLaTache as _:
-                logger.warning(f"[IMPORT][{name}] tâche annulée.")
+            except AnnuleLaTache as e:
+                logger.warning(f"[IMPORT][{name}] tâche annulée pour cette cause:")
+                logger.exception(e.__cause__)
                 return "tâche annulée"
 
             except Exception as e:
