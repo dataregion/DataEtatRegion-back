@@ -313,6 +313,15 @@ def import_lines_financial_cp(self, cp_batch: list[dict], start_index: int, sour
         tech_info_list = cp["task"]
         tech_info = LineImportTechInfo(*tech_info_list)
 
+        existing_cp = (  # XXX Le CP existe déjà via task-id et ligneno. Donc déjà importé.
+            db.session.query(FinancialCp)
+            .filter_by(file_import_taskid=tech_info.file_import_taskid, file_import_lineno=tech_info.lineno)
+            .one_or_none()
+        )
+        if existing_cp:
+            logger.info(f"CP de la ligne {tech_info.lineno} déjà importé. On l'ignore.")
+            continue
+
         new_cp = FinancialCp(line, source_region=source_region, annee=annee)
         new_cp.file_import_taskid = tech_info.file_import_taskid
         new_cp.file_import_lineno = tech_info.lineno
