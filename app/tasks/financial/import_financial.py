@@ -326,13 +326,19 @@ def import_lines_financial_cp(self, cp_batch: list[dict], start_index: int, sour
         new_cp.file_import_taskid = tech_info.file_import_taskid
         new_cp.file_import_lineno = tech_info.lineno
         new_cp.id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej)
+
+        perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_cp_check_refs")
+        perf_counter_check_refs.start()
+        _insert_references(new_cp)
+        perf_counter_check_refs.observe()
+
         new_cps.append(new_cp)
+
+    if not new_cps:
+        return
+
     perf_counter_create_cp_instance.observe()
 
-    perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_cp_check_refs")
-    perf_counter_check_refs.start()
-    _insert_references(new_cp)
-    perf_counter_check_refs.observe()
     perf_counter_get_insert_cp = SummaryOfTimePerfCounter("import_line_financial_cp_insert_cp")
     perf_counter_get_insert_cp.start()
 
