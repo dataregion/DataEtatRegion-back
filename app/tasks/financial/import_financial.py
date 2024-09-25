@@ -177,175 +177,157 @@ def import_lines_financial_ae(
     # Désérialisation de toutes les lignes en JSON
     line_data_list = [json.loads(line) for line in lines]
 
-    perf_counter_retrieve_ae_instance = SummaryOfTimePerfCounter("import_line_financial_ae_retrieve_ae_instance")
-    perf_counter_retrieve_ae_instance.start()
-    try:
-        # Préparation des données pour insertion et mise à jour en bulk
-        new_aes = []
-        montant_aes = []
-        update_mappings = []
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_ae_add_entities"):
+        try:
+            # Préparation des données pour insertion et mise à jour en bulk
+            new_aes = []
+            montant_aes = []
+            update_mappings = []
 
-        for line_data in line_data_list:
-            curr_ae = FinancialAe(**line_data)
-            existing_ae = (
-                db.session.query(FinancialAe)
-                .filter_by(n_ej=line_data[FinancialAe.n_ej.key], n_poste_ej=int(line_data[FinancialAe.n_poste_ej.key]))
-                .one_or_none()
-            )
+            for line_data in line_data_list:
+                curr_ae = FinancialAe(**line_data)
+                existing_ae = (
+                    db.session.query(FinancialAe)
+                    .filter_by(
+                        n_ej=line_data[FinancialAe.n_ej.key], n_poste_ej=int(line_data[FinancialAe.n_poste_ej.key])
+                    )
+                    .one_or_none()
+                )
 
-            is_update = existing_ae is not None
+                is_update = existing_ae is not None
 
-            _insert_references(curr_ae)
+                _insert_references(curr_ae)
 
-            if is_update:
-                # Préparer les données pour la mise à jour
-                update_mapping = existing_ae.update_attribute(line_data)
-                if update_mapping:
-                    update_mappings.append(update_mapping)
-            else:
-                # Préparer une nouvelle instance pour l'insertion
-                db.session.add(curr_ae)
-                db.session.flush()
-                new_aes.append(curr_ae)
+                if is_update:
+                    # Préparer les données pour la mise à jour
+                    update_mapping = existing_ae.update_attribute(line_data)
+                    if update_mapping:
+                        update_mappings.append(update_mapping)
+                else:
+                    # Préparer une nouvelle instance pour l'insertion
+                    db.session.add(curr_ae)
+                    db.session.flush()
+                    new_aes.append(curr_ae)
 
-    except sqlalchemy.exc.OperationalError as o:
-        logger.exception("[IMPORT][FINANCIAL][AE] Erreur sur le check des lignes")
-        raise FinancialException(o) from o
-    perf_counter_retrieve_ae_instance.observe()
+        except sqlalchemy.exc.OperationalError as o:
+            logger.exception("[IMPORT][FINANCIAL][AE] Erreur sur le check des lignes")
+            raise FinancialException(o) from o
 
-    perf_insert_or_update_ae = SummaryOfTimePerfCounter("import_line_financial_ae_insert_or_update_ae")
-    perf_insert_or_update_ae.start()
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_ae_update_entities"):
+        # Mise à jour en bulk pour les instances existantes
+        if update_mappings:
+            logger.debug(f"Mise à jour en bulk de {len(update_mappings)} instances existantes de FinancialAe.")
+            db.session.bulk_update_mappings(FinancialAe, update_mappings)
 
-    # Mise à jour en bulk pour les instances existantes
-    if update_mappings:
-        logger.debug(f"Mise à jour en bulk de {len(update_mappings)} instances existantes de FinancialAe.")
-        db.session.bulk_update_mappings(FinancialAe, update_mappings)
+        # Insertion des montants associés
+        if montant_aes:
+            logger.debug(f"Insertion de {len(montant_aes)} montants associés à FinancialAe.")
+            db.session.bulk_save_objects(montant_aes)
 
-    # Insertion des montants associés
-    if montant_aes:
-        logger.debug(f"Insertion de {len(montant_aes)} montants associés à FinancialAe.")
-        db.session.bulk_save_objects(montant_aes)
+        # Commit une seule fois après toutes les opérations
+        _import_lines_financial_ae__before_commit_aes()
 
-    # Commit une seule fois après toutes les opérations
-    _import_lines_financial_ae__before_commit_aes()
-    db.session.commit()
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_ae_commit"):
+        db.session.commit()
 
-    perf_insert_or_update_ae.observe()
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_ae_trigger_cps"):
+        # Traitement des cp_list si nécessaire
+        if cp_list is not None:
+            cp_batch = []
+            index = start_index  # Assurez-vous que l'index commence correctement
 
-    perf_trigger_cp = SummaryOfTimePerfCounter("import_line_financial_ae_trigger_cps")
-    perf_trigger_cp.start()
+            # Itération sur la liste cp_list
+            for struct in cp_list:
+                cp_batch.append(struct)
+                if len(cp_batch) == get_batch_size():
+                    _send_subtask_financial_cp(cp_batch, source_region, annee, index)
+                    cp_batch = []
+                    index += get_batch_size()
 
-    # Traitement des cp_list si nécessaire
-    if cp_list is not None:
-        cp_batch = []
-        index = start_index  # Assurez-vous que l'index commence correctement
-
-        # Itération sur la liste cp_list
-        for struct in cp_list:
-            cp_batch.append(struct)
-            if len(cp_batch) == get_batch_size():
+            # Envoyer tout reste non envoyé
+            if cp_batch:
                 _send_subtask_financial_cp(cp_batch, source_region, annee, index)
-                cp_batch = []
-                index += get_batch_size()
-
-        # Envoyer tout reste non envoyé
-        if cp_batch:
-            _send_subtask_financial_cp(cp_batch, source_region, annee, index)
-    perf_trigger_cp.observe()
 
 
 def _insert_references(new_ae_or_cp: FinancialAe | FinancialCp):
     # Start performance counter
-    perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_ae_check_refs")
-    perf_counter_check_refs.start()
-    if hasattr(new_ae_or_cp, "fournisseur_titulaire"):
-        fournisseur_titulaire = new_ae_or_cp.fournisseur_titulaire
-    else:
-        fournisseur_titulaire = new_ae_or_cp.fournisseur_paye
+    with SummaryOfTimePerfCounter.cm("import_lines_insert_references"):
+        if hasattr(new_ae_or_cp, "fournisseur_titulaire"):
+            fournisseur_titulaire = new_ae_or_cp.fournisseur_titulaire
+        else:
+            fournisseur_titulaire = new_ae_or_cp.fournisseur_paye
 
-    # Mapping between reference types and their corresponding model classes and codes
-    reference_mapping = {
-        "programme": (CodeProgramme, new_ae_or_cp.programme),
-        "centre_couts": (CentreCouts, new_ae_or_cp.centre_couts),
-        "domaine_fonctionnel": (DomaineFonctionnel, new_ae_or_cp.domaine_fonctionnel),
-        "fournisseur_titulaire": (FournisseurTitulaire, fournisseur_titulaire),
-        "groupe_marchandise": (GroupeMarchandise, new_ae_or_cp.groupe_marchandise),
-        "localisation_interministerielle": (
-            LocalisationInterministerielle,
-            new_ae_or_cp.localisation_interministerielle,
-        ),
-        "referentiel_programmation": (ReferentielProgrammation, new_ae_or_cp.referentiel_programmation),
-    }
+        # Mapping between reference types and their corresponding model classes and codes
+        reference_mapping = {
+            "programme": (CodeProgramme, new_ae_or_cp.programme),
+            "centre_couts": (CentreCouts, new_ae_or_cp.centre_couts),
+            "domaine_fonctionnel": (DomaineFonctionnel, new_ae_or_cp.domaine_fonctionnel),
+            "fournisseur_titulaire": (FournisseurTitulaire, fournisseur_titulaire),
+            "groupe_marchandise": (GroupeMarchandise, new_ae_or_cp.groupe_marchandise),
+            "localisation_interministerielle": (
+                LocalisationInterministerielle,
+                new_ae_or_cp.localisation_interministerielle,
+            ),
+            "referentiel_programmation": (ReferentielProgrammation, new_ae_or_cp.referentiel_programmation),
+        }
 
-    # Keep track of instances to bulk save
-    instances_to_save = []
+        # Keep track of instances to bulk save
+        instances_to_save = []
 
-    try:
-        # Check and add references if they don't exist
-        for ref_name, (model, code) in reference_mapping.items():
-            if not db.session.query(model).filter_by(code=str(code)).one_or_none():
-                instances_to_save.append(model(code=str(code)))
+        try:
+            # Check and add references if they don't exist
+            for _, (model, code) in reference_mapping.items():
+                if not db.session.query(model).filter_by(code=str(code)).one_or_none():
+                    instances_to_save.append(model(code=str(code)))
 
-        check_siret(new_ae_or_cp.siret)
+            check_siret(new_ae_or_cp.siret)
 
-        # Bulk save all new instances
-        if instances_to_save:
-            db.session.bulk_save_objects(instances_to_save)
+            # Bulk save all new instances
+            if instances_to_save:
+                db.session.bulk_save_objects(instances_to_save)
 
-        # Observe performance counter
-        perf_counter_check_refs.observe()
-
-    except Exception as e:
-        logger.exception("[IMPORT][REF] Error lors de l'insertion en bulk des références.")
-        raise e
+        except Exception as e:
+            logger.exception("[IMPORT][REF] Error lors de l'insertion en bulk des références.")
+            raise e
 
 
 @celery.task(bind=True, name="import_lines_financial_cp")
 @summary_of_time()
 @_handle_exception_import("FINANCIAL_CP")
 def import_lines_financial_cp(self, cp_batch: list[dict], start_index: int, source_region: str, annee: int):
-    perf_counter_create_cp_instance = SummaryOfTimePerfCounter("import_line_financial_cp_create_cp_instance")
-    perf_counter_create_cp_instance.start()
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_cp_create_entities"):
+        new_cps = []
+        for _, cp in enumerate(cp_batch):
+            line = json.loads(cp["data"])
+            tech_info_list = cp["task"]
+            tech_info = LineImportTechInfo(*tech_info_list)
 
-    new_cps = []
-    for i, cp in enumerate(cp_batch):
-        line = json.loads(cp["data"])
-        tech_info_list = cp["task"]
-        tech_info = LineImportTechInfo(*tech_info_list)
+            existing_cp = (  # XXX Le CP existe déjà via task-id et ligneno. Donc déjà importé.
+                db.session.query(FinancialCp)
+                .filter_by(file_import_taskid=tech_info.file_import_taskid, file_import_lineno=tech_info.lineno)
+                .one_or_none()
+            )
+            if existing_cp:
+                logger.info(f"CP de la ligne {tech_info.lineno} déjà importé. On l'ignore.")
+                continue
 
-        existing_cp = (  # XXX Le CP existe déjà via task-id et ligneno. Donc déjà importé.
-            db.session.query(FinancialCp)
-            .filter_by(file_import_taskid=tech_info.file_import_taskid, file_import_lineno=tech_info.lineno)
-            .one_or_none()
-        )
-        if existing_cp:
-            logger.info(f"CP de la ligne {tech_info.lineno} déjà importé. On l'ignore.")
-            continue
+            new_cp = FinancialCp(line, source_region=source_region, annee=annee)
+            new_cp.file_import_taskid = tech_info.file_import_taskid
+            new_cp.file_import_lineno = tech_info.lineno
+            new_cp.id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej)
 
-        new_cp = FinancialCp(line, source_region=source_region, annee=annee)
-        new_cp.file_import_taskid = tech_info.file_import_taskid
-        new_cp.file_import_lineno = tech_info.lineno
-        new_cp.id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej)
+            with SummaryOfTimePerfCounter.cm("import_lines_financial_cp_insert_references"):
+                _insert_references(new_cp)
 
-        perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_cp_check_refs")
-        perf_counter_check_refs.start()
-        _insert_references(new_cp)
-        perf_counter_check_refs.observe()
+            new_cps.append(new_cp)
 
-        new_cps.append(new_cp)
+        if not new_cps:
+            return
 
-    if not new_cps:
-        return
+        db.session.bulk_save_objects(new_cps)
 
-    perf_counter_create_cp_instance.observe()
-
-    perf_counter_get_insert_cp = SummaryOfTimePerfCounter("import_line_financial_cp_insert_cp")
-    perf_counter_get_insert_cp.start()
-
-    db.session.bulk_save_objects(new_cps)
-    db.session.commit()
-
-    perf_counter_get_insert_cp.observe()
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_cp_commit"):
+        db.session.commit()
 
 
 @celery.task(bind=True, name="import_file_ademe_from_website")
