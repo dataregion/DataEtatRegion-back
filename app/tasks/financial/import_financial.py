@@ -296,7 +296,7 @@ def _insert_references(new_ae_or_cp: FinancialAe | FinancialCp):
 @_handle_exception_import("FINANCIAL_CP")
 def import_lines_financial_cp(self, cp_batch: list[dict], start_index: int, source_region: str, annee: int):
     with SummaryOfTimePerfCounter.cm("import_lines_financial_cp_create_entities"):
-        new_cps = []
+        new_cps: list[FinancialCp] = []
         for _, cp in enumerate(cp_batch):
             line = json.loads(cp["data"])
             tech_info_list = cp["task"]
@@ -307,6 +307,16 @@ def import_lines_financial_cp(self, cp_batch: list[dict], start_index: int, sour
                 .filter_by(file_import_taskid=tech_info.file_import_taskid, file_import_lineno=tech_info.lineno)
                 .one_or_none()
             )
+            duplicate = next(  # XXX Le CP est présent dans le même lot
+                (
+                    x
+                    for x in new_cps
+                    if x.file_import_taskid == tech_info.file_import_taskid and x.file_import_lineno == tech_info.lineno
+                ),
+                None,
+            )
+            is_already_in_bulk = duplicate is not None
+            existing_cp = existing_cp or (is_already_in_bulk)
             if existing_cp:
                 logger.info(f"CP de la ligne {tech_info.lineno} déjà importé. On l'ignore.")
                 continue
