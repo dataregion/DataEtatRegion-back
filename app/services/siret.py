@@ -44,7 +44,7 @@ def check_siret(siret):
 
         try:
             db.session.add(siret_entity)
-            db.session.commit()
+            db.session.flush()
         except (
             Exception
         ) as e:  # The actual exception depends on the specific database so we catch all exceptions. This is similar to the official documentation: https://docs.sqlalchemy.org/en/latest/orm/session_transaction.html
@@ -62,7 +62,7 @@ def __check_commune(code):
         try:
             commune = _maj_one_commune(commune)
             db.session.add(commune)
-            db.session.commit()
+            db.session.flush()
         except Exception:
             logger.exception(f"[IMPORT][CHORUS] Error sur ajout commune {code}")
 

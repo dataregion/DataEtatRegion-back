@@ -2,6 +2,7 @@
 Module pour l'observabilité. ie. prometheus
 """
 
+from contextlib import contextmanager
 from functools import wraps
 from prometheus_client import Gauge, Summary
 import time
@@ -81,6 +82,16 @@ class SummaryOfTimePerfCounter:
 
         diff = self._end - self._start
         self._summary.observe(diff)
+
+    @staticmethod
+    @contextmanager
+    def cm(name: str):
+        pc = SummaryOfTimePerfCounter(name)
+        pc.start()
+        try:
+            yield
+        finally:
+            pc.observe()
 
 
 def gauge_of_currently_executing():

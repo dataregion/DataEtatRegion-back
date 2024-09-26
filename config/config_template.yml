@@ -33,6 +33,7 @@ SECRET_KEY: "OIDC"
 UPLOAD_FOLDER: "<PATH_FOLDER>"
 # nombre de ligne par fichier max à traiter
 SPLIT_FILE_LINE: 100000
+IMPORT_BATCH_SIZE: 10
 
 
 # CONFIGURATION OPENID Keycloak pour la securation des endpoints
