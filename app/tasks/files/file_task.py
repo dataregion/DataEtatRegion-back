@@ -17,7 +17,7 @@ from app.models.enums.DataType import DataType
 from app.services.financial_data import delete_ae_no_cp_annee_region, delete_cp_annee_region
 from app.tasks.financial import LineImportTechInfo
 
-from app.tasks.financial.import_financial import _send_subtask_financial_ae, _send_subtask_financial_cp
+from app.tasks.financial.import_financial import _send_subtask_financial_ae, _send_subtask_financial_cp, get_batch_size
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.financial.FinancialCp import FinancialCp
 
@@ -95,22 +95,41 @@ def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options:
 
     # Import de toutes les AE ainsi que leur CP associés
     index = 0
+    ae_batch = []
+    cp_lists = []
     while ae_list:
         _, struct = ae_list.popitem()
         lines = struct["ae"]
         for line in lines:
-            line_cp = struct["cp"]
-            _send_subtask_financial_ae(line, source_region, annee, index, line_cp)
-            index += 1
+            ae_batch.append(line)
+            cp_lists.extend(struct["cp"])  # Ajouter les CP associés directement à cp_lists
+            if len(ae_batch) == get_batch_size():
+                # Envoyer le lot de lignes à la sous-tâche
+                _send_subtask_financial_ae(ae_batch, source_region, annee, index, cp_lists)
+                ae_batch = []
+                cp_lists = []
+                index += get_batch_size()
 
-    # Import de tous les CP ans AE
+    # Envoyer tout reste non envoyé
+    if ae_batch:
+        _send_subtask_financial_ae(ae_batch, source_region, annee, index, cp_lists)
+
+    # Import de tous les CP sans AE
     index = 0
+    cp_batch = []
+
     while cp_list:
         k, struct = cp_list.popitem()
-        line = struct["data"]
-        task = struct["task"]
-        _send_subtask_financial_cp(line, k, source_region, annee, task)
-        index += 1
+        cp_batch.append(struct)  # Ajouter l'objet struct complet au lot
+
+        if len(cp_batch) == get_batch_size():
+            _send_subtask_financial_cp(cp_batch, source_region, annee, index)
+            cp_batch = []  # Réinitialiser le lot
+            index += get_batch_size()
+
+    # Envoyer tout reste non envoyé
+    if cp_batch:
+        _send_subtask_financial_cp(cp_batch, source_region, annee, index)
 
 
 def _parse_file(
@@ -245,7 +264,6 @@ def _parse_file_cp(
     return ae_list, cp_list
 
 
-# TODO : deprecated
 @celery.task(bind=True, name="split_csv_files_and_run_task")
 def split_csv_files_and_run_task(self, fichier: str, task_name: str, csv_options: str, **kwargs):
     """

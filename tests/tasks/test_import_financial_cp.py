@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch, call, ANY
+from unittest.mock import patch
 
 import pytest
 
@@ -8,8 +8,9 @@ from app.models.financial.FinancialAe import FinancialAe
 from app.models.financial.FinancialCp import FinancialCp
 from tests.tasks.tags.test_tag_acv import add_references
 from app.models.refs.siret import Siret
+from app.tasks.financial import LineImportTechInfo
 from app.tasks.financial.import_financial import import_file_cp_financial
-from app.tasks.financial.import_financial import import_line_financial_cp
+from app.tasks.financial.import_financial import import_lines_financial_cp
 from tests import TESTS_PATH, delete_references
 
 _chorus = TESTS_PATH / "data" / "chorus"
@@ -39,53 +40,40 @@ def cleanup_after_tests():
     db.session.commit()
 
 
-@patch("app.tasks.financial.import_financial.subtask")
+@patch("app.tasks.financial.import_financial._send_subtask_financial_cp")
 def test_import_file_cp(mock_subtask):
     # DO
     with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
         import_file_cp_financial(_chorus_split / "financial_cp.csv", "35", 2023)
 
-    mock_subtask.assert_has_calls(
-        [
-            call().delay(
-                '{"programme":"101","domaine_fonctionnel":"0101-01","centre_couts":"BG00\\/DSJCARE035","referentiel_programmation":"BG00\\/010101010113","n_ej":"#","n_poste_ej":"#","n_dp":"500043027","date_base_dp":"31.12.2022","date_derniere_operation_dp":"25.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1001477845","fournisseur_paye_label":"SANS AE","siret":"84442098400016","compte_code":"PCE\\/6512300000","compte_budgetaire":"Transferts aux m\\u00e9nag","groupe_marchandise":"#","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N","montant":"28,26"}',
-                0,
-                "35",
-                2023,
-                ANY,
-            ),
-            call().delay(
-                '{"programme":"101","domaine_fonctionnel":"0101-01","centre_couts":"BG00\\/DSJCARE035","referentiel_programmation":"BG00\\/010101010113","n_ej":"#","n_poste_ej":"#","n_dp":"500043030","date_base_dp":"31.12.2022","date_derniere_operation_dp":"25.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1001273578","fournisseur_paye_label":"SANS AE","siret":"41867744900054","compte_code":"PCE\\/6512300000","compte_budgetaire":"Transferts aux m\\u00e9nag","groupe_marchandise":"#","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N","montant":"27,96"}',
-                1,
-                "35",
-                2023,
-                ANY,
-            ),
-            call().delay(
-                '{"programme":"152","domaine_fonctionnel":"0152-04-01","centre_couts":"BG00\\/GN5GDPL044","referentiel_programmation":"BG00\\/015234300101","n_ej":"2103105755","n_poste_ej":"5","n_dp":"100011636","date_base_dp":"25.12.2022","date_derniere_operation_dp":"18.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1400875965","fournisseur_paye_label":"AE EXIST","siret":"#","compte_code":"PCE\\/6113110000","compte_budgetaire":"D\\u00e9penses de fonction","groupe_marchandise":"36.01.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"S198063","montant":"252"}',
-                2,
-                "35",
-                2023,
-                ANY,
-            ),
-            call().delay(
-                '{"programme":"152","domaine_fonctionnel":"0152-04-01","centre_couts":"BG00\\/GN5GDPL044","referentiel_programmation":"BG00\\/015234300101","n_ej":"2103105755","n_poste_ej":"5","n_dp":"100011636","date_base_dp":"25.12.2022","date_derniere_operation_dp":"18.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1400875965","fournisseur_paye_label":"AE EXIST 2","siret":"#","compte_code":"PCE\\/6113110000","compte_budgetaire":"D\\u00e9penses de fonction","groupe_marchandise":"36.01.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"S198063","montant":"150"}',
-                3,
-                "35",
-                2023,
-                ANY,
-            ),
-            call().delay(
-                '{"programme":"152","domaine_fonctionnel":"0152-04-01","centre_couts":"BG00\\/GN5GDPL044","referentiel_programmation":"BG00\\/015234300101","n_ej":"2103105755","n_poste_ej":"1","n_dp":"100011552","date_base_dp":"25.12.2022","date_derniere_operation_dp":"18.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1001246979","fournisseur_paye_label":"AE NOT EXIST","siret":"45228173600010","compte_code":"PCE\\/6113110000","compte_budgetaire":"D\\u00e9penses de fonction","groupe_marchandise":"36.01.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N5244215","montant":"807,28"}',
-                4,
-                "35",
-                2023,
-                ANY,
-            ),
-            call("import_line_financial_cp"),
-        ],
-        any_order=True,
-    )
+    # Vérifiez que la sous-tâche a été appelée le bon nombre de fois
+    assert mock_subtask.call_count == 1
+
+    # Vérifiez que la sous-tâche a été appelée avec les bons arguments
+    expected_calls = [
+        {
+            "data": '{"programme":"101","domaine_fonctionnel":"0101-01","centre_couts":"BG00\\/DSJCARE035","referentiel_programmation":"BG00\\/010101010113","n_ej":"#","n_poste_ej":"#","n_dp":"500043027","date_base_dp":"31.12.2022","date_derniere_operation_dp":"25.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1001477845","fournisseur_paye_label":"SANS AE","siret":"84442098400016","compte_code":"PCE\\/6512300000","compte_budgetaire":"Transferts aux m\\u00e9nag","groupe_marchandise":"#","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N","montant":"28,26"}',
+            "task": LineImportTechInfo(file_import_taskid=None, lineno=1),
+        },
+        {
+            "data": '{"programme":"101","domaine_fonctionnel":"0101-01","centre_couts":"BG00\\/DSJCARE035","referentiel_programmation":"BG00\\/010101010113","n_ej":"#","n_poste_ej":"#","n_dp":"500043030","date_base_dp":"31.12.2022","date_derniere_operation_dp":"25.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1001273578","fournisseur_paye_label":"SANS AE","siret":"41867744900054","compte_code":"PCE\\/6512300000","compte_budgetaire":"Transferts aux m\\u00e9nag","groupe_marchandise":"#","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N","montant":"27,96"}',
+            "task": LineImportTechInfo(file_import_taskid=None, lineno=2),
+        },
+        {
+            "data": '{"programme":"152","domaine_fonctionnel":"0152-04-01","centre_couts":"BG00\\/GN5GDPL044","referentiel_programmation":"BG00\\/015234300101","n_ej":"2103105755","n_poste_ej":"5","n_dp":"100011636","date_base_dp":"25.12.2022","date_derniere_operation_dp":"18.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1400875965","fournisseur_paye_label":"AE EXIST","siret":"#","compte_code":"PCE\\/6113110000","compte_budgetaire":"D\\u00e9penses de fonction","groupe_marchandise":"36.01.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"S198063","montant":"252"}',
+            "task": LineImportTechInfo(file_import_taskid=None, lineno=3),
+        },
+        {
+            "data": '{"programme":"152","domaine_fonctionnel":"0152-04-01","centre_couts":"BG00\\/GN5GDPL044","referentiel_programmation":"BG00\\/015234300101","n_ej":"2103105755","n_poste_ej":"5","n_dp":"100011636","date_base_dp":"25.12.2022","date_derniere_operation_dp":"18.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1400875965","fournisseur_paye_label":"AE EXIST 2","siret":"#","compte_code":"PCE\\/6113110000","compte_budgetaire":"D\\u00e9penses de fonction","groupe_marchandise":"36.01.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"S198063","montant":"150"}',
+            "task": LineImportTechInfo(file_import_taskid=None, lineno=4),
+        },
+        {
+            "data": '{"programme":"152","domaine_fonctionnel":"0152-04-01","centre_couts":"BG00\\/GN5GDPL044","referentiel_programmation":"BG00\\/015234300101","n_ej":"2103105755","n_poste_ej":"1","n_dp":"100011552","date_base_dp":"25.12.2022","date_derniere_operation_dp":"18.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1001246979","fournisseur_paye_label":"AE NOT EXIST","siret":"45228173600010","compte_code":"PCE\\/6113110000","compte_budgetaire":"D\\u00e9penses de fonction","groupe_marchandise":"36.01.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N5244215","montant":"807,28"}',
+            "task": LineImportTechInfo(file_import_taskid=None, lineno=5),
+        },
+    ]
+
+    mock_subtask.assert_called_once_with(expected_calls, "35", 2023, 0)
 
 
 def test_import_new_line_cp_without_ae(session):
@@ -94,7 +82,7 @@ def test_import_new_line_cp_without_ae(session):
     financial_cp_1 = FinancialCp(json.loads(data), annee=2023, source_region="53")
     add_references(financial_cp_1, session, region="35")
     # DO
-    import_line_financial_cp(data, 0, "35", 2023, _next_tech_info())
+    import_lines_financial_cp([{"data": data, "task": _next_tech_info()}], 0, "35", 2023)
 
     # ASSERT
 
@@ -116,7 +104,7 @@ def test_import_new_line_cp_with_siret_empty(session):
     financial_cp_1 = FinancialCp(json.loads(data), annee=2023, source_region="53")
     add_references(financial_cp_1, session, region="35")
     # DO
-    import_line_financial_cp(data, 0, "35", 2023, _next_tech_info())
+    import_lines_financial_cp([{"data": data, "task": _next_tech_info()}], 0, "35", 2023)
 
     # ASSERT
     data = session.execute(db.select(FinancialCp).filter_by(n_dp="1222")).scalar_one_or_none()
@@ -131,7 +119,7 @@ def test_import_new_line_cp_with_date_empty(session):
     financial_cp_1 = FinancialCp(json.loads(data), annee=2023, source_region="53")
     add_references(financial_cp_1, session, region="53")
     # DO
-    import_line_financial_cp(data, 0, "53", 2023, _next_tech_info())
+    import_lines_financial_cp([{"data": data, "task": _next_tech_info()}], 0, "53", 2023)
 
     # ASSERT
     data = session.execute(db.select(FinancialCp).filter_by(n_dp="100004682")).scalar_one_or_none()
@@ -155,7 +143,7 @@ def test_import_line_with_dp_exist(session):
         "app.services.siret.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "2121212", "code_commune": "35099"}),
     ):
-        import_line_financial_cp(data_new_cp, 0, "53", 2023, _next_tech_info())
+        import_lines_financial_cp([{"data": data_new_cp, "task": _next_tech_info()}], 0, "53", 2023)
 
     # ASSERT
     data = session.execute(db.select(FinancialCp).filter_by(n_dp="12")).all()
@@ -173,7 +161,7 @@ def test_import_new_line_cp_with_ae(session):
     session.commit()
 
     # DO
-    import_line_financial_cp(data_cp, 0, "53", 2023, _next_tech_info())
+    import_lines_financial_cp([{"data": data_cp, "task": _next_tech_info()}], 0, "53", 2023)
 
     financial_cp = session.execute(db.select(FinancialCp).filter_by(n_dp="100011636")).scalar_one_or_none()
     assert financial_cp.id_ae == financial_ae.id

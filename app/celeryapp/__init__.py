@@ -41,6 +41,7 @@ def create_celery_app(_app=None) -> Celery:
             "update_all_tags_of_cp": {"queue": "line"},
             "share_*": {"queue": "line"},
             "import_line_*": {"queue": "line"},
+            "import_lines_*": {"queue": "line"},
             "update_siret_*": {"queue": "line"},
             "apply_tags_*": {"queue": "line"},
             "put_tags_*": {"queue": "file"},
