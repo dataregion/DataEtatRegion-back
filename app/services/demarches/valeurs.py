@@ -65,13 +65,7 @@ class ValeurService:
             (
                 d
                 for d in donnees
-                if d.type_name
-                == (
-                    champ["__typename"] + "Descriptor"
-                    if not str(champ["__typename"]).endswith("NumberChamp")
-                    else "NumberChampDescriptor"
-                )
-                and d.label == champ["label"]
+                if d.id_ds == champ["id"]
             ),
             None,
         )
