@@ -2,11 +2,10 @@ import datetime
 import shutil
 from celery import current_task, subtask
 from flask import current_app
-from sqlalchemy import update, delete
+from sqlalchemy import delete
 from app import celeryapp, db
 from app.exceptions.exceptions import FinancialException
 import sqlalchemy.exc
-from app.models.financial import FinancialData
 from app.models.financial.Ademe import Ademe
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.financial.FinancialCp import FinancialCp
@@ -34,9 +33,16 @@ from app.tasks.financial.errors import _handle_exception_import
 from app.utilities.observability import gauge_of_currently_executing, summary_of_time, SummaryOfTimePerfCounter
 
 
+def get_batch_size():
+    return current_app.config.get("IMPORT_BATCH_SIZE", 10)
+
+
 @limiter_queue(queue_name="line")
-def _send_subtask_financial_ae(line: dict, source_region: str, annee: int, index: int, cp: list[dict] | None):
-    subtask("import_line_financial_ae").delay(line, source_region, annee, index, cp)
+def _send_subtask_financial_ae(
+    ae_batch: list[dict], source_region: str, annee: int, start_index: int, cp_lists: list[dict]
+):
+    # Envoyer le lot à la sous-tâche
+    subtask("import_lines_financial_ae").delay(ae_batch, source_region, annee, start_index, cp_lists)
 
 
 celery = celeryapp.celery
@@ -61,9 +67,21 @@ def import_file_ae_financial(self, fichier: str, source_region: str, annee: int)
         )
         series = pandas.Series({f"{FinancialAe.annee.key}": annee, f"{FinancialAe.source_region.key}": source_region})
 
+        batch = []
+        index = 0
+
         for chunk in data_chunk:
-            for index, line in chunk.iterrows():
-                _send_subtask_financial_ae(pandas.concat([line, series]).to_json(), source_region, annee, index, [])
+            for _, line in chunk.iterrows():
+                ae_data = pandas.concat([line, series]).to_json()
+                batch.append((ae_data, []))  # Ajouter une paire (AE data, CP list) au lot
+                if len(batch) == get_batch_size():
+                    _send_subtask_financial_ae(batch, source_region, annee, index, [])  # Envoi du lot
+                    batch = []  # Réinitialise le lot
+                    index += get_batch_size()
+
+        # Envoie les lignes restantes dans le lot
+        if batch:
+            _send_subtask_financial_ae(batch, source_region, annee, index, [])  # Envoi des lignes restantes
 
         move_folder = os.path.join(move_folder, timestamp)
         if not os.path.exists(move_folder):
@@ -103,12 +121,25 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
             },
             chunksize=1000,
         )
+
+        cp_batch = []
         i = 0
+        index = 0
+
         for chunk in data_chunk:
-            for index, line in chunk.iterrows():
+            for _, line in chunk.iterrows():
                 i += 1
                 tech_info = LineImportTechInfo(current_taskid, i)
-                _send_subtask_financial_cp(line.to_json(), index, source_region, annee, tech_info)
+                cp_batch.append({"data": line.to_json(), "task": tech_info})
+
+                if len(cp_batch) == get_batch_size():
+                    _send_subtask_financial_cp(cp_batch, source_region, annee, index)
+                    cp_batch = []  # Reset the batch
+                    index += get_batch_size()
+
+        # Send any remaining lines in the batch
+        if cp_batch:
+            _send_subtask_financial_cp(cp_batch, source_region, annee, index)
 
         move_folder = os.path.join(move_folder, timestamp)
         if not os.path.exists(move_folder):
@@ -123,143 +154,190 @@ def import_file_cp_financial(self, fichier: str, source_region: str, annee: int)
         raise e
 
 
+def _import_lines_financial_ae__before_commit_aes():
+    """
+    Hook pour les tests white box.
+    Appelé juste avant de persister l'ensemble des AEs.
+    """
+    pass
+
+
 @celery.task(
     bind=True,
-    name="import_line_financial_ae",
+    name="import_lines_financial_ae",
     autoretry_for=(FinancialException,),
     retry_kwargs={"max_retries": 4, "countdown": 10},
 )
 @gauge_of_currently_executing()
 @summary_of_time()
 @_handle_exception_import("FINANCIAL_AE")
-def import_line_financial_ae(self, line: str, source_region: str, annee: int, index: int, cp_list: list[dict] | None):
-    line = json.loads(line)
+def import_lines_financial_ae(
+    self, lines: list[str], source_region: str, annee: int, start_index: int, cp_list: list[dict] | None
+):
+    # Désérialisation de toutes les lignes en JSON
+    line_data_list = [json.loads(line) for line in lines]
 
-    perf_counter_retrieve_ae_instance = SummaryOfTimePerfCounter("import_line_financial_ae_retrieve_ae_instance")
-    perf_counter_retrieve_ae_instance.start()
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_ae_add_entities"):
+        try:
+            # Préparation des données pour insertion et mise à jour en bulk
+            new_aes = []
+            montant_aes = []
+            update_mappings = []
 
-    try:
-        financial_ae_instance = (
-            db.session.query(FinancialAe)
-            .filter_by(n_ej=line[FinancialAe.n_ej.key], n_poste_ej=int(line[FinancialAe.n_poste_ej.key]))
-            .one_or_none()
-        )
-        financial_instance = _check_insert_update_financial(financial_ae_instance, line)
-    except sqlalchemy.exc.OperationalError as o:
-        logger.exception(f"[IMPORT][FINANCIAL][AE] Erreur index {index} sur le check ligne")
-        raise FinancialException(o) from o
+            for line_data in line_data_list:
+                curr_ae = FinancialAe(**line_data)
+                existing_ae = (
+                    db.session.query(FinancialAe)
+                    .filter_by(
+                        n_ej=line_data[FinancialAe.n_ej.key], n_poste_ej=int(line_data[FinancialAe.n_poste_ej.key])
+                    )
+                    .one_or_none()
+                )
 
-    perf_counter_retrieve_ae_instance.observe()
+                is_update = existing_ae is not None
 
-    new_ae = FinancialAe(**line)
+                _insert_references(curr_ae)
 
-    perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_ae_check_refs")
-    perf_counter_check_refs.start()
+                if is_update:
+                    # Préparer les données pour la mise à jour
+                    update_mapping = existing_ae.update_attribute(line_data)
+                    if update_mapping:
+                        update_mappings.append(update_mapping)
+                else:
+                    # Préparer une nouvelle instance pour l'insertion
+                    db.session.add(curr_ae)
+                    db.session.flush()
+                    new_aes.append(curr_ae)
 
-    _check_ref(CodeProgramme, new_ae.programme)
-    _check_ref(CentreCouts, new_ae.centre_couts)
-    _check_ref(DomaineFonctionnel, new_ae.domaine_fonctionnel)
-    _check_ref(FournisseurTitulaire, new_ae.fournisseur_titulaire)
-    _check_ref(GroupeMarchandise, new_ae.groupe_marchandise)
-    _check_ref(LocalisationInterministerielle, new_ae.localisation_interministerielle)
-    _check_ref(ReferentielProgrammation, new_ae.referentiel_programmation)
+        except sqlalchemy.exc.OperationalError as o:
+            logger.exception("[IMPORT][FINANCIAL][AE] Erreur sur le check des lignes")
+            raise FinancialException(o) from o
 
-    perf_counter_check_refs.observe()
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_ae_update_entities"):
+        # Mise à jour en bulk pour les instances existantes
+        if update_mappings:
+            logger.debug(f"Mise à jour en bulk de {len(update_mappings)} instances existantes de FinancialAe.")
+            db.session.bulk_update_mappings(FinancialAe, update_mappings)
 
-    # SIRET
-    perf_counter_check_siret = SummaryOfTimePerfCounter("import_line_financial_ae_check_siret")
-    perf_counter_check_siret.start()
+        # Insertion des montants associés
+        if montant_aes:
+            logger.debug(f"Insertion de {len(montant_aes)} montants associés à FinancialAe.")
+            db.session.bulk_save_objects(montant_aes)
 
-    check_siret(new_ae.siret)
+        # Commit une seule fois après toutes les opérations
+        _import_lines_financial_ae__before_commit_aes()
 
-    perf_counter_check_siret.observe()
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_ae_commit"):
+        db.session.commit()
 
-    # FINANCIAL_AE
-    perf_insert_or_update_ae = SummaryOfTimePerfCounter("import_line_financial_ae_insert_or_update_ae")
-    perf_insert_or_update_ae.start()
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_ae_trigger_cps"):
+        # Traitement des cp_list si nécessaire
+        if cp_list is not None:
+            cp_batch = []
+            index = start_index  # Assurez-vous que l'index commence correctement
 
-    new_financial_ae = None
-    if financial_instance is True:
-        new_financial_ae = _insert_financial_data(new_ae)
-    else:
-        new_financial_ae = _update_financial_data(line, financial_ae_instance)  # noqa: F841
+            # Itération sur la liste cp_list
+            for struct in cp_list:
+                cp_batch.append(struct)
+                if len(cp_batch) == get_batch_size():
+                    _send_subtask_financial_cp(cp_batch, source_region, annee, index)
+                    cp_batch = []
+                    index += get_batch_size()
 
-    perf_insert_or_update_ae.observe()
-
-    # FINANCIAL_CP
-    perf_trigger_cp = SummaryOfTimePerfCounter("import_line_financial_ae_trigger_cps")
-    perf_trigger_cp.start()
-
-    index = 0
-    if cp_list is not None:
-        for cp in cp_list:
-            _send_subtask_financial_cp(cp["data"], index, source_region, annee, cp["task"])
-            index += 1
-
-    perf_trigger_cp.observe()
-
-    # XXX : Cela prend beaucoup de temps. on désactive la mécanique
-    # TAGS
-    # _send_subtask_update_all_tags("update_all_tags_of_ae", new_financial_ae.id)
+            # Envoyer tout reste non envoyé
+            if cp_batch:
+                _send_subtask_financial_cp(cp_batch, source_region, annee, index)
 
 
-@celery.task(bind=True, name="import_line_financial_cp")
+def _insert_references(new_ae_or_cp: FinancialAe | FinancialCp):
+    # Start performance counter
+    with SummaryOfTimePerfCounter.cm("import_lines_insert_references"):
+        if hasattr(new_ae_or_cp, "fournisseur_titulaire"):
+            fournisseur_titulaire = new_ae_or_cp.fournisseur_titulaire
+        else:
+            fournisseur_titulaire = new_ae_or_cp.fournisseur_paye
+
+        # Mapping between reference types and their corresponding model classes and codes
+        reference_mapping = {
+            "programme": (CodeProgramme, new_ae_or_cp.programme),
+            "centre_couts": (CentreCouts, new_ae_or_cp.centre_couts),
+            "domaine_fonctionnel": (DomaineFonctionnel, new_ae_or_cp.domaine_fonctionnel),
+            "fournisseur_titulaire": (FournisseurTitulaire, fournisseur_titulaire),
+            "groupe_marchandise": (GroupeMarchandise, new_ae_or_cp.groupe_marchandise),
+            "localisation_interministerielle": (
+                LocalisationInterministerielle,
+                new_ae_or_cp.localisation_interministerielle,
+            ),
+            "referentiel_programmation": (ReferentielProgrammation, new_ae_or_cp.referentiel_programmation),
+        }
+
+        # Keep track of instances to bulk save
+        instances_to_save = []
+
+        try:
+            # Check and add references if they don't exist
+            for _, (model, code) in reference_mapping.items():
+                if not db.session.query(model).filter_by(code=str(code)).one_or_none():
+                    instances_to_save.append(model(code=str(code)))
+
+            check_siret(new_ae_or_cp.siret)
+
+            # Bulk save all new instances
+            if instances_to_save:
+                db.session.bulk_save_objects(instances_to_save)
+
+        except Exception as e:
+            logger.exception("[IMPORT][REF] Error lors de l'insertion en bulk des références.")
+            raise e
+
+
+@celery.task(bind=True, name="import_lines_financial_cp")
 @summary_of_time()
 @_handle_exception_import("FINANCIAL_CP")
-def import_line_financial_cp(self, data_cp: str, index: int, source_region: str, annee: int, tech_info_list: list):
-    tech_info = LineImportTechInfo(*tech_info_list)
+def import_lines_financial_cp(self, cp_batch: list[dict], start_index: int, source_region: str, annee: int):
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_cp_create_entities"):
+        new_cps: list[FinancialCp] = []
+        for _, cp in enumerate(cp_batch):
+            line = json.loads(cp["data"])
+            tech_info_list = cp["task"]
+            tech_info = LineImportTechInfo(*tech_info_list)
 
-    line = json.loads(data_cp)
+            existing_cp = (  # XXX Le CP existe déjà via task-id et ligneno. Donc déjà importé.
+                db.session.query(FinancialCp)
+                .filter_by(file_import_taskid=tech_info.file_import_taskid, file_import_lineno=tech_info.lineno)
+                .one_or_none()
+            )
+            duplicate = next(  # XXX Le CP est présent dans le même lot
+                (
+                    x
+                    for x in new_cps
+                    if x.file_import_taskid == tech_info.file_import_taskid and x.file_import_lineno == tech_info.lineno
+                ),
+                None,
+            )
+            is_already_in_bulk = duplicate is not None
+            existing_cp = existing_cp or (is_already_in_bulk)
+            if existing_cp:
+                logger.info(f"CP de la ligne {tech_info.lineno} déjà importé. On l'ignore.")
+                continue
 
-    perf_counter_create_cp_instance = SummaryOfTimePerfCounter("import_line_financial_cp_create_cp_instance")
-    perf_counter_create_cp_instance.start()
+            new_cp = FinancialCp(line, source_region=source_region, annee=annee)
+            new_cp.file_import_taskid = tech_info.file_import_taskid
+            new_cp.file_import_lineno = tech_info.lineno
+            new_cp.id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej)
 
-    new_cp = FinancialCp(line, source_region=source_region, annee=annee)
-    new_cp.file_import_taskid = tech_info.file_import_taskid
-    new_cp.file_import_lineno = tech_info.lineno
+            with SummaryOfTimePerfCounter.cm("import_lines_financial_cp_insert_references"):
+                _insert_references(new_cp)
 
-    perf_counter_create_cp_instance.observe()
+            new_cps.append(new_cp)
 
-    perf_counter_check_refs = SummaryOfTimePerfCounter("import_line_financial_cp_check_refs")
-    perf_counter_check_refs.start()
+        if not new_cps:
+            return
 
-    _check_ref(CodeProgramme, new_cp.programme)
-    _check_ref(CentreCouts, new_cp.centre_couts)
-    _check_ref(DomaineFonctionnel, new_cp.domaine_fonctionnel)
-    _check_ref(FournisseurTitulaire, new_cp.fournisseur_paye)
-    _check_ref(GroupeMarchandise, new_cp.groupe_marchandise)
-    _check_ref(LocalisationInterministerielle, new_cp.localisation_interministerielle)
-    _check_ref(ReferentielProgrammation, new_cp.referentiel_programmation)
+        db.session.bulk_save_objects(new_cps)
 
-    perf_counter_check_refs.observe()
-
-    # SIRET
-    perf_counter_check_siret = SummaryOfTimePerfCounter("import_line_financial_cp_check_siret")
-    perf_counter_check_siret.start()
-
-    check_siret(new_cp.siret)
-
-    perf_counter_check_siret.observe()
-
-    # FINANCIAL_AE
-    perf_counter_get_ae_for_cp = SummaryOfTimePerfCounter("import_line_financial_cp_get_ae_for_cp")
-    perf_counter_get_ae_for_cp.start()
-
-    id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej)
-
-    perf_counter_get_ae_for_cp.observe()
-
-    perf_counter_get_insert_cp = SummaryOfTimePerfCounter("import_line_financial_cp_insert_cp")
-    perf_counter_get_insert_cp.start()
-
-    new_cp.id_ae = id_ae
-    new_financial_cp = _insert_financial_data(new_cp)  # noqa: F841
-
-    perf_counter_get_insert_cp.observe()
-
-    # XXX: Cela prend beaucoup de temps. on désactive la mécanique
-    # TAGS
-    # _send_subtask_update_all_tags("update_all_tags_of_cp", new_financial_cp.id)
+    with SummaryOfTimePerfCounter.cm("import_lines_financial_cp_commit"):
+        db.session.commit()
 
 
 @celery.task(bind=True, name="import_file_ademe_from_website")
@@ -358,56 +436,9 @@ def _send_subtask_ademe(data_ademe: str, tech_info: LineImportTechInfo):
 
 
 @limiter_queue(queue_name="line")
-def _send_subtask_financial_cp(line, index, source_region, annee, tech_info: LineImportTechInfo):
-    subtask("import_line_financial_cp").delay(line, index, source_region, annee, tech_info)
-
-
-def _check_ref(model, code):
-    instance = db.session.query(model).filter_by(code=str(code)).one_or_none()
-    if not instance:
-        instance = model(**{"code": code})
-        logger.info(f"[IMPORT][REF] Ajout ref {model.__tablename__} code {code}")
-        try:
-            db.session.add(instance)
-            db.session.commit()
-        except (
-            Exception
-        ) as e:  # The actual exception depends on the specific database so we catch all exceptions. This is similar to the official documentation: https://docs.sqlalchemy.org/en/latest/orm/session_transaction.html
-            logger.exception(f"[IMPORT][REF] Error sur ajout ref {model.__tablename__} code {code}")
-            raise e
-
-
-def _update_financial_data(data, financial: FinancialData) -> FinancialData:
-    financial.update_attribute(data)
-    logger.info("[IMPORT][FINANCIAL] Update ligne financière")
-    db.session.commit()
-    return financial
-
-
-def _check_insert_update_financial(financial_ae: FinancialData | None, line) -> FinancialData | bool:
-    """
-    :param financial_ae: l'instance financière déjà présente ou non
-    :param force_update:
-    :return: True -> Objet à créer
-             False -> rien à faire
-             Instance FINANCIAL -> Objet à update
-    """
-
-    if financial_ae:
-        if financial_ae.should_update(line):
-            logger.info("[IMPORT][FINANCIAL] Doublon trouvé, MAJ à faire")
-            return financial_ae
-        else:
-            logger.info("[IMPORT][FINANCIAL] Doublon trouvé, Pas de maj")
-            return False
-    return True
-
-
-def _insert_financial_data(data: FinancialData) -> FinancialData:
-    db.session.add(data)
-    logger.info("[IMPORT][FINANCIAL] Ajout ligne financière")
-    db.session.commit()
-    return data
+def _send_subtask_financial_cp(cp_batch: list[dict], source_region: str, annee: int, start_index: int):
+    # Envoyer le lot complet à la sous-tâche
+    subtask("import_lines_financial_cp").delay(cp_batch, start_index, source_region, annee)
 
 
 def _get_ae_for_cp(n_ej: str, n_poste_ej: int) -> int | None:
@@ -422,25 +453,6 @@ def _get_ae_for_cp(n_ej: str, n_poste_ej: int) -> int | None:
 
     financial_ae = FinancialAe.query.filter_by(n_ej=str(n_ej), n_poste_ej=int(n_poste_ej)).one_or_none()
     return financial_ae.id if financial_ae is not None else None
-
-
-def _make_link_ae_to_cp(id_financial_ae: int, n_ej: str, n_poste_ej: int):
-    """
-    Lance une requête update pour faire le lien entre une AE et des CP
-    :param id_financial_ae: l'id d'une AE
-    :param n_ej : le numero d'ej
-    :parman n_poste_ej : le poste ej
-    :return:
-    """
-
-    stmt = (
-        update(FinancialCp)
-        .where(FinancialCp.n_ej == n_ej)
-        .where(FinancialCp.n_poste_ej == n_poste_ej)
-        .values(id_ae=id_financial_ae)
-    )
-    db.session.execute(stmt)
-    db.session.commit()
 
 
 def _delete_ademe():

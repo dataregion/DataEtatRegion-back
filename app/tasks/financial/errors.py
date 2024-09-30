@@ -71,8 +71,9 @@ def _handle_exception_import(name):
                 logger.debug(f"On retry avec countdown {e.delai}, max_retries {nb_retries} et le jitter")
                 caller.retry(countdown=e.delai, max_retries=nb_retries, retry_jitter=True)
 
-            except AnnuleLaTache as _:
-                logger.warning(f"[IMPORT][{name}] tâche annulée.")
+            except AnnuleLaTache as e:
+                logger.warning(f"[IMPORT][{name}] tâche annulée pour cette cause:")
+                logger.exception(e.__cause__)
                 return "tâche annulée"
 
             except Exception as e:
@@ -95,12 +96,6 @@ def _map_exceptions(func):
             raise Reessayer.fromLimitHitError(e)
 
         except sqlalchemy.exc.IntegrityError as e:
-            message = str(e)
-
-            # Cas de doublon en insertion de ligne, on peut annuler la tache silencieusement.
-            if "duplicate key value violates unique constraint" in message and "uq_file_line_import" in message:
-                logger.warning("On tente d'insérer une ligne deux fois. On ignore le second insert.")
-                raise AnnuleLaTache.fromUniqueViolationOnFileLineImport(e)
 
             msg = "IntegrityError. Cela peut être dû à un soucis de concourrence. On retente."
             logger.exception(f"[IMPORT] {msg}")

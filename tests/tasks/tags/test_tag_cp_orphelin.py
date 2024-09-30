@@ -4,7 +4,9 @@ from app.models.financial.FinancialCp import FinancialCp
 from app.models.tags.Tags import Tags, TagAssociation
 from app.tasks.tags.apply_tags import apply_tags_cp_orphelin
 
+from tests import delete_references
 from tests.tasks.tags import TAG_CP_SANS_AE
+from tests.tasks.tags.test_tag_acv import add_references
 
 
 @pytest.fixture(scope="function")
@@ -36,23 +38,22 @@ def cp_orphelin(database, session):
             "fournisseur_paye": "1000373509",
             "groupe_marchandise": "groupe",
             "compte_budgetaire": "co",
+            "siret": "851296632000171",
         },
         annee=2021,
         source_region="53",
     )
 
+    add_references(cp, session, region="53")
     session.add(cp)
     session.commit()
     yield cp
+    delete_references(session)
     session.execute(database.delete(FinancialCp))
     session.commit()
 
 
-def test_apply_cp_orphelin(
-    database,
-    cp_orphelin,
-    tag_cp_orphan,
-):
+def test_apply_cp_orphelin(database, cp_orphelin, tag_cp_orphan, session):
     # DO
     apply_tags_cp_orphelin(tag_cp_orphan.type, None, None)  # type: ignore
 
@@ -66,9 +67,11 @@ def test_apply_cp_orphelin(
     assert tag_assocation.financial_cp == cp_orphelin.id
     assert tag_assocation.ademe is None
     assert tag_assocation.financial_ae is None
+    delete_references(session)
 
 
-def test_should_apply_tag_if_context_is_ok(database, tag_cp_orphan, cp_orphelin):
+def test_should_apply_tag_if_context_is_ok(database, tag_cp_orphan, cp_orphelin, session):
+    add_references(cp_orphelin, session, region="53")
     # DO
     context = {"only": "FINANCIAL_DATA_CP", "id": cp_orphelin.id}
     apply_tags_cp_orphelin(tag_cp_orphan.type, None, json.dumps(context))  # type: ignore

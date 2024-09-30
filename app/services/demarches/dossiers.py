@@ -1,10 +1,11 @@
 import logging
+
 from sqlalchemy import exc
 
 from app import db
-from app.models.demarches.dossier import Dossier
 from app.models.demarches.donnee import Donnee
-
+from app.models.demarches.dossier import Dossier
+from app.models.demarches.reconciliation import Reconciliation
 from app.services.demarches.donnees import DonneeService
 
 
@@ -20,8 +21,17 @@ class DossierService:
         return db.session.execute(stmt).all()
 
     @staticmethod
-    def get_donnees(dossier_dict: dict, demarche_number: str, revisions: list[dict]):
-        donnees: dict[Donnee] = []
+    def find_by_financial_ae_id(financial_ae_id) -> Dossier:
+        stmt = (
+            db.select(Dossier)
+            .join(Reconciliation, Dossier.number == Reconciliation.dossier_number)
+            .where(Reconciliation.financial_ae_id == financial_ae_id)
+        )
+        return db.session.execute(stmt).scalar_one_or_none()
+
+    @staticmethod
+    def get_donnees(dossier_dict: dict, demarche_number: int, revisions: list[dict]):
+        donnees: list[Donnee] = []
         revision = next(r for r in revisions if r["id"] == dossier_dict["demarche"]["revision"]["id"])
 
         # Récupération des champs et des annotations en amont de l'insert des dossiers
@@ -33,13 +43,13 @@ class DossierService:
         return donnees
 
     @staticmethod
-    def save(demarche_number: str, dossier_dict: dict) -> Dossier:
+    def save(demarche_number: int, dossier_dict: dict) -> Dossier:
         """
         Sauvegarde un objet Dossier
-        :param dossier: Objet à sauvegarder
+        :param dossier_dict:
+        :param demarche_number:
         :return: Dossier
         """
-        dossier: Dossier = None
         try:
             dossier_data = {
                 "number": dossier_dict["number"],

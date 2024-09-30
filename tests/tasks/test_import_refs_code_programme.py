@@ -69,6 +69,10 @@ def test_import_refs_ministere(mock_subtask):
 
 
 def test_import_insert_code_programme_line(session):
+    refmin = Ministere(**{"code": "MIN01", "label": "MIN01"})
+    session.add(refmin)
+    session.commit()
+
     import_line_one_ref_default(
         "CodeProgramme",
         json.dumps({"code": "0185", "label": "Diplomatie culturelle et d'influence", "code_ministere": "MIN01"}),

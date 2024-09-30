@@ -1,32 +1,32 @@
-import os
 import random
 import pytest
-
+from tests.DataEtatPostgresContainer import DataEtatPostgresContainer
+from sqlalchemy import text
 from app import create_app_base, db
-from tests import TESTS_PATH
 
-_tests_path = TESTS_PATH
 
-file_path = _tests_path / "database.db"
-settings_path = _tests_path / "settings.db"
-audit_path = _tests_path / "meta_audit.db"
-demarches_simplifiees_path = _tests_path / "demarches_simplifiees.db"
+# Initialisation du conteneur PostgreSQL et récupération de l'URL de connexion
+postgres_container = DataEtatPostgresContainer()
+postgres_container.start()
+base_url = postgres_container.get_connection_url()
 
+# Configuration supplémentaire pour l'application Flask
 extra_config = {
     "SQLALCHEMY_BINDS": {
-        "settings": f"sqlite:///{settings_path.as_posix()}",
-        "audit": f"sqlite:///{audit_path.as_posix()}",
-        "demarches_simplifiees": f"sqlite:///{demarches_simplifiees_path.as_posix()}",
+        "settings": base_url,
+        "audit": base_url,
+        "demarches_simplifiees": base_url,
     },
-    "SQLALCHEMY_DATABASE_URI": f"sqlite:///{file_path.as_posix()}",
+    "SQLALCHEMY_DATABASE_URI": base_url,
     "SECRET_KEY": "secret",
     "OIDC_CLIENT_SECRETS": "ser",
     "TESTING": True,
     "SERVER_NAME": "localhost",
     "UPLOAD_FOLDER": "/tmp/",
+    "IMPORT_BATCH_SIZE": 10,
 }
 
-
+# Création de l'application Flask
 test_app = create_app_base(
     config_filep="tests/config/config.yml",
     oidc_config_filep="tests/config/oidc.yml",
@@ -49,6 +49,21 @@ def pytest_report_header(config):
         seed = o_seed
     FAKER_SEED = int(seed)
     return f"=== Faker seed: {seed} - Launch with `pytest --seed {seed}` to reproduce"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_schemas():
+    """Crée les schémas nécessaires dans PostgreSQL avant de créer les tables"""
+    # Créer les schémas dans la base de données par défaut
+    with test_app.app_context():
+        for schema in ["settings", "audit", "demarches_simplifiees"]:
+            engine = db.engines[schema]
+            with engine.connect() as conn:
+                conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
+
+    yield
+    # Nettoyage après les tests
+    postgres_container.stop()
 
 
 @pytest.fixture(scope="session")
@@ -76,15 +91,11 @@ def connections(app):
         connections["settings"].close()
         connections["audit"].close()
         connections["demarches_simplifiees"].close()
-        # fermerture des connections et des bases
+        # Fermeture des connections et des bases
         db.session.close()
         engine.dispose()
         engine_settings.dispose()
         engine_audit.dispose()
-        os.remove(file_path)
-        os.remove(audit_path)
-        os.remove(settings_path)
-        os.remove(demarches_simplifiees_path)
 
 
 @pytest.fixture(scope="session")
@@ -101,7 +112,7 @@ def database(app, connections, request):
 
 @pytest.fixture(autouse=True)
 def session(connections, database, request):
-    """retourne la session à la base de données principale"""
+    """Retourne la session à la base de données principale"""
 
     session = db.session
     session.begin_nested()
