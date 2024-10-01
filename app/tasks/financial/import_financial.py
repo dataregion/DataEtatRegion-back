@@ -463,3 +463,14 @@ def _delete_ademe():
     stmt = delete(Ademe)
     db.session.execute(stmt)
     db.session.commit()
+
+
+@celery.task(bind=True, name="import_fichier_nat")
+def import_fichier_nat(self, file_path):
+    logger.info(f"Fichier national - Import...{file_path}")
+
+
+@celery.task(bind=True, name="raise_watcher_exception")
+def raise_watcher_exception(self, error_message):
+    logger.error(error_message)
+    raise Exception(error_message)

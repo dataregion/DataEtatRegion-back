@@ -276,6 +276,8 @@ vine==5.1.0
     #   kombu
 waitress==3.0.0
     # via -r requirements.in
+watchdog==5.0.3
+    # via -r requirements.in
 wcwidth==0.2.13
     # via prompt-toolkit
 werkzeug==3.0.4

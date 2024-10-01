@@ -51,6 +51,8 @@ def create_celery_app(_app=None) -> Celery:
             "split_csv_*": {"queue": "file"},
             "read_csv_*": {"queue": "file"},
             "delayed_inserts": {"queue": "file"},
+            "import_fichier_nat": {"queue": "file"},
+            "raise_watcher_exception": {"queue": "file"},
         }
     ]
 
