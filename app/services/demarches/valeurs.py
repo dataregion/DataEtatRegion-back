@@ -62,11 +62,7 @@ class ValeurService:
         ]
 
         donnee: Donnee = next(
-            (
-                d
-                for d in donnees
-                if d.id_ds == champ["id"]
-            ),
+            (d for d in donnees if d.id_ds == champ["id"]),
             None,
         )
         if donnee is not None:
