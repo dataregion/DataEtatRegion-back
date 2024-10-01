@@ -45,3 +45,5 @@ odfpy ~= 1.4.1
 api-entreprise >= 3.3.6
 
 prometheus-flask-exporter ~= 0.23
+
+watchdog ~= 5.0.2
