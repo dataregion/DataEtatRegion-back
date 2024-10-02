@@ -17,8 +17,12 @@ class Preference(db.Model):
     # user
     username = Column(String, nullable=False)
     name = Column(String, nullable=False)
+
     # Url de l'application concerné par la préférence
     application_host = Column(String, nullable=False)
+
+    # Client ID de l'application concernée par la preference
+    application_clientid = Column(String, nullable=False)
     # Donnée technique du filtre brut
     filters = Column(JSON, nullable=False)
     # Autre Options pour les preferences (pour les group by par exemple)

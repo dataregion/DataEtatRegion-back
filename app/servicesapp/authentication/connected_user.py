@@ -18,6 +18,7 @@ class ConnectedUser:
         self._current_region = None
         self._username = None
         self._sub = None
+        self._azp = None
 
     @property
     def roles(self):
@@ -25,6 +26,13 @@ class ConnectedUser:
         if self._current_roles is None:
             self._current_roles = self._retrieve_token_roles()
         return self._current_roles
+
+    @property
+    def azp(self):
+        """Récupère le claim 'azp' du token"""
+        if self._azp is None:
+            self._azp = self._retrieve_token_azp()
+        return self._azp
 
     @property
     def current_region(self):
@@ -54,6 +62,12 @@ class ConnectedUser:
         if roles is not None:
             roles = [x.upper() for x in roles]
         return roles
+
+    @wrap_all_ex_to(InvalidTokenError)
+    def _retrieve_token_azp(self):
+        azp = self.token["azp"] if "azp" in self.token else None
+        assert isinstance(azp, str), "Le claim azp doit être un string"
+        return azp
 
     @wrap_all_ex_to(NoCurrentRegion)
     def _retrieve_token_region(self):
