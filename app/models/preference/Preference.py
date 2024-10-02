@@ -68,6 +68,7 @@ class PreferenceFormSchema(ma.SQLAlchemyAutoSchema):
             "nombre_utilisation",
             "dernier_acces",
             "application_host",
+            "application_clientid",
         )
 
     filters = fields.Raw(required=True)
