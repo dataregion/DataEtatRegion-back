@@ -95,6 +95,7 @@ class PreferenceUsers(Resource):
         Create a new preference for the current user
         """
         user = ConnectedUser.from_current_token_identity()
+        clientId = user.azp
 
         from app.tasks.management_tasks import share_filter_user
 
@@ -120,6 +121,7 @@ class PreferenceUsers(Resource):
             options=data["options"],
             filters=data["filters"],
             application_host=application,
+            application_clientid=clientId,
         )
         pref.shares = share_list
 
@@ -144,19 +146,19 @@ class PreferenceUsers(Resource):
         Retrieve the list
         """
         user = ConnectedUser.from_current_token_identity()
+        clientId = user.azp
 
-        application = get_origin_referrer(request)
-        logging.debug(f"get users prefs {application}")
+        logging.debug(f"get users prefs {clientId}")
 
         list_pref = (
             Preference.query.options(lazyload(Preference.shares))
-            .filter_by(username=user.username, application_host=application)
+            .filter_by(username=user.username, application_clientid=clientId)
             .order_by(Preference.id)
             .all()
         )
         list_pref_shared = (
             Preference.query.join(Share)
-            .filter(Share.shared_username_email == user.username, Preference.application_host == application)
+            .filter(Share.shared_username_email == user.username, Preference.application_clientid == clientId)
             .distinct(Preference.id)
             .all()
         )
@@ -178,10 +180,10 @@ class CrudPreferenceUsers(Resource):
         """
         logging.debug(f"Delete users prefs {uuid}")
         user = ConnectedUser.from_current_token_identity()
+        clientId = user.azp
 
-        application = get_origin_referrer(request)
         preference = Preference.query.filter(
-            cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_host == application
+            cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_clientid == clientId
         ).one()
 
         if preference.username != user.username:
@@ -192,10 +194,8 @@ class CrudPreferenceUsers(Resource):
             db.session.commit()
             return "Success", HTTPStatus.OK
         except Exception as e:
-            logging.error(f"[PREFERENCE][CTRL] Error when delete preference {uuid} {application}", e)
-            return abort(
-                message=f"Error when delete preference on application {application}", code=HTTPStatus.BAD_REQUEST
-            )
+            logging.error(f"[PREFERENCE][CTRL] Error when delete preference {uuid} {clientId}", e)
+            return abort(message=f"Error when delete preference on application {clientId}", code=HTTPStatus.BAD_REQUEST)
 
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
@@ -208,10 +208,11 @@ class CrudPreferenceUsers(Resource):
         from app.tasks.management_tasks import share_filter_user
 
         user = ConnectedUser.from_current_token_identity()
+        clientId = user.azp
 
         application = get_origin_referrer(request)
         preference_to_save = Preference.query.filter(
-            cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_host == application
+            cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_clientid == clientId
         ).one()
 
         if preference_to_save.username != user.username:
@@ -267,10 +268,11 @@ class CrudPreferenceUsers(Resource):
         Get by uuid preference
         """
         logging.debug(f"Get users prefs {uuid}")
+        user = ConnectedUser.from_current_token_identity()
+        clientId = user.azp
 
-        application = get_origin_referrer(request)
         preference = Preference.query.filter(
-            cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_host == application
+            cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_clientid == clientId
         ).one()
 
         schema = PreferenceSchema()
