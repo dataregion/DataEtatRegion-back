@@ -1,7 +1,9 @@
 from typing import Iterable
 from flask import g
 
-from .exceptions import InvalidTokenError, NoCurrentRegion
+from ..exceptions.authentication import NoCurrentRegion
+
+from ..exceptions.authentication import InvalidTokenError
 from app.utilities.exhandling import wrap_all_ex_to
 
 

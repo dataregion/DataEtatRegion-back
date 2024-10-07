@@ -9,7 +9,6 @@ from app.models.refs.code_programme import CodeProgramme
 from app.models.refs.region import Region
 from app.models.refs.siret import Siret
 from app.tasks.files.file_task import read_csv_and_import_ae_cp
-from app.tasks.financial.import_financial import import_file_ae_financial
 from app.tasks.financial.import_financial import import_lines_financial_ae
 from tests import TESTS_PATH, delete_references
 from tests.tasks.tags.test_tag_acv import add_references, get_or_create
@@ -25,7 +24,6 @@ def cleanup_after_tests(database):
 
 
 _chorus = TESTS_PATH / "data" / "chorus"
-_chorus_split = _chorus / "split"
 
 
 @patch("app.tasks.financial.import_financial.subtask")
@@ -36,35 +34,6 @@ def test_split_csv_and_import_ae_and_cp(mock_subtask):
             _chorus / "chorus_ae.csv", _chorus / "financial_cp.csv", json.dumps({"sep": ",", "skiprows": 8}), "32", 2022
         )
     assert 2 == mock_subtask.call_count
-
-
-@patch("app.tasks.financial.import_financial._send_subtask_financial_ae")
-def test_import_import_file_ae(mock_subtask):
-    # DO
-    with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
-        import_file_ae_financial(_chorus_split / "chorus_ae.csv", "35", 2023)
-
-    assert 1 == mock_subtask.call_count
-    mock_subtask.assert_called_once_with(
-        [
-            (
-                '{"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","n_ej":"2103105755","date_replication":"10.01.2023","n_poste_ej":5,"date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200017","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53","montant":"22500,12","annee":2023,"source_region":"35"}',
-                [],
-            ),
-            (
-                '{"programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","n_ej":"2103105755","date_replication":"10.01.2023","n_poste_ej":6,"date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200017","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53","montant":"15000","annee":2023,"source_region":"35"}',
-                [],
-            ),
-            (
-                '{"programme":"XXX","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","n_ej":"2103105755","date_replication":"10.01.2023","n_poste_ej":6,"date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"NOT FOUND","siret":"#","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53","montant":"15000","annee":2023,"source_region":"35"}',
-                [],
-            ),
-        ],
-        "35",
-        2023,
-        0,
-        [],
-    )
 
 
 def test_import_new_line_ae(database, session):

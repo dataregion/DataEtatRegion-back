@@ -1,7 +1,5 @@
-import json
 import logging
 import pandas
-from sqlalchemy import or_
 
 from sqlalchemy.orm import contains_eager, selectinload
 
@@ -16,22 +14,22 @@ from app.models.financial.Ademe import Ademe
 from app.models.financial.FinancialCp import FinancialCp
 from app.models.financial.FinancialAe import FinancialAe
 from app.models.refs.categorie_juridique import CategorieJuridique
-from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
-from app.models.refs.referentiel_programmation import ReferentielProgrammation
 from app.models.refs.siret import Siret
 from app.models.tags.Tags import Tags
-from app.services import BuilderStatementFinancial
+from app.services import BuilderStatementFinancial, FileStorageProtocol
 from app.services import BuilderStatementFinancialCp
 from app.models.tags.Tags import TagVO
 from app.services.data import BuilderStatementFinancialLine
+from app.servicesapp.exceptions.authentication import NoCurrentRegion
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
-from app.services.financial_data import delete_cp_annee_region
 
 
-def import_financial_data(file_ae: str, file_cp: str, source_region: str, annee: int, username=""):
+def import_financial_data(
+    file_ae: FileStorageProtocol, file_cp: FileStorageProtocol, source_region: str, annee: int, username=""
+):
     # Sanitize des paramètres
-    source_region = _sanitize_source_region(source_region)
+    _source_region = _sanitize_source_region(source_region)
     # Validation des fichiers
     save_path_ae = check_file_and_save(file_ae)
     save_path_cp = check_file_and_save(file_cp)
@@ -41,62 +39,14 @@ def import_financial_data(file_ae: str, file_cp: str, source_region: str, annee:
     # Enregistrement de l'import à effectuer
     db.session.add(
         AuditInsertFinancialTasks(
-            fichier_ae=save_path_ae,
-            fichier_cp=save_path_cp,
-            source_region=source_region,
-            annee=annee,
-            username=username,
+            fichier_ae=save_path_ae,  # type: ignore
+            fichier_cp=save_path_cp,  # type: ignore
+            source_region=_source_region,  # type: ignore
+            annee=annee,  # type: ignore
+            username=username,  # type: ignore
         )
     )
     db.session.commit()
-
-
-# TODO : deprecated
-def import_ae(file_ae, source_region: str, annee: int, force_update: bool, username=""):
-    save_path = check_file_and_save(file_ae)
-
-    _check_file(save_path, FinancialAe.get_columns_files_ae())
-    source_region = _sanitize_source_region(source_region)
-
-    logging.info(f"[IMPORT FINANCIAL] Récupération du fichier {save_path}")
-    csv_options = {"sep": ",", "skiprows": 8}
-    from app.tasks.files.file_task import split_csv_files_and_run_task
-
-    task = split_csv_files_and_run_task.delay(
-        str(save_path),
-        "import_file_ae_financial",
-        json.dumps(csv_options),
-        source_region=source_region,
-        annee=annee,
-    )
-    db.session.add(AuditUpdateData(username=username, filename=file_ae.filename, data_type=DataType.FINANCIAL_DATA_AE))
-    db.session.commit()
-    return task
-
-
-# TODO : deprecated
-def import_cp(file_cp, source_region: str, annee: int, username=""):
-    save_path = check_file_and_save(file_cp)
-
-    _check_file(save_path, FinancialCp.get_columns_files_cp())
-    source_region = _sanitize_source_region(source_region)
-
-    logging.info(f"[IMPORT FINANCIAL] Récupération du fichier {save_path}")
-    csv_options = {
-        "sep": ",",
-        "skiprows": 8,
-    }
-
-    delete_cp_annee_region(annee, source_region)
-    from app.tasks.files.file_task import split_csv_files_and_run_task
-
-    task = split_csv_files_and_run_task.delay(
-        str(save_path), "import_file_cp_financial", json.dumps(csv_options), source_region=source_region, annee=annee
-    )
-
-    db.session.add(AuditUpdateData(username=username, filename=file_cp.filename, data_type=DataType.FINANCIAL_DATA_CP))
-    db.session.commit()
-    return task
 
 
 def import_ademe(file_ademe, username=""):
@@ -106,53 +56,31 @@ def import_ademe(file_ademe, username=""):
     from app.tasks.financial.import_financial import import_file_ademe
 
     task = import_file_ademe.delay(str(save_path))
-    db.session.add(AuditUpdateData(username=username, filename=file_ademe.filename, data_type=DataType.ADEME))
+    db.session.add(AuditUpdateData(username=username, filename=file_ademe.filename, data_type=DataType.ADEME))  # type: ignore
     db.session.commit()
     return task
-
-
-def get_financial_ae(id: int) -> FinancialAe:
-    query_select = (
-        BuilderStatementFinancial()
-        .select_ae()
-        .join_filter_siret()
-        .join_filter_programme_theme()
-        .join_commune()
-        .join_localisation_interministerielle()
-        .by_ae_id(id)
-        .options_select_load()
-    )
-
-    result = query_select.do_single()
-    return result
 
 
 def get_financial_cp_of_ae(id: int):
     return BuilderStatementFinancialCp().select_cp().by_ae_id(id).order_by_date().do_all()
 
 
-def get_annees_ae():
-    return db.session.execute(
-        db.text("SELECT ARRAY(SELECT DISTINCT annee FROM public.financial_ae)")
-    ).scalar_one_or_none()
-
-
 def search_ademe(
-    siret_beneficiaire: list = None,
-    niveau_geo: str = None,
-    code_geo: list = None,
-    annee: list = None,
-    tags: list[str] = None,
+    siret_beneficiaire: list | None = None,
+    niveau_geo: str | None = None,
+    code_geo: list | None = None,
+    annee: list | None = None,
+    tags: list[str] | None = None,
     page_number=1,
     limit=500,
 ):
     query = db.select(Ademe).options(
         contains_eager(Ademe.ref_siret_beneficiaire)
-        .load_only(Siret.code, Siret.denomination)
+        .load_only(Siret.code, Siret.denomination)  # type: ignore
         .contains_eager(Siret.ref_commune),
         contains_eager(Ademe.ref_siret_beneficiaire)
         .contains_eager(Siret.ref_categorie_juridique)
-        .load_only(CategorieJuridique.type),
+        .load_only(CategorieJuridique.type),  # type: ignore
         selectinload(Ademe.tags),
     )
     query = (
@@ -185,76 +113,19 @@ def search_ademe(
     return page_result
 
 
-def get_ademe(id: int) -> Ademe:
+def get_ademe(id: int) -> Ademe | None:
     query = db.select(Ademe).join(Siret, Ademe.ref_siret_beneficiaire).join(Siret.ref_categorie_juridique)
 
     result = BuilderStatementFinancial(query).join_commune().where_custom(Ademe.id == id).do_single()
     return result
 
 
-def search_financial_data_ae(
-    code_programme: list | None = None,
-    theme: list | None = None,
-    siret_beneficiaire: list | None = None,
-    types_beneficiaires: list | None = None,
-    annee: list | None = None,
-    domaine_fonctionnel: list | None = None,
-    referentiel_programmation: list | None = None,
-    source_region: str | None = None,
-    niveau_geo: str | None = None,
-    code_geo: list | None = None,
-    tags: list[str] | None = None,
-    page_number=1,
-    limit=500,
-):
-    source_region = _sanitize_source_region(source_region)
-
-    query_ae = (
-        BuilderStatementFinancial()
-        .select_ae()
-        .join_filter_siret(siret_beneficiaire)
-        .join_filter_programme_theme(code_programme, theme)
-    )
-
-    if niveau_geo is not None and code_geo is not None:
-        query_ae.where_geo_ae(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
-    elif bool(niveau_geo) ^ bool(code_geo):
-        raise NiveauCodeGeoException("Les paramètres niveau_geo et code_geo doivent être fournis ensemble.")
-    else:
-        query_ae.join_commune().join_localisation_interministerielle()
-
-    if domaine_fonctionnel is not None:
-        query_ae.where_custom(DomaineFonctionnel.code.in_(domaine_fonctionnel))
-
-    if referentiel_programmation is not None:
-        query_ae.where_custom(ReferentielProgrammation.code.in_(referentiel_programmation))
-
-    if source_region is not None:
-        query_ae.where_custom(FinancialAe.source_region == source_region)
-
-    type_beneficiaires_conditions = []
-    if types_beneficiaires is not None:
-        type_beneficiaires_conditions.append(CategorieJuridique.type.in_(types_beneficiaires))
-    if types_beneficiaires is not None and "autres" in types_beneficiaires:
-        type_beneficiaires_conditions.append(CategorieJuridique.type == None)  # noqa: E711
-
-    query_ae.where_custom(or_(*type_beneficiaires_conditions))
-
-    if tags is not None:
-        _tags = map(TagVO.sanitize_str, tags)
-        fullnamein = Tags.fullname.in_(_tags)
-        query_ae.where_custom(FinancialAe.tags.any(fullnamein))
-
-    page_result = query_ae.where_annee(annee).options_select_load().do_paginate(limit, page_number)
-    return page_result
-
-
-def _check_file(fichier, columns_name):
+def _check_file(fichier: str, columns_name):
     try:
         check_column = pandas.read_csv(fichier, sep=",", skiprows=8, nrows=5)
-    except Exception:
+    except Exception as _:
         logging.exception(msg="[CHECK FILE] Erreur de lecture du fichier")
-        raise FileNotAllowedException(message="Erreur de lecture du fichier")
+        raise InvalidFile()
 
     # check nb colonnes
     if len(check_column.columns) != len(columns_name):
@@ -278,7 +149,10 @@ def _check_file(fichier, columns_name):
 
 
 def _sanitize_source_region(source_region):
-    return source_region.lstrip("0") if source_region else None
+    sanitized = source_region.lstrip("0") if source_region else None
+    if sanitized is None:
+        raise NoCurrentRegion()
+    return sanitized
 
 
 def get_ligne_budgetaire(
