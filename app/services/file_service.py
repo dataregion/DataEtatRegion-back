@@ -6,10 +6,10 @@ from datetime import datetime
 
 
 from werkzeug.utils import secure_filename
-from werkzeug.datastructures import FileStorage
 
 from flask import current_app
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
+from app.services import FileStorageProtocol
 
 
 def allowed_file(filename, allowed_extensions=None) -> bool:
@@ -23,7 +23,7 @@ def allowed_file(filename, allowed_extensions=None) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_extensions
 
 
-def check_file_and_save(file, allowed_extensions=None, in_unique_folder=False) -> str:
+def check_file_and_save(file: FileStorageProtocol, allowed_extensions=None, in_unique_folder=False) -> str:
     """
     Vérifie l'extension du fichier
     et le sauvegarde dans le `UPLOAD_FOLDER`. Si le `UPLOAD_FOLDER` n'est pas spécifié, le déplace dans un dossier temporaire.
@@ -67,7 +67,7 @@ def _upload_folder_path(using_unique_intermediate_folder=False) -> Path:
     return Path(save_path)
 
 
-def _check_file_extension(file: FileStorage, allowed_extensions=None):
+def _check_file_extension(file: FileStorageProtocol, allowed_extensions=None):
     """
     Vérifie que l'extension du fichier est légale
     :raises FileNotAllowedException:

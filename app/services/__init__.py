@@ -4,6 +4,8 @@ Package de services (techniques)
 Appelé par divers composants de l'application, que ce soit d'autres services, des tâches asynchrones, des controlleurs etc..
 """
 
+from abc import ABC, abstractmethod
+from os import PathLike
 from sqlalchemy import Select, or_, Column, desc
 from sqlalchemy.orm import selectinload, contains_eager, aliased
 
@@ -415,3 +417,16 @@ class BuilderStatementFinancialCp:
         :return:
         """
         return db.session.execute(self._stmt).scalars()
+
+
+class FileStorageProtocol(ABC):
+    """Représente un fichier stocké par le middleware web"""
+
+    @property
+    @abstractmethod
+    def filename(self):
+        pass
+
+    @abstractmethod
+    def save(self, save_path: PathLike):
+        pass

@@ -3,7 +3,6 @@ from flask_restx import Api, Namespace, SchemaModel
 from marshmallow_jsonschema import JSONSchema
 from app.models.financial.Ademe import AdemeSchema
 from app.models.demarches.demarche import DemarcheSchema
-from app.models.financial.FinancialAe import FinancialAeSchema
 from app.models.financial.FinancialCp import FinancialCpSchema
 from app.models.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLinesSchema
 from app.models.tags.Tags import TagsSchema
@@ -19,16 +18,6 @@ def register_tags_schemamodel(api: Api | Namespace) -> SchemaModel:
     model_tags_single_api = api.schema_model("TagsSchema", tags_model_json)
     _fix_schemamodel(model_tags_single_api)
     return model_tags_single_api
-
-
-def register_financial_ae_schemamodel(api: Api | Namespace) -> SchemaModel:
-    """Enregistre le modèle FinancialAe auprès du swagger"""
-
-    schema = FinancialAeSchema()
-    model_json = JSONSchema().dump(schema)["definitions"]["FinancialAeSchema"]  # type: ignore
-    model_single_api = api.schema_model("FinancialAe", model_json)
-    _fix_schemamodel(model_single_api)
-    return model_single_api
 
 
 def register_financial_cp_schemamodel(api: Api | Namespace) -> SchemaModel:

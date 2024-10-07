@@ -1,8 +1,8 @@
-class AuthenticationModuleError(Exception):
+class AuthenticationError(Exception):
     pass
 
 
-class InvalidTokenError(AuthenticationModuleError):
+class InvalidTokenError(AuthenticationError):
     """Exception en case de token non présent"""
 
     pass

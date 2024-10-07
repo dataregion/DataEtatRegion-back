@@ -1,7 +1,7 @@
 from functools import wraps
 
 from flask import Blueprint, request
-from flask_restx import Api, reqparse, inputs
+from flask_restx import Api, reqparse
 from flask_restx._http import HTTPStatus
 from werkzeug.datastructures import FileStorage
 from app.controller.financial_data.schema_model import (
@@ -13,17 +13,10 @@ from app.exceptions.exceptions import DataRegatException, BadRequestDataRegateNu
 
 
 parser_import = reqparse.RequestParser()
-parser_import.add_argument("fichier", type=FileStorage, help="fichier à importer", location="files", required=True)
+parser_import.add_argument("fichierAe", type=FileStorage, help="fichier AE à importer", location="files", required=True)
+parser_import.add_argument("fichierCp", type=FileStorage, help="fichier CP à importer", location="files", required=True)
 parser_import.add_argument(
     "annee", type=int, help="Année d'engagement du fichier Chorus", location="files", required=True
-)
-parser_import.add_argument(
-    "force_update",
-    type=inputs.boolean,
-    required=False,
-    default=False,
-    location="files",
-    help="Force la mise à jours si la ligne existe déjà",
 )
 
 
@@ -84,14 +77,12 @@ def check_files_import():
     return wrapper
 
 
-from app.controller.financial_data.FinancialDataCtrl import api as api_ae_cp  # noqa: E402
-from app.controller.financial_data.FinancialAeCtrl import api as api_ae  # noqa: E402
-from app.controller.financial_data.FinancialCpCtrl import api as api_cp  # noqa: E402
+from app.controller.financial_data.FinancialEntitiesCtrls import api as api_financial_entities  # noqa: E402
 from app.controller.financial_data.AdemeCtrl import api as api_ademe  # noqa: E402
 from app.controller.financial_data.TagsCtrl import api as api_tags  # noqa: E402
 from app.controller.utils.LoginController import api as api_auth  # noqa: E402
 
-from app.controller.financial_data.v2 import api_ns as api_ae_v2  # noqa: E402
+from app.controller.financial_data.v2.BudgetCtrls import api_ns as api_budgets  # noqa: E402
 
 
 api_financial_v1 = Blueprint("financial_data", __name__)
@@ -119,9 +110,7 @@ model_tags_single_api = register_tags_schemamodel(api_v1)
 
 api_v1.add_namespace(api_auth)
 api_v1.add_namespace(api_tags)
-api_v1.add_namespace(api_ae_cp)
-api_v1.add_namespace(api_ae)
-api_v1.add_namespace(api_cp)
+api_v1.add_namespace(api_financial_entities)
 api_v1.add_namespace(api_ademe)
 
 _description = (
@@ -142,7 +131,7 @@ api_v2 = Api(
 
 model_tags_single_api = register_tags_schemamodel(api_v2)
 
-api_v2.add_namespace(api_ae_v2)
+api_v2.add_namespace(api_budgets)
 
 
 @api_financial_v1.errorhandler(DataRegatException)
