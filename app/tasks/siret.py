@@ -109,16 +109,16 @@ def update_link_siret_qpv_from_website(self, url: str):
                     chunks = pandas.read_csv(
                         csv_file,
                         header=0,
-                        usecols=["siret", "plg_qp"],
+                        usecols=["siret", "plg_qp15"],
                         chunksize=100000,
                         sep=";",
-                        dtype={"siret": str, "plg_qp": str},
+                        dtype={"siret": str, "plg_qp15": str},
                     )
                     resultats = []
 
                     # Parcourir les chunks et filtrer les lignes
                     for chunk in chunks:
-                        filtre = ~chunk["plg_qp"].isin(["CSZ", "HZ", " ", ""])
+                        filtre = ~chunk["plg_qp15"].isin(["CSZ", "HZ", " ", ""])
                         morceau_filtre = chunk[filtre]
                         resultats.append(morceau_filtre)
 
@@ -144,7 +144,7 @@ def update_link_siret_qpv(self, file: str, page_number: int = 1):
     :return:
     """
     logger.info(f"[TASK][SIRET]Update lien QPV siret de la page {page_number}")
-    all_siret_qpv = pandas.read_csv(file, header=0, usecols=["siret", "plg_qp"], sep=",", dtype={"siret": str})
+    all_siret_qpv = pandas.read_csv(file, header=0, usecols=["siret", "plg_qp15"], sep=",", dtype={"siret": str})
 
     stmt = db.select(Siret).order_by(Siret.id)
     page_result = db.paginate(stmt, per_page=1000, error_out=False, page=page_number)
@@ -160,7 +160,7 @@ def update_link_siret_qpv(self, file: str, page_number: int = 1):
                 logger.info(f"[TASK][SIRET] Le siret {siret.code} n'est plus dans un QPV")
             logger.debug(f"[TASK][SIRET] Pas de Qpv pour le siret {siret.code}")
         else:
-            code_qpv = search_qpv["plg_qp"].values[0]
+            code_qpv = search_qpv["plg_qp15"].values[0]
             logger.info(f"[TASK][SIRET] Qpv {code_qpv} trouvé pour le siret {siret.code}")
             db.session.execute(db.update(Siret).where(Siret.code == siret.code).values(code_qpv=code_qpv))
     db.session.commit()
