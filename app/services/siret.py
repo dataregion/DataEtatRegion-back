@@ -38,20 +38,23 @@ def check_siret(siret):
     """
     if siret is not None:
         logger.info(f"[SIRET] Début check siret {siret}")
-        siret_entity = update_siret_from_api_entreprise(siret, insert_only=True)
-        if siret_entity.code_commune is not None:
-            __check_commune(siret_entity.code_commune)
 
-        try:
-            db.session.add(siret_entity)
-            db.session.flush()
-        except (
-            Exception
-        ) as e:  # The actual exception depends on the specific database so we catch all exceptions. This is similar to the official documentation: https://docs.sqlalchemy.org/en/latest/orm/session_transaction.html
-            logger.exception(f"[SIRET] Error sur ajout Siret {siret}")
-            raise e
+        existing_siret = db.session.query(Siret).filter_by(code=str(siret)).one_or_none()
+        if existing_siret:
+            logger.info(f"[SIRET] Siret {siret} déjà présent en base, aucune insertion nécessaire.")
+        else:
+            siret_entity = update_siret_from_api_entreprise(siret, insert_only=True)
 
-        logger.info(f"[SIRET] Siret {siret} ajouté")
+            if siret_entity.code_commune is not None:
+                __check_commune(siret_entity.code_commune)
+
+            try:
+                db.session.add(siret_entity)
+                db.session.flush()
+                logger.info(f"[SIRET] Siret {siret} ajouté à la base.")
+            except Exception as e:
+                logger.exception(f"[SIRET] Error sur ajout Siret {siret}")
+                raise e
 
 
 def __check_commune(code):

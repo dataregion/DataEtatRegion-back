@@ -2,9 +2,11 @@ from datetime import datetime
 from dataclasses import dataclass
 
 from marshmallow import fields
+import pandas as pd
 from sqlalchemy import Column, String, ForeignKey, Integer, DateTime, Float, UniqueConstraint
 from app import db, ma
 from app.models.financial import FinancialData
+from app.models.refs.region import get_code_region_by_code_comp
 
 
 @dataclass
@@ -20,6 +22,7 @@ class FinancialCp(FinancialData, db.Model):
     # liens vers les AE
     n_ej: Column[str] = Column(String, nullable=True)
     n_poste_ej: int = Column(Integer, nullable=True)
+    data_source = Column(String, nullable=False)
 
     # FK
     source_region: Column[str] = Column(String, ForeignKey("ref_region.code"), nullable=False)
@@ -28,7 +31,7 @@ class FinancialCp(FinancialData, db.Model):
     centre_couts: Column[str] = Column(String, db.ForeignKey("ref_centre_couts.code"), nullable=False)
     referentiel_programmation: Column[str] = Column(String, db.ForeignKey("ref_programmation.code"), nullable=False)
     siret: Column[str] = Column(String, db.ForeignKey("ref_siret.code"), nullable=True)
-    groupe_marchandise: Column[str] = Column(String, db.ForeignKey("ref_groupe_marchandise.code"), nullable=False)
+    groupe_marchandise: Column[str] = Column(String, db.ForeignKey("ref_groupe_marchandise.code"), nullable=True)
     localisation_interministerielle: str = Column(
         String, db.ForeignKey("ref_localisation_interministerielle.code"), nullable=False
     )
@@ -106,6 +109,104 @@ class FinancialCp(FinancialData, db.Model):
             "localisation_interministerielle",
             "montant",
         ]
+
+    @staticmethod
+    def get_columns_fichier_nat_cp():
+        return [
+            "fiscyear",
+            "ac_doc_no",
+            "item_num",
+            "Mission",
+            "Code_Programme",
+            "comp_code",
+            "oi_ebeln",
+            "oi_ebelp",
+            "ref_key3",
+            "bbp_taxcod",
+            "bic_cglmfahtd",
+            "bic_cglmfahte",
+            "bic_cglmtvad",
+            "bic_cglmtvae",
+            "vendor",
+            "cfund_ctr",
+            "func_area",
+            "cmmt_item",
+            "cfmtrfonc",
+            "costcenter",
+            "cfmlocint",
+            "cfmrefprg",
+            "bic_cfund",
+            "bic_csdzzcper",
+            "bline_date",
+            "ectr_date",
+            "cfmanamin",
+            "tax_numb",
+        ]
+
+    @staticmethod
+    def get_columns_types_fichier_nat_cp():
+        return {
+            "fiscyear": int,
+            "ac_doc_no": str,
+            "item_num": str,
+            "Mission": str,
+            "Code_Programme": str,
+            "comp_code": str,
+            "oi_ebeln": str,
+            "oi_ebelp": str,
+            "ref_key3": str,
+            "bbp_taxcod": str,
+            "bic_cglmfahtd": str,
+            "bic_cglmfahte": float,
+            "bic_cglmtvad": str,
+            "bic_cglmtvae": float,
+            "vendor": str,
+            "cfund_ctr": str,
+            "func_area": str,
+            "cmmt_item": str,
+            "cfmtrfonc": str,
+            "costcenter": str,
+            "cfmlocint": str,
+            "cfmrefprg": str,
+            "bic_cfund": str,
+            "bic_csdzzcper": str,
+            "bline_date": str,
+            "ectr_date": str,
+            "cfmanamin": str,
+            "tax_numb": str,
+        }
+
+    @staticmethod
+    def from_csv_fichier_nat(line: dict):
+        return {
+            "n_dp": line["ac_doc_no"],
+            "source_region": get_code_region_by_code_comp(line["comp_code"]),
+            "n_ej": line["oi_ebeln"],
+            "n_poste_ej": int(line["oi_ebelp"]),
+            "fournisseur_paye": line["vendor"],
+            "domaine_fonctionnel": line["func_area"],
+            "compte_budgetaire": line["cmmt_item"],
+            "localisation_interministerielle": line["cfmlocint"],
+            "referentiel_programmation": line["cfmrefprg"],
+            "contrat_etat_region": line["bic_csdzzcper"],
+            "centre_couts": line["costcenter"],
+            "date_base_dp": _convert_date_format(line["bline_date"]),
+            "programme": line["Code_Programme"],
+            "montant": (line["bic_cglmfahte"] or 0) + (line["bic_cglmtvae"] or 0),
+            "annee": line["fiscyear"],
+            "siret": line["tax_numb"],
+            "data_source": "NATION",
+        }
+
+
+def _convert_date_format(date_str):
+    if pd.isna(date_str):  # Gérer les NaN (y compris sous forme de float)
+        return None
+    try:
+        date_obj = datetime.strptime(str(date_str), "%Y-%m-%d")
+        return date_obj.strftime("%d.%m.%Y")
+    except ValueError:
+        return None
 
 
 class FinancialCpSchema(ma.SQLAlchemyAutoSchema):

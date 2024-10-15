@@ -66,6 +66,8 @@ class BudgetCtrl(Resource):
         user = ConnectedUser.from_current_token_identity()
         params = parser_get.parse_args()
         params["source_region"] = user.current_region
+        data_source_mapping = current_app.config.get("DATA_SOURCE_MAPPING", {})
+        params["data_source"] = data_source_mapping.get(user.current_region)
 
         page_result = search_lignes_budgetaires(**params)
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result.items)

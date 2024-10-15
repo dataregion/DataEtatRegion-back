@@ -36,6 +36,9 @@ class FinancialData(Audit):
         if key == "siret" and value is not None:
             value = self._fix_length_siret(value)
 
+        if key == "programme" and isinstance(value, str) and value.startswith("0"):
+            value = value[1:]
+
         super().__setattr__(key, value)
 
     def update_attribute(self, data: dict):

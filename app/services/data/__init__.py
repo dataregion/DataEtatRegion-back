@@ -224,3 +224,8 @@ class BuilderStatementFinancialLine:
             return [f"N{source_region}{code}" for code in list_code_geo]
         else:
             return []
+
+    def data_source_is(self, data_source: str | None = None):
+        if data_source is not None:
+            self._stmt = self._stmt.where(FinancialLines.data_source == data_source)
+        return self

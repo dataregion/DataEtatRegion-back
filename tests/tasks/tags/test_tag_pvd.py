@@ -82,6 +82,7 @@ def insert_financial_ae_for_tag_pvd(database, session):
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "data_source": "REGION",
         }
     )
     session.add(commune_pvd)
@@ -114,6 +115,7 @@ def insert_financial_ae_for_other_tag(database, session):
             "groupe_marchandise": "groupe",
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
+            "data_source": "REGION",
         }
     )
     add_references(ae, session, region="53")

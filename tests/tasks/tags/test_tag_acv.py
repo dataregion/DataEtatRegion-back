@@ -116,18 +116,23 @@ def get_or_create(session, model, **kwargs):
 
 
 def add_references(ae, session, region=None):
-    if hasattr(ae, "fournisseur_titulaire"):
-        fournisseur_tit = ae.fournisseur_titulaire
-    else:
-        fournisseur_tit = ae.fournisseur_paye
     # Using the helper function to get or create related objects
-    get_or_create(session, CodeProgramme, code=ae.programme)
-    get_or_create(session, CentreCouts, code=ae.centre_couts)
-    get_or_create(session, DomaineFonctionnel, code=ae.domaine_fonctionnel)
-    get_or_create(session, FournisseurTitulaire, code=fournisseur_tit)
-    get_or_create(session, GroupeMarchandise, code=ae.groupe_marchandise)
-    get_or_create(session, LocalisationInterministerielle, code=ae.localisation_interministerielle)
-    get_or_create(session, ReferentielProgrammation, code=ae.referentiel_programmation)
+    if hasattr(ae, "programme") and ae.programme:
+        get_or_create(session, CodeProgramme, code=ae.programme)
+    if hasattr(ae, "centre_couts") and ae.centre_couts:
+        get_or_create(session, CentreCouts, code=ae.centre_couts)
+    if hasattr(ae, "domaine_fonctionnel") and ae.domaine_fonctionnel:
+        get_or_create(session, DomaineFonctionnel, code=ae.domaine_fonctionnel)
+    if hasattr(ae, "fournisseur_titulaire") and ae.fournisseur_titulaire:
+        get_or_create(session, FournisseurTitulaire, code=ae.fournisseur_titulaire)
+    if hasattr(ae, "fournisseur_paye") and ae.fournisseur_paye:
+        get_or_create(session, FournisseurTitulaire, code=ae.fournisseur_paye)
+    if hasattr(ae, "groupe_marchandise") and ae.groupe_marchandise:
+        get_or_create(session, GroupeMarchandise, code=ae.groupe_marchandise)
+    if hasattr(ae, "localisation_interministerielle") and ae.localisation_interministerielle:
+        get_or_create(session, LocalisationInterministerielle, code=ae.localisation_interministerielle)
+    if hasattr(ae, "referentiel_programmation") and ae.referentiel_programmation:
+        get_or_create(session, ReferentielProgrammation, code=ae.referentiel_programmation)
     if hasattr(ae, "siret") and ae.siret and ae.siret != "#":
         get_or_create(session, Siret, code=ae.siret)
     if region:
@@ -155,6 +160,7 @@ def insert_financial_ae_for_tag_acv(database, session):
                 groupe_marchandise="groupe",
                 date_modification_ej=datetime.datetime.now(),
                 compte_budgetaire="co",
+                data_source="REGION",
             )
             session.add(ae)
 
@@ -183,6 +189,7 @@ def insert_financial_ae_for_other_tag(database, session):
                 groupe_marchandise="groupe1",
                 date_modification_ej=datetime.datetime.now(),
                 compte_budgetaire="co",
+                data_source="REGION",
             )
             session.add(ae)
 

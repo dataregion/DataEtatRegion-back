@@ -26,7 +26,7 @@ logger.info(
 )
 if not path_to_watch:
     logger.error("La variable PATH_TO_WATCH n'est pas dans la config.")
-    exit(1)  # Sortir du script si la variable PATH_TO_WATCH est absente
+    exit(1)
 
 # Créer le répertoire A_IMPORTER s'il n'existe pas
 if not os.path.exists(path_a_importer):
@@ -39,13 +39,14 @@ class FileCreatedHandler(FileSystemEventHandler):
     def on_created(self, event):
         if not event.is_directory:
             file_path = event.src_path
+            file_name = os.path.basename(file_path)  # Obtenir uniquement le nom du fichier
             logger.info(f"Fichier créé: {file_path}")
 
-            # Identifier si c'est un fichier CSV ou MD5
-            if file_path.endswith(".csv"):
+            # Traiter uniquement les fichiers CSV et MD5
+            if file_name.endswith(".csv") and (file_name.startswith("dp_") or file_name.startswith("ej_")):
                 logger.info(f"Fichier CSV détecté: {file_path}")
                 self.handle_csv_file(file_path)
-            elif file_path.endswith(".md5"):
+            elif file_name.endswith(".md5"):
                 logger.info(f"Fichier MD5 détecté: {file_path}")
                 self.handle_md5_file(file_path)
             else:
@@ -54,12 +55,12 @@ class FileCreatedHandler(FileSystemEventHandler):
     def handle_csv_file(self, csv_path):
         """Gérer la détection d'un fichier CSV et attendre qu'il soit complètement écrit."""
         self.wait_for_file_to_finish_writing(csv_path)
-        # Une fois le CSV terminé, vérifier la présence du MD5
+        # Vérifier la présence du fichier MD5 correspondant
         md5_path = f"{csv_path}.md5"
         if os.path.exists(md5_path):
             logger.info(f"Le fichier MD5 correspondant est présent: {md5_path}")
             self.wait_for_file_to_finish_writing(md5_path)
-            # Si les deux fichiers sont écrits, vérifier l'intégrité et déclencher l'import
+            # Si les deux fichiers sont présents, vérifier l'intégrité et déclencher l'import
             self.verify_and_import(csv_path, md5_path)
         else:
             logger.info(f"Le fichier MD5 pour {csv_path} n'est pas encore disponible. En attente.")
@@ -69,7 +70,8 @@ class FileCreatedHandler(FileSystemEventHandler):
         self.wait_for_file_to_finish_writing(md5_path)
         # Une fois le MD5 terminé, vérifier la présence du CSV
         csv_path = md5_path[:-4]  # Retirer le .md5 pour obtenir le chemin du fichier CSV correspondant
-        if os.path.exists(csv_path):
+        file_name = os.path.basename(csv_path)  # Obtenir le nom du fichier CSV
+        if os.path.exists(csv_path) and (file_name.startswith("dp_") or file_name.startswith("ej_")):
             logger.info(f"Le fichier CSV correspondant est présent: {csv_path}")
             self.wait_for_file_to_finish_writing(csv_path)
             # Si les deux fichiers sont écrits, vérifier l'intégrité et déclencher l'import
@@ -101,8 +103,8 @@ class FileCreatedHandler(FileSystemEventHandler):
                 # Si le fichier continue de croître au-delà du délai maximal
                 if time_spent_growing >= max_growth_time:
                     error_message = f"Délai maximal d'écriture dépassé pour le fichier {file_path}. max_growth_time : {max_growth_time}, current_size : {current_size}"
-                    self.delay_raise_watcher_exception(error_message)
-                    break  # Sortir de la boucle si l'exception est levée
+                    delay_raise_watcher_exception(error_message)
+                    break
 
                 # Si le fichier a cessé de croître
                 if stable_size_count >= timeout:
@@ -126,7 +128,21 @@ class FileCreatedHandler(FileSystemEventHandler):
         if calculated_md5 == expected_md5:
             logger.info(f"L'intégrité du fichier {csv_path} est confirmée. MD5 correspond.")
             new_csv_path = self.move_files_to_importer(csv_path, md5_path)
-            delay_import_fichier_nat(new_csv_path)
+
+            # Identifier les fichiers AE et CP à importer
+            file_name = os.path.basename(new_csv_path)
+            if file_name.startswith("ej_"):
+                ae_path = new_csv_path
+                cp_path = new_csv_path.replace("ej_", "dp_")
+            else:
+                cp_path = new_csv_path
+                ae_path = new_csv_path.replace("dp_", "ej_")
+
+            # Vérifier si les deux fichiers sont présents avant de lancer l'import
+            if os.path.exists(cp_path) and os.path.exists(ae_path):
+                delay_import_fichier_nat(ae_path, cp_path)
+            else:
+                logger.info("En attente du deuxième fichier pour lancer l'import.")
         else:
             error_message = f"L'intégrité du fichier {csv_path} a échoué. MD5 calculé : {calculated_md5}, MD5 attendu : {expected_md5}"
             delay_raise_watcher_exception(error_message)
@@ -159,13 +175,13 @@ class FileCreatedHandler(FileSystemEventHandler):
             # Déplacer le fichier CSV
             csv_filename = os.path.basename(csv_path)
             new_csv_path = os.path.join(path_a_importer, csv_filename)
-            shutil.copy(csv_path, new_csv_path)
+            shutil.move(csv_path, new_csv_path)
             logger.info(f"Fichier CSV déplacé vers {new_csv_path}")
 
             # Déplacer le fichier MD5
             md5_filename = os.path.basename(md5_path)
             new_md5_path = os.path.join(path_a_importer, md5_filename)
-            shutil.copy(md5_path, new_md5_path)
+            shutil.move(md5_path, new_md5_path)
             logger.info(f"Fichier MD5 déplacé vers {new_md5_path}")
             return new_csv_path
         except Exception as e:
@@ -178,8 +194,10 @@ class FileCreatedHandler(FileSystemEventHandler):
         for root, dirs, file_names in os.walk(path):
             for file in file_names:
                 file_path = os.path.join(root, file)
+                file_name = os.path.basename(file_path)
                 # Ajouter les fichiers à la liste avec leur date de modification
-                files.append((file_path, os.path.getmtime(file_path)))
+                if file_name.startswith("dp_") or file_name.startswith("ej_"):
+                    files.append((file_path, os.path.getmtime(file_path)))
 
         # Trier les fichiers par date de modification (du plus ancien au plus récent)
         files.sort(key=lambda x: x[1])

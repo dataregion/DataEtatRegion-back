@@ -5,6 +5,7 @@ Revises: 20231204_tags_auto
 Create Date: 2023-12-20 14:30:33.987308
 
 """
+
 from pathlib import Path
 from alembic import op
 import sqlalchemy as sa
@@ -117,6 +118,7 @@ def _drop_new_views():
 
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_m_montant_par_niveau_bop_annee_type")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_m_summary_annee_geo_type_bop")
+
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_budget_summary")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_flatten_summarized_ademe")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS public.vt_flatten_summarized_ae")
