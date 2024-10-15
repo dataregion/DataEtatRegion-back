@@ -47,3 +47,9 @@ api-entreprise >= 3.6.0
 prometheus-flask-exporter ~= 0.23
 
 watchdog ~= 5.0.2
+
+geoalchemy2 ~= 0.15.2
+
+geopandas ~= 1.0.1
+
+shapely~=2.0.6
