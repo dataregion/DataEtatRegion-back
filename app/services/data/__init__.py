@@ -228,6 +228,6 @@ class BuilderStatementFinancialLine:
     def data_source_is(self, data_source: str | None = None):
         if data_source is not None:
             self._stmt = self._stmt.where(
-                or_(FinancialLines.data_source == data_source, FinancialLines.data_source == None)
+                or_(FinancialLines.data_source == data_source, FinancialLines.data_source.is_(None))
             )
         return self
