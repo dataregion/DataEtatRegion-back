@@ -20,7 +20,8 @@ class Siret(Audit, db.Model):
     # FK
     code_commune = Column(String, db.ForeignKey("ref_commune.code"), nullable=True)
     categorie_juridique = Column(String, db.ForeignKey("ref_categorie_juridique.code"), nullable=True)
-    code_qpv = Column(String, db.ForeignKey("ref_qpv.code"), nullable=True)
+    code_qpv15 = Column(String, db.ForeignKey("ref_qpv.code"), nullable=True)
+    code_qpv24 = Column(String, db.ForeignKey("ref_qpv.code"), nullable=True)
 
     denomination = Column(String)
     adresse = Column(String)
@@ -28,7 +29,8 @@ class Siret(Audit, db.Model):
     naf = Column(JSONVariant, nullable=True)
 
     ref_commune: Mapped[Commune] = relationship("Commune", lazy="select")
-    ref_qpv = relationship("Qpv", lazy="joined")
+    ref_qpv15 = relationship("Qpv", foreign_keys=[code_qpv15], lazy="joined")
+    ref_qpv24 = relationship("Qpv", foreign_keys=[code_qpv24], lazy="joined")
     ref_categorie_juridique = relationship("CategorieJuridique", lazy="select", uselist=False)
     type_categorie_juridique = association_proxy("ref_categorie_juridique", "type")
 
