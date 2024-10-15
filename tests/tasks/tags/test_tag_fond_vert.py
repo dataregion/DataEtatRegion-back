@@ -41,6 +41,7 @@ def insert_financial_ae_for_tag_fond_vert(database, session):
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         }
     )
     add_references(ae, session, region="53")
@@ -69,6 +70,7 @@ def insert_financial_ae_for_other_tag(database, session):
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         }
     )
     add_references(ae, session, region="53")

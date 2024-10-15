@@ -51,6 +51,7 @@ def insert_financial_ae_for_tag_relance(database, session):
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         }
     )
     bad_ae = FinancialAe(
@@ -68,6 +69,7 @@ def insert_financial_ae_for_tag_relance(database, session):
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         }
     )
     session.add(programme_t_relance_1)

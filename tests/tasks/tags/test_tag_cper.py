@@ -53,6 +53,7 @@ def insert_two_financial_ae_for_tag_cper_2015_20(database, session):
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         }
     )
     ae_2019 = FinancialAe(
@@ -71,6 +72,7 @@ def insert_two_financial_ae_for_tag_cper_2015_20(database, session):
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         }
     )
 
@@ -90,6 +92,7 @@ def insert_two_financial_ae_for_tag_cper_2015_20(database, session):
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         }
     )
 

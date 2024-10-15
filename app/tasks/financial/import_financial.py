@@ -83,7 +83,9 @@ def import_lines_financial_ae(
                 existing_ae = (
                     db.session.query(FinancialAe)
                     .filter_by(
-                        n_ej=line_data[FinancialAe.n_ej.key], n_poste_ej=int(line_data[FinancialAe.n_poste_ej.key])
+                        n_ej=line_data[FinancialAe.n_ej.key],
+                        n_poste_ej=int(line_data[FinancialAe.n_poste_ej.key]),
+                        data_source=line_data[FinancialAe.data_source.key],
                     )
                     .one_or_none()
                 )
@@ -171,6 +173,8 @@ def _insert_references(new_ae_or_cp: FinancialAe | FinancialCp):
         try:
             # Check and add references if they don't exist
             for _, (model, code) in reference_mapping.items():
+                if isinstance(model, CodeProgramme) and code.startswith("0"):
+                    code = code[1:]
                 if not db.session.query(model).filter_by(code=str(code)).one_or_none():
                     instances_to_save.append(model(code=str(code)))
 
@@ -218,7 +222,7 @@ def import_lines_financial_cp(self, cp_batch: list[dict], start_index: int, sour
             new_cp = FinancialCp(line, source_region=source_region, annee=annee)
             new_cp.file_import_taskid = tech_info.file_import_taskid
             new_cp.file_import_lineno = tech_info.lineno
-            new_cp.id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej)
+            new_cp.id_ae = _get_ae_for_cp(new_cp.n_ej, new_cp.n_poste_ej, new_cp.data_source)
 
             with SummaryOfTimePerfCounter.cm("import_lines_financial_cp_insert_references"):
                 _insert_references(new_cp)
@@ -335,7 +339,7 @@ def _send_subtask_financial_cp(cp_batch: list[dict], source_region: str, annee: 
     subtask("import_lines_financial_cp").delay(cp_batch, start_index, source_region, annee)
 
 
-def _get_ae_for_cp(n_ej: str, n_poste_ej: int) -> int | None:
+def _get_ae_for_cp(n_ej: str, n_poste_ej: int, data_source: str) -> int | None:
     """
     Récupère le bon AE pour le lié au CP
     :param n_ej : le numero d'ej
@@ -345,7 +349,9 @@ def _get_ae_for_cp(n_ej: str, n_poste_ej: int) -> int | None:
     if n_ej is None or n_poste_ej is None:
         return None
 
-    financial_ae = FinancialAe.query.filter_by(n_ej=str(n_ej), n_poste_ej=int(n_poste_ej)).one_or_none()
+    financial_ae = FinancialAe.query.filter_by(
+        n_ej=str(n_ej), n_poste_ej=int(n_poste_ej), data_source=data_source
+    ).one_or_none()
     return financial_ae.id if financial_ae is not None else None
 
 
@@ -357,14 +363,3 @@ def _delete_ademe():
     stmt = delete(Ademe)
     db.session.execute(stmt)
     db.session.commit()
-
-
-@celery.task(bind=True, name="import_fichier_nat")
-def import_fichier_nat(self, file_path):
-    logger.info(f"Fichier national - Import...{file_path}")
-
-
-@celery.task(bind=True, name="raise_watcher_exception")
-def raise_watcher_exception(self, error_message):
-    logger.error(error_message)
-    raise Exception(error_message)

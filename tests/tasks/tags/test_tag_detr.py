@@ -44,6 +44,7 @@ def insert_two_financial_ae_for_tag_detr(database, session):
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         }
     )
     ae_2 = FinancialAe(
@@ -61,6 +62,7 @@ def insert_two_financial_ae_for_tag_detr(database, session):
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         }
     )
     bad_ae = FinancialAe(
@@ -78,6 +80,7 @@ def insert_two_financial_ae_for_tag_detr(database, session):
             "date_modification_ej": datetime.datetime.now(),
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         }
     )
     session.add(ref_prog_detr)

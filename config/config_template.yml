@@ -102,3 +102,23 @@ FICHIER_NATIONAL_WATCHER:
   TEMPS_ATTENTE_FIN_ECRITURE : 2
   INTERVAL : 1
   MAX_GROWTH_TIME: 3600
+
+DATA_SOURCE_MAPPING:
+  "001": "NATION" #Guadeloupe
+  "002": "NATION" #Martinique
+  "003": "NATION" #Guyane
+  "004": "NATION" #La Réunion
+  "006": "NATION" #Mayotte
+  "011": "NATION" #Île-de-France
+  "024": "NATION" #Centre-Val de Loire
+  "027": "NATION" #Bourgogne-Franche-Comté
+  "028": "NATION" #Normandie
+  "032": "REGION" #Hauts-de-France
+  "044": "NATION" #Grand Est
+  "052": "NATION" #Pays de la Loire
+  "053": "REGION" #Bretagne
+  "075": "NATION" #Nouvelle-Aquitaine
+  "076": "NATION" #Occitanie
+  "084": "NATION" #Auvergne-Rhône-Alpes
+  "093": "NATION" #Provence-Alpes-Côte d'Azur
+  "094": "NATION" #Corse

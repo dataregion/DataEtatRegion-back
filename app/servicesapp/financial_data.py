@@ -186,6 +186,7 @@ def search_lignes_budgetaires(
     niveau_geo: str | None = None,
     code_geo: list | None = None,
     tags: list[str] | None = None,
+    data_source: str | None = None,
     page_number=1,
     limit=500,
 ):
@@ -207,6 +208,7 @@ def search_lignes_budgetaires(
         .source_region_in([source_region])
         .n_ej_in(n_ej)
         .source_is(source)
+        .data_source_is(data_source)
     )
 
     if niveau_geo is not None and code_geo is not None:

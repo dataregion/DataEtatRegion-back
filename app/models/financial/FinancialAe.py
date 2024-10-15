@@ -16,8 +16,10 @@ from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
 from app.models.refs.groupe_marchandise import GroupeMarchandise
 from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
 from app.models.refs.referentiel_programmation import ReferentielProgrammation
+from app.models.refs.region import get_code_region_by_code_comp
 from app.models.refs.siret import Siret
 from app.models.tags.Tags import TagsSchema, Tags
+
 
 COLUMN_MONTANT_NAME = "montant"
 
@@ -27,11 +29,12 @@ __all__ = ("FinancialAe", "FinancialAeSchema")
 @dataclass
 class FinancialAe(FinancialData, db.Model):
     __tablename__ = "financial_ae"
-    __table_args__ = (UniqueConstraint("n_ej", "n_poste_ej", name="unique_ej_poste_ej"),)
+    __table_args__ = (UniqueConstraint("n_ej", "n_poste_ej", "data_source", name="unique_ej_poste_ej_data_source"),)
 
     # UNIQUE
     n_ej: Column[str] = Column(String, nullable=False)
     n_poste_ej: Column[int] = Column(Integer, nullable=False)
+    data_source = Column(String, nullable=False)
 
     # liens vers les référentiels
     source_region: Column[str] = Column(String, ForeignKey("ref_region.code"), nullable=True)
@@ -43,11 +46,11 @@ class FinancialAe(FinancialData, db.Model):
         String, db.ForeignKey("ref_localisation_interministerielle.code"), nullable=False
     )
     groupe_marchandise: Column[str] = Column(String, db.ForeignKey("ref_groupe_marchandise.code"), nullable=False)
-    fournisseur_titulaire: Column[str] = Column(String, db.ForeignKey("ref_fournisseur_titulaire.code"), nullable=False)
+    fournisseur_titulaire: Column[str] = Column(String, db.ForeignKey("ref_fournisseur_titulaire.code"), nullable=True)
     siret: Column[str] = Column(String, db.ForeignKey("ref_siret.code"), nullable=True)
 
     # autre colonnes
-    date_modification_ej: Column[datetime] = Column(DateTime, nullable=False)  # date issue du fichier Chorus
+    date_modification_ej: Column[datetime] = Column(DateTime, nullable=True)  # date issue du fichier Chorus
     date_replication: Column[datetime] = Column(DateTime, nullable=True)  # Date de création de l'EJ
     compte_budgetaire: Column[str] = Column(String(255), nullable=False)
     contrat_etat_region: Column[str] = Column(String(255))
@@ -207,6 +210,86 @@ class FinancialAe(FinancialData, db.Model):
             "localisation_interministerielle",
             COLUMN_MONTANT_NAME,
         ]
+
+    @staticmethod
+    def get_columns_fichier_nat_ae():
+        return [
+            "eid_cible",
+            "bbp_po_id",
+            "bbp_poitem",
+            "Mission",
+            "Code_Programme",
+            "comp_code",
+            "matl_group",
+            "cfund_ctr",
+            "func_area",
+            "cmmt_item",
+            "cfmtrfonc",
+            "costcenter",
+            "cfmlocint",
+            "cfmaxmin1",
+            "cfund",
+            "cfm_cper",
+            "cfmanamin",
+            "cfmaxmin2",
+            "cfmrefprg",
+            "fm_amount1",
+            "doc_date",
+            "edp_delda",
+            "po_status",
+            "ectr_date",
+            "tax_numb",
+        ]
+
+    @staticmethod
+    def get_columns_type_fichier_nat_ae():
+        return {
+            "eid_cible": str,
+            "bbp_po_id": str,
+            "bbp_poitem": int,
+            "Mission": str,
+            "Code_Programme": str,
+            "comp_code": str,
+            "matl_group": str,
+            "cfund_ctr": str,
+            "func_area": str,
+            "cmmt_item": str,
+            "cfmtrfonc": str,
+            "costcenter": str,
+            "cfmlocint": str,
+            "cfmaxmin1": str,
+            "cfund": str,
+            "cfm_cper": str,
+            "cfmanamin": str,
+            "cfmaxmin2": str,
+            "cfmrefprg": str,
+            "fm_amount1": float,
+            "doc_date": str,
+            "edp_delda": str,
+            "po_status": str,
+            "ectr_date": str,
+            "tax_numb": str,
+        }
+
+    @staticmethod
+    def from_csv_fichier_nat(line: dict):
+        return {
+            "domaine_fonctionnel": line["func_area"],
+            "centre_couts": line["costcenter"],
+            "referentiel_programmation": line["cfmrefprg"],
+            "n_ej": line["bbp_po_id"],
+            "n_poste_ej": line["bbp_poitem"],
+            "siret": line["tax_numb"],
+            "compte_budgetaire": line["cmmt_item"],
+            "groupe_marchandise": line["matl_group"],
+            "contrat_etat_region": line["cfm_cper"],
+            "localisation_interministerielle": line["cfmlocint"],
+            "annee": int(line["doc_date"][:4]),
+            "montant": line["fm_amount1"],
+            "source_region": get_code_region_by_code_comp(line["comp_code"]),
+            "programme": line["Code_Programme"],
+            "data_source": "NATION",
+        }
 
 
 class ReferentielField(CommonField):

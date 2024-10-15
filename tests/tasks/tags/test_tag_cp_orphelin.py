@@ -39,6 +39,7 @@ def cp_orphelin(database, session):
             "groupe_marchandise": "groupe",
             "compte_budgetaire": "co",
             "siret": "851296632000171",
+            "data_source": "REGION",
         },
         annee=2021,
         source_region="53",
