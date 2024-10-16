@@ -34,17 +34,16 @@ cp config/oidc_template.yml config/oidc.yml
 *Initialisez un venv python*. Puis:
 
 ```bash
-pip install pip-tools
-pip-compile --extra dev pyproject.toml requirements.external.txt -o requirements.txt
-pip install -r requirements.txt
+pip install .[dev] -r requirements.external.txt
 pip install -r requirements.editable.txt --no-deps # Utile pour les phase de développement
 ```
 
 ### Mettre à jour les dépendances
 
-Les dépendances sont freeze dans requirements.external.txt, voici comment regénérer une version plus à jour:
+Les dépendances sont freeze dans [requirements.external.txt](./requirements.external.txt), voici comment regénérer une version plus à jour:
 
 ```bash
+# éditer requirements.external.in au besoin
 rm requirements.external.txt
 pip-compile requirements.external.in -o requirements.external.txt
 ```
