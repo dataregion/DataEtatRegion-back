@@ -12,10 +12,11 @@ EXPOSE 80
 
 RUN mkdir -p /appli/workdir
 
-COPY requirements.external.txt .
+COPY app/requirements.external.txt .
 RUN pip install -r requirements.external.txt
 
-COPY . /appli/app
+COPY . /appli/
+RUN rm /appli/app/config/**
 
 WORKDIR /appli/app
 
