@@ -22,7 +22,9 @@ def delete_ae_no_cp_annee_region(annee: int, source_region: str):
     stmt = (
         delete(FinancialAe)
         .where(~subquery)
-        .where(FinancialAe.annee == annee, FinancialAe.source_region == source_region)
+        .where(
+            FinancialAe.annee == annee, FinancialAe.source_region == source_region, FinancialAe.data_source == "REGION"
+        )
     )
     db.session.execute(stmt)
     db.session.commit()
@@ -36,6 +38,10 @@ def delete_cp_annee_region(annee: int, source_region: str):
     :return:
     """
     logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour l'année {annee} et la région {source_region}")
-    stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.source_region == source_region)
+    stmt = (
+        delete(FinancialCp)
+        .where(FinancialCp.annee == annee)
+        .where(FinancialCp.source_region == source_region, FinancialCp.data_source == "REGION")
+    )
     db.session.execute(stmt)
     db.session.commit()
