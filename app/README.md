@@ -8,17 +8,6 @@
     Gestion des API pour le projet Regate Num Data Etat<br/>
 </p>
 
-<div align="center">
- 
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-green.svg)](https://conventionalcommits.org)
-[![Python version](https://img.shields.io/badge/python-3.12.4-blue)](https://www.python.org/downloads/release/python-3121/)
-[![Flask version](https://img.shields.io/badge/Flask-2.1.3-blue)](https://flask.palletsprojects.com/en/2.1.x/)
-[![Postgresql version](https://img.shields.io/badge/Postgresql-informational)](https://www.postgresql.org/)
-[![Docker build](https://img.shields.io/badge/docker-automated-informational)](https://docs.docker.com/compose/)
-
-</div>
-
-
 # Description
 
 Ce projet contient une suite d'API REST développées avec Flask-RESTx et Python 3.12. 
@@ -46,9 +35,18 @@ cp config/oidc_template.yml config/oidc.yml
 
 ```bash
 pip install pip-tools
-# Pour mettre à jour les dépendances épinglées
-pip-compile --resolver=backtracking && pip-compile --resolver=backtracking dev-requirements.in
-pip install -r requirements.txt -r dev-requirements.txt
+pip-compile --extra dev pyproject.toml requirements.external.txt -o requirements.txt
+pip install -r requirements.txt
+pip install -r requirements.editable.txt --no-deps # Utile pour les phase de développement
+```
+
+### Mettre à jour les dépendances
+
+Les dépendances sont freeze dans requirements.external.txt, voici comment regénérer une version plus à jour:
+
+```bash
+rm requirements.external.txt
+pip-compile requirements.external.in -o requirements.external.txt
 ```
 
 ## Pre commit hooks

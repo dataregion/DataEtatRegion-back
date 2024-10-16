@@ -23,3 +23,10 @@
 /tests/.coverage
 
 .tool-versions
+
+.mypy_cache
+.pytest_cache
+.ruff_cache
+
+*.egg-info/
+app/requirements.txt
