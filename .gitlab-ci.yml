@@ -11,9 +11,10 @@ run_tests:
   image: ${PYTHON_IMAGE}
   before_script:
     - python --version
-    - pip install -r requirements.txt
-    - pip install -r dev-requirements.txt
+    - cd app/
+    - pip install .[dev] -r requirements.external.txt
   script:
+    - cd app/
     - coverage run -m pytest
     - coverage report
     - coverage xml
@@ -33,15 +34,16 @@ run_black:
     - /^bugfix.*$/
     - /^hotfix.*$/
   script:
+    - cd app/
     - black --check .
 
 run_ruff:
   stage: 🧪 test
   image: ${PYTHON_IMAGE}
   before_script:
+    - cd app/
     - python --version
-    - pip install -r requirements.txt
-    - pip install -r dev-requirements.txt
+    - pip install .[dev] -r requirements.external.txt
   script:
     - ruff check .
 
@@ -60,6 +62,7 @@ run_ruff:
     IMAGE: ""
     DOCKERFILE: ""
   script:
+    - cd app/
     - if [[ $VERSION_IMAGE == ""]]; then  echo "VERSION NOT SET"; VERSION_IMAGE=${CI_COMMIT_REF_SLUG}-snapshot; fi
     - echo ${VERSION_IMAGE}
     - echo $IMAGE
