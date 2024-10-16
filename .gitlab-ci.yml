@@ -14,7 +14,6 @@ run_tests:
     - cd app/
     - pip install .[dev] -r requirements.external.txt
   script:
-    - cd app/
     - coverage run -m pytest
     - coverage report
     - coverage xml
