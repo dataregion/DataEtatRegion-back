@@ -4,15 +4,12 @@
 .vscode
 /.idea
 **/__pycache__
-/config/config.yml
-/migrations/data/ref_*.csv
-/config/keycloak.json
-/config/oidc.yml
-/config/beat_config*
-!/config/beat_config_template.py
-/migrations/data/ref_*.csv
-/config/keycloak*
-!/config/keycloak_template.json
+app/config/config.yml
+app/migrations/data/ref_*.csv
+app/config/oidc.yml
+app/config/beat_config*
+!app/config/beat_config_template.py
+app/migrations.old/data/ref_*.csv
 
 /tests/database.db
 /tests/tasks/database.db
