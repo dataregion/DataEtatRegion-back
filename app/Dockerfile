@@ -5,21 +5,20 @@ RUN \
  apk add --no-cache postgresql-libs && \
  apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
  pip install psycopg[c,pool]  && \
+ pip install pip-tools && \
  apk --purge del .build-deps
 
 EXPOSE 80
 
-WORKDIR /appli
+RUN mkdir -p /appli/workdir
 
-RUN mkdir workdir
+COPY requirements.external.txt .
+RUN pip install -r requirements.external.txt
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+COPY . /appli/app
 
-COPY app/ ./app/
-COPY config/ ./config/
-COPY manage.py ./
-COPY migrations ./migrations
-RUN rm /appli/config/config_template.yml
+WORKDIR /appli/app
+
+RUN pip install . -r requirements.external.txt
 
 CMD ["waitress-serve","--port=80","--call", "app:create_app_api"]
