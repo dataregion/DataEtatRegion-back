@@ -48,4 +48,4 @@ geoalchemy2 ~= 0.15.2
 
 geopandas ~= 1.0.1
 
-shapely~=2.0.6
+pyunpack ~= 0.3

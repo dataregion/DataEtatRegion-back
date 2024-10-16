@@ -3,10 +3,9 @@ FROM python:3.12.4-alpine
 # Install postgres c dependencies
 RUN \
  apk add --no-cache postgresql-libs && \
- apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
+ apk add --no-cache --virtual .build-deps gcc gdal gdal-dev gdal-tools proj proj-dev proj-util geos geos-dev musl-dev postgresql-dev && \
  pip install psycopg[c,pool]  && \
- pip install pip-tools && \
- apk --purge del .build-deps
+ pip install pip-tools
 
 EXPOSE 80
 
@@ -27,5 +26,7 @@ RUN ln -s /appli/config/oidc.yml /appli/app/config/oidc.yml
 WORKDIR /appli/app
 
 RUN pip install . -r requirements.external.txt
+
+RUN apk --purge del .build-deps
 
 CMD ["waitress-serve","--port=80","--call", "app:create_app_api"]
