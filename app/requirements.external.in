@@ -53,3 +53,5 @@ geoalchemy2 ~= 0.15.2
 geopandas ~= 1.0.1
 
 pyunpack ~= 0.3
+
+chardet ~= 5.2.0
