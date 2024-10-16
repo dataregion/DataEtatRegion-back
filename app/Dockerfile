@@ -27,6 +27,4 @@ WORKDIR /appli/app
 
 RUN pip install . -r requirements.external.txt
 
-RUN apk --purge del .build-deps
-
 CMD ["waitress-serve","--port=80","--call", "app:create_app_api"]
