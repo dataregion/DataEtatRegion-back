@@ -17,6 +17,12 @@ RUN pip install -r requirements.external.txt
 
 COPY . /appli/
 RUN rm /appli/app/config/**
+# ## Ces deux liens symboliques sont pour que la nouvelle structure soit 
+# ## retro compatible avec les anciennes stack
+RUN ln -s /appli/config/config.yml /appli/app/config/config.yml
+RUN ln -s /appli/config/oidc.yml /appli/app/config/oidc.yml
+#
+
 
 WORKDIR /appli/app
 
