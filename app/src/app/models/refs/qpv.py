@@ -17,13 +17,13 @@ class Qpv(Audit, db.Model):
 
     annee_decoupage = db.Column(db.Integer, nullable=True, autoincrement=False)
 
-    geom = Column(Geometry('GEOMETRY'), nullable=True)
-    centroid = Column(Geometry('POINT'), nullable=True)
+    geom = Column(Geometry("GEOMETRY"), nullable=True)
+    centroid = Column(Geometry("POINT"), nullable=True)
 
 
 # Event listener to automatically calculate the centroid
-@listens_for(Qpv, 'before_insert')
-@listens_for(Qpv, 'before_update')
+@listens_for(Qpv, "before_insert")
+@listens_for(Qpv, "before_update")
 def calculate_centroid(mapper, connection, target):
     """Automatically calculate the centroid of the geom column."""
     if target.geom is not None:
@@ -32,7 +32,7 @@ def calculate_centroid(mapper, connection, target):
         # Calculate the centroid
         centroid = geom_shape.centroid
         # Store the centroid back as WKT
-        target.centroid = f'SRID=4326;{centroid.wkt}'
+        target.centroid = f"SRID=4326;{centroid.wkt}"
 
 
 class QpvSchema(ma.SQLAlchemyAutoSchema):
