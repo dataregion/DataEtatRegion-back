@@ -54,6 +54,7 @@ def upgrade_():
 
     logging.info("Refresh de la VM contenant les champs impliqués")
     op.execute("REFRESH MATERIALIZED VIEW public.flatten_financial_lines;")
+    op.execute("INSERT INTO public.ref_region (code, label) VALUES ('99', 'Etranger');")
 
     # ### end Alembic commands ###
 
@@ -103,6 +104,7 @@ def downgrade_():
 
     logging.info("Refresh de la VM contenant les champs impliqués")
     op.execute("REFRESH MATERIALIZED VIEW public.flatten_financial_lines;")
+    op.execute("DELETE FROM public.ref_region WHERE code = '99';")
 
     # ### end Alembic commands ###
 
