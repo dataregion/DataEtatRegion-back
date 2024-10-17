@@ -185,6 +185,7 @@ def search_lignes_budgetaires(
     source_region: str | None = None,
     niveau_geo: str | None = None,
     code_geo: list | None = None,
+    codes_qpv: list | None = None,
     tags: list[str] | None = None,
     data_source: str | None = None,
     page_number=1,
@@ -215,6 +216,9 @@ def search_lignes_budgetaires(
         query_lignes_budget.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
     elif bool(niveau_geo) ^ bool(code_geo):
         raise NiveauCodeGeoException("Les paramètres niveau_geo et code_geo doivent être fournis ensemble.")
+
+    if codes_qpv is not None:
+        query_lignes_budget.where_geo(TypeCodeGeo.QPV, codes_qpv, source_region)
 
     _includes_nones = False
     if types_beneficiaires is not None and "autres" in types_beneficiaires:

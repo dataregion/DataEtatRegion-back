@@ -32,6 +32,7 @@ parser_get.add_argument(
     "le code d'arrondissement (3 ou 4 chiffres)"
     "ou le crte (préfixé par 'crte-')",
 )
+parser_get.add_argument("codes_qpv", type=str, action="split", help="Les codes de QPV")
 parser_get.add_argument(
     "theme", type=str, action="split", help="Le libelle theme (si code_programme est renseigné, le theme est ignoré)."
 )
