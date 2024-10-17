@@ -1,3 +1,4 @@
+from app.servicesapp.authentication.connected_user import ConnectedUser
 import sqlalchemy
 from flask import current_app
 
@@ -35,7 +36,7 @@ pagination_with_model = api.model(
 
 @api.errorhandler(KeyError)
 def handle_type_not_exist(e):
-    return ErrorController("Type inconnue").to_json(), HTTPStatus.BAD_REQUEST
+    return ErrorController("Type inconnu").to_json(), HTTPStatus.BAD_REQUEST
 
 
 @api.route("/<type>")
@@ -49,12 +50,16 @@ class Audit(Resource):
     @api.response(204, "No Result")
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     def get(self, type: DataType):
+
+        user = ConnectedUser.from_current_token_identity()
+        clientId = user.azp
+
         args = parser_get.parse_args()
         enum_type = DataType[type]
 
         stmt = (
             db.select(AuditUpdateData)
-            .where((AuditUpdateData.data_type == enum_type.name))
+            .where((AuditUpdateData.data_type == enum_type.name) & (AuditUpdateData.application_clientid == clientId))
             .order_by(AuditUpdateData.date.desc())
         )
         page_result = db.paginate(stmt, per_page=args.limit, page=args.page_number, error_out=False)
@@ -79,8 +84,11 @@ class AuditLastImport(Resource):
     def get(self, type: DataType):
         enum_type = DataType[type]
 
+        user = ConnectedUser.from_current_token_identity()
+        clientId = user.azp
+
         stmt = db.select(sqlalchemy.sql.functions.max(AuditUpdateData.date)).where(
-            AuditUpdateData.data_type == enum_type.name
+            (AuditUpdateData.data_type == enum_type.name) & (AuditUpdateData.application_clientid == clientId)
         )
         result = db.session.execute(stmt).scalar_one()
         if result is None:
