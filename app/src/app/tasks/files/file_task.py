@@ -197,16 +197,6 @@ def _parse_generic(
     """
     Split un fichier en plusieurs fichiers et autant de tâches qu'il y a de fichier.
     Gère à la fois les fichiers régionaux et nationaux.
-    :param data_type: Type de donnée (AE ou CP)
-    :param fichier: Chemin du fichier à traiter
-    :param source_region: Région source (None pour les fichiers nationaux)
-    :param annee: Année de l'exercice (None pour les fichiers nationaux)
-    :param csv_options: Options de lecture des fichiers CSV
-    :param move_folder: Dossier de destination pour les fichiers copiés
-    :param ae_list: Dictionnaire des AE à insérer
-    :param cp_list: Dictionnaire des CP à insérer
-    :param is_national: Indique si le fichier est national ou régional
-    :return: Liste des AE et des CP
     """
     filename = os.path.splitext(os.path.basename(fichier))[0]
     max_lines = current_app.config.get("SPLIT_FILE_LINE", DEFAULT_MAX_ROW)
@@ -243,15 +233,6 @@ def _parse_generic(
 
 
 def _parse_ae(output_file: str, ae_list: dict, source_region: str | None, annee: int | None, is_national: bool):
-    """
-    Parse un fichier AE.
-    :param output_file: Chemin du fichier à traiter
-    :param ae_list: Dictionnaire des AE à insérer
-    :param source_region: Région source (None pour les fichiers nationaux)
-    :param annee: Année de l'exercice (None pour les fichiers nationaux)
-    :param is_national: Indique si le fichier est national ou régional
-    :return: Dictionnaire des AE mis à jour
-    """
     if is_national:
         return _parse_fichier_nat_ae(output_file, ae_list)
     else:
@@ -268,18 +249,6 @@ def _parse_cp(
     annee: int | None,
     is_national: bool,
 ):
-    """
-    Parse un fichier CP.
-    :param output_file: Chemin du fichier à traiter
-    :param chunk_index: Index du chunk
-    :param max_lines: Nombre de lignes par chunk
-    :param ae_list: Dictionnaire des AE à insérer
-    :param cp_list: Dictionnaire des CP à insérer
-    :param source_region: Région source (None pour les fichiers nationaux)
-    :param annee: Année de l'exercice (None pour les fichiers nationaux)
-    :param is_national: Indique si le fichier est national ou régional
-    :return: Dictionnaire des AE et des CP mis à jour
-    """
     if is_national:
         return _parse_fichier_nat_cp(output_file, chunk_index, max_lines, ae_list, cp_list)
     else:
