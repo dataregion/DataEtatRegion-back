@@ -17,7 +17,7 @@ import chardet
 
 # revision identifiers, used by Alembic.
 revision = '20241007_qpv_code_15_24'
-down_revision = '20241016_v1_prefapphost'
+down_revision = '20241007_update_nullable_true'
 branch_labels = None
 depends_on = None
 
