@@ -105,9 +105,11 @@ def read_csv_and_import_fichier_nat_ae_cp(self, fichierAe: str, fichierCp: str, 
         os.makedirs(move_folder)
 
     # Parsing des fichiers
-    ae_list, cp_list = _parse_fichier_nat(DataType.FINANCIAL_DATA_AE, fichierAe, csv_options, move_folder, {}, {})
-    ae_list, cp_list = _parse_fichier_nat(
-        DataType.FINANCIAL_DATA_CP, fichierCp, csv_options, move_folder, ae_list, cp_list
+    ae_list, cp_list = _parse_generic(
+        DataType.FINANCIAL_DATA_AE, fichierAe, None, None, csv_options, move_folder, {}, {}, is_national=True
+    )
+    ae_list, cp_list = _parse_generic(
+        DataType.FINANCIAL_DATA_CP, fichierCp, None, None, csv_options, move_folder, ae_list, cp_list, is_national=True
     )
 
     # Sauvegarde des fichiers complets
@@ -124,11 +126,19 @@ def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options:
         os.makedirs(move_folder)
 
     # Parsing des fichiers
-    ae_list, cp_list = _parse_file(
-        DataType.FINANCIAL_DATA_AE, fichierAe, source_region, annee, csv_options, move_folder, {}, {}
+    ae_list, cp_list = _parse_generic(
+        DataType.FINANCIAL_DATA_AE, fichierAe, source_region, annee, csv_options, move_folder, {}, {}, is_national=False
     )
-    ae_list, cp_list = _parse_file(
-        DataType.FINANCIAL_DATA_CP, fichierCp, source_region, annee, csv_options, move_folder, ae_list, cp_list
+    ae_list, cp_list = _parse_generic(
+        DataType.FINANCIAL_DATA_CP,
+        fichierCp,
+        source_region,
+        annee,
+        csv_options,
+        move_folder,
+        ae_list,
+        cp_list,
+        is_national=False,
     )
 
     # Sauvegarde des fichiers complets
@@ -173,19 +183,30 @@ def _process_batches(ae_list, cp_list, source_region=None, annee=None):
         _send_subtask_financial_cp(cp_batch, source_region, annee, index)
 
 
-def _parse_file(
+def _parse_generic(
     data_type: DataType,
     fichier: str,
-    source_region: str,
-    annee: int,
+    source_region: str | None,
+    annee: int | None,
     csv_options: str,
     move_folder: str,
     ae_list: dict,
     cp_list: dict,
+    is_national: bool = False,
 ) -> list[dict]:
     """
-    Split un fichier en plusieurs fichiers et autant de tâches qu'il y a de fichier
-    return ae_list, cp_list
+    Split un fichier en plusieurs fichiers et autant de tâches qu'il y a de fichier.
+    Gère à la fois les fichiers régionaux et nationaux.
+    :param data_type: Type de donnée (AE ou CP)
+    :param fichier: Chemin du fichier à traiter
+    :param source_region: Région source (None pour les fichiers nationaux)
+    :param annee: Année de l'exercice (None pour les fichiers nationaux)
+    :param csv_options: Options de lecture des fichiers CSV
+    :param move_folder: Dossier de destination pour les fichiers copiés
+    :param ae_list: Dictionnaire des AE à insérer
+    :param cp_list: Dictionnaire des CP à insérer
+    :param is_national: Indique si le fichier est national ou régional
+    :return: Liste des AE et des CP
     """
     filename = os.path.splitext(os.path.basename(fichier))[0]
     max_lines = current_app.config.get("SPLIT_FILE_LINE", DEFAULT_MAX_ROW)
@@ -201,10 +222,10 @@ def _parse_file(
 
             try:
                 if data_type == DataType.FINANCIAL_DATA_AE:
-                    ae_list = _parse_file_ae(output_file, source_region, annee, ae_list)
+                    ae_list = _parse_ae(output_file, ae_list, source_region, annee, is_national)
                 elif data_type == DataType.FINANCIAL_DATA_CP:
-                    ae_list, cp_list = _parse_file_cp(
-                        output_file, source_region, annee, chunk_index, max_lines, ae_list, cp_list
+                    ae_list, cp_list = _parse_cp(
+                        output_file, chunk_index, max_lines, ae_list, cp_list, source_region, annee, is_national
                     )
                 shutil.copy(output_file, move_folder)
             except Exception as e:
@@ -221,48 +242,48 @@ def _parse_file(
     return ae_list, cp_list
 
 
-def _parse_fichier_nat(
-    data_type: DataType,
-    fichier: str,
-    csv_options: str,
-    move_folder: str,
+def _parse_ae(output_file: str, ae_list: dict, source_region: str | None, annee: int | None, is_national: bool):
+    """
+    Parse un fichier AE.
+    :param output_file: Chemin du fichier à traiter
+    :param ae_list: Dictionnaire des AE à insérer
+    :param source_region: Région source (None pour les fichiers nationaux)
+    :param annee: Année de l'exercice (None pour les fichiers nationaux)
+    :param is_national: Indique si le fichier est national ou régional
+    :return: Dictionnaire des AE mis à jour
+    """
+    if is_national:
+        return _parse_fichier_nat_ae(output_file, ae_list)
+    else:
+        return _parse_file_ae(output_file, source_region, annee, ae_list)
+
+
+def _parse_cp(
+    output_file: str,
+    chunk_index: int,
+    max_lines: int,
     ae_list: dict,
     cp_list: dict,
-) -> list[dict]:
+    source_region: str | None,
+    annee: int | None,
+    is_national: bool,
+):
     """
-    Split un fichier en plusieurs fichiers et autant de tâches qu'il y a de fichier
-    return ae_list, cp_list
+    Parse un fichier CP.
+    :param output_file: Chemin du fichier à traiter
+    :param chunk_index: Index du chunk
+    :param max_lines: Nombre de lignes par chunk
+    :param ae_list: Dictionnaire des AE à insérer
+    :param cp_list: Dictionnaire des CP à insérer
+    :param source_region: Région source (None pour les fichiers nationaux)
+    :param annee: Année de l'exercice (None pour les fichiers nationaux)
+    :param is_national: Indique si le fichier est national ou régional
+    :return: Dictionnaire des AE et des CP mis à jour
     """
-    filename = os.path.splitext(os.path.basename(fichier))[0]
-    max_lines = current_app.config.get("SPLIT_FILE_LINE", DEFAULT_MAX_ROW)
-    logging.info(f"[IMPORT][SPLIT][{data_type}] Split du fichier en chunk de {max_lines} lignes")
-
-    try:
-        chunk_index = 1
-        chunks = pandas.read_csv(fichier, chunksize=max_lines, **json.loads(csv_options))
-        for df in chunks:
-            output_file = os.path.join(current_app.config["UPLOAD_FOLDER"], f"{filename}_{chunk_index}.csv")
-            df.to_csv(output_file, index=False)
-            logging.info(f"[IMPORT][SPLIT] Création du fichier {output_file} de {min(max_lines, len(df.index))} lignes")
-
-            try:
-                if data_type == DataType.FINANCIAL_DATA_AE:
-                    ae_list = _parse_fichier_nat_ae(output_file, ae_list)
-                elif data_type == DataType.FINANCIAL_DATA_CP:
-                    ae_list, cp_list = _parse_fichier_nat_cp(output_file, chunk_index, max_lines, ae_list, cp_list)
-                shutil.copy(output_file, move_folder)
-            except Exception as e:
-                logging.exception(
-                    f"[IMPORT][FINANCIAL][{data_type}] Error lors de l'import du fichier {output_file}: {e}"
-                )
-                raise e
-
-            chunk_index += 1
-    except Exception as e:
-        logging.exception(f"[IMPORT][FINANCIAL][{data_type}] Error lors de l'import du fichier {fichier}: {e}")
-        raise e
-
-    return ae_list, cp_list
+    if is_national:
+        return _parse_fichier_nat_cp(output_file, chunk_index, max_lines, ae_list, cp_list)
+    else:
+        return _parse_file_cp(output_file, source_region, annee, chunk_index, max_lines, ae_list, cp_list)
 
 
 def _parse_fichier_nat_ae(output_file: str, ae_list: dict) -> list[dict]:
