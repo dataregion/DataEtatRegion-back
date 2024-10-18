@@ -10,9 +10,10 @@ from alembic import op
 import sqlalchemy as sa
 import logging
 from pathlib import Path
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "20241007_ajout_data_source"
+revision = "20241018_ajout_data_source"
 down_revision = "20241016_v1_prefapphost"
 branch_labels = None
 depends_on = None
@@ -55,6 +56,14 @@ def upgrade_():
     logging.info("Refresh de la VM contenant les champs impliqués")
     op.execute("REFRESH MATERIALIZED VIEW public.flatten_financial_lines;")
     op.execute("INSERT INTO public.ref_region (code, label) VALUES ('99', 'Etranger');")
+    op.execute("INSERT INTO public.ref_region (code, label) VALUES ('00', 'Administration centrale');")
+
+    with op.batch_alter_table("financial_ae", schema=None) as batch_op:
+        batch_op.alter_column("fournisseur_titulaire", existing_type=sa.VARCHAR(), nullable=True)
+        batch_op.alter_column("date_modification_ej", existing_type=postgresql.TIMESTAMP(), nullable=True)
+
+    with op.batch_alter_table("financial_cp", schema=None) as batch_op:
+        batch_op.alter_column("groupe_marchandise", existing_type=sa.VARCHAR(), nullable=True)
 
     # ### end Alembic commands ###
 
@@ -105,6 +114,14 @@ def downgrade_():
     logging.info("Refresh de la VM contenant les champs impliqués")
     op.execute("REFRESH MATERIALIZED VIEW public.flatten_financial_lines;")
     op.execute("DELETE FROM public.ref_region WHERE code = '99';")
+    op.execute("DELETE FROM public.ref_region WHERE code = '00';")
+
+    with op.batch_alter_table("financial_cp", schema=None) as batch_op:
+        batch_op.alter_column("groupe_marchandise", existing_type=sa.VARCHAR(), nullable=False)
+
+    with op.batch_alter_table("financial_ae", schema=None) as batch_op:
+        batch_op.alter_column("date_modification_ej", existing_type=postgresql.TIMESTAMP(), nullable=False)
+        batch_op.alter_column("fournisseur_titulaire", existing_type=sa.VARCHAR(), nullable=False)
 
     # ### end Alembic commands ###
 
