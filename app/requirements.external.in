@@ -1,0 +1,49 @@
+flask ~= 3.0
+flask-pyoidc ~= 3.14
+flask-migrate ~= 4.0
+flask-cors ~= 5.0
+flask-sqlalchemy ~= 3.1
+flask-marshmallow ~= 1.2
+flask-caching ~= 2.3.0
+flask-restx ~= 1.3.0
+
+celery[gevent] ~= 5.4
+redis ~= 4.6 # XXX: redis 5 a un conflit
+pika ~= 1.3
+
+nocodb==0.1.0
+
+waitress ~= 3.0
+
+marshmallow-sqlalchemy ~= 1.1
+marshmallow-dataclass ~= 8.5
+marshmallow-jsonschema ~= 0.13
+
+sqlalchemy == 2.0.23 # XXX: regression sur la 2.0.25
+psycopg ~= 3.1
+psycopg-binary ~= 3.1
+sqlparse ~= 0.4
+
+pyyaml ~= 6.0
+pandas ~= 2.0
+
+more-itertools ~= 10.2
+requests ~= 2.31
+pyrate-limiter ~= 2.10
+wget ~= 3.2
+tenacity ~= 9.0
+
+flower~=2.0
+
+python-keycloak ~= 3.12
+uuid ~= 1.30
+
+openpyxl ~= 3.1.2
+xlrd ~= 2.0
+odfpy ~= 1.4.1
+
+api-entreprise >= 3.6.0
+
+prometheus-flask-exporter ~= 0.23
+
+watchdog ~= 5.0.2
