@@ -128,11 +128,10 @@ def _build_where_clause(cls, args: ParseResult, cond_opt: tuple):
                 if cond.action == "split":
                     conditions_clause.append(cond.field.in_(args.get(cond.field.name)))
                 else:
-                    if cond.type == str:
+                    if isinstance(cond.type, str):
                         conditions_clause.append(cond.field.ilike(f"%{args.get(cond.field.name)}%"))
-                    elif cond.type == int:
+                    elif isinstance(cond.type, int):
                         conditions_clause.append(cond.field == args.get(cond.field.name))
-
 
     if code_label_clause is not None and not conditions_clause:
         return code_label_clause
