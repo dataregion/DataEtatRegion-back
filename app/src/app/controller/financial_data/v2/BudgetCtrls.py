@@ -133,7 +133,7 @@ class GetHealthcheck(Resource):
         """
         Effectue un GET pour vérifier la disponibilité de l'API des lignes budgetaires
         """
-        result_q = search_lignes_budgetaires(limit=10, page_number=0)
+        result_q = search_lignes_budgetaires(limit=10, page_number=0, source_region='053')
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(result_q.items)
 
         assert len(result) == 10, "On devrait récupérer 10 lignes budgetaires"
