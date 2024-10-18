@@ -101,7 +101,10 @@ api_ref_qpv = build_ref_controller(
         path="/qpv",
         description="API pour lister les QPV en France",
     ),
-    cond_opt=(ParserArgument(Qpv.label_commune, str, "Recherche sur le label de la commune associée"),),
+    cond_opt=(
+        ParserArgument(Qpv.label_commune, str, "Recherche sur le label de la commune associée"),
+        ParserArgument(Qpv.annee_decoupage, int, "Recherche sur l'année de découpage des QPV"),
+    ),
 )
 
 
