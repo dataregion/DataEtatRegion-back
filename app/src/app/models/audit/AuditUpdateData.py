@@ -24,6 +24,9 @@ class AuditUpdateData(db.Model):
 
     date: Column[datetime] = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
+    application_clientid: Column[str] = Column(String, nullable=True)
+    """clientid associé à l'outil qui a lancé l'évenement d'import si import manuel"""
+
     @validates("data_type")
     def validate_data_type(self, _key, data_type):
         if isinstance(data_type, DataType):
