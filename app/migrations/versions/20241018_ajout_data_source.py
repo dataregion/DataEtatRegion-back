@@ -96,23 +96,24 @@ def downgrade_():
     with op.batch_alter_table("financial_ae", schema=None) as batch_op:
         batch_op.drop_column("data_source")
 
-    op.execute(_old_filecontent("flatten_ae.sql"))
-    op.execute(_old_filecontent("vt_flatten_summarized_ae.sql"))
-    op.execute(_old_filecontent("flatten_ademe.sql"))
-    op.execute(_old_filecontent("flatten_orphan_cp.sql"))
-    op.execute(_old_filecontent("flatten_financial_lines.sql"))
+    # ## Interminable.. on désactive
+    # op.execute(_old_filecontent("flatten_ae.sql"))
+    # op.execute(_old_filecontent("vt_flatten_summarized_ae.sql"))
+    # op.execute(_old_filecontent("flatten_ademe.sql"))
+    # op.execute(_old_filecontent("flatten_orphan_cp.sql"))
+    # op.execute(_old_filecontent("flatten_financial_lines.sql"))
 
-    op.execute(_old_filecontent("materialized_flatten_financial_lines.sql"))
-    op.execute(_old_filecontent("superset_lignes_financieres.sql"))
+    # op.execute(_old_filecontent("materialized_flatten_financial_lines.sql"))
+    # op.execute(_old_filecontent("superset_lignes_financieres.sql"))
 
-    op.execute(_old_filecontent("vt_flatten_summarized_ademe.sql"))
-    op.execute(_old_filecontent("vt_budget_summary.sql"))
-    op.execute(_old_filecontent("vt_m_summary_annee_geo_type_bop.sql"))
-    op.execute(_old_filecontent("vt_m_montant_par_niveau_bop_annee_type.sql"))
-    op.execute(_old_filecontent("montant_par_niveau_bop_annee_type.sql"))
+    # op.execute(_old_filecontent("vt_flatten_summarized_ademe.sql"))
+    # op.execute(_old_filecontent("vt_budget_summary.sql"))
+    # op.execute(_old_filecontent("vt_m_summary_annee_geo_type_bop.sql"))
+    # op.execute(_old_filecontent("vt_m_montant_par_niveau_bop_annee_type.sql"))
+    # op.execute(_old_filecontent("montant_par_niveau_bop_annee_type.sql"))
 
-    logging.info("Refresh de la VM contenant les champs impliqués")
-    op.execute("REFRESH MATERIALIZED VIEW public.flatten_financial_lines;")
+    # logging.info("Refresh de la VM contenant les champs impliqués")
+    # op.execute("REFRESH MATERIALIZED VIEW public.flatten_financial_lines;")
     op.execute("DELETE FROM public.ref_region WHERE code = '99';")
     op.execute("DELETE FROM public.ref_region WHERE code = '00';")
 
