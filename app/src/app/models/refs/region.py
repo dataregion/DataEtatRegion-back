@@ -12,7 +12,7 @@ class Region(Audit, db.Model):
 
 
 comp_code_region = {
-    "ADCE": "11",  # Administration centrale
+    "ADCE": "00",  # Administration centrale
     "ALSA": "44",  # Alsace => Grand Est
     "AQUI": "75",  # Aquitaine => Nouvelle-Aquitaine
     "AUVE": "84",  # Auvergne => Auvergne-Rhône-Alpes
