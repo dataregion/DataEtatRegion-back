@@ -167,7 +167,7 @@ def update_link_siret_qpv(self, file: str, qpv_colname: str = "plg_qp15", page_n
             if getattr(siret, siret_qpv_colname) is not None:
                 db.session.execute(
                     db.update(Siret)
-                    .where(getattr(Siret, siret_qpv_colname) == getattr(siret, siret_qpv_colname))
+                    .where(Siret.code == siret.code)
                     .values({siret_qpv_colname: None})
                 )
                 logger.info(f"[TASK][SIRET] Le siret {getattr(siret, siret_qpv_colname)} n'est plus dans un QPV")
@@ -177,7 +177,7 @@ def update_link_siret_qpv(self, file: str, qpv_colname: str = "plg_qp15", page_n
             logger.info(f"[TASK][SIRET] Qpv {code_qpv} trouvé pour le siret {getattr(siret, siret_qpv_colname)}")
             db.session.execute(
                 db.update(Siret)
-                .where(getattr(Siret, siret_qpv_colname) == getattr(siret, siret_qpv_colname))
+                .where(Siret.code == siret.code)
                 .values({siret_qpv_colname: code_qpv})
             )
     db.session.commit()
