@@ -4,6 +4,7 @@ import tempfile
 import zipfile
 
 import pandas
+import numpy as np
 import requests
 from celery import subtask
 from flask import current_app
@@ -129,13 +130,13 @@ def update_link_siret_qpv_from_website(self, url: str, qpv_colname: str = "plg_q
                     # with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".csv") as temp_file:
                     # Écrivez le DataFrame dans le fichier CSV temporaire
                     df_final.to_csv(save_path, index=False)
-                    subtask("update_link_siret_qpv").delay(save_path)
+                    subtask("update_link_siret_qpv").delay(save_path, qpv_colname=qpv_colname)
             break
         # # Initialiser une liste pour stocker les morceaux filtrés
 
 
 @celery.task(name="update_link_siret_qpv", bind=True)
-def update_link_siret_qpv(self, file: str, page_number: int = 1, qpv_colname: str = "plg_qp15"):
+def update_link_siret_qpv(self, file: str, qpv_colname: str = "plg_qp15", page_number: int = 1):
     """
     Mise à jours de liens Siret QPV
     Tache récursive, qui tant qu'il y a une page suivante, lance une nouvelle tache update_link_siret_qpv
@@ -147,6 +148,8 @@ def update_link_siret_qpv(self, file: str, page_number: int = 1, qpv_colname: st
     """
     logger.info(f"[TASK][SIRET]Update lien QPV siret de la page {page_number}")
     all_siret_qpv = pandas.read_csv(file, header=0, usecols=["siret", qpv_colname], sep=",", dtype={"siret": str})
+
+    all_siret_qpv = all_siret_qpv.replace({np.nan: None})
 
     stmt = db.select(Siret).order_by(Siret.id)
     page_result = db.paginate(stmt, per_page=1000, error_out=False, page=page_number)
@@ -181,6 +184,6 @@ def update_link_siret_qpv(self, file: str, page_number: int = 1, qpv_colname: st
 
     if page_number <= total_page:
         logger.info(f"[TASK][SIRET] Il reste {total_page - page_number}  pages. Lancement de la tâche suivante")
-        subtask("update_link_siret_qpv").delay(file, page_number + 1)
+        subtask("update_link_siret_qpv").delay(file, qpv_colname=qpv_colname, page_number=(page_number + 1))
     else:
         logger.info("[TASK][SIRET] Fin de la mise à jours des liens Siret Qpv.")
