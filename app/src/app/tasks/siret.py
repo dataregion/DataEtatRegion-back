@@ -165,21 +165,13 @@ def update_link_siret_qpv(self, file: str, qpv_colname: str = "plg_qp15", page_n
         # Vérifiez si des lignes correspondent
         if len(search_qpv) == 0:
             if getattr(siret, siret_qpv_colname) is not None:
-                db.session.execute(
-                    db.update(Siret)
-                    .where(Siret.code == siret.code)
-                    .values({siret_qpv_colname: None})
-                )
+                db.session.execute(db.update(Siret).where(Siret.code == siret.code).values({siret_qpv_colname: None}))
                 logger.info(f"[TASK][SIRET] Le siret {getattr(siret, siret_qpv_colname)} n'est plus dans un QPV")
             logger.debug(f"[TASK][SIRET] Pas de Qpv pour le siret {getattr(siret, siret_qpv_colname)}")
         else:
             code_qpv = search_qpv[qpv_colname].values[0]
             logger.info(f"[TASK][SIRET] Qpv {code_qpv} trouvé pour le siret {getattr(siret, siret_qpv_colname)}")
-            db.session.execute(
-                db.update(Siret)
-                .where(Siret.code == siret.code)
-                .values({siret_qpv_colname: code_qpv})
-            )
+            db.session.execute(db.update(Siret).where(Siret.code == siret.code).values({siret_qpv_colname: code_qpv}))
     db.session.commit()
 
     if page_number <= total_page:
