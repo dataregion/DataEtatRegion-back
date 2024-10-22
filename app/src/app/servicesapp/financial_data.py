@@ -221,7 +221,9 @@ def search_lignes_budgetaires(
     if ref_qpv is not None and codes_qpv is not None:
         if ref_qpv != 2015 and ref_qpv != 2024:
             raise NiveauCodeGeoException("Mauvaise année de découpage QPV.")
-        query_lignes_budget.where_geo(TypeCodeGeo.QPV if ref_qpv == 2015 else TypeCodeGeo.QPV24, codes_qpv, source_region)
+        query_lignes_budget.where_geo(
+            TypeCodeGeo.QPV if ref_qpv == 2015 else TypeCodeGeo.QPV24, codes_qpv, source_region
+        )
     elif bool(ref_qpv) ^ bool(codes_qpv):
         raise NiveauCodeGeoException("Les paramètres ref_qpv et codes_qpv doivent être fournis ensemble.")
 

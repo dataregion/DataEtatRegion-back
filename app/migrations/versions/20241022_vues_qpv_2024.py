@@ -7,7 +7,6 @@ Create Date: 2024-10-07 11:18:31.381807
 """
 
 from alembic import op
-import sqlalchemy as sa
 import logging
 from pathlib import Path
 
