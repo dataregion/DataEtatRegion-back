@@ -13,3 +13,4 @@ class TypeCodeGeo(Enum):
     EPCI = "EPCI"
     DEPARTEMENT = "DEPARTEMENT"
     QPV = "QPV"
+    QPV24 = "QPV24"

@@ -51,6 +51,8 @@ class FlattenFinancialLines(db.Model):
     beneficiaire_categorieJuridique_type = Column(String)
     beneficiaire_qpv_code = Column(String)
     beneficiaire_qpv_label = Column(String)
+    beneficiaire_qpv24_code = Column(String)
+    beneficiaire_qpv24_label = Column(String)
     beneficiaire_commune_code = Column(String)
     beneficiaire_commune_label = Column(String)
     beneficiaire_commune_codeRegion = Column(String)
