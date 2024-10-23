@@ -33,7 +33,7 @@ parser_get.add_argument(
     "ou le crte (préfixé par 'crte-')",
 )
 parser_get.add_argument("ref_qpv", type=int, help="Année du référentiel du QPV")
-parser_get.add_argument("codes_qpv", type=str, action="split", help="Les codes de QPV")
+parser_get.add_argument("code_qpv", type=str, action="split", help="Les codes de QPV")
 parser_get.add_argument(
     "theme", type=str, action="split", help="Le libelle theme (si code_programme est renseigné, le theme est ignoré)."
 )
