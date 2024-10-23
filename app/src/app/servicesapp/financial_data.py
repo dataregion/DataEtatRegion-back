@@ -148,11 +148,17 @@ def _check_file(fichier: str, columns_name):
         raise InvalidFile(message="Le fichier contient des valeurs vides")
 
 
-def _sanitize_source_region(source_region):
+def _sanitize_source_region(source_region) -> str:
+    """Normalise la source region pour requête en bdd, supprime le leading '0' si besoin."""
     sanitized = source_region.lstrip("0") if source_region else None
     if sanitized is None:
         raise NoCurrentRegion()
     return sanitized
+
+
+def _get_request_regions(sanitized_region: str) -> list[str]:
+    # On autorise tout le monde a voir les données "Administration centrale" dont le code en base est "00"
+    return ["00", sanitized_region]
 
 
 def get_ligne_budgetaire(
@@ -164,9 +170,10 @@ def get_ligne_budgetaire(
     Recherche la ligne budgetaire selon son ID et sa source region
     """
     source_region = _sanitize_source_region(source_region)
+    _regions = _get_request_regions(source_region)
 
     query_ligne_budget = (
-        BuilderStatementFinancialLine().par_identifiant_technique(source, id).source_region_in([source_region])
+        BuilderStatementFinancialLine().par_identifiant_technique(source, id).source_region_in(_regions)
     )
     result = query_ligne_budget.do_single()
     return result
@@ -196,6 +203,7 @@ def search_lignes_budgetaires(
     """
 
     source_region = _sanitize_source_region(source_region)
+    _regions = _get_request_regions(source_region)
 
     query_lignes_budget = (
         BuilderStatementFinancialLine()
@@ -205,7 +213,7 @@ def search_lignes_budgetaires(
         .annee_in(annee)
         .domaine_fonctionnel_in(domaine_fonctionnel)
         .referentiel_programmation_in(referentiel_programmation)
-        .source_region_in([source_region])
+        .source_region_in(_regions)
         .n_ej_in(n_ej)
         .source_is(source)
         .data_source_is(data_source)
@@ -229,6 +237,7 @@ def search_lignes_budgetaires(
 
 def get_annees_budget(source_region: str | None = None):
     source_region = _sanitize_source_region(source_region)
+    _regions = _get_request_regions(source_region)
 
-    query_annees_budget = BuilderStatementFinancialLine().source_region_in([source_region])
+    query_annees_budget = BuilderStatementFinancialLine().source_region_in(_regions)
     return query_annees_budget.do_select_annees()
