@@ -3,7 +3,7 @@ import os
 import shutil
 import time
 import hashlib
-from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 from app import create_app_base
 from app.files_watchers.tasks_delayer import delay_import_fichier_nat, delay_raise_watcher_exception
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     event_handler.process_existing_files(path_to_watch)
 
     # Configuration du système de surveillance de fichiers
-    observer = Observer()
+    observer = PollingObserver()
     observer.schedule(event_handler, path=path_to_watch, recursive=False)
     observer.start()
     logger.info(f"Surveillance du dossier: {path_to_watch}")

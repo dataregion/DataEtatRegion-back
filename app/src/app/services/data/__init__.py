@@ -64,7 +64,8 @@ class BuilderStatementFinancialLine:
 
     def source_region_in(self, source_region: list[str] | None):
         """Filtre sur la source region. Notons que ce filtre est passant sur les lignes sans source regions"""
-        self._stmt_where_field_in(FinancialLines.source_region, source_region, can_be_null=True)
+        # On autorise tout le monde a voir les données "Administration centrale" dont le code en base est "00"
+        self._stmt_where_field_in(FinancialLines.source_region, [source_region, "00"], can_be_null=True)
         return self
 
     def type_categorie_juridique_du_beneficiaire_in(
