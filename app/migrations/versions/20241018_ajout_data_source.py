@@ -96,6 +96,7 @@ def downgrade_():
     with op.batch_alter_table("financial_ae", schema=None) as batch_op:
         batch_op.drop_column("data_source")
 
+    # Interminable..mais on ne peux pas désactive
     op.execute(_old_filecontent("flatten_ae.sql"))
     op.execute(_old_filecontent("vt_flatten_summarized_ae.sql"))
     op.execute(_old_filecontent("flatten_ademe.sql"))

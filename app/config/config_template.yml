@@ -122,3 +122,19 @@ DATA_SOURCE_MAPPING:
   "084": "NATION" #Auvergne-Rhône-Alpes
   "093": "NATION" #Provence-Alpes-Côte d'Azur
   "094": "NATION" #Corse
+
+ressources:
+  default:
+    "graphiques": "http://localhost:8088/"
+    "api_swagger": "http://localhost:5000/budget/api/v1"
+    "documentation": "https://github.com/dataregion/DataEtatRegion-docs/blob/main/budget/DataEtatBretagne_Notice-utilisation-Budget_032023.pdf"
+    "suivi_usage": ""
+    "grist": "https://grist.nocode.csm.ovh/o/docs/login?next=%2F"
+
+  "053":
+    "visuterritoire": "https://geobretagne.fr/mviewer/?config=/apps/visuterritoire/config.xml"
+    "graphiques": "http://localhost:8088/"
+    "api_swagger": "http://localhost:5000/budget/api/v1"
+    "documentation": "https://github.com/dataregion/DataEtatRegion-docs/blob/main/budget/DataEtatBretagne_Notice-utilisation-Budget_032023.pdf"
+    "suivi_usage": ""
+    "grist": "https://grist.nocode.csm.ovh/o/docs/login?next=%2F"
