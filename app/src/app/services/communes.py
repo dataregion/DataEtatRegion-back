@@ -1,6 +1,6 @@
 import logging
 from app import db
-from app.models.refs.commune import Commune
+from models.entities.refs.Commune import Commune
 from sqlalchemy import and_, Date, update
 
 logger = logging.getLogger(__name__)

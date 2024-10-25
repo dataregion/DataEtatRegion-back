@@ -1,11 +1,12 @@
 import datetime
+from models.entities.common.Tags import Tags
 import pytest
 
 from tests.tasks.tags import faked_tag_json
 
 from app import db
-from app.models.financial.FinancialAe import FinancialAe
-from app.models.tags.Tags import Tags, TagAssociation
+from models.entities.financial.FinancialAe import FinancialAe
+from models.entities.common.Tags import TagAssociation
 from app.tasks.tags.manuels import put_tags_to_ae
 
 

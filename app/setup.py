@@ -1,7 +1,9 @@
 from pathlib import Path
 from setuptools import setup
 
-self_path: str = (Path(__file__).parent).as_uri()
+self_path: Path = Path(__file__).parent
+
+models_path: str = (self_path / ".." / "models").as_uri()
 
 
 def read_requirements(filename):
@@ -13,6 +15,6 @@ setup(
     install_requires=[
         read_requirements("requirements.external.in"),
         # Dépendances locales
-        # f"persistence @ {persistence_path}",
+        f"models @ {models_path}",
     ]
 )

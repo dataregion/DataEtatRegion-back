@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.models.refs.groupe_marchandise import GroupeMarchandise
+from models.entities.refs.GroupeMarchandise import GroupeMarchandise
 
 
 @pytest.fixture(scope="module")

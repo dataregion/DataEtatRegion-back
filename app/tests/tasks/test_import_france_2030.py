@@ -1,8 +1,8 @@
 from unittest.mock import patch, MagicMock, call, ANY
 
-from app.models.financial.France2030 import France2030
-from app.models.refs.nomenclature_france_2030 import NomenclatureFrance2030
-from app.models.refs.siret import Siret
+from models.entities.financial.France2030 import France2030
+from models.entities.refs.NomenclatureFrance2030 import NomenclatureFrance2030
+from models.entities.refs.Siret import Siret
 from app.tasks.financial.import_france_2030 import import_file_france_2030, import_line_france_2030
 from tests import TESTS_PATH, delete_references
 

@@ -8,7 +8,7 @@ from app.controller.Decorators import check_permission
 from app.controller.financial_data import check_param_annee_import, parser_import, check_files_import
 from app.controller.financial_data.schema_model import register_financial_cp_schemamodel
 from app.models.enums.AccountRole import AccountRole
-from app.models.financial.FinancialCp import FinancialCpSchema
+from models.schemas.financial import FinancialCpSchema
 from app.servicesapp import WerkzeugFileStorage
 from app.servicesapp.authentication import ConnectedUser
 from app.servicesapp.exceptions.authentication import InvalidTokenError, NoCurrentRegion

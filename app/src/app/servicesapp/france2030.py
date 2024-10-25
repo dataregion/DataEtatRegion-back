@@ -4,15 +4,15 @@ import pandas
 
 from sqlalchemy import delete
 from app.database import db
-from app.models.audit.AuditUpdateData import AuditUpdateData
-from app.models.enums.DataType import DataType
-from app.models.financial.France2030 import France2030
-from app.models.refs.commune import Commune
-from app.models.refs.nomenclature_france_2030 import NomenclatureFrance2030
+from models.entities.audit.AuditUpdateData import AuditUpdateData
+from models.value_objects.common import DataType
+from models.entities.financial.France2030 import France2030
+from models.entities.refs.Commune import Commune
+from models.entities.refs.NomenclatureFrance2030 import NomenclatureFrance2030
 
 from sqlalchemy.orm import contains_eager
 
-from app.models.refs.siret import Siret
+from models.entities.refs.Siret import Siret
 from app.services.file_service import check_file_and_save
 from app.services.helper import TypeCodeGeoToFrance2030CodeGeoResolver
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException

@@ -2,7 +2,7 @@ import json
 import pytest
 from unittest.mock import patch, call
 
-from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
+from models.entities.refs.DomaineFonctionnel import DomaineFonctionnel
 from app.services.import_refs import ReferentielNotFound, MissingCodeColumns
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_one_ref_default

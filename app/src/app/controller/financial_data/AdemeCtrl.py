@@ -9,7 +9,7 @@ from app.controller.financial_data.schema_model import register_ademe_schemamode
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
-from app.models.financial.Ademe import AdemeSchema
+from models.schemas.financial import AdemeSchema
 from app.servicesapp.authentication import ConnectedUser
 from app.servicesapp.financial_data import import_ademe, search_ademe, get_ademe
 

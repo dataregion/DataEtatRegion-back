@@ -3,14 +3,15 @@ from flask_pyoidc import OIDCAuthentication
 from app.controller.financial_data.schema_model import register_flatten_financial_lines_schemamodel
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
-from app.models.enums.DataType import DataType
-from app.models.financial.query import EnrichedFlattenFinancialLinesSchema
+from models.value_objects.common import DataType
 from app.servicesapp.authentication.connected_user import ConnectedUser
 from app.servicesapp.financial_data import get_annees_budget, get_ligne_budgetaire, search_lignes_budgetaires
 
 from flask_restx import Namespace, Resource, fields
 
 from http import HTTPStatus
+
+from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 
 api_ns = Namespace(name="Budget", path="/", description="Api d'accès aux données budgetaires.")
 auth: OIDCAuthentication = current_app.extensions["auth"]

@@ -7,9 +7,9 @@ from pathlib import Path
 from sqlalchemy import update, exc
 
 from app import db
-from app.models.demarches.demarche import Demarche
-from app.models.demarches.donnee import Donnee
-from app.models.demarches.dossier import Dossier
+from models.entities.demarches.Demarche import Demarche
+from models.entities.demarches.Donnee import Donnee
+from models.entities.demarches.Dossier import Dossier
 from app.services.demarches.dossiers import DossierService
 from app.services.demarches.valeurs import ValeurService
 from app.servicesapp.api_externes import ApisExternesService

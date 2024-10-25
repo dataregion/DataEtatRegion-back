@@ -12,7 +12,7 @@ run_tests:
   before_script:
     - python --version
     - cd app/
-    - pip install .[dev] -r requirements.external.txt
+    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
   script:
     - coverage run -m pytest
     - coverage report

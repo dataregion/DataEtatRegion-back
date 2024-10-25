@@ -8,9 +8,9 @@ from celery import subtask, current_task
 from flask import current_app
 from sqlalchemy import delete, select, asc
 from app import celeryapp, db
-from app.models.audit.AuditUpdateData import AuditUpdateData
-from app.models.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
-from app.models.enums.DataType import DataType
+from models.entities.audit.AuditUpdateData import AuditUpdateData
+from models.entities.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
+from models.value_objects.common import DataType
 from app.services.financial_data import delete_ae_no_cp_annee_region, delete_cp_annee_region
 from app.tasks.financial import LineImportTechInfo
 from app.tasks.financial.import_financial import (
@@ -18,8 +18,8 @@ from app.tasks.financial.import_financial import (
     _send_subtask_financial_cp,
     get_batch_size,
 )
-from app.models.financial.FinancialAe import FinancialAe
-from app.models.financial.FinancialCp import FinancialCp
+from models.entities.financial.FinancialAe import FinancialAe
+from models.entities.financial.FinancialCp import FinancialCp
 
 celery = celeryapp.celery
 DEFAULT_MAX_ROW = 10000  # 10K

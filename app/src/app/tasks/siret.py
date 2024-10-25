@@ -9,7 +9,7 @@ from celery import subtask
 from flask import current_app
 
 from app import celeryapp, db
-from app.models.refs.siret import Siret
+from models.entities.refs.Siret import Siret
 
 from app.services.siret import update_siret_from_api_entreprise
 from app.clients.entreprise import LimitHitError

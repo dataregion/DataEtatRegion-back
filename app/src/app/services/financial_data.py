@@ -4,8 +4,8 @@ from app import db
 
 from sqlalchemy import select, delete
 
-from app.models.financial.FinancialCp import FinancialCp
-from app.models.financial.FinancialAe import FinancialAe
+from models.entities.financial.FinancialCp import FinancialCp
+from models.entities.financial.FinancialAe import FinancialAe
 
 
 def delete_ae_no_cp_annee_region(annee: int, source_region: str):

@@ -5,20 +5,20 @@ from sqlalchemy.orm import contains_eager, selectinload
 
 from app import db
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
-from app.models.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
-from app.models.audit.AuditUpdateData import AuditUpdateData
-from app.models.enums.DataType import DataType
-from app.models.enums.TypeCodeGeo import TypeCodeGeo
-from app.models.financial.Ademe import Ademe
+from models.entities.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
+from models.entities.audit.AuditUpdateData import AuditUpdateData
+from models.value_objects.common import DataType
+from models.value_objects.common import TypeCodeGeo
+from models.entities.financial.Ademe import Ademe
 
-from app.models.financial.FinancialCp import FinancialCp
-from app.models.financial.FinancialAe import FinancialAe
-from app.models.refs.categorie_juridique import CategorieJuridique
-from app.models.refs.siret import Siret
-from app.models.tags.Tags import Tags
+from models.entities.financial.FinancialCp import FinancialCp
+from models.entities.financial.FinancialAe import FinancialAe
+from models.entities.refs.CategorieJuridique import CategorieJuridique
+from models.entities.refs.Siret import Siret
+from models.entities.common.Tags import Tags
 from app.services import BuilderStatementFinancial, FileStorageProtocol
 from app.services import BuilderStatementFinancialCp
-from app.models.tags.Tags import TagVO
+from models.value_objects.tags import TagVO
 from app.services.data import BuilderStatementFinancialLine
 from app.servicesapp.exceptions.authentication import NoCurrentRegion
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException

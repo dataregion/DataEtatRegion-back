@@ -1,7 +1,7 @@
 import logging
 
 from app import db
-from app.models.demarches.donnee import Donnee
+from models.entities.demarches.Donnee import Donnee
 from app.services.demarches.sections import SectionService
 from app.services.demarches.types import TypeService
 

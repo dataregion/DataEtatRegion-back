@@ -1,4 +1,5 @@
 from app.servicesapp.authentication.connected_user import ConnectedUser
+from models.schemas.audit import AuditUpdateDataSchema
 import sqlalchemy
 from flask import current_app
 
@@ -11,9 +12,9 @@ from app import db
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
 from app.controller.utils.ControllerUtils import get_pagination_parser
-from app.models.audit.AuditUpdateData import AuditUpdateData, AuditUpdateDataSchema
+from models.entities.audit.AuditUpdateData import AuditUpdateData
 from app.models.common.Pagination import Pagination
-from app.models.enums.DataType import DataType
+from models.value_objects.common import DataType
 from app.models.enums.AccountRole import AccountRole
 
 api = Namespace(name="audit", path="/audit", description="API de récupération des audits")

@@ -6,9 +6,9 @@ from datetime import datetime
 from sqlalchemy import delete, select
 
 from app import db
-from app.models.demarches.dossier import Dossier
-from app.models.demarches.reconciliation import Reconciliation
-from app.models.financial.FinancialAe import FinancialAe
+from models.entities.demarches.Dossier import Dossier
+from models.entities.demarches.Reconciliation import Reconciliation
+from models.entities.financial.FinancialAe import FinancialAe
 from app.services import BuilderStatementFinancial
 from app.services.demarches.demarches import DemarcheService
 from app.services.demarches.dossiers import DossierService

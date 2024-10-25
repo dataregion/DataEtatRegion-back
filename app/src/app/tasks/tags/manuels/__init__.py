@@ -5,8 +5,8 @@ import pandas as pd
 
 import logging
 from app import celeryapp
-from app.models.financial.FinancialAe import FinancialAeSchema
-from app.models.tags.Tags import TagVO
+from models.schemas.financial import FinancialAeSchema
+from models.value_objects.tags import TagVO
 from app.services.tags import ApplyManualTags, select_tags
 
 from sqlalchemy.exc import NoResultFound

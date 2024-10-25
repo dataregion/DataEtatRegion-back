@@ -2,18 +2,19 @@ import json
 import logging
 from typing import NamedTuple
 
+from models.value_objects.tags import TagVO
 from sqlalchemy import ColumnElement
 
 from app import celeryapp, db
-from app.models.enums.DataType import DataType
-from app.models.financial.FinancialAe import FinancialAe as Ae
-from app.models.financial.FinancialCp import FinancialCp as Cp
-from app.models.refs.commune import Commune
-from app.models.refs.siret import Siret
-from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
-from app.services.tags import select_tag, ApplyTagForAutomation, TagVO
-from app.models.refs.code_programme import CodeProgramme
-from app.models.refs.referentiel_programmation import ReferentielProgrammation
+from models.value_objects.common import DataType
+from models.entities.financial.FinancialAe import FinancialAe as Ae
+from models.entities.financial.FinancialCp import FinancialCp as Cp
+from models.entities.refs.Commune import Commune
+from models.entities.refs.Siret import Siret
+from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
+from app.services.tags import select_tag, ApplyTagForAutomation
+from models.entities.refs.CodeProgramme import CodeProgramme
+from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
 
 _celery = celeryapp.celery
 _logger = logging.getLogger()

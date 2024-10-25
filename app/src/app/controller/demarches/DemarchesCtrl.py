@@ -5,10 +5,10 @@ from flask_restx import Namespace, Resource, reqparse
 from flask_restx._http import HTTPStatus
 
 from app.controller.financial_data.schema_model import register_demarche_schemamodel
-from app.models.demarches.demarche import Demarche
-from app.models.demarches.donnee import Donnee
-from app.models.demarches.reconciliation import Reconciliation
-from app.models.demarches.valeur_donnee import ValeurDonnee
+from models.entities.demarches.Demarche import Demarche
+from models.entities.demarches.Donnee import Donnee
+from models.entities.demarches.Reconciliation import Reconciliation
+from models.entities.demarches.ValeurDonnee import ValeurDonnee
 from app.services.demarches.affichage import AffichageService
 from app.services.demarches.demarches import DemarcheService
 from app.services.demarches.donnees import DonneeService

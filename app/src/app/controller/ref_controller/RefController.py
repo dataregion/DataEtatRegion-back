@@ -1,9 +1,8 @@
-import sys
-
 from flask import current_app
 from flask_restx import Namespace, Resource, fields
 from flask_restx._http import HTTPStatus
 from flask_restx.reqparse import ParseResult
+from marshmallow import Schema
 from marshmallow_jsonschema import JSONSchema
 from sqlalchemy.exc import NoResultFound
 
@@ -17,13 +16,13 @@ from sqlalchemy import and_, or_
 auth = current_app.extensions["auth"]
 
 
-def build_ref_controller(cls, namespace: Namespace, cond_opt: tuple = None):
+def build_ref_controller(cls, schema_cls: type[Schema], namespace: Namespace, cond_opt: tuple = None):
     """
     Construit dynamiquement des endpoint pour un referentiel
     L'api contient un endpoint de recherche paginé, et une endpoint pour retourner un objet par son code
 
-    :param cls:   La Classe du modèle. Le schema sera automatiquement détecté si le nom est le même que
-    la classe, suffixé par Schema
+    :param cls:   La Classe du modèle.
+    :param schema_cls: La classe du schema
     :param namespace:  Le namespace du controller
     :param help_query:  Spécification de l'aide pour l'api de recherche
     :param cond_opt:    des Clause supplémentaire pour rechercher des objets. par défaut, on recherche sur le 'code' et le 'label'.
@@ -32,8 +31,7 @@ def build_ref_controller(cls, namespace: Namespace, cond_opt: tuple = None):
     """
     api = namespace
 
-    module_name = cls().__class__.__module__
-    schema = getattr(sys.modules[module_name], f"{cls.__name__}Schema")
+    schema = schema_cls
 
     parser_get = get_pagination_parser()
     parser_get.add_argument("query", type=str, required=False, help="Recherche sur le code ou le label")

@@ -2,10 +2,12 @@ import json
 import pytest
 from unittest.mock import patch, call
 
-from app.models.refs.centre_couts import CentreCouts
+from models.entities.refs.CentreCouts import CentreCouts
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_one_ref_default
+
 from tests import TESTS_PATH
+
 
 _data = TESTS_PATH / "data"
 

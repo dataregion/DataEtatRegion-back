@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=6.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "models"
+dynamic = ["version"]
+description = "Modèles communs pour l'application DRN"
+dependencies = [
+    "sqlalchemy == 2.0.23",
+    "pandas ~= 2.0",
+    "marshmallow-sqlalchemy ~= 1.1",
+    "marshmallow-dataclass ~= 8.5",
+    "marshmallow-jsonschema ~= 0.13"
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

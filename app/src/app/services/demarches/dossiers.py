@@ -3,9 +3,9 @@ import logging
 from sqlalchemy import exc
 
 from app import db
-from app.models.demarches.donnee import Donnee
-from app.models.demarches.dossier import Dossier
-from app.models.demarches.reconciliation import Reconciliation
+from models.entities.demarches.Donnee import Donnee
+from models.entities.demarches.Dossier import Dossier
+from models.entities.demarches.Reconciliation import Reconciliation
 from app.services.demarches.donnees import DonneeService
 
 

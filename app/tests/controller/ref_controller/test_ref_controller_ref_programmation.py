@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.models.refs.referentiel_programmation import ReferentielProgrammation
+from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
 
 
 @pytest.fixture(scope="function")

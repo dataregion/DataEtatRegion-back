@@ -1,10 +1,10 @@
 from celery import Celery
 from app import celeryapp, db
+from models.value_objects.audit import RefreshMaterializedViewsEvent
 from sqlalchemy import desc, text
 
-from app.models.audit.AuditRefreshMaterializedViewsEvents import (
+from models.entities.audit.AuditRefreshMaterializedViewsEvents import (
     AuditRefreshMaterializedViewsEvents,
-    RefreshMaterializedViewsEvent,
 )
 
 import time

@@ -2,12 +2,12 @@ from abc import ABCMeta, abstractmethod
 
 from sqlalchemy import Column
 
-from app.models.enums.TypeCodeGeo import TypeCodeGeo
-from app.models.financial.France2030 import France2030
-from app.models.refs.commune import Commune
-from app.models.refs.siret import Siret
+from models.value_objects.common import TypeCodeGeo
+from models.entities.financial.France2030 import France2030
+from models.entities.refs.Commune import Commune
+from models.entities.refs.Siret import Siret
 
-from app.models.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
+from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
 
 
 class TypeCodeGeoToSqlAlchemyColumnResolver(metaclass=ABCMeta):

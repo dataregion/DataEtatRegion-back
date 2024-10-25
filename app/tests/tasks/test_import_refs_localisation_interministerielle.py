@@ -3,8 +3,8 @@ from unittest.mock import patch, call
 
 import pytest
 
-from app.models.refs.commune import Commune
-from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
+from models.entities.refs.Commune import Commune
+from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_ref_localisation_interministerielle
 from tests import TESTS_PATH
