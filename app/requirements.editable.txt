@@ -1,3 +1,3 @@
 -e .
 # Projets dépendants
-# -e ../dep-project
+-e ../models

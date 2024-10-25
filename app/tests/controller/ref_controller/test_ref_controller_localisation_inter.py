@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from app.models.refs.commune import Commune
-from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
+from models.entities.refs.Commune import Commune
+from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
 
 
 @pytest.fixture(scope="module")

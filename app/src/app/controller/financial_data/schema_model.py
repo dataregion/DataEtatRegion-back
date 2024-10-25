@@ -1,11 +1,11 @@
 import logging
 from flask_restx import Api, Namespace, SchemaModel
 from marshmallow_jsonschema import JSONSchema
-from app.models.financial.Ademe import AdemeSchema
-from app.models.demarches.demarche import DemarcheSchema
-from app.models.financial.FinancialCp import FinancialCpSchema
-from app.models.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLinesSchema
-from app.models.tags.Tags import TagsSchema
+from models.schemas.financial import AdemeSchema
+from models.schemas.demarches import DemarcheSchema
+from models.schemas.financial import FinancialCpSchema
+from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
+from models.schemas.tags import TagsSchema
 
 logger = logging.getLogger(__name__)
 

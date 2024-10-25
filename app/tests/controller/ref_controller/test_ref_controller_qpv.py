@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.models.refs.qpv import Qpv
+from models.entities.refs.Qpv import Qpv
 
 
 @pytest.fixture(scope="function")

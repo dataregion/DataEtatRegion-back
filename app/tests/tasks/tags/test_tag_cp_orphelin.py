@@ -1,7 +1,8 @@
 import json
+from models.entities.common.Tags import Tags
 import pytest
-from app.models.financial.FinancialCp import FinancialCp
-from app.models.tags.Tags import Tags, TagAssociation
+from models.entities.financial.FinancialCp import FinancialCp
+from models.entities.common.Tags import TagAssociation
 from app.tasks.tags.apply_tags import apply_tags_cp_orphelin
 
 from tests import delete_references

@@ -5,8 +5,8 @@ from api_entreprise import ApiError
 from app import db
 from app.clients.entreprise import get_or_make_api_entreprise, DonneesEtablissement
 from app.clients.geo import get_info_commune, ApiGeoException
-from app.models.refs.commune import Commune
-from app.models.refs.siret import Siret
+from models.entities.refs.Commune import Commune
+from models.entities.refs.Siret import Siret
 
 logger = logging.getLogger(__name__)
 

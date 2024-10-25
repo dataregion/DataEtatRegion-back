@@ -1,5 +1,5 @@
 from app import db
-from app.models.demarches.type import Type
+from models.entities.demarches.Type import Type
 
 
 class TypeService:

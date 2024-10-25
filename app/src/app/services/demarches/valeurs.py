@@ -1,6 +1,7 @@
 from app import db
-from app.models.demarches.donnee import Donnee
-from app.models.demarches.valeur_donnee import ValeurDonnee, ValeurDonneeSchema
+from models.entities.demarches.Donnee import Donnee
+from models.schemas.demarches import ValeurDonneeSchema
+from models.entities.demarches.ValeurDonnee import ValeurDonnee
 
 
 class ValeurService:

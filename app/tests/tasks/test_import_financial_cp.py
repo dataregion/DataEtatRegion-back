@@ -4,10 +4,10 @@ from unittest.mock import patch
 import pytest
 
 from app import db
-from app.models.financial.FinancialAe import FinancialAe
-from app.models.financial.FinancialCp import FinancialCp
+from models.entities.financial.FinancialAe import FinancialAe
+from models.entities.financial.FinancialCp import FinancialCp
 from tests.tasks.tags.test_tag_acv import add_references
-from app.models.refs.siret import Siret
+from models.entities.refs.Siret import Siret
 from app.tasks.financial.import_financial import import_lines_financial_cp
 from tests import TESTS_PATH, delete_references
 

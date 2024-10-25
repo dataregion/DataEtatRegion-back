@@ -1,7 +1,8 @@
 from flask import current_app
 from flask_restx import Namespace, Resource, fields
 
-from app.models.tags.Tags import Tags, TagsSchema
+from models.schemas.tags import TagsSchema
+from models.entities.common.Tags import Tags
 
 api = Namespace(name="API Tags", path="/tags", description="API des tags")
 

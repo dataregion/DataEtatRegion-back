@@ -8,7 +8,7 @@ from celery import subtask, current_task
 from flask import current_app
 
 from app import celeryapp, db
-from app.models.financial.France2030 import France2030
+from models.entities.financial.France2030 import France2030
 from app.services.siret import check_siret
 from app.tasks import logger, limiter_queue, LineImportTechInfo
 from app.tasks.financial.errors import _handle_exception_import

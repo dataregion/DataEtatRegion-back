@@ -2,12 +2,13 @@ import logging
 import dataclasses
 from more_itertools import ichunked
 from app import db
-from app.models.financial import FinancialData
-from app.models.financial.FinancialAe import FinancialAe as Ae
-from app.models.financial.FinancialCp import FinancialCp as Cp
-from app.models.financial.Ademe import Ademe
-from app.models.tags.Tags import TagVO, TagAssociation, Tags
-from app.models.tags.Tags import Tags as DbTag
+from models.entities.common.Tags import TagAssociation, Tags
+from models.entities.financial.FinancialData import FinancialData
+from models.entities.financial.FinancialAe import FinancialAe as Ae
+from models.entities.financial.FinancialCp import FinancialCp as Cp
+from models.entities.financial.Ademe import Ademe
+from models.value_objects.tags import TagVO
+from models.entities.common.Tags import Tags as DbTag
 from sqlalchemy import Column, delete, and_, select, insert, join
 
 logger = logging.getLogger(__name__)

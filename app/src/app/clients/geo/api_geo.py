@@ -5,7 +5,7 @@ import requests
 
 from flask import current_app
 
-from app.models.refs.commune import Commune
+from models.entities.refs.Commune import Commune
 
 LOGGER = logging.getLogger()
 

@@ -1,3 +1,4 @@
+from pathlib import Path
 import random
 import pytest
 from tests.DataEtatPostgresContainer import DataEtatPostgresContainer
@@ -26,10 +27,12 @@ extra_config = {
     "IMPORT_BATCH_SIZE": 10,
 }
 
+_curr = Path(__file__).parent
+
 # Création de l'application Flask
 test_app = create_app_base(
-    config_filep="tests/config/config.yml",
-    oidc_config_filep="tests/config/oidc.yml",
+    config_filep=(_curr / "config" / "config.yml").as_posix(),
+    oidc_config_filep=(_curr / "config" / "oidc.yml").as_posix(),
     extra_config_settings=extra_config,
 )
 

@@ -1,8 +1,5 @@
-from app.models import *  # noqa: F403
-from app.models.enums import *  # noqa: F403
-from app.models.refs import *  # noqa: F403
-from app.models.audit import *  # noqa: F403
-from app.models.tags import *  # noqa: F403
-from app.models.financial import *  # noqa: F403
-from app.models.preference import *  # noqa: F403
-from app.models.demarches import *  # noqa: F403
+from models.entities import *  # type: ignore # noqa: F403
+from models.schemas import *  # type: ignore  # noqa: F403
+from models.value_objects import *  # type: ignore  # noqa: F403
+
+from models.value_objects.tags import TagVO  # noqa: F401

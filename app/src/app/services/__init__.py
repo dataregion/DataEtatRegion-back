@@ -10,19 +10,19 @@ from sqlalchemy import Select, or_, Column, desc
 from sqlalchemy.orm import selectinload, contains_eager, aliased
 
 from app.database import db
-from app.models.financial.FinancialAe import FinancialAe as Ae
-from app.models.financial.FinancialCp import FinancialCp as Cp
-from app.models.financial.MontantFinancialAe import MontantFinancialAe as MontantAe
-from ..models.enums.TypeCodeGeo import TypeCodeGeo
-from ..models.refs.categorie_juridique import CategorieJuridique
-from ..models.refs.code_programme import CodeProgramme
-from ..models.refs.commune import Commune
-from ..models.refs.domaine_fonctionnel import DomaineFonctionnel
-from ..models.refs.groupe_marchandise import GroupeMarchandise
-from ..models.refs.localisation_interministerielle import LocalisationInterministerielle
-from ..models.refs.referentiel_programmation import ReferentielProgrammation
-from ..models.refs.siret import Siret
-from ..models.refs.theme import Theme
+from models.entities.financial.FinancialAe import FinancialAe as Ae
+from models.entities.financial.FinancialCp import FinancialCp as Cp
+from models.entities.financial.MontantFinancialAe import MontantFinancialAe as MontantAe
+from models.value_objects.common import TypeCodeGeo
+from models.entities.refs.CategorieJuridique import CategorieJuridique
+from models.entities.refs.CodeProgramme import CodeProgramme
+from models.entities.refs.Commune import Commune
+from models.entities.refs.DomaineFonctionnel import DomaineFonctionnel
+from models.entities.refs.GroupeMarchandise import GroupeMarchandise
+from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
+from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
+from models.entities.refs.Siret import Siret
+from models.entities.refs.Theme import Theme
 
 __all__ = "BuilderStatementFinancial"
 

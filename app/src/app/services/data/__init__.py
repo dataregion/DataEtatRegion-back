@@ -2,13 +2,14 @@
 Services liés à la couche d'accès aux données
 """
 
+from models.entities.common.Tags import Tags
 from sqlalchemy import Column, ColumnExpressionArgument, Select, desc, select, or_, func, distinct
-from app.models.enums.DataType import DataType
-from app.models.enums.TypeCodeGeo import TypeCodeGeo
+from models.value_objects.common import DataType
+from models.value_objects.common import TypeCodeGeo
 from app.database import db
 
-from app.models.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
-from app.models.tags.Tags import TagVO, Tags
+from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
+from models.value_objects.tags import TagVO
 from app.services.helper import (
     TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver,
     TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver,

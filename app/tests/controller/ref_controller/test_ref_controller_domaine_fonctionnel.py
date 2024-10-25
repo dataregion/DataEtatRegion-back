@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
+from models.entities.refs.DomaineFonctionnel import DomaineFonctionnel
 
 
 @pytest.fixture(scope="module")
