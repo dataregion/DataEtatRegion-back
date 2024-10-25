@@ -7,7 +7,7 @@ name = "models"
 dynamic = ["version"]
 description = "Modèles communs pour l'application DRN"
 dependencies = [
-    "sqlalchemy == 2.0.23",
+    "sqlalchemy ~= 2.0.36",
     "pandas ~= 2.0",
     "marshmallow-sqlalchemy ~= 1.1",
     "marshmallow-dataclass ~= 8.5",
