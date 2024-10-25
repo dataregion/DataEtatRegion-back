@@ -44,8 +44,11 @@ Les dépendances sont freeze dans [requirements.external.txt](./requirements.ext
 
 ```bash
 # éditer requirements.external.in au besoin
+# L'idée est de freeze toutes les dépendances *externes* dont aurait besoin le projet.
 rm requirements.external.txt
-pip-compile requirements.external.in -o requirements.external.txt
+pip-compile requirements.external.in \
+  ../models/pyproject.toml \
+  -o requirements.external.txt
 ```
 
 ## Pre commit hooks
