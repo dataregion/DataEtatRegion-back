@@ -13,6 +13,7 @@ class MontantParNiveauBopAnneeType(_PersistenceBaseModelInstance()):
     #
 
     __tablename__ = "montant_par_niveau_bop_annee_type"
+    __table_args__ = { "info": {"skip_autogenerate": True } }
 
     montant_ae = Column(Integer, nullable=True, primary_key=True)
     montant_cp = Column(Integer, nullable=True, primary_key=True)
@@ -39,6 +40,7 @@ class France2030(_PersistenceBaseModelInstance()):
     #
 
     __tablename__ = "v_france_2030"
+    __table_args__ = { "info": {"skip_autogenerate": True } }
 
     date_dpm = Column(Date, nullable=True, primary_key=True)
     operateur = Column(String, nullable=True, primary_key=True)

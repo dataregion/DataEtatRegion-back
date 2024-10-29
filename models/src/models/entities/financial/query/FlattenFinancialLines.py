@@ -10,6 +10,8 @@ class FlattenFinancialLines(_PersistenceBaseModelInstance()):
     """
 
     __tablename__ = "flatten_financial_lines"
+    
+    __table_args__ = { "info": {"skip_autogenerate": True } }
 
     source = Column(String, nullable=False)
     """Source de la ligne (ademe, chorus etc...). C'est l'enum DataType qui est pris ici."""
