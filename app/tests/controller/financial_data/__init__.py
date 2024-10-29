@@ -20,6 +20,10 @@ def patching_roles(roles=None):
         def username(self):
             return "user@domain.fr"
 
+        @property
+        def azp(self):
+            return "bretagne.budget"
+
     with patch(
         "app.servicesapp.authentication.connected_user.ConnectedUser.from_current_token_identity",
         return_value=_Mocked(),
