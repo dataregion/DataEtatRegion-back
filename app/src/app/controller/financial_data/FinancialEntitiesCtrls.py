@@ -45,13 +45,14 @@ class LoadFinancialData(Resource):
         Les lignes sont insérées de façon asynchrone
         """
         user = ConnectedUser.from_current_token_identity()
+        client_id = user.azp
         source_region = user.current_region
 
         file_ae: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierAe"])
         file_cp: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierCp"])
         annee = int(request.form["annee"])
 
-        import_financial_data(file_ae, file_cp, source_region, annee, user.username)
+        import_financial_data(file_ae, file_cp, source_region, annee, user.username, client_id=client_id)
         return jsonify(
             {
                 "status": 200,
