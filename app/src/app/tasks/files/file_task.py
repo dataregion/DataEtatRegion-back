@@ -304,6 +304,7 @@ def _parse_file_ae(output_file: str, source_region: str, annee: int, ae_list: di
     data_chunk = get_data_chunk(output_file, columns_names, columns_types)
     for chunk in data_chunk:
         for i, line in chunk.iterrows():
+            line["data_source"] = "REGION"
             key = f"regional_{source_region}_{annee}_{line[FinancialAe.n_ej.key]}_{line[FinancialAe.n_poste_ej.key]}"
             ae = pandas.concat([line, series]).to_json()
             if key not in ae_list:
@@ -321,6 +322,7 @@ def _parse_file_cp(
     data_chunk = get_data_chunk(output_file, columns_names, columns_types)
     for chunk in data_chunk:
         for i, line in chunk.iterrows():
+            line["data_source"] = "REGION"
             key = f"regional_{source_region}_{annee}_{line[FinancialAe.n_ej.key]}_{line[FinancialAe.n_poste_ej.key]}"
             if key in ae_list.keys():
                 ae_list[key]["cp"] += [
