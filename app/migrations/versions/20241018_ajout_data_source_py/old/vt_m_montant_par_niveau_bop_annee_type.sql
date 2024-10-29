@@ -1,7 +1,3 @@
-CREATE INDEX idx_groupby_commune ON vt_budget_summary (annee, code_programme, categorie_juridique, code_commune, montant_ae, montant_cp);
-CREATE INDEX idx_groupby_departement ON vt_budget_summary (annee, code_programme, categorie_juridique, code_departement, montant_ae, montant_cp);
-CREATE INDEX idx_groupby_crte ON vt_budget_summary (annee, code_programme, categorie_juridique, code_crte, montant_ae, montant_cp);
-CREATE INDEX idx_groupby_epci ON vt_budget_summary (annee, code_programme, categorie_juridique, code_epci, montant_ae, montant_cp);
 
 CREATE INDEX idx_groupby_summary_commune ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_commune);
 CREATE INDEX idx_groupby_summary_departement ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_departement);
