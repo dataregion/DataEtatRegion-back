@@ -60,7 +60,7 @@ def delayed_inserts(self):
                 username=task.username,
                 filename=os.path.basename(task.fichier_ae),
                 data_type=DataType.FINANCIAL_DATA_AE,
-                application_clientid = app_clientid,
+                application_clientid=app_clientid,
             )
         )
         db.session.add(
@@ -68,7 +68,7 @@ def delayed_inserts(self):
                 username=task.username,
                 filename=os.path.basename(task.fichier_cp),
                 data_type=DataType.FINANCIAL_DATA_CP,
-                application_clientid = app_clientid,
+                application_clientid=app_clientid,
             )
         )
 
