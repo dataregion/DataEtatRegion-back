@@ -16,3 +16,6 @@ class AuditInsertFinancialTasks(db.Model):
     source_region: Column[str] = Column(String, nullable=False)
     annee: Column[int] = Column(Integer, nullable=False)
     username: Column[str] = Column(String, nullable=False)
+
+    application_clientid: Column[str] = Column(String, nullable=True)
+    """clientid associé à l'outil qui a lancé l'évenement d'import si import manuel"""

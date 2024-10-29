@@ -40,7 +40,9 @@ def delayed_inserts(self):
             .limit(1)
         )
         task = db.session.execute(stmt).scalar()
+        assert task is not None, "On doit avoir une tâche d'import obligatoirement."
 
+        app_clientid = task.application_clientid
         # Nettoyage de la BDD
         delete_cp_annee_region(task.annee, task.source_region)
         delete_ae_no_cp_annee_region(task.annee, task.source_region)
@@ -58,6 +60,7 @@ def delayed_inserts(self):
                 username=task.username,
                 filename=os.path.basename(task.fichier_ae),
                 data_type=DataType.FINANCIAL_DATA_AE,
+                application_clientid = app_clientid,
             )
         )
         db.session.add(
@@ -65,6 +68,7 @@ def delayed_inserts(self):
                 username=task.username,
                 filename=os.path.basename(task.fichier_cp),
                 data_type=DataType.FINANCIAL_DATA_CP,
+                application_clientid = app_clientid,
             )
         )
 
