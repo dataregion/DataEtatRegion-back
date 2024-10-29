@@ -26,7 +26,12 @@ from app.services.file_service import check_file_and_save
 
 
 def import_financial_data(
-    file_ae: FileStorageProtocol, file_cp: FileStorageProtocol, source_region: str, annee: int, username=""
+    file_ae: FileStorageProtocol,
+    file_cp: FileStorageProtocol,
+    source_region: str,
+    annee: int,
+    username="",
+    client_id=None,
 ):
     # Sanitize des paramètres
     _source_region = _sanitize_source_region(source_region)
@@ -35,7 +40,7 @@ def import_financial_data(
     save_path_cp = check_file_and_save(file_cp)
     _check_file(save_path_ae, FinancialAe.get_columns_files_ae())
     _check_file(save_path_cp, FinancialCp.get_columns_files_cp())
-
+    
     # Enregistrement de l'import à effectuer
     db.session.add(
         AuditInsertFinancialTasks(
@@ -44,6 +49,7 @@ def import_financial_data(
             source_region=_source_region,  # type: ignore
             annee=annee,  # type: ignore
             username=username,  # type: ignore
+            application_clientid=client_id, # type: ignore
         )
     )
     db.session.commit()
