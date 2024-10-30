@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '20241115_wip_migration'
-down_revision = '20241030_multi_token_ds'
+down_revision = '20241029_hf1_import_appid'
 branch_labels = None
 depends_on = None
 
