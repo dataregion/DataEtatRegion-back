@@ -64,7 +64,7 @@ run_ruff:
     - if [[ $VERSION_IMAGE == ""]]; then  echo "VERSION NOT SET"; VERSION_IMAGE=${CI_COMMIT_REF_SLUG}-snapshot; fi
     - echo ${VERSION_IMAGE}
     - echo $IMAGE
-    - docker build --no-cache -f ${DOCKERFILE} -t ${IMAGE} .
+    - docker build -f ${DOCKERFILE} -t ${IMAGE} .
     - echo ${REGISTRY_PASSWORD} | docker login ${REGISTRY} -u ${REGISTRY_USER} --password-stdin
     - docker tag ${IMAGE} ${IMAGE}:${VERSION_IMAGE}
     - echo "push ${IMAGE}:${VERSION_IMAGE}" && docker push ${IMAGE}:${VERSION_IMAGE}
