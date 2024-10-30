@@ -21,6 +21,7 @@ from .demarches.Reconciliation import Reconciliation
 from .demarches.Section import Section
 from .demarches.Type import Type
 from .demarches.ValeurDonnee import ValeurDonnee
+from .demarches.Token import Token
 
 from .financial.FinancialData import FinancialData
 from .financial.FinancialAe import FinancialAe

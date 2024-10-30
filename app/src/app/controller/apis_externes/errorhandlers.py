@@ -1,16 +1,19 @@
 import dataclasses
 
-from . import api
-from . import logger
+from app.clients.data_subventions import CallError as ApiSubventionCallError
+from app.clients.entreprise import ApiError as ApiEntrepriseError, LimitHitError
 from app.models.apis_externes.error import (
     Error as ApiError,
     CODE_UNKNOWN,
     CODE_CALL_FAILED,
     CODE_LIMIT_HIT,
+    CODE_INVALID_TOKEN,
+    CODE_DEMARCHE_NOT_FOUND,
+    CODE_UNAUTHORIZED_ON_DEMARCHE,
 )
-
-from app.clients.entreprise import ApiError as ApiEntrepriseError, LimitHitError
-from app.clients.data_subventions import CallError as ApiSubventionCallError
+from . import api
+from . import logger
+from ...clients.demarche_simplifie.errors import InvalidTokenError, UnauthorizedOnDemarche, DemarcheNotFound
 
 
 #
@@ -67,6 +70,29 @@ def handle_api_entreprise_error(error: ApiEntrepriseError):
     )
     dict = dataclasses.asdict(err)
     return dict
+
+
+@api.errorhandler(InvalidTokenError)
+@api.response(500, "Internal Server Error", model=ApiError.schema_model(api))
+def handle_invalid_token_error(error):
+    return dataclasses.asdict(ApiError(code=CODE_INVALID_TOKEN, message="Le token sélectionné est invalide"))
+
+
+@api.errorhandler(UnauthorizedOnDemarche)
+@api.response(500, "Internal Server Error", model=ApiError.schema_model(api))
+def handle_unauthorized_on_demarche(error):
+    return dataclasses.asdict(
+        ApiError(
+            code=CODE_UNAUTHORIZED_ON_DEMARCHE,
+            message="Vous n'avez pas les droits pour récupérer les données de cette démarche",
+        )
+    )
+
+
+@api.errorhandler(DemarcheNotFound)
+@api.response(500, "Internal Server Error", model=ApiError.schema_model(api))
+def handle_demarche_not_found(error):
+    return dataclasses.asdict(ApiError(code=CODE_DEMARCHE_NOT_FOUND, message="Numéro de démarche inconnu"))
 
 
 @api.errorhandler(Exception)
