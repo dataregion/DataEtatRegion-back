@@ -2,7 +2,7 @@
 
 Revision ID: 20241016_multi_token_ds
 Revises: 20241007_update_nullable_true
-Create Date: 2024-10-25 17:11:25.647797
+Create Date: 2024-10-30 17:11:25.647797
 
 """
 import logging
@@ -11,8 +11,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '20241025_multi_token_ds'
-down_revision = '20241018_z_v1_apponevtimport'
+revision = '20241030_multi_token_ds'
+down_revision = '20241029_hf1_import_appid'
 branch_labels = None
 depends_on = None
 

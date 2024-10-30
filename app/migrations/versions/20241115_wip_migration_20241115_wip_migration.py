@@ -5,14 +5,14 @@ Revises: 20241029_hf1_import_appid
 Create Date: 2024-10-29 15:27:38.235052
 
 """
-from alembic import op
-import sqlalchemy as sa
 import logging
 
+import sqlalchemy as sa
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '20241115_wip_migration'
-down_revision = '20241029_hf1_import_appid'
+down_revision = '20241030_multi_token_ds'
 branch_labels = None
 depends_on = None
 
