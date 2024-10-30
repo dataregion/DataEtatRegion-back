@@ -43,4 +43,4 @@ prometheus-flask-exporter ~= 0.23
 
 watchdog ~= 5.0.2
 
-cryptography == 43.0.1
+cryptography==43.0.3
