@@ -56,6 +56,9 @@ def upgrade_settings():
     with op.batch_alter_table('tokens', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_tokens_uuid_utilisateur'), ['uuid_utilisateur'], unique=False)
 
+    op.execute(
+        "INSERT INTO tags (type, description, enable_rules_auto, display_name) VALUES ('reconcilie-ds', 'La ligne est taguée Réconciliée DS si elle a été réconciliée via le compagnon DS.', false, 'Réconcilié DS')")
+
     # ### end Alembic commands ###
 
 
@@ -69,6 +72,10 @@ def downgrade_settings():
         batch_op.drop_index(batch_op.f('ix_tokens_uuid_utilisateur'))
 
     op.drop_table('tokens')
+
+    op.execute(
+        "DELETE from tag_association WHERE id in (SELECT a.id FROM tag_association AS a LEFT JOIN tags t on t.id = a.tag_id WHERE t.type = 'reconcilie-ds')")
+    op.execute("DELETE from tags where type = 'reconcilie-ds'")
 
     # ### end Alembic commands ###
 

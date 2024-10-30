@@ -6,13 +6,16 @@ from datetime import datetime
 from sqlalchemy import delete, select
 
 from app import db
-from models.entities.demarches.Dossier import Dossier
-from models.entities.demarches.Reconciliation import Reconciliation
-from models.entities.financial.FinancialAe import FinancialAe
 from app.services import BuilderStatementFinancial
 from app.services.demarches.demarches import DemarcheService
 from app.services.demarches.dossiers import DossierService
 from app.services.demarches.valeurs import ValeurService
+from app.services.tags import ApplyTagForAutomation, select_tag
+from models.entities.common.Tags import Tags
+from models.entities.demarches.Dossier import Dossier
+from models.entities.demarches.Reconciliation import Reconciliation
+from models.entities.financial.FinancialAe import FinancialAe
+from models.value_objects import TagVO
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +65,7 @@ class ReconciliationService:
         dossiers = DossierService.find_by_demarche(demarche_number, "accepte")
         date_reconciliation = datetime.now()
         reconciliations = []
+        tag_reconcilie_ds = select_tag(TagVO(type="reconcilie-ds", value=None))
         for dossier_row in dossiers:
             dossier = dossier_row[0]
             valeurs = ValeurService.get_dict_valeurs(dossier.number, champs_reconciliation)
@@ -80,6 +84,7 @@ class ReconciliationService:
                     ReconciliationService.save(reconciliation)
                     reconciliations.append(reconciliation)
                 db.session.commit()
+                ReconciliationService.add_tag_reconcilie_ds(tag_reconcilie_ds, lignes_chorus)
         return reconciliations
 
     @staticmethod
@@ -180,3 +185,10 @@ class ReconciliationService:
             and match_departement
             and match_region
         )
+
+    @staticmethod
+    def add_tag_reconcilie_ds(tag: Tags, lignes_chorus: list[FinancialAe]):
+        id_lignes = list(map(lambda ligne: ligne.id, lignes_chorus))
+        where_clause = FinancialAe.id.in_(id_lignes)
+        apply_task = ApplyTagForAutomation(tag)
+        apply_task.apply_tags_ae(where_clause)
