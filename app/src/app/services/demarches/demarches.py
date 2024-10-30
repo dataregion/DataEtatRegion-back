@@ -7,10 +7,12 @@ from pathlib import Path
 from sqlalchemy import update, exc
 
 from app import db
+from app.clients.demarche_simplifie import get_or_make_api_demarche_simplifie
 from models.entities.demarches.Demarche import Demarche
 from models.entities.demarches.Donnee import Donnee
 from models.entities.demarches.Dossier import Dossier
 from app.services.demarches.dossiers import DossierService
+from app.services.demarches.tokens import TokenService
 from app.services.demarches.valeurs import ValeurService
 from app.servicesapp.api_externes import ApisExternesService
 
@@ -120,14 +122,14 @@ class DemarcheService:
         db.session.commit()
 
     @staticmethod
-    def integrer_demarche(demarche_number: int):
-        # Vérification si la démarche existe déjà en BDD, si oui on la supprime
+    def integrer_demarche(uuid_utilisateur: string, token_id: int, demarche_number: int):
+        # Vérification si la démarche existe déjà en BDD, si oui, on la supprime
         demarche = DemarcheService.find(demarche_number)
         if demarche is not None:
             DemarcheService.delete(demarche)
             logging.info("[API DEMARCHES] La démarche existait déjà en BDD, maintenant supprimée pour réintégration")
 
-        demarche_dict = DemarcheService.query_demarche(demarche_number)
+        demarche_dict = DemarcheService.query_demarche(uuid_utilisateur, token_id, demarche_number)
 
         # Sauvegarde de la démarche
         demarche: Demarche = DemarcheService.save(demarche_number, demarche_dict)
@@ -144,14 +146,15 @@ class DemarcheService:
         return demarche
 
     @staticmethod
-    def query_demarche(demarche_number: int):
+    def query_demarche(uuid_utilisateur: string, token_id: int, demarche_number: int):
         # Récupération des données de la démarche via l'API Démarches Simplifiées
         query = DemarcheService.get_query_from_file("get_demarche.gql")
-        demarche_dict = DemarcheService.query(query, demarche_number, None)
+        token = TokenService.find_by_uuid_utilisateur_and_token_id(uuid_utilisateur, token_id).token
+        demarche_dict = DemarcheService.query(token, query, demarche_number, None)
 
         page_info_dict = demarche_dict["data"]["demarche"]["dossiers"]["pageInfo"]
         while page_info_dict["hasNextPage"] is True:
-            new_demarche_dict = DemarcheService.query(query, demarche_number, page_info_dict["endCursor"])
+            new_demarche_dict = DemarcheService.query(token, query, demarche_number, page_info_dict["endCursor"])
             dossiers: list[dict] = demarche_dict["data"]["demarche"]["dossiers"]["nodes"]
             dossiers += new_demarche_dict["data"]["demarche"]["dossiers"]["nodes"]
             page_info_dict = new_demarche_dict["data"]["demarche"]["dossiers"]["pageInfo"]
@@ -160,7 +163,7 @@ class DemarcheService:
         return demarche_dict
 
     @staticmethod
-    def query(query: string, demarche_number: int, after: string):
+    def query(token: string, query: string, demarche_number: int, after: string):
         data = {
             "operationName": "getDemarche",
             "query": query,
@@ -170,7 +173,7 @@ class DemarcheService:
                 "after": after if after is not None else "",
             },
         }
-        return service.api_demarche_simplifie.do_post(json.dumps(data))
+        return get_or_make_api_demarche_simplifie(token).do_post(json.dumps(data))
 
     @staticmethod
     def save_dossiers(demarche: Demarche, dossiers_dict: list[dict], revisions_dict: list[dict]):

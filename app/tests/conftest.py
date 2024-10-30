@@ -1,10 +1,11 @@
 from pathlib import Path
 import random
-import pytest
-from tests.DataEtatPostgresContainer import DataEtatPostgresContainer
-from sqlalchemy import text
-from app import create_app_base, db
 
+import pytest
+from sqlalchemy import text
+
+from app import create_app_base, db
+from tests.DataEtatPostgresContainer import DataEtatPostgresContainer
 
 # Initialisation du conteneur PostgreSQL et récupération de l'URL de connexion
 postgres_container = DataEtatPostgresContainer()
@@ -25,6 +26,7 @@ extra_config = {
     "SERVER_NAME": "localhost",
     "UPLOAD_FOLDER": "/tmp/",
     "IMPORT_BATCH_SIZE": 10,
+    "FERNET_SECRET_KEY": "JmfQ9tbvIHNDeEKf5nAW2u_pww0xz2D5zcE23CIVXLQ=",
 }
 
 _curr = Path(__file__).parent

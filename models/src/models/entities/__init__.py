@@ -1,7 +1,7 @@
 # ruff: noqa: F401
 # XXX: Import de toutes les entitées de la couche persistence
 # Ces imports ainsi que leur ordre sont importants
-from .common.Audit import _Audit  
+from .common.Audit import _Audit
 from .common.Tags import Tags, TagAssociation
 
 from .refs import *  # noqa: F403. Ici on importe toutes les refs
@@ -19,6 +19,7 @@ from .demarches.Reconciliation import Reconciliation
 from .demarches.Section import Section
 from .demarches.Type import Type
 from .demarches.ValeurDonnee import ValeurDonnee
+from .demarches.Token import Token
 
 from .financial.FinancialData import FinancialData
 from .financial.FinancialAe import FinancialAe
