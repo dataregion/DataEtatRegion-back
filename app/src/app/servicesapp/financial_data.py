@@ -225,7 +225,7 @@ def search_lignes_budgetaires(
             TypeCodeGeo.QPV if ref_qpv == 2015 else TypeCodeGeo.QPV24, code_qpv, source_region
         )
     elif bool(ref_qpv) ^ bool(code_qpv):
-        raise NiveauCodeGeoException("Les paramètres ref_qpv et codes_qpv doivent être fournis ensemble.")
+        raise NiveauCodeGeoException("Les paramètres ref_qpv et code_qpv doivent être fournis ensemble.")
 
     _includes_nones = False
     if types_beneficiaires is not None and "autres" in types_beneficiaires:
