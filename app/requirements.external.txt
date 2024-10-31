@@ -49,6 +49,7 @@ click-repl==0.3.0
     # via celery
 cryptography==43.0.3
     # via
+    #   -r requirements.external.in
     #   jwcrypto
     #   oic
 defusedxml==0.7.1
@@ -237,7 +238,7 @@ six==1.16.0
     # via
     #   pyjwkest
     #   python-dateutil
-sqlalchemy==2.0.23
+sqlalchemy==2.0.36
     # via
     #   alembic
     #   flask-sqlalchemy

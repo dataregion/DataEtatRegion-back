@@ -1,3 +1,4 @@
+from typing import List
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Tags import Tags
 from sqlalchemy import Column, Float, Integer, String, DateTime
@@ -95,7 +96,7 @@ class EnrichedFlattenFinancialLines(FlattenFinancialLines):
     des données associées à l'application (ie: les tags).
     """
 
-    tags: Mapped[Tags] = relationship(
+    tags: Mapped[List[Tags]] = relationship(
         "Tags",
         uselist=True,
         lazy="joined",
