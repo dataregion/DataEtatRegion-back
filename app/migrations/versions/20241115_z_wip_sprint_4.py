@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '20241115_z_wip_sprint_4'
-down_revision = '20241115_b_qpv_with_geom'
+down_revision = '20241115_c_vues_qpv_2024'
 branch_labels = None
 depends_on = None
 
