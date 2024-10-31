@@ -14,6 +14,7 @@ from app.services.demarches.valeurs import ValeurService
 from app.servicesapp.api_externes import ApisExternesService
 from models.entities.demarches.Demarche import Demarche
 from models.entities.demarches.Dossier import Dossier
+from models.entities.demarches.ValeurDonnee import ValeurDonnee
 
 logger = logging.getLogger(__name__)
 
@@ -177,21 +178,26 @@ class DemarcheService:
     @staticmethod
     def save_dossiers(demarche: Demarche, dossiers_dict: list[dict], revisions_dict: list[dict]):
         # Insertion des dossiers et des valeurs des champs du dossier
+        dossiers: list[dict] = []
+        valeurs: list[dict] = []
         for dossier_dict in dossiers_dict:
             donnees: dict = DossierService.get_donnees(dossier_dict, demarche.number, revisions_dict)
 
             # Sauvegarde du dossier
-            dossier: Dossier = DossierService.save(demarche.number, dossier_dict)
-            logging.info(f"[API DEMARCHES] Sauvegarde du dossier {dossier_dict['number']}")
-            valeurs = []
+            dossier_dict_db: dict = DossierService.create_dossier(demarche.number, dossier_dict)
+            dossiers.append(dossier_dict_db)
 
             for champ in dossier_dict["champs"]:
-                valeurs.append(ValeurService.create_valeur_donnee(dossier.number, donnees, champ))
+                valeurs.append(ValeurService.create_valeur_donnee(dossier_dict_db["number"], donnees, champ))
 
             for annot in dossier_dict["annotations"]:
-                valeurs.append(ValeurService.create_valeur_donnee(dossier.number, donnees, annot))
+                valeurs.append(ValeurService.create_valeur_donnee(dossier_dict_db["number"], donnees, annot))
 
-            db.session.bulk_save_objects(valeurs)
+        if len(dossiers) > 0:
+            db.session.bulk_insert_mappings(Dossier, dossiers, render_nulls=True)
+
+        if len(valeurs) > 0:
+            db.session.bulk_insert_mappings(ValeurDonnee, valeurs, render_nulls=True)
 
     @staticmethod
     def get_query_from_file(query_filename: str):

@@ -1,16 +1,9 @@
 import logging
 
-from sqlalchemy import exc
-
 from app import db
 from app.services.demarches.donnees import DonneeService
 from models.entities.demarches.Dossier import Dossier
 from models.entities.demarches.Reconciliation import Reconciliation
-
-
-class DossierExistsException(Exception):
-    def __init__(self):
-        super().__init__("Le dossier existe déjà en BDD")
 
 
 class DossierService:
@@ -45,27 +38,19 @@ class DossierService:
         return donnees
 
     @staticmethod
-    def save(demarche_number: int, dossier_dict: dict) -> Dossier:
+    def create_dossier(demarche_number: int, dossier_dict: dict) -> dict:
         """
         Sauvegarde un objet Dossier
         :param dossier_dict:
         :param demarche_number:
         :return: Dossier
         """
-        try:
-            dossier_data = {
-                "number": dossier_dict["number"],
-                "demarche_number": demarche_number,
-                "revision_id": dossier_dict["demarche"]["revision"]["id"],
-                "state": dossier_dict["state"],
-                "siret": dossier_dict["demandeur"]["siret"] if "siret" in dossier_dict["demandeur"] else None,
-                "date_depot": dossier_dict["dateDepot"],
-                "date_derniere_modification": dossier_dict["dateDerniereModification"],
-            }
-            dossier: Dossier = Dossier(**dossier_data)
-            db.session.add(dossier)
-            db.session.flush()
-        except exc.IntegrityError:
-            db.session.rollback()
-            raise DossierExistsException()
-        return dossier
+        return {
+            "number": dossier_dict["number"],
+            "demarche_number": demarche_number,
+            "revision_id": dossier_dict["demarche"]["revision"]["id"],
+            "state": dossier_dict["state"],
+            "siret": dossier_dict["demandeur"]["siret"] if "siret" in dossier_dict["demandeur"] else None,
+            "date_depot": dossier_dict["dateDepot"],
+            "date_derniere_modification": dossier_dict["dateDerniereModification"],
+        }

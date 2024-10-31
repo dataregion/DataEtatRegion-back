@@ -16,8 +16,8 @@ from app.servicesapp.authentication import ConnectedUser
 from models.entities.demarches.Demarche import Demarche
 from models.entities.demarches.Donnee import Donnee
 from models.entities.demarches.Reconciliation import Reconciliation
-from models.entities.demarches.Token import TokenSchema
 from models.entities.demarches.ValeurDonnee import ValeurDonnee
+from models.schemas.demarches import TokenSchema
 
 api = Namespace(
     name="Démarches", path="/", description="Api de gestion des données récupérées de l'API Démarches Simplifiées"

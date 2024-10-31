@@ -5,12 +5,12 @@ from pathlib import Path
 
 import pytest
 
+from app.services.demarches.dossiers import DossierService
 from models.entities.demarches.Demarche import Demarche
 from models.entities.demarches.Donnee import Donnee
 from models.entities.demarches.Dossier import Dossier
 from models.entities.demarches.Section import Section
 from models.entities.demarches.Type import Type
-from app.services.demarches.dossiers import DossierExistsException, DossierService
 
 _data = Path(os.path.dirname(__file__)) / "data"
 
@@ -119,41 +119,3 @@ def test_dossiers_get_donnees(init_dossiers):
         )
         == 2
     )
-
-
-def test_demarche_save_success(init_dossiers):
-    new_dict = {
-        "number": 98765,
-        "state": "refuse",
-        "demarche": {
-            "revision": {"id": "kokoko"},
-        },
-        "demandeur": {"siret": "my_big_siret"},
-        "dateDepot": datetime.strptime("2021-10-19 10:06:26.000", "%Y-%m-%d %H:%M:%S.%f"),
-        "dateDerniereModification": datetime.now(),
-    }
-    DossierService.save("49721", new_dict)
-
-    assert len(DossierService.find_by_demarche(49721, "accepte")) == 1
-    assert len(DossierService.find_by_demarche(49721, "en_instruction")) == 1
-    assert len(DossierService.find_by_demarche(49721, "refuse")) == 1
-
-
-def test_demarche_save_already_exists(init_dossiers):
-    new_dict = {
-        "number": 12345,
-        "state": "refuse",
-        "demarche": {
-            "revision": {
-                "id": "okokok",
-                "champDescriptors": [{"label": "Email du référent", "__typename": "EmailChampDescriptor"}],
-                "annotationDescriptors": [{"label": "EJ", "__typename": "EngagementJuridiqueChampDescriptor"}],
-            },
-        },
-        "demandeur": {"siret": "my_big_siret"},
-        "dateDepot": datetime.strptime("2021-10-19 10:06:26.000", "%Y-%m-%d %H:%M:%S.%f"),
-        "dateDerniereModification": datetime.now(),
-    }
-
-    with pytest.raises(DossierExistsException, match="Le dossier existe déjà en BDD"):
-        DossierService.save("49721", new_dict)

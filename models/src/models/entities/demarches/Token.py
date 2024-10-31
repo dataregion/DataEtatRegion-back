@@ -2,10 +2,9 @@ from dataclasses import dataclass
 
 from cryptography.fernet import Fernet
 from flask import current_app
-from marshmallow import fields
 from sqlalchemy import Column, String, Integer, LargeBinary
 
-from app import db, ma
+from app import db
 
 
 @dataclass
@@ -29,10 +28,3 @@ class Token(db.Model):
     @token.setter
     def token(self, value):
         self._token = Fernet(current_app.config["FERNET_SECRET_KEY"]).encrypt(value.encode())
-
-
-class TokenSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Token
-        exclude = ('_token',)
-    token = fields.String()

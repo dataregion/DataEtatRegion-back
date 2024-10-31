@@ -35,7 +35,7 @@ class ValeurService:
         return dict_valeurs
 
     @staticmethod
-    def create_valeur_donnee(dossier_number: int, donnees: dict, champ: dict) -> ValeurDonnee:
+    def create_valeur_donnee(dossier_number: int, donnees: dict, champ: dict) -> dict:
         """
         Créé en BDD une valeur d'un champ pour un dossier
         :param dossier_number: Numéro du dossier associé
@@ -71,13 +71,9 @@ class ValeurService:
                     for field in mapping["fields"]:
                         additional_data[field] = champ[field]
 
-            # Création de la valeur en BDD
-            valeur = ValeurDonnee(
-                **{
-                    "dossier_number": dossier_number,
-                    "donnee_id": donnee.id,
-                    "valeur": champ["stringValue"],
-                    "additional_data": additional_data,
-                }
-            )
-            return valeur
+            return {
+                "dossier_number": dossier_number,
+                "donnee_id": donnee.id,
+                "valeur": champ["stringValue"],
+                "additional_data": additional_data,
+            }

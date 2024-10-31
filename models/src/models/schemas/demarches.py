@@ -1,10 +1,12 @@
 from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+
 from models.entities.demarches.Demarche import Demarche
 from models.entities.demarches.Donnee import Donnee
 from models.entities.demarches.Dossier import Dossier
 from models.entities.demarches.Reconciliation import Reconciliation
 from models.entities.demarches.Section import Section
+from models.entities.demarches.Token import Token
 from models.entities.demarches.Type import Type
 from models.entities.demarches.ValeurDonnee import ValeurDonnee
 
@@ -47,3 +49,10 @@ class ValeurDonneeSchema(SQLAlchemyAutoSchema):
     dossier_number = fields.Integer()
     donnee_id = fields.Integer()
     valeur = fields.String()
+
+
+class TokenSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Token
+        exclude = ('_token',)
+    token = fields.String()
