@@ -11,7 +11,17 @@ from models.entities.refs.Ministere import Ministere
 from models.entities.refs.Qpv import Qpv
 from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
 from models.entities.refs.Siret import Siret
+from geoalchemy2.shape import to_shape
 
+
+class GeometryField(fields.Field):
+    def _serialize(self, value, attr, obj, **kwargs):
+        # Custom serialization logic for the geometry
+        return to_shape(value).wkt if value else None
+
+    def _jsonschema_type_mapping(self):
+        # Return a basic string type for JSON schema generation
+        return {"type": "string"}
 
 class ArrondissementSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -104,6 +114,9 @@ class QpvSchema(SQLAlchemyAutoSchema):
     code = fields.String()
     label = fields.String()
     label_commune = fields.String()
+    annee_decoupage = fields.Integer()
+    geom = GeometryField(dump_only=True)
+    centroid = GeometryField(dump_only=True)
 
 
 class ReferentielProgrammationSchema(SQLAlchemyAutoSchema):

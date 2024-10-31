@@ -3,19 +3,7 @@ from flask_restx import Namespace
 import marshmallow
 import marshmallow_dataclass as ma
 from marshmallow_jsonschema import JSONSchema
-from marshmallow import fields
-from geoalchemy2.shape import to_shape
 from flask import current_app
-
-
-class GeometryField(fields.Field):
-    def _serialize(self, value, attr, obj, **kwargs):
-        # Custom serialization logic for the geometry
-        return to_shape(value).wkt if value else None
-
-    def _jsonschema_type_mapping(self):
-        # Return a basic string type for JSON schema generation
-        return {"type": "string"}
 
 
 class _BaseSchemaExcludingUnknown(marshmallow.Schema):
