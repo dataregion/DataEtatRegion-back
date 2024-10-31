@@ -75,7 +75,7 @@ class DemarcheSimplifie(Resource):
         user = ConnectedUser.from_current_token_identity()
         token_id = int(request.args["tokenId"])
         token = TokenService.find_by_uuid_utilisateur_and_token_id(user.sub, token_id).token
-        return get_or_make_api_demarche_simplifie(token).do_post(request.get_data())
+        return get_or_make_api_demarche_simplifie(token).do_post(request.get_data()).get("data")
 
 
 @api.route("/info-entreprise/<siret>")
