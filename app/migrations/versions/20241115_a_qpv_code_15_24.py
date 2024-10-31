@@ -5,20 +5,16 @@ Revises: 20241016_v1_prefapphost
 Create Date: 2024-10-08 16:43:16.290622
 
 """
-import os
 import shutil
 
-import geoalchemy2
 import wget
 from alembic import op
 import sqlalchemy as sa
 import logging
 from pathlib import Path
-from pyunpack import Archive
 import pandas as pd
 from sqlalchemy import text
 import chardet
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20241115_a_qpv_code_15_24'

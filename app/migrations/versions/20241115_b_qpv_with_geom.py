@@ -17,7 +17,6 @@ from pathlib import Path
 from pyunpack import Archive
 import geopandas
 from sqlalchemy import text
-from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
