@@ -35,6 +35,8 @@ certifi==2024.8.30
     #   requests
 cffi==1.17.1
     # via cryptography
+chardet==5.2.0
+    # via -r requirements.external.in
 charset-normalizer==3.4.0
     # via requests
 click==8.1.7
