@@ -3,6 +3,7 @@ from flask_restx import Namespace
 import marshmallow
 import marshmallow_dataclass as ma
 from marshmallow_jsonschema import JSONSchema
+
 from flask import current_app
 
 
