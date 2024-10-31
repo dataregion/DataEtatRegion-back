@@ -8,13 +8,12 @@ from sqlalchemy import update, exc
 
 from app import db
 from app.clients.demarche_simplifie import get_or_make_api_demarche_simplifie
-from models.entities.demarches.Demarche import Demarche
-from models.entities.demarches.Donnee import Donnee
-from models.entities.demarches.Dossier import Dossier
 from app.services.demarches.dossiers import DossierService
 from app.services.demarches.tokens import TokenService
 from app.services.demarches.valeurs import ValeurService
 from app.servicesapp.api_externes import ApisExternesService
+from models.entities.demarches.Demarche import Demarche
+from models.entities.demarches.Dossier import Dossier
 
 logger = logging.getLogger(__name__)
 
@@ -179,17 +178,20 @@ class DemarcheService:
     def save_dossiers(demarche: Demarche, dossiers_dict: list[dict], revisions_dict: list[dict]):
         # Insertion des dossiers et des valeurs des champs du dossier
         for dossier_dict in dossiers_dict:
-            donnees: list[Donnee] = DossierService.get_donnees(dossier_dict, demarche.number, revisions_dict)
+            donnees: dict = DossierService.get_donnees(dossier_dict, demarche.number, revisions_dict)
 
             # Sauvegarde du dossier
             dossier: Dossier = DossierService.save(demarche.number, dossier_dict)
             logging.info(f"[API DEMARCHES] Sauvegarde du dossier {dossier_dict['number']}")
+            valeurs = []
 
             for champ in dossier_dict["champs"]:
-                ValeurService.save(dossier.number, [d for d in donnees if d.section_name == "champ"], champ)
+                valeurs.append(ValeurService.create_valeur_donnee(dossier.number, donnees, champ))
 
             for annot in dossier_dict["annotations"]:
-                ValeurService.save(dossier.number, [d for d in donnees if d.section_name == "annotation"], annot)
+                valeurs.append(ValeurService.create_valeur_donnee(dossier.number, donnees, annot))
+
+            db.session.bulk_save_objects(valeurs)
 
     @staticmethod
     def get_query_from_file(query_filename: str):

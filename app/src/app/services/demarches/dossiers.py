@@ -3,10 +3,9 @@ import logging
 from sqlalchemy import exc
 
 from app import db
-from models.entities.demarches.Donnee import Donnee
+from app.services.demarches.donnees import DonneeService
 from models.entities.demarches.Dossier import Dossier
 from models.entities.demarches.Reconciliation import Reconciliation
-from app.services.demarches.donnees import DonneeService
 
 
 class DossierExistsException(Exception):
@@ -31,14 +30,17 @@ class DossierService:
 
     @staticmethod
     def get_donnees(dossier_dict: dict, demarche_number: int, revisions: list[dict]):
-        donnees: list[Donnee] = []
+        donnees: dict = dict()
         revision = next(r for r in revisions if r["id"] == dossier_dict["demarche"]["revision"]["id"])
 
         # Récupération des champs et des annotations en amont de l'insert des dossiers
         for champ in revision["champDescriptors"]:
-            donnees.append(DonneeService.get_or_create(champ, "champ", demarche_number))
+            donnee = DonneeService.get_or_create(champ, "champ", demarche_number)
+            donnees[donnee.id_ds] = donnee
         for annotation in revision["annotationDescriptors"]:
-            donnees.append(DonneeService.get_or_create(annotation, "annotation", demarche_number))
+            donnee = DonneeService.get_or_create(annotation, "annotation", demarche_number)
+            donnees[donnee.id_ds] = donnee
+
         logging.info(f"[API DEMARCHES] Récupération des champs du dossier {dossier_dict['number']}")
         return donnees
 
