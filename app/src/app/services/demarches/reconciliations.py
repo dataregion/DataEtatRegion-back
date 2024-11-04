@@ -3,7 +3,7 @@ import re
 import string
 from datetime import datetime
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, and_
 
 from app import db
 from app.services import BuilderStatementFinancial
@@ -11,7 +11,7 @@ from app.services.demarches.demarches import DemarcheService
 from app.services.demarches.dossiers import DossierService
 from app.services.demarches.valeurs import ValeurService
 from app.services.tags import ApplyTagForAutomation, select_tag
-from models.entities.common.Tags import Tags
+from models.entities.common.Tags import TagAssociation
 from models.entities.demarches.Dossier import Dossier
 from models.entities.demarches.Reconciliation import Reconciliation
 from models.entities.financial.FinancialAe import FinancialAe
@@ -28,7 +28,7 @@ class ReconciliationService:
             .join(Dossier, Dossier.number == Reconciliation.dossier_number)
             .where(Dossier.demarche_number == demarche_number)
         )
-        return db.session.execute(stmt).scalars()
+        return db.session.execute(stmt).scalars().all()
 
     @staticmethod
     def save(reconciliation: Reconciliation) -> Reconciliation:
@@ -43,13 +43,11 @@ class ReconciliationService:
 
     @staticmethod
     def clear_reconciliations(demarche_number: int):
-        subquery_reconciliations = (
-            select(Reconciliation.id)
-            .join(Dossier, Dossier.number == Reconciliation.dossier_number)
-            .where(Dossier.demarche_number == demarche_number)
-        )
-        db.session.execute(delete(Reconciliation).where(Reconciliation.id.in_(subquery_reconciliations)))
-        db.session.commit()
+        reconciliations = ReconciliationService.find_by_demarche_number(demarche_number)
+        ReconciliationService.clear_previous_tags_reconcilie_ds(reconciliations)
+
+        id_reconciliations = [reconciliation.id for reconciliation in reconciliations]
+        db.session.execute(delete(Reconciliation).where(Reconciliation.id.in_(id_reconciliations)))
 
     @staticmethod
     def do_reconciliation(demarche_number: int, champs_reconciliation: dict, cadre: dict):
@@ -65,7 +63,6 @@ class ReconciliationService:
         dossiers = DossierService.find_by_demarche(demarche_number, "accepte")
         date_reconciliation = datetime.now()
         reconciliations = []
-        tag_reconcilie_ds = select_tag(TagVO(type="reconcilie-ds", value=None))
         for dossier_row in dossiers:
             dossier = dossier_row[0]
             valeurs = ValeurService.get_dict_valeurs(dossier.number, champs_reconciliation)
@@ -83,8 +80,8 @@ class ReconciliationService:
                     )
                     ReconciliationService.save(reconciliation)
                     reconciliations.append(reconciliation)
-                db.session.commit()
-                ReconciliationService.add_tag_reconcilie_ds(tag_reconcilie_ds, lignes_chorus)
+        ReconciliationService.add_tag_reconcilie_ds(reconciliations)
+        db.session.commit()
         return reconciliations
 
     @staticmethod
@@ -187,8 +184,15 @@ class ReconciliationService:
         )
 
     @staticmethod
-    def add_tag_reconcilie_ds(tag: Tags, lignes_chorus: list[FinancialAe]):
-        id_lignes = list(map(lambda ligne: ligne.id, lignes_chorus))
+    def add_tag_reconcilie_ds(reconciliations: list[Reconciliation]):
+        id_lignes = [reconciliation.financial_ae_id for reconciliation in reconciliations]
         where_clause = FinancialAe.id.in_(id_lignes)
-        apply_task = ApplyTagForAutomation(tag)
+        apply_task = ApplyTagForAutomation(select_tag(TagVO(type="reconcilie-ds", value=None)))
         apply_task.apply_tags_ae(where_clause)
+
+    @staticmethod
+    def clear_previous_tags_reconcilie_ds(reconciliations: list[Reconciliation]):
+        tag = select_tag(TagVO(type="reconcilie-ds", value=None))
+        id_lignes = [reconciliation.financial_ae_id for reconciliation in reconciliations]
+        where_clause = and_(TagAssociation.tag_id == tag.id, TagAssociation.financial_ae.in_(id_lignes))
+        db.session.execute(delete(TagAssociation).where(where_clause))

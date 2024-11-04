@@ -95,7 +95,6 @@ class DemarcheService:
         stmt = update(Demarche).where(Demarche.number == number).values(reconciliation=reconciliation)
         db.session.execute(stmt)
         db.session.flush()
-        db.session.commit()
 
     @staticmethod
     def update_affichage(number: int, affichage: dict) -> None:
