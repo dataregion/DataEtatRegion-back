@@ -7,12 +7,29 @@ from models.entities.refs.Qpv import Qpv
 
 @pytest.fixture(scope="function")
 def insert_qpv(session):
-    qpv01 = {"code": "QP093009", "label": "Le Plateau - Les Malassis - La Noue", "label_commune": "Montreuil"}
-    qpv02 = {"code": "QP083007", "label": "Quartiers Nord Est", "label_commune": "Avignon"}
+    qpv01 = {
+        "code": "QP093009",
+        "label": "Le Plateau - Les Malassis - La Noue",
+        "label_commune": "Montreuil",
+        "annee_decoupage": 2015,
+        "centroid": None,
+        "geom": None,
+    }
+    qpv02 = {
+        "code": "QP083007",
+        "label": "Quartiers Nord Est",
+        "label_commune": "Avignon",
+        "annee_decoupage": 2015,
+        "centroid": None,
+        "geom": None,
+    }
     qpv03 = {
         "code": "QP093018",
         "label": "Bel Air - Grands Pêchers - Ruffins - Le Morillon",
         "label_commune": "Montreuil",
+        "annee_decoupage": 2015,
+        "centroid": None,
+        "geom": None,
     }
 
     session.add(Qpv(**qpv01))
@@ -27,7 +44,7 @@ def test_qpv_by_code(test_client, insert_qpv):
     resp = test_client.get("/budget/api/v1/qpv/" + code)
     assert resp.status_code == 200
     min_return = json.loads(resp.data.decode())
-    assert min_return["code"] == code
+    assert min_return == insert_qpv[0]
 
 
 def test_qpv_not_found(test_client, insert_qpv):
@@ -49,6 +66,6 @@ def test_search_min_by_commune(test_client, insert_qpv):
     assert resp.status_code == 200
 
     page_return = json.loads(resp.data.decode())
-    assert len(page_return["items"]) == 1
+    assert page_return["items"].__len__() == 1
     assert page_return["pageInfo"] == {"totalRows": 1, "page": 1, "pageSize": 100}
-    assert page_return["items"][0]["code"] == insert_qpv[1]["code"]
+    assert page_return["items"][0] == insert_qpv[1]

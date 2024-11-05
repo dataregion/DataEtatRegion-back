@@ -61,6 +61,6 @@ CREATE OR REPLACE VIEW public.flatten_ademe
    FROM ademe root
      LEFT JOIN ref_siret rs ON root.siret_beneficiaire::text = rs.code::text
      LEFT JOIN ref_categorie_juridique rs_rcj ON rs.categorie_juridique::text = rs_rcj.code::text
-     LEFT JOIN ref_qpv rs_rqpv ON rs.code_qpv::text = rs_rqpv.code::text
+     LEFT JOIN ref_qpv rs_rqpv ON rs.code_qpv15::text = rs_rqpv.code::text
      LEFT JOIN ref_commune rs_rc ON rs.code_commune::text = rs_rc.code::text
      LEFT JOIN ref_arrondissement rs_rc_ra ON rs_rc.code_arrondissement::text = rs_rc_ra.code::text;
