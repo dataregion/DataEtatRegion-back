@@ -4,6 +4,7 @@ import string
 from datetime import datetime
 
 from sqlalchemy import delete, and_
+from sqlalchemy.exc import IntegrityError
 
 from app import db
 from app.services import BuilderStatementFinancial
@@ -48,6 +49,7 @@ class ReconciliationService:
 
         id_reconciliations = [reconciliation.id for reconciliation in reconciliations]
         db.session.execute(delete(Reconciliation).where(Reconciliation.id.in_(id_reconciliations)))
+        db.session.commit()
 
     @staticmethod
     def do_reconciliation(demarche_number: int, champs_reconciliation: dict, cadre: dict):
@@ -67,45 +69,52 @@ class ReconciliationService:
             dossier = dossier_row[0]
             valeurs = ValeurService.get_dict_valeurs(dossier.number, champs_reconciliation)
 
-            lignes_chorus = ReconciliationService.get_lignes_chorus_par_type_reconciliation(
+            ligne_chorus = ReconciliationService.get_ligne_chorus_par_type_reconciliation(
                 dossier, champs_reconciliation, valeurs, cadre
             )
 
-            if lignes_chorus:
-                for ligne_chorus in lignes_chorus:
-                    reconciliation = Reconciliation(
-                        dossier_number=dossier.number,
-                        financial_ae_id=ligne_chorus.id,
-                        date_reconciliation=date_reconciliation,
-                    )
+            if ligne_chorus is not None:
+                reconciliation = Reconciliation(
+                    dossier_number=dossier.number,
+                    financial_ae_id=ligne_chorus.id,
+                    date_reconciliation=date_reconciliation,
+                )
+                try:
                     ReconciliationService.save(reconciliation)
                     reconciliations.append(reconciliation)
+                except IntegrityError as e:
+                    db.session.rollback()
+                    logger.error(
+                        f"Erreur lors de la réconciliation entre le dossier {dossier.number} et la ligne financière {ligne_chorus.id}. La ligne a peut-être déjà été réconciliée avec un autre dossier")
         ReconciliationService.add_tag_reconcilie_ds(reconciliations)
         db.session.commit()
         return reconciliations
 
     @staticmethod
-    def get_lignes_chorus_par_type_reconciliation(
-        dossier: Dossier, champs_reconciliation: dict, valeurs: dict, cadre: dict
+    def get_ligne_chorus_par_type_reconciliation(
+            dossier: Dossier, champs_reconciliation: dict, valeurs: dict, cadre: dict
     ):
-        lignes_chorus = []
+        lignes = []
         if "champEJ" in champs_reconciliation:
             if champs_reconciliation["champEJ"] in valeurs:
                 valeur_champ_ej = valeurs[champs_reconciliation["champEJ"]]
-                lignes_chorus = ReconciliationService.get_lignes_chorus_num_ej(valeur_champ_ej)
+                lignes = ReconciliationService.get_lignes_chorus_num_ej(valeur_champ_ej)
         elif "champMontant" in champs_reconciliation:
             if champs_reconciliation["champMontant"] in valeurs:
                 valeur_champ_montant = ReconciliationService.convert_valeur_to_float(
                     valeurs[champs_reconciliation["champMontant"]]
                 )
                 if valeur_champ_montant is not None and valeur_champ_montant != "":
-                    lignes_chorus = ReconciliationService.get_lignes_chorus_siret_montant(
+                    lignes = ReconciliationService.get_lignes_chorus_siret_montant(
                         dossier.siret, valeur_champ_montant, cadre
                     )
         else:
             # TODO Implémenter les méthodes de réconciliation manquantes
             logger.info("Méthode de réconciliation non implémentée")
-        return lignes_chorus
+        # On ne réconcilie pas si on a plusieurs résultats
+        if len(lignes) != 1:
+            return None
+        return lignes[0]
 
     @staticmethod
     def convert_valeur_to_float(valeur: string):
@@ -119,7 +128,7 @@ class ReconciliationService:
 
     @staticmethod
     def get_lignes_chorus_num_ej(num_ej: string):
-        return BuilderStatementFinancial().select_ae().where_n_ej(num_ej).do_all()
+        return BuilderStatementFinancial().select_ae().where_n_ej(num_ej).do_all().all()
 
     @staticmethod
     def get_lignes_chorus_siret_montant(siret: string, montant: float, cadre: dict):
@@ -137,9 +146,6 @@ class ReconciliationService:
                 lambda ligne: ReconciliationService.filter_lignes_chorus_par_param_reconciliation(ligne, cadre), lignes
             )
         )
-        # On ne réconcilie pas si on a plusieurs résultats
-        if len(lignes) > 1:
-            return []
         return lignes
 
     @staticmethod
@@ -149,7 +155,7 @@ class ReconciliationService:
 
         domaine_fonctionnel = cadre.get("domaineFonctionnel")
         match_domaine_fonctionnel = (
-            domaine_fonctionnel is None or financial_ae.domaine_fonctionnel == domaine_fonctionnel
+                domaine_fonctionnel is None or financial_ae.domaine_fonctionnel == domaine_fonctionnel
         )
 
         ref_prog = cadre.get("refProg")
@@ -173,14 +179,14 @@ class ReconciliationService:
         match_region = region is None or commune_db.code_region == region
 
         return (
-            match_centre_couts
-            and match_domaine_fonctionnel
-            and match_ref_prog
-            and match_annee
-            and match_commune
-            and match_epci
-            and match_departement
-            and match_region
+                match_centre_couts
+                and match_domaine_fonctionnel
+                and match_ref_prog
+                and match_annee
+                and match_commune
+                and match_epci
+                and match_departement
+                and match_region
         )
 
     @staticmethod
