@@ -189,7 +189,7 @@ def _expose_endpoint(app: Flask):
 def _post_create_app_base(app):
     if app.config["DEBUG"] is True:
         logging.info("Debug is enabled.")
-        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger().setLevel(logging.DEBUG)
 
     if app.config["DEBUG"] is True:
         logging.info("SQL Logging enabled.")
