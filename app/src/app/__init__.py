@@ -187,10 +187,7 @@ def _expose_endpoint(app: Flask):
 
 
 def _post_create_app_base(app):
-    levels = {
-        "info": logging.INFO,
-        "debug": logging.DEBUG
-    }
+    levels = {"info": logging.INFO, "debug": logging.DEBUG}
     if app.config["DEBUG"] in ["info", "debug"]:
         logging.info("Debug is enabled.")
         logging.info("SQL Logging enabled.")
