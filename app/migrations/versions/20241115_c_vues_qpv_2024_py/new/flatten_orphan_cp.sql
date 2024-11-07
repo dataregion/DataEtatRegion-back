@@ -59,7 +59,7 @@ CREATE OR REPLACE VIEW public.flatten_orphan_cp
     rcc.description AS "centreCouts_description",
     root.data_source,
     rs_rqpv24.code AS beneficiaire_qpv24_code,
-    rs_rqpv24.label AS beneficiaire_qpv24_label,
+    rs_rqpv24.label AS beneficiaire_qpv24_label
    FROM financial_cp root
      LEFT JOIN ref_siret rs ON root.siret::text = rs.code::text
      LEFT JOIN ref_categorie_juridique rs_rcj ON rs.categorie_juridique::text = rs_rcj.code::text
