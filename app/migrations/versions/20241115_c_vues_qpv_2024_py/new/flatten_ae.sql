@@ -24,8 +24,6 @@ CREATE OR REPLACE VIEW public.flatten_ae
     rs_rcj.type AS "beneficiaire_categorieJuridique_type",
     rs_rqpv15.code AS beneficiaire_qpv_code,
     rs_rqpv15.label AS beneficiaire_qpv_label,
-    rs_rqpv24.code AS beneficiaire_qpv24_code,
-    rs_rqpv24.label AS beneficiaire_qpv24_label,
     rs_rc.code AS beneficiaire_commune_code,
     rs_rc.label_commune AS beneficiaire_commune_label,
     rs_rc.code_region AS "beneficiaire_commune_codeRegion",
@@ -59,7 +57,9 @@ CREATE OR REPLACE VIEW public.flatten_ae
     rcc.code AS "centreCouts_code",
     rcc.label AS "centreCouts_label",
     rcc.description AS "centreCouts_description",
-    root.data_source
+    root.data_source,
+    rs_rqpv24.code AS beneficiaire_qpv24_code,
+    rs_rqpv24.label AS beneficiaire_qpv24_label
    FROM financial_ae root
      LEFT JOIN ref_siret rs ON root.siret::text = rs.code::text
      LEFT JOIN ref_categorie_juridique rs_rcj ON rs.categorie_juridique::text = rs_rcj.code::text

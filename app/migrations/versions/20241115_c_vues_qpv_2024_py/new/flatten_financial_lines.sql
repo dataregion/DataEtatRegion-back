@@ -24,8 +24,6 @@ CREATE OR REPLACE VIEW public._flatten_financial_lines
       flatten_ae."beneficiaire_categorieJuridique_type",
       flatten_ae.beneficiaire_qpv_code,
       flatten_ae.beneficiaire_qpv_label,
-      flatten_ae.beneficiaire_qpv24_code,
-      flatten_ae.beneficiaire_qpv24_label,
       flatten_ae.beneficiaire_commune_code,
       flatten_ae.beneficiaire_commune_label,
       flatten_ae."beneficiaire_commune_codeRegion",
@@ -59,7 +57,9 @@ CREATE OR REPLACE VIEW public._flatten_financial_lines
       flatten_ae."centreCouts_code",
       flatten_ae."centreCouts_label",
       flatten_ae."centreCouts_description",
-      flatten_ae.data_source
+      flatten_ae.data_source,
+      flatten_ae.beneficiaire_qpv24_code,
+      flatten_ae.beneficiaire_qpv24_label
       FROM flatten_ae
    UNION ALL
    SELECT flatten_ademe.source,
@@ -87,8 +87,6 @@ CREATE OR REPLACE VIEW public._flatten_financial_lines
       flatten_ademe."beneficiaire_categorieJuridique_type",
       flatten_ademe.beneficiaire_qpv_code,
       flatten_ademe.beneficiaire_qpv_label,
-      flatten_ademe.beneficiaire_qpv24_code,
-      flatten_ademe.beneficiaire_qpv24_label,
       flatten_ademe.beneficiaire_commune_code,
       flatten_ademe.beneficiaire_commune_label,
       flatten_ademe."beneficiaire_commune_codeRegion",
@@ -122,7 +120,9 @@ CREATE OR REPLACE VIEW public._flatten_financial_lines
       flatten_ademe."centreCouts_code",
       flatten_ademe."centreCouts_label",
       flatten_ademe."centreCouts_description",
-      flatten_ademe.data_source
+      flatten_ademe.data_source,
+      flatten_ademe.beneficiaire_qpv24_code,
+      flatten_ademe.beneficiaire_qpv24_label
       FROM flatten_ademe
    UNION ALL
    SELECT flatten_orphan_cp.source,
@@ -150,8 +150,6 @@ CREATE OR REPLACE VIEW public._flatten_financial_lines
       flatten_orphan_cp."beneficiaire_categorieJuridique_type",
       flatten_orphan_cp.beneficiaire_qpv_code,
       flatten_orphan_cp.beneficiaire_qpv_label,
-      flatten_orphan_cp.beneficiaire_qpv24_code,
-      flatten_orphan_cp.beneficiaire_qpv24_label,
       flatten_orphan_cp.beneficiaire_commune_code,
       flatten_orphan_cp.beneficiaire_commune_label,
       flatten_orphan_cp."beneficiaire_commune_codeRegion",
@@ -185,5 +183,7 @@ CREATE OR REPLACE VIEW public._flatten_financial_lines
       flatten_orphan_cp."centreCouts_code",
       flatten_orphan_cp."centreCouts_label",
       flatten_orphan_cp."centreCouts_description",
-      flatten_orphan_cp.data_source
+      flatten_orphan_cp.data_source,
+      flatten_orphan_cp.beneficiaire_qpv24_code,
+      flatten_orphan_cp.beneficiaire_qpv24_label
       FROM flatten_orphan_cp;
