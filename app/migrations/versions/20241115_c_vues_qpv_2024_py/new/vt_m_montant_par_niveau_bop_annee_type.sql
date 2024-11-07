@@ -99,5 +99,5 @@ UNION
     s.code_qpv24 AS code,
     s.categorie_juridique AS type
    FROM vt_m_summary_annee_geo_type_bop s
-  WHERE s.code_qpv IS NOT NULL
+  WHERE s.code_qpv24 IS NOT NULL
   GROUP BY s.annee, s.source, s.code_programme, s.categorie_juridique, s.code_qpv24;
