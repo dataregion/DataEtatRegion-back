@@ -82,17 +82,18 @@ class ReconciliationService:
                 try:
                     ReconciliationService.save(reconciliation)
                     reconciliations.append(reconciliation)
-                except IntegrityError as e:
+                except IntegrityError:
                     db.session.rollback()
                     logger.error(
-                        f"Erreur lors de la réconciliation entre le dossier {dossier.number} et la ligne financière {ligne_chorus.id}. La ligne a peut-être déjà été réconciliée avec un autre dossier")
+                        f"Erreur lors de la réconciliation entre le dossier {dossier.number} et la ligne financière {ligne_chorus.id}. La ligne a peut-être déjà été réconciliée avec un autre dossier"
+                    )
         ReconciliationService.add_tag_reconcilie_ds(reconciliations)
         db.session.commit()
         return reconciliations
 
     @staticmethod
     def get_ligne_chorus_par_type_reconciliation(
-            dossier: Dossier, champs_reconciliation: dict, valeurs: dict, cadre: dict
+        dossier: Dossier, champs_reconciliation: dict, valeurs: dict, cadre: dict
     ):
         lignes = []
         if "champEJ" in champs_reconciliation:
@@ -155,7 +156,7 @@ class ReconciliationService:
 
         domaine_fonctionnel = cadre.get("domaineFonctionnel")
         match_domaine_fonctionnel = (
-                domaine_fonctionnel is None or financial_ae.domaine_fonctionnel == domaine_fonctionnel
+            domaine_fonctionnel is None or financial_ae.domaine_fonctionnel == domaine_fonctionnel
         )
 
         ref_prog = cadre.get("refProg")
@@ -179,14 +180,14 @@ class ReconciliationService:
         match_region = region is None or commune_db.code_region == region
 
         return (
-                match_centre_couts
-                and match_domaine_fonctionnel
-                and match_ref_prog
-                and match_annee
-                and match_commune
-                and match_epci
-                and match_departement
-                and match_region
+            match_centre_couts
+            and match_domaine_fonctionnel
+            and match_ref_prog
+            and match_annee
+            and match_commune
+            and match_epci
+            and match_departement
+            and match_region
         )
 
     @staticmethod
