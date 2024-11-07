@@ -42,6 +42,7 @@ def upgrade_():
     op.execute(_new_filecontent("flatten_orphan_cp.sql"))
     op.execute(_new_filecontent("flatten_financial_lines.sql"))
 
+    op.execute("DROP VIEW IF EXISTS public.superset_lignes_financieres")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS flatten_financial_lines")
     op.execute(_new_filecontent("materialized_flatten_financial_lines.sql"))
     op.execute(_new_filecontent("superset_lignes_financieres.sql"))
@@ -80,6 +81,7 @@ def downgrade_():
     op.execute(_old_filecontent("flatten_orphan_cp.sql"))
     op.execute(_old_filecontent("flatten_financial_lines.sql"))
 
+    op.execute("DROP VIEW IF EXISTS public.superset_lignes_financieres")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS flatten_financial_lines")
     op.execute(_old_filecontent("materialized_flatten_financial_lines.sql"))
     op.execute(_old_filecontent("superset_lignes_financieres.sql"))
