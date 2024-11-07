@@ -47,7 +47,9 @@ class TypeCodeGeoToFrance2030CodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolv
             case TypeCodeGeo.ARRONDISSEMENT:
                 column = commune.code_arrondissement
             case TypeCodeGeo.QPV:
-                column = beneficiaire.code_qpv
+                column = beneficiaire.code_qpv15
+            case TypeCodeGeo.QPV24:
+                column = beneficiaire.code_qpv24
 
         return column
 
@@ -94,5 +96,7 @@ class TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver(TypeCodeGeoToSqlAlch
                 column = FinancialLines.beneficiaire_commune_arrondissement_code
             case TypeCodeGeo.QPV:
                 column = FinancialLines.beneficiaire_qpv_code
+            case TypeCodeGeo.QPV24:
+                column = FinancialLines.beneficiaire_qpv24_code
 
         return column

@@ -4,6 +4,7 @@ import tempfile
 import zipfile
 
 import pandas
+import numpy as np
 import requests
 from celery import subtask
 from flask import current_app
@@ -82,10 +83,11 @@ def update_siret_task(self, index: int, code: str):
 
 
 @celery.task(name="update_link_siret_qpv_from_website", bind=True)
-def update_link_siret_qpv_from_website(self, url: str):
+def update_link_siret_qpv_from_website(self, url: str, qpv_colname: str = "plg_qp15"):
     """
     Télécharge le fichier des liens QPV/Siret et lance la mise à jours des liens
     :param self:
+    :param qpv_colname: la colonne des QPV a utiliser ex: plg_qp15 ou plg_qp24
     :return:
     """
     logger.info("Récupération du fichier des QPV/Siret")
@@ -109,16 +111,16 @@ def update_link_siret_qpv_from_website(self, url: str):
                     chunks = pandas.read_csv(
                         csv_file,
                         header=0,
-                        usecols=["siret", "plg_qp15"],
+                        usecols=["siret", qpv_colname],
                         chunksize=100000,
                         sep=";",
-                        dtype={"siret": str, "plg_qp15": str},
+                        dtype={"siret": str, qpv_colname: str},
                     )
                     resultats = []
 
                     # Parcourir les chunks et filtrer les lignes
                     for chunk in chunks:
-                        filtre = ~chunk["plg_qp15"].isin(["CSZ", "HZ", " ", ""])
+                        filtre = ~chunk[qpv_colname].isin(["CSZ", "HZ", " ", ""])
                         morceau_filtre = chunk[filtre]
                         resultats.append(morceau_filtre)
 
@@ -128,45 +130,52 @@ def update_link_siret_qpv_from_website(self, url: str):
                     # with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".csv") as temp_file:
                     # Écrivez le DataFrame dans le fichier CSV temporaire
                     df_final.to_csv(save_path, index=False)
-                    subtask("update_link_siret_qpv").delay(save_path)
+                    subtask("update_link_siret_qpv").delay(save_path, qpv_colname=qpv_colname)
             break
         # # Initialiser une liste pour stocker les morceaux filtrés
 
 
 @celery.task(name="update_link_siret_qpv", bind=True)
-def update_link_siret_qpv(self, file: str, page_number: int = 1):
+def update_link_siret_qpv(self, file: str, qpv_colname: str = "plg_qp15", page_number: int = 1):
     """
     Mise à jours de liens Siret QPV
     Tache récursive, qui tant qu'il y a une page suivante, lance une nouvelle tache update_link_siret_qpv
     :param self:
     :param file: Le fichier contenant les siret et QPV
     :param page: le numéro de page des siret à mettre à jours.
+    :param qpv_colname: la colonne des QPV a utiliser ex: plg_qp15 ou plg_qp24
     :return:
     """
     logger.info(f"[TASK][SIRET]Update lien QPV siret de la page {page_number}")
-    all_siret_qpv = pandas.read_csv(file, header=0, usecols=["siret", "plg_qp15"], sep=",", dtype={"siret": str})
+    all_siret_qpv = pandas.read_csv(file, header=0, usecols=["siret", qpv_colname], sep=",", dtype={"siret": str})
+
+    all_siret_qpv = all_siret_qpv.replace({np.nan: None})
 
     stmt = db.select(Siret).order_by(Siret.id)
     page_result = db.paginate(stmt, per_page=1000, error_out=False, page=page_number)
     total_page = page_result.pages  # on récupère le nombre de pages
     logger.info("[TASK][SIRET] Parcours des 1000 Siret")
 
+    siret_qpv_colname = "code_qpv15"
+    if qpv_colname == "plg_qp24":
+        siret_qpv_colname = "code_qpv24"
+
     for siret in page_result.items:
         search_qpv = all_siret_qpv[all_siret_qpv["siret"] == siret.code]
         # Vérifiez si des lignes correspondent
         if len(search_qpv) == 0:
-            if siret.code_qpv is not None:
-                db.session.execute(db.update(Siret).where(Siret.code == siret.code).values(code_qpv=None))
-                logger.info(f"[TASK][SIRET] Le siret {siret.code} n'est plus dans un QPV")
-            logger.debug(f"[TASK][SIRET] Pas de Qpv pour le siret {siret.code}")
+            if getattr(siret, siret_qpv_colname) is not None:
+                db.session.execute(db.update(Siret).where(Siret.code == siret.code).values({siret_qpv_colname: None}))
+                logger.info(f"[TASK][SIRET] Le siret {getattr(siret, siret_qpv_colname)} n'est plus dans un QPV")
+            logger.debug(f"[TASK][SIRET] Pas de Qpv pour le siret {getattr(siret, siret_qpv_colname)}")
         else:
-            code_qpv = search_qpv["plg_qp15"].values[0]
-            logger.info(f"[TASK][SIRET] Qpv {code_qpv} trouvé pour le siret {siret.code}")
-            db.session.execute(db.update(Siret).where(Siret.code == siret.code).values(code_qpv=code_qpv))
+            code_qpv = search_qpv[qpv_colname].values[0]
+            logger.info(f"[TASK][SIRET] Qpv {code_qpv} trouvé pour le siret {getattr(siret, siret_qpv_colname)}")
+            db.session.execute(db.update(Siret).where(Siret.code == siret.code).values({siret_qpv_colname: code_qpv}))
     db.session.commit()
 
     if page_number <= total_page:
         logger.info(f"[TASK][SIRET] Il reste {total_page - page_number}  pages. Lancement de la tâche suivante")
-        subtask("update_link_siret_qpv").delay(file, page_number + 1)
+        subtask("update_link_siret_qpv").delay(file, qpv_colname=qpv_colname, page_number=(page_number + 1))
     else:
         logger.info("[TASK][SIRET] Fin de la mise à jours des liens Siret Qpv.")

@@ -22,7 +22,8 @@ class Siret(_Audit, _PersistenceBaseModelInstance()):
     categorie_juridique = Column(
         String, ForeignKey("ref_categorie_juridique.code"), nullable=True
     )
-    code_qpv = Column(String, ForeignKey("ref_qpv.code"), nullable=True)
+    code_qpv15 = Column(String, ForeignKey("ref_qpv.code"), nullable=True)
+    code_qpv24 = Column(String, ForeignKey("ref_qpv.code"), nullable=True)
 
     denomination = Column(String)
     adresse = Column(String)
@@ -30,7 +31,8 @@ class Siret(_Audit, _PersistenceBaseModelInstance()):
     naf = Column(JSONVariant, nullable=True)
 
     ref_commune: Mapped[Commune] = relationship("Commune", lazy="select")
-    ref_qpv: Mapped[Qpv] = relationship("Qpv", lazy="joined")
+    ref_qpv15 = relationship("Qpv", foreign_keys=[code_qpv15], lazy="joined")
+    ref_qpv24 = relationship("Qpv", foreign_keys=[code_qpv24], lazy="joined")
     ref_categorie_juridique: Mapped[CategorieJuridique] = relationship(
         "CategorieJuridique", lazy="select", uselist=False
     )
