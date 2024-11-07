@@ -1,3 +1,9 @@
+CREATE INDEX idx_groupby_summary_commune ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_commune);
+CREATE INDEX idx_groupby_summary_departement ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_departement);
+CREATE INDEX idx_groupby_summary_epci ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_epci);
+CREATE INDEX idx_groupby_summary_crte ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_crte);
+CREATE INDEX idx_groupby_summary_qpv ON vt_m_summary_annee_geo_type_bop (annee, code_programme, categorie_juridique, code_qpv);
+
 CREATE MATERIALIZED VIEW vt_m_montant_par_niveau_bop_annee_type AS
      SELECT ( SELECT sum(fce.montant_ae) AS sum
            FROM vt_budget_summary fce
