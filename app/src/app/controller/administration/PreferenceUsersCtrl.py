@@ -121,7 +121,6 @@ class PreferenceUsers(Resource):
             name=data["name"],
             options=data["options"],
             filters=data["filters"],
-            application_host=application,
             application_clientid=clientId,
         )
         pref.shares = share_list
