@@ -22,7 +22,6 @@ class PreferenceFormSchema(SQLAlchemyAutoSchema):
             "date_creation",
             "nombre_utilisation",
             "dernier_acces",
-            "application_host",
             "application_clientid",
         )
 
