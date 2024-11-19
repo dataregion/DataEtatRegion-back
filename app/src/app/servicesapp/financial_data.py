@@ -253,6 +253,7 @@ def search_lignes_budgetaires(
     page_result = query_lignes_budget.do_paginate(limit, page_number)
     return page_result
 
+
 def search_lignes_budgetaires_qpv(
     n_ej: list | None = None,
     source: str | None = None,

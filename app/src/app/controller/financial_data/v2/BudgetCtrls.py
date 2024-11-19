@@ -5,7 +5,12 @@ from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from models.value_objects.common import DataType
 from app.servicesapp.authentication.connected_user import ConnectedUser
-from app.servicesapp.financial_data import get_annees_budget, get_ligne_budgetaire, search_lignes_budgetaires, search_lignes_budgetaires_qpv
+from app.servicesapp.financial_data import (
+    get_annees_budget,
+    get_ligne_budgetaire,
+    search_lignes_budgetaires,
+    search_lignes_budgetaires_qpv,
+)
 
 from flask_restx import Namespace, Resource, fields
 

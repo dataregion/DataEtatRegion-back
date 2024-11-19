@@ -16,9 +16,11 @@ from app.services.helper import (
     TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver,
 )
 
+
 class BenefOrLoc(Enum):
     BENEFICIAIRE = "beneficiaire"
     LOCALISATION_INTER = "localisationInterministerielle"
+
 
 class BuilderStatementFinancialLine:
     """
@@ -108,10 +110,12 @@ class BuilderStatementFinancialLine:
         return self
 
     def where_qpv_not_null(self):
-        self._stmt = self._stmt.where(FinancialLines.beneficiaire_qpv24_code != None)
+        self._stmt = self._stmt.where(FinancialLines.beneficiaire_qpv24_code is not None)
         return self
 
-    def where_geo(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str, benef_or_loc: BenefOrLoc = None):
+    def where_geo(
+        self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str, benef_or_loc: BenefOrLoc = None
+    ):
         if list_code_geo is None:
             return self
 
@@ -126,7 +130,7 @@ class BuilderStatementFinancialLine:
             source_region,
             column_codegeo_commune_loc_inter,
             column_codegeo_commune_beneficiaire,
-            benef_or_loc
+            benef_or_loc,
         )
         return self
 
@@ -137,7 +141,7 @@ class BuilderStatementFinancialLine:
         source_region: str,
         column_codegeo_commune_loc_inter: Column[str] | None,
         column_codegeo_commune_beneficiaire: Column[str] | None,
-        benef_or_loc: BenefOrLoc = None
+        benef_or_loc: BenefOrLoc = None,
     ):
         conds = []
 
@@ -158,13 +162,17 @@ class BuilderStatementFinancialLine:
         #
         # Ou les code geo de la commune associée à la localisation interministerielle
         #
-        if column_codegeo_commune_loc_inter is not None and (benef_or_loc is None or benef_or_loc == BenefOrLoc.LOCALISATION_INTER):
+        if column_codegeo_commune_loc_inter is not None and (
+            benef_or_loc is None or benef_or_loc == BenefOrLoc.LOCALISATION_INTER
+        ):
             conds.append(column_codegeo_commune_loc_inter.in_(list_code_geo))
 
         #
         # Ou les code geo de la commune associée au bénéficiaire
         #
-        if column_codegeo_commune_beneficiaire is not None and (benef_or_loc is None or benef_or_loc == BenefOrLoc.BENEFICIAIRE):
+        if column_codegeo_commune_beneficiaire is not None and (
+            benef_or_loc is None or benef_or_loc == BenefOrLoc.BENEFICIAIRE
+        ):
             conds.append(column_codegeo_commune_beneficiaire.in_(list_code_geo))
 
         where_clause = or_(*conds)
