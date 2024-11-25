@@ -1,6 +1,6 @@
 import pytest
 
-from app.models.tags.Tags import TagVO
+from models.value_objects.tags import TagVO
 
 # region test TagVO
 

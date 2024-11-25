@@ -6,7 +6,7 @@ from sqlalchemy import cast
 from sqlalchemy.orm import lazyload
 
 from app import db, celeryapp, mailapp
-from app.models.preference.Preference import Preference
+from models.entities.preferences.Preference import Preference
 
 LOGGER = logging.getLogger()
 

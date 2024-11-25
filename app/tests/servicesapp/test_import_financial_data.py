@@ -2,7 +2,7 @@ import pytest
 from werkzeug.datastructures import FileStorage
 
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
-from app.models.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
+from models.entities.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
 from app.servicesapp.financial_data import import_financial_data
 from tests import TESTS_PATH
 

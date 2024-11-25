@@ -1,20 +1,21 @@
 import json
 import datetime
+from models.entities.common.Tags import Tags
 import pytest
 from sqlalchemy import delete
 
-from app.models.refs.centre_couts import CentreCouts
-from app.models.refs.code_programme import CodeProgramme
-from app.models.refs.commune import Commune
-from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
-from app.models.refs.fournisseur_titulaire import FournisseurTitulaire
-from app.models.refs.groupe_marchandise import GroupeMarchandise
-from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
-from app.models.refs.referentiel_programmation import ReferentielProgrammation
-from app.models.refs.region import Region
-from app.models.refs.siret import Siret
-from app.models.financial.FinancialAe import FinancialAe
-from app.models.tags.Tags import TagAssociation, Tags
+from models.entities.refs.CentreCouts import CentreCouts
+from models.entities.refs.CodeProgramme import CodeProgramme
+from models.entities.refs.Commune import Commune
+from models.entities.refs.DomaineFonctionnel import DomaineFonctionnel
+from models.entities.refs.FournisseurTitulaire import FournisseurTitulaire
+from models.entities.refs.GroupeMarchandise import GroupeMarchandise
+from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
+from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
+from models.entities.refs.Region import Region
+from models.entities.refs.Siret import Siret
+from models.entities.financial.FinancialAe import FinancialAe
+from models.entities.common.Tags import TagAssociation
 from app.tasks.tags.apply_tags import apply_tags_acv
 from tests import delete_references
 from tests.tasks.tags import TAG_ACV, TAG_DUMMY

@@ -187,12 +187,12 @@ def _expose_endpoint(app: Flask):
 
 
 def _post_create_app_base(app):
-    if app.config["DEBUG"] is True:
+    levels = {"info": logging.INFO, "debug": logging.DEBUG}
+    if app.config["DEBUG"] in ["info", "debug"]:
         logging.info("Debug is enabled.")
-        logging.getLogger().setLevel(logging.DEBUG)
-
-    if app.config["DEBUG"] is True:
         logging.info("SQL Logging enabled.")
-        logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+        logging.getLogger().setLevel(levels[app.config["DEBUG"]])
+        logging.getLogger("sqlalchemy.engine").setLevel(levels[app.config["DEBUG"]])
     else:
-        logging.info("SQL Logging disabled.")
+        logging.info("Debug is disabled or unrecognized level.")
+        logging.info("SQL Logging disabled or unrecognized level.")

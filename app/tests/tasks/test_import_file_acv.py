@@ -2,8 +2,8 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from app.models.refs.commune import Commune
-from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
+from models.entities.refs.Commune import Commune
+from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
 from app.services.communes import select_commune
 from app.tasks.refs.update_ref_communes import import_file_acv
 from tests import TESTS_PATH

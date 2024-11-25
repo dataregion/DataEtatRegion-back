@@ -6,15 +6,16 @@ from app import db
 from app.controller.ref_controller import build_ref_controller
 from app.controller.utils.ControllerUtils import ParserArgument, get_pagination_parser
 from app.models.common.Pagination import Pagination
-from app.models.refs.localisation_interministerielle import (
+from models.schemas.refs import (
     LocalisationInterministerielleSchema,
-    LocalisationInterministerielle,
 )
+from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
 
 auth = current_app.extensions["auth"]
 
 api = build_ref_controller(
     LocalisationInterministerielle,
+    LocalisationInterministerielleSchema,
     Namespace(
         name="Localisation interministerielle Controller",
         path="/loc-interministerielle",

@@ -1,6 +1,7 @@
 import json
 import datetime
 
+from models.entities.common.Tags import Tags
 import pytest
 
 from app.tasks.tags import apply_tags_cper_2015_20
@@ -9,8 +10,8 @@ from tests.tasks.tags.test_tag_acv import add_references
 from ..tags import *  # noqa: F403
 
 from app import db
-from app.models.financial.FinancialAe import FinancialAe
-from app.models.tags.Tags import TagAssociation, Tags
+from models.entities.financial.FinancialAe import FinancialAe
+from models.entities.common.Tags import TagAssociation
 
 
 @pytest.fixture(autouse=True)

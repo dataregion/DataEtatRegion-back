@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.models.refs.ministere import Ministere
+from models.entities.refs.Ministere import Ministere
 
 
 @pytest.fixture(scope="function")

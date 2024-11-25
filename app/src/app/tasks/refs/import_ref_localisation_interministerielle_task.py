@@ -6,8 +6,8 @@ import logging
 from sqlalchemy import func
 
 from app import db, celeryapp
-from app.models.refs.commune import Commune
-from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
+from models.entities.refs.Commune import Commune
+from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
 
 LOGGER = logging.getLogger()
 

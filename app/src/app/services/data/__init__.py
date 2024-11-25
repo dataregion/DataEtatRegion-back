@@ -2,17 +2,24 @@
 Services liés à la couche d'accès aux données
 """
 
+from enum import Enum
+from models.entities.common.Tags import Tags
 from sqlalchemy import Column, ColumnExpressionArgument, Select, desc, select, or_, func, distinct
-from app.models.enums.DataType import DataType
-from app.models.enums.TypeCodeGeo import TypeCodeGeo
+from models.value_objects.common import DataType
+from models.value_objects.common import TypeCodeGeo
 from app.database import db
 
-from app.models.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
-from app.models.tags.Tags import TagVO, Tags
+from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
+from models.value_objects.tags import TagVO
 from app.services.helper import (
     TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver,
     TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver,
 )
+
+
+class BenefOrLoc(Enum):
+    BENEFICIAIRE = "beneficiaire"
+    LOCALISATION_INTER = "localisationInterministerielle"
 
 
 class BuilderStatementFinancialLine:
@@ -52,6 +59,10 @@ class BuilderStatementFinancialLine:
 
     def annee_in(self, annees: list[int] | None):
         self._stmt_where_field_in(FinancialLines.annee, annees)
+        return self
+
+    def centres_couts_in(self, centres_couts: list[str] | None):
+        self._stmt_where_field_in(FinancialLines.centreCouts_code, centres_couts)
         return self
 
     def domaine_fonctionnel_in(self, dfs: list[str] | None):
@@ -98,7 +109,13 @@ class BuilderStatementFinancialLine:
         self._stmt = self._stmt.where(FinancialLines.n_ej == ej).where(FinancialLines.n_poste_ej == poste_ej)
         return self
 
-    def where_geo(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):
+    def where_qpv_not_null(self):
+        self._stmt = self._stmt.where(FinancialLines.beneficiaire_qpv24_code is not None)
+        return self
+
+    def where_geo(
+        self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str, benef_or_loc: BenefOrLoc = None
+    ):
         if list_code_geo is None:
             return self
 
@@ -113,6 +130,7 @@ class BuilderStatementFinancialLine:
             source_region,
             column_codegeo_commune_loc_inter,
             column_codegeo_commune_beneficiaire,
+            benef_or_loc,
         )
         return self
 
@@ -123,6 +141,7 @@ class BuilderStatementFinancialLine:
         source_region: str,
         column_codegeo_commune_loc_inter: Column[str] | None,
         column_codegeo_commune_beneficiaire: Column[str] | None,
+        benef_or_loc: BenefOrLoc = None,
     ):
         conds = []
 
@@ -143,13 +162,17 @@ class BuilderStatementFinancialLine:
         #
         # Ou les code geo de la commune associée à la localisation interministerielle
         #
-        if column_codegeo_commune_loc_inter is not None:
+        if column_codegeo_commune_loc_inter is not None and (
+            benef_or_loc is None or benef_or_loc == BenefOrLoc.LOCALISATION_INTER
+        ):
             conds.append(column_codegeo_commune_loc_inter.in_(list_code_geo))
 
         #
         # Ou les code geo de la commune associée au bénéficiaire
         #
-        if column_codegeo_commune_beneficiaire is not None:
+        if column_codegeo_commune_beneficiaire is not None and (
+            benef_or_loc is None or benef_or_loc == BenefOrLoc.BENEFICIAIRE
+        ):
             conds.append(column_codegeo_commune_beneficiaire.in_(list_code_geo))
 
         where_clause = or_(*conds)

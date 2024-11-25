@@ -1,7 +1,6 @@
 import os
 import json
 import logging
-import re
 import sys
 from dataclasses import dataclass
 from flask import current_app
@@ -9,8 +8,8 @@ from werkzeug.utils import secure_filename
 
 from app import db
 from app.exceptions.exceptions import FileNotAllowedException
-from app.models.audit.AuditUpdateData import AuditUpdateData
-from app.models.enums.DataType import DataType
+from models.entities.audit.AuditUpdateData import AuditUpdateData
+from models.value_objects.common import DataType
 from app.services.file_service import allowed_file
 
 
@@ -165,8 +164,12 @@ def _get_instance_model_by_name(class_name: str):
         ReferentielNotFound: If the model class object is not found.
 
     """
-    file_name = re.sub("(?<!^)(?=[A-Z])", "_", class_name).lower()
+    ref_module_prefix = "models.entities.refs"
+
     try:
-        return getattr(sys.modules["app.models.refs." + file_name], class_name)
-    except KeyError:
+        return getattr(sys.modules[ref_module_prefix], class_name)
+    except (KeyError, AttributeError):
+        logging.error(
+            f"Impossible to find referential '{class_name}'. Please check it's importable through '{ref_module_prefix}.{class_name}'"
+        )
         raise ReferentielNotFound(name=class_name)

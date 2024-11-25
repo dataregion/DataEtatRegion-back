@@ -2,8 +2,8 @@ import json
 from unittest.mock import patch, call
 
 from app import db
-from app.models.refs.code_programme import CodeProgramme
-from app.models.refs.ministere import Ministere
+from models.entities.refs.CodeProgramme import CodeProgramme
+from models.entities.refs.Ministere import Ministere
 from app.tasks.import_refs_tasks import import_refs_task
 from app.tasks.refs import import_line_one_ref_default
 from tests import TESTS_PATH

@@ -3,11 +3,11 @@ import json
 
 import pytest
 
-from app.models.financial.FinancialAe import FinancialAe
-from app.models.financial.FinancialCp import FinancialCp
-from app.models.refs.code_programme import CodeProgramme
-from app.models.refs.region import Region
-from app.models.refs.siret import Siret
+from models.entities.financial.FinancialAe import FinancialAe
+from models.entities.financial.FinancialCp import FinancialCp
+from models.entities.refs.CodeProgramme import CodeProgramme
+from models.entities.refs.Region import Region
+from models.entities.refs.Siret import Siret
 from app.tasks.files.file_task import read_csv_and_import_ae_cp, read_csv_and_import_fichier_nat_ae_cp
 from app.tasks.financial.import_financial import import_lines_financial_ae
 from tests import TESTS_PATH, delete_references

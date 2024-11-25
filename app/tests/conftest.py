@@ -1,9 +1,11 @@
+from pathlib import Path
 import random
-import pytest
-from tests.DataEtatPostgresContainer import DataEtatPostgresContainer
-from sqlalchemy import text
-from app import create_app_base, db
 
+import pytest
+from sqlalchemy import text
+
+from app import create_app_base, db
+from tests.DataEtatPostgresContainer import DataEtatPostgresContainer
 
 # Initialisation du conteneur PostgreSQL et récupération de l'URL de connexion
 postgres_container = DataEtatPostgresContainer()
@@ -24,12 +26,15 @@ extra_config = {
     "SERVER_NAME": "localhost",
     "UPLOAD_FOLDER": "/tmp/",
     "IMPORT_BATCH_SIZE": 10,
+    "FERNET_SECRET_KEY": "JmfQ9tbvIHNDeEKf5nAW2u_pww0xz2D5zcE23CIVXLQ=",
 }
+
+_curr = Path(__file__).parent
 
 # Création de l'application Flask
 test_app = create_app_base(
-    config_filep="tests/config/config.yml",
-    oidc_config_filep="tests/config/oidc.yml",
+    config_filep=(_curr / "config" / "config.yml").as_posix(),
+    oidc_config_filep=(_curr / "config" / "oidc.yml").as_posix(),
     extra_config_settings=extra_config,
 )
 

@@ -3,14 +3,20 @@ from flask_pyoidc import OIDCAuthentication
 from app.controller.financial_data.schema_model import register_flatten_financial_lines_schemamodel
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
-from app.models.enums.DataType import DataType
-from app.models.financial.query import EnrichedFlattenFinancialLinesSchema
+from models.value_objects.common import DataType
 from app.servicesapp.authentication.connected_user import ConnectedUser
-from app.servicesapp.financial_data import get_annees_budget, get_ligne_budgetaire, search_lignes_budgetaires
+from app.servicesapp.financial_data import (
+    get_annees_budget,
+    get_ligne_budgetaire,
+    search_lignes_budgetaires,
+    search_lignes_budgetaires_qpv,
+)
 
 from flask_restx import Namespace, Resource, fields
 
 from http import HTTPStatus
+
+from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 
 api_ns = Namespace(name="Budget", path="/", description="Api d'accès aux données budgetaires.")
 auth: OIDCAuthentication = current_app.extensions["auth"]
@@ -32,12 +38,15 @@ parser_get.add_argument(
     "le code d'arrondissement (3 ou 4 chiffres)"
     "ou le crte (préfixé par 'crte-')",
 )
+parser_get.add_argument("ref_qpv", type=int, help="Année du référentiel du QPV")
+parser_get.add_argument("code_qpv", type=str, action="split", help="Les codes de QPV")
 parser_get.add_argument(
     "theme", type=str, action="split", help="Le libelle theme (si code_programme est renseigné, le theme est ignoré)."
 )
 parser_get.add_argument("siret_beneficiaire", type=str, action="split", help="Code siret d'un beneficiaire.")
 parser_get.add_argument("types_beneficiaires", type=str, action="split", help="Types de bénéficiaire.")
 parser_get.add_argument("annee", type=int, action="split", help="L'année comptable.")
+parser_get.add_argument("centres_couts", type=str, action="split", help="Le(s) code(s) des centres de coût")
 parser_get.add_argument("domaine_fonctionnel", type=str, action="split", help="Le(s) code(s) du domaine fonctionnel.")
 parser_get.add_argument(
     "referentiel_programmation", type=str, action="split", help="Le(s) code(s) du référentiel de programmation."
@@ -70,6 +79,35 @@ class BudgetCtrl(Resource):
         params["data_source"] = data_source_mapping.get(user.current_region)
 
         page_result = search_lignes_budgetaires(**params)
+        result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result.items)
+
+        if len(page_result.items) == 0:
+            return "", HTTPStatus.NO_CONTENT
+
+        total = page_result.total if page_result.total is not None else 0
+
+        return {
+            "items": result,
+            "pageInfo": Pagination(total, page_result.page, page_result.per_page).to_json(),
+        }, HTTPStatus.OK
+
+
+@api_ns.route("/budget/data-qpv")
+class BudgetQPVCtrl(Resource):
+    @api_ns.expect(parser_get)
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api_ns.doc(security="Bearer")
+    @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune lignes correspondante")
+    @api_ns.response(HTTPStatus.OK, description="Lignes correspondante", model=paginated_budget)
+    def get(self):
+        """Recupère les lignes de données budgetaires génériques"""
+        user = ConnectedUser.from_current_token_identity()
+        params = parser_get.parse_args()
+        params["source_region"] = user.current_region
+        data_source_mapping = current_app.config.get("DATA_SOURCE_MAPPING", {})
+        params["data_source"] = data_source_mapping.get(user.current_region)
+
+        page_result = search_lignes_budgetaires_qpv(**params)
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result.items)
 
         if len(page_result.items) == 0:

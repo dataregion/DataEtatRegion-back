@@ -4,9 +4,11 @@ from flask_restx import Namespace, Resource
 
 from flask_pyoidc import OIDCAuthentication
 
-from app.models.visuterritoire.query import MontantParNiveauBopAnneeType, MontantParNiveauBopAnneeTypeSchema
+from models.schemas.visuterritoire import MontantParNiveauBopAnneeTypeSchema
 import tempfile
 import csv
+
+from models.entities.visuterritoire.query.VuesVisuTerritoire import MontantParNiveauBopAnneeType
 
 
 api = Namespace(

@@ -1,8 +1,8 @@
 from datetime import date
 from unittest.mock import patch, call, ANY, MagicMock
 
-from app.models.financial.Ademe import Ademe
-from app.models.refs.siret import Siret
+from models.entities.financial.Ademe import Ademe
+from models.entities.refs.Siret import Siret
 from app.tasks.financial.import_financial import import_line_ademe, import_file_ademe
 from tests import TESTS_PATH
 from tests import delete_references

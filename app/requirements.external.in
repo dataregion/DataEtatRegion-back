@@ -15,11 +15,6 @@ nocodb==0.1.0
 
 waitress ~= 3.0
 
-marshmallow-sqlalchemy ~= 1.1
-marshmallow-dataclass ~= 8.5
-marshmallow-jsonschema ~= 0.13
-
-sqlalchemy == 2.0.23 # XXX: regression sur la 2.0.25
 psycopg ~= 3.1
 psycopg-binary ~= 3.1
 sqlparse ~= 0.4
@@ -47,3 +42,11 @@ api-entreprise >= 3.6.0
 prometheus-flask-exporter ~= 0.23
 
 watchdog ~= 5.0.2
+
+cryptography==43.0.3
+geoalchemy2 ~= 0.15.2
+
+geopandas ~= 1.0.1
+
+pyunpack ~= 0.3
+chardet ~= 5.2.0

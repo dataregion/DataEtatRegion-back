@@ -70,6 +70,16 @@ def get_metadata(bind):
             t.tometadata(m)
     return m
 
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ != "table":
+        return True
+
+    skip_autogen = object.info.get("skip_autogenerate")
+    if skip_autogen:
+        return False
+
+    return True
+
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
@@ -100,6 +110,7 @@ def run_migrations_offline():
                 url=rec["url"],
                 output_buffer=buffer,
                 target_metadata=get_metadata(name),
+                include_object=include_object,
                 literal_binds=True,
             )
             with context.begin_transaction():
@@ -157,6 +168,7 @@ def run_migrations_online():
                 upgrade_token="%s_upgrades" % name,
                 downgrade_token="%s_downgrades" % name,
                 target_metadata=get_metadata(name),
+                include_object=include_object,
                 **conf_args,
             )
             context.run_migrations(engine_name=name)

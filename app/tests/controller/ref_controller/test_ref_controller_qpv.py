@@ -2,17 +2,34 @@ import json
 
 import pytest
 
-from app.models.refs.qpv import Qpv
+from models.entities.refs.Qpv import Qpv
 
 
 @pytest.fixture(scope="function")
 def insert_qpv(session):
-    qpv01 = {"code": "QP093009", "label": "Le Plateau - Les Malassis - La Noue", "label_commune": "Montreuil"}
-    qpv02 = {"code": "QP083007", "label": "Quartiers Nord Est", "label_commune": "Avignon"}
+    qpv01 = {
+        "code": "QP093009",
+        "label": "Le Plateau - Les Malassis - La Noue",
+        "label_commune": "Montreuil",
+        "annee_decoupage": 2015,
+        "centroid": None,
+        "geom": None,
+    }
+    qpv02 = {
+        "code": "QP083007",
+        "label": "Quartiers Nord Est",
+        "label_commune": "Avignon",
+        "annee_decoupage": 2015,
+        "centroid": None,
+        "geom": None,
+    }
     qpv03 = {
         "code": "QP093018",
         "label": "Bel Air - Grands Pêchers - Ruffins - Le Morillon",
         "label_commune": "Montreuil",
+        "annee_decoupage": 2015,
+        "centroid": None,
+        "geom": None,
     }
 
     session.add(Qpv(**qpv01))

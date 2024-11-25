@@ -5,16 +5,19 @@ from flask_restx import Namespace, Resource, reqparse
 from flask_restx._http import HTTPStatus
 
 from app.controller.financial_data.schema_model import register_demarche_schemamodel
-from app.models.demarches.demarche import Demarche
-from app.models.demarches.donnee import Donnee
-from app.models.demarches.reconciliation import Reconciliation
-from app.models.demarches.valeur_donnee import ValeurDonnee
 from app.services.demarches.affichage import AffichageService
 from app.services.demarches.demarches import DemarcheService
 from app.services.demarches.donnees import DonneeService
 from app.services.demarches.dossiers import DossierService
 from app.services.demarches.reconciliations import ReconciliationService
+from app.services.demarches.tokens import TokenService
 from app.services.demarches.valeurs import ValeurService
+from app.servicesapp.authentication import ConnectedUser
+from models.entities.demarches.Demarche import Demarche
+from models.entities.demarches.Donnee import Donnee
+from models.entities.demarches.Reconciliation import Reconciliation
+from models.entities.demarches.ValeurDonnee import ValeurDonnee
+from models.schemas.demarches import TokenSchema
 
 api = Namespace(
     name="Démarches", path="/", description="Api de gestion des données récupérées de l'API Démarches Simplifiées"
@@ -42,7 +45,9 @@ class DemarcheSimplifie(Resource):
     @api.doc(security="Bearer")
     @api.expect(reqpars_get_demarche)
     def post(self):
-        return make_response(jsonify(DemarcheService.integrer_demarche(int(request.form["id"]))), HTTPStatus.OK)
+        user = ConnectedUser.from_current_token_identity()
+        demarche = DemarcheService.integrer_demarche(user.sub, int(request.form["tokenId"]), int(request.form["id"]))
+        return make_response(jsonify(demarche), HTTPStatus.OK)
 
 
 @api.route("/reconciliation")
@@ -178,3 +183,39 @@ class ValeurDonneeSimplifie(Resource):
             valeurs.extend(ValeurService.find_by_dossiers(dossiers, int(idDonnee)))
 
         return make_response(jsonify(valeurs), HTTPStatus.OK)
+
+
+@api.route("/token")
+class TokenResource(Resource):
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def get(self):
+        user = ConnectedUser.from_current_token_identity()
+        tokens = TokenService.find_by_uuid_utilisateur(user.sub)
+        return make_response(TokenSchema(many=True).dump(tokens), HTTPStatus.OK)
+
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def post(self):
+        user = ConnectedUser.from_current_token_identity()
+        nom = request.form.get("nom")
+        token = request.form.get("token")
+        return make_response(TokenSchema(many=False).dump(TokenService.create(nom, token, user.sub)), HTTPStatus.OK)
+
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def put(self):
+        user = ConnectedUser.from_current_token_identity()
+        token_id = int(request.form.get("id"))
+        nom = request.form.get("nom")
+        token = request.form.get("token")
+        return make_response(
+            TokenSchema(many=False).dump(TokenService.update(token_id, nom, token, user.sub)), HTTPStatus.OK
+        )
+
+    @auth.token_auth("default", scopes_required=["openid"])
+    @api.doc(security="Bearer")
+    def delete(self):
+        user = ConnectedUser.from_current_token_identity()
+        token_id = int(request.args["id"])
+        return make_response(TokenSchema(many=False).dump(TokenService.delete(token_id, user.sub)), HTTPStatus.OK)

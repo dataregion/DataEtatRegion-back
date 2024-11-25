@@ -1,9 +1,9 @@
 import logging
 
-from app import db
-from app.models.demarches.donnee import Donnee
+from app import db, cache
 from app.services.demarches.sections import SectionService
 from app.services.demarches.types import TypeService
+from models.entities.demarches.Donnee import Donnee
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +23,7 @@ class DonneeService:
         :param demarche_number: Numéro de la démarche associée au champ
         :return: Donnee
         """
-        stmt = db.select(Donnee).where(Donnee.id_ds == champ["id"]).where(Donnee.demarche_number == demarche_number)
-        donnee = db.session.execute(stmt).scalar_one_or_none()
+        donnee = DonneeService.get_donnee(champ["id"], demarche_number)
         if donnee is not None:
             return donnee
         section = SectionService.get_or_create(section_name)
@@ -41,3 +40,9 @@ class DonneeService:
         db.session.add(donnee)
         db.session.flush()
         return donnee
+
+    @staticmethod
+    @cache.memoize(timeout=60)
+    def get_donnee(id_ds_donnee: int, demarche_number: int) -> Donnee:
+        stmt = db.select(Donnee).where(Donnee.id_ds == id_ds_donnee).where(Donnee.demarche_number == demarche_number)
+        return db.session.execute(stmt).scalar_one_or_none()

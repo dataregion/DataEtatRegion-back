@@ -1,6 +1,7 @@
 import json
 import datetime
 
+from models.entities.common.Tags import Tags
 import pytest
 
 from tests import delete_references
@@ -8,8 +9,8 @@ from tests.tasks.tags.test_tag_acv import add_references
 
 from ..tags import *  # noqa: F403
 
-from app.models.financial.FinancialAe import FinancialAe
-from app.models.tags.Tags import TagAssociation, Tags
+from models.entities.financial.FinancialAe import FinancialAe
+from models.entities.common.Tags import TagAssociation
 from app.tasks.tags.apply_tags import apply_tags_fonds_vert
 
 

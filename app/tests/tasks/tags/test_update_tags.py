@@ -1,7 +1,7 @@
 from unittest.mock import patch, call
 import pytest
 
-from app.models.tags.Tags import Tags
+from models.entities.common.Tags import Tags
 from . import *  # noqa: F403
 from app.tasks.tags.update_all_tags import update_all_tags
 

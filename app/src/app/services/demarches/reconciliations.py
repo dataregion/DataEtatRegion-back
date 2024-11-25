@@ -3,16 +3,20 @@ import re
 import string
 from datetime import datetime
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, and_
+from sqlalchemy.exc import IntegrityError
 
 from app import db
-from app.models.demarches.dossier import Dossier
-from app.models.demarches.reconciliation import Reconciliation
-from app.models.financial.FinancialAe import FinancialAe
 from app.services import BuilderStatementFinancial
 from app.services.demarches.demarches import DemarcheService
 from app.services.demarches.dossiers import DossierService
 from app.services.demarches.valeurs import ValeurService
+from app.services.tags import ApplyTagForAutomation, select_tag
+from models.entities.common.Tags import TagAssociation
+from models.entities.demarches.Dossier import Dossier
+from models.entities.demarches.Reconciliation import Reconciliation
+from models.entities.financial.FinancialAe import FinancialAe
+from models.value_objects import TagVO
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +29,7 @@ class ReconciliationService:
             .join(Dossier, Dossier.number == Reconciliation.dossier_number)
             .where(Dossier.demarche_number == demarche_number)
         )
-        return db.session.execute(stmt).scalars()
+        return db.session.execute(stmt).scalars().all()
 
     @staticmethod
     def save(reconciliation: Reconciliation) -> Reconciliation:
@@ -40,12 +44,11 @@ class ReconciliationService:
 
     @staticmethod
     def clear_reconciliations(demarche_number: int):
-        subquery_reconciliations = (
-            select(Reconciliation.id)
-            .join(Dossier, Dossier.number == Reconciliation.dossier_number)
-            .where(Dossier.demarche_number == demarche_number)
-        )
-        db.session.execute(delete(Reconciliation).where(Reconciliation.id.in_(subquery_reconciliations)))
+        reconciliations = ReconciliationService.find_by_demarche_number(demarche_number)
+        ReconciliationService.clear_previous_tags_reconcilie_ds(reconciliations)
+
+        id_reconciliations = [reconciliation.id for reconciliation in reconciliations]
+        db.session.execute(delete(Reconciliation).where(Reconciliation.id.in_(id_reconciliations)))
         db.session.commit()
 
     @staticmethod
@@ -66,44 +69,53 @@ class ReconciliationService:
             dossier = dossier_row[0]
             valeurs = ValeurService.get_dict_valeurs(dossier.number, champs_reconciliation)
 
-            lignes_chorus = ReconciliationService.get_lignes_chorus_par_type_reconciliation(
+            ligne_chorus = ReconciliationService.get_ligne_chorus_par_type_reconciliation(
                 dossier, champs_reconciliation, valeurs, cadre
             )
 
-            if lignes_chorus:
-                for ligne_chorus in lignes_chorus:
-                    reconciliation = Reconciliation(
-                        dossier_number=dossier.number,
-                        financial_ae_id=ligne_chorus.id,
-                        date_reconciliation=date_reconciliation,
-                    )
+            if ligne_chorus is not None:
+                reconciliation = Reconciliation(
+                    dossier_number=dossier.number,
+                    financial_ae_id=ligne_chorus.id,
+                    date_reconciliation=date_reconciliation,
+                )
+                try:
                     ReconciliationService.save(reconciliation)
                     reconciliations.append(reconciliation)
-                db.session.commit()
+                except IntegrityError:
+                    db.session.rollback()
+                    logger.error(
+                        f"Erreur lors de la réconciliation entre le dossier {dossier.number} et la ligne financière {ligne_chorus.id}. La ligne a peut-être déjà été réconciliée avec un autre dossier"
+                    )
+        ReconciliationService.add_tag_reconcilie_ds(reconciliations)
+        db.session.commit()
         return reconciliations
 
     @staticmethod
-    def get_lignes_chorus_par_type_reconciliation(
+    def get_ligne_chorus_par_type_reconciliation(
         dossier: Dossier, champs_reconciliation: dict, valeurs: dict, cadre: dict
     ):
-        lignes_chorus = []
+        lignes = []
         if "champEJ" in champs_reconciliation:
             if champs_reconciliation["champEJ"] in valeurs:
                 valeur_champ_ej = valeurs[champs_reconciliation["champEJ"]]
-                lignes_chorus = ReconciliationService.get_lignes_chorus_num_ej(valeur_champ_ej)
+                lignes = ReconciliationService.get_lignes_chorus_num_ej(valeur_champ_ej)
         elif "champMontant" in champs_reconciliation:
             if champs_reconciliation["champMontant"] in valeurs:
                 valeur_champ_montant = ReconciliationService.convert_valeur_to_float(
                     valeurs[champs_reconciliation["champMontant"]]
                 )
                 if valeur_champ_montant is not None and valeur_champ_montant != "":
-                    lignes_chorus = ReconciliationService.get_lignes_chorus_siret_montant(
+                    lignes = ReconciliationService.get_lignes_chorus_siret_montant(
                         dossier.siret, valeur_champ_montant, cadre
                     )
         else:
             # TODO Implémenter les méthodes de réconciliation manquantes
             logger.info("Méthode de réconciliation non implémentée")
-        return lignes_chorus
+        # On ne réconcilie pas si on a plusieurs résultats
+        if len(lignes) != 1:
+            return None
+        return lignes[0]
 
     @staticmethod
     def convert_valeur_to_float(valeur: string):
@@ -117,7 +129,7 @@ class ReconciliationService:
 
     @staticmethod
     def get_lignes_chorus_num_ej(num_ej: string):
-        return BuilderStatementFinancial().select_ae().where_n_ej(num_ej).do_all()
+        return BuilderStatementFinancial().select_ae().where_n_ej(num_ej).do_all().all()
 
     @staticmethod
     def get_lignes_chorus_siret_montant(siret: string, montant: float, cadre: dict):
@@ -135,9 +147,6 @@ class ReconciliationService:
                 lambda ligne: ReconciliationService.filter_lignes_chorus_par_param_reconciliation(ligne, cadre), lignes
             )
         )
-        # On ne réconcilie pas si on a plusieurs résultats
-        if len(lignes) > 1:
-            return []
         return lignes
 
     @staticmethod
@@ -180,3 +189,17 @@ class ReconciliationService:
             and match_departement
             and match_region
         )
+
+    @staticmethod
+    def add_tag_reconcilie_ds(reconciliations: list[Reconciliation]):
+        id_lignes = [reconciliation.financial_ae_id for reconciliation in reconciliations]
+        where_clause = FinancialAe.id.in_(id_lignes)
+        apply_task = ApplyTagForAutomation(select_tag(TagVO(type="reconcilie-ds", value=None)))
+        apply_task.apply_tags_ae(where_clause)
+
+    @staticmethod
+    def clear_previous_tags_reconcilie_ds(reconciliations: list[Reconciliation]):
+        tag = select_tag(TagVO(type="reconcilie-ds", value=None))
+        id_lignes = [reconciliation.financial_ae_id for reconciliation in reconciliations]
+        where_clause = and_(TagAssociation.tag_id == tag.id, TagAssociation.financial_ae.in_(id_lignes))
+        db.session.execute(delete(TagAssociation).where(where_clause))

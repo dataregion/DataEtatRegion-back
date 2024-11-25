@@ -6,16 +6,16 @@ from sqlalchemy import delete
 from app import celeryapp, db
 from app.exceptions.exceptions import FinancialException
 import sqlalchemy.exc
-from app.models.financial.Ademe import Ademe
-from app.models.financial.FinancialAe import FinancialAe
-from app.models.financial.FinancialCp import FinancialCp
-from app.models.refs.centre_couts import CentreCouts
-from app.models.refs.code_programme import CodeProgramme
-from app.models.refs.domaine_fonctionnel import DomaineFonctionnel
-from app.models.refs.fournisseur_titulaire import FournisseurTitulaire
-from app.models.refs.groupe_marchandise import GroupeMarchandise
-from app.models.refs.localisation_interministerielle import LocalisationInterministerielle
-from app.models.refs.referentiel_programmation import ReferentielProgrammation
+from models.entities.financial.Ademe import Ademe
+from models.entities.financial.FinancialAe import FinancialAe
+from models.entities.financial.FinancialCp import FinancialCp
+from models.entities.refs.CentreCouts import CentreCouts
+from models.entities.refs.CodeProgramme import CodeProgramme
+from models.entities.refs.DomaineFonctionnel import DomaineFonctionnel
+from models.entities.refs.FournisseurTitulaire import FournisseurTitulaire
+from models.entities.refs.GroupeMarchandise import GroupeMarchandise
+from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
+from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
 from app.services.siret import check_siret
 from app.tasks import limiter_queue
 

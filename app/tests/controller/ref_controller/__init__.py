@@ -4,10 +4,10 @@ import pytest
 __all__ = ("init_ref_ministeres_themes", "insert_centre_couts")
 
 
-from app.models.refs.code_programme import CodeProgramme
-from app.models.refs.centre_couts import CentreCouts
-from app.models.refs.ministere import Ministere
-from app.models.refs.theme import Theme
+from models.entities.refs.CodeProgramme import CodeProgramme
+from models.entities.refs.CentreCouts import CentreCouts
+from models.entities.refs.Ministere import Ministere
+from models.entities.refs.Theme import Theme
 
 ministere01 = {"code": "MIN01", "label": "label MIN01groscccccccc"}
 ministere02 = {"code": "MIN02", "label": "label MIN02"}

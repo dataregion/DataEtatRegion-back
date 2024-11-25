@@ -5,21 +5,21 @@ from sqlalchemy.orm import contains_eager, selectinload
 
 from app import db
 from app.exceptions.exceptions import InvalidFile, FileNotAllowedException
-from app.models.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
-from app.models.audit.AuditUpdateData import AuditUpdateData
-from app.models.enums.DataType import DataType
-from app.models.enums.TypeCodeGeo import TypeCodeGeo
-from app.models.financial.Ademe import Ademe
+from models.entities.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
+from models.entities.audit.AuditUpdateData import AuditUpdateData
+from models.value_objects.common import DataType
+from models.value_objects.common import TypeCodeGeo
+from models.entities.financial.Ademe import Ademe
 
-from app.models.financial.FinancialCp import FinancialCp
-from app.models.financial.FinancialAe import FinancialAe
-from app.models.refs.categorie_juridique import CategorieJuridique
-from app.models.refs.siret import Siret
-from app.models.tags.Tags import Tags
+from models.entities.financial.FinancialCp import FinancialCp
+from models.entities.financial.FinancialAe import FinancialAe
+from models.entities.refs.CategorieJuridique import CategorieJuridique
+from models.entities.refs.Siret import Siret
+from models.entities.common.Tags import Tags
 from app.services import BuilderStatementFinancial, FileStorageProtocol
 from app.services import BuilderStatementFinancialCp
-from app.models.tags.Tags import TagVO
-from app.services.data import BuilderStatementFinancialLine
+from models.value_objects.tags import TagVO
+from app.services.data import BenefOrLoc, BuilderStatementFinancialLine
 from app.servicesapp.exceptions.authentication import NoCurrentRegion
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
@@ -40,7 +40,7 @@ def import_financial_data(
     save_path_cp = check_file_and_save(file_cp)
     _check_file(save_path_ae, FinancialAe.get_columns_files_ae())
     _check_file(save_path_cp, FinancialCp.get_columns_files_cp())
-    
+
     # Enregistrement de l'import à effectuer
     db.session.add(
         AuditInsertFinancialTasks(
@@ -49,7 +49,7 @@ def import_financial_data(
             source_region=_source_region,  # type: ignore
             annee=annee,  # type: ignore
             username=username,  # type: ignore
-            application_clientid=client_id, # type: ignore
+            application_clientid=client_id,  # type: ignore
         )
     )
     db.session.commit()
@@ -193,11 +193,14 @@ def search_lignes_budgetaires(
     siret_beneficiaire: list | None = None,
     types_beneficiaires: list | None = None,
     annee: list | None = None,
+    centres_couts: list | None = None,
     domaine_fonctionnel: list | None = None,
     referentiel_programmation: list | None = None,
     source_region: str | None = None,
     niveau_geo: str | None = None,
     code_geo: list | None = None,
+    ref_qpv: int | None = None,
+    code_qpv: list | None = None,
     tags: list[str] | None = None,
     data_source: str | None = None,
     page_number=1,
@@ -217,6 +220,7 @@ def search_lignes_budgetaires(
         .code_programme_in(code_programme)
         .themes_in(theme)
         .annee_in(annee)
+        .centres_couts_in(centres_couts)
         .domaine_fonctionnel_in(domaine_fonctionnel)
         .referentiel_programmation_in(referentiel_programmation)
         .source_region_in(_regions)
@@ -229,6 +233,86 @@ def search_lignes_budgetaires(
         query_lignes_budget.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
     elif bool(niveau_geo) ^ bool(code_geo):
         raise NiveauCodeGeoException("Les paramètres niveau_geo et code_geo doivent être fournis ensemble.")
+
+    if ref_qpv is not None and code_qpv is not None:
+        if ref_qpv != 2015 and ref_qpv != 2024:
+            raise NiveauCodeGeoException("Mauvaise année de découpage QPV.")
+        query_lignes_budget.where_geo(
+            TypeCodeGeo.QPV if ref_qpv == 2015 else TypeCodeGeo.QPV24, code_qpv, source_region
+        )
+    elif bool(ref_qpv) ^ bool(code_qpv):
+        raise NiveauCodeGeoException("Les paramètres ref_qpv et code_qpv doivent être fournis ensemble.")
+
+    _includes_nones = False
+    if types_beneficiaires is not None and "autres" in types_beneficiaires:
+        _includes_nones = True
+    query_lignes_budget.type_categorie_juridique_du_beneficiaire_in(types_beneficiaires, includes_none=_includes_nones)
+
+    query_lignes_budget.tags_fullname_in(tags)
+
+    page_result = query_lignes_budget.do_paginate(limit, page_number)
+    return page_result
+
+
+def search_lignes_budgetaires_qpv(
+    n_ej: list | None = None,
+    source: str | None = None,
+    code_programme: list | None = None,
+    theme: list | None = None,
+    siret_beneficiaire: list | None = None,
+    types_beneficiaires: list | None = None,
+    annee: list | None = None,
+    centres_couts: list | None = None,
+    domaine_fonctionnel: list | None = None,
+    referentiel_programmation: list | None = None,
+    source_region: str | None = None,
+    niveau_geo: str | None = None,
+    code_geo: list | None = None,
+    ref_qpv: int | None = None,
+    code_qpv: list | None = None,
+    tags: list[str] | None = None,
+    data_source: str | None = None,
+    page_number=1,
+    limit=500,
+):
+    """
+    Recherche les lignes budgetaires (quelle que soit la source)
+    correspondant aux critères de recherche utilisateur.
+    """
+
+    source_region = _sanitize_source_region(source_region)
+    _regions = _get_request_regions(source_region)
+
+    query_lignes_budget = (
+        BuilderStatementFinancialLine()
+        .beneficiaire_siret_in(siret_beneficiaire)
+        .code_programme_in(code_programme)
+        .themes_in(theme)
+        .annee_in(annee)
+        .centres_couts_in(centres_couts)
+        .domaine_fonctionnel_in(domaine_fonctionnel)
+        .referentiel_programmation_in(referentiel_programmation)
+        .source_region_in(_regions)
+        .n_ej_in(n_ej)
+        .source_is(source)
+        .data_source_is(data_source)
+    )
+
+    if niveau_geo is not None and code_geo is not None:
+        query_lignes_budget.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region, BenefOrLoc.BENEFICIAIRE)
+    elif bool(niveau_geo) ^ bool(code_geo):
+        raise NiveauCodeGeoException("Les paramètres niveau_geo et code_geo doivent être fournis ensemble.")
+
+    if ref_qpv is not None and code_qpv is not None:
+        if ref_qpv != 2015 and ref_qpv != 2024:
+            raise NiveauCodeGeoException("Mauvaise année de découpage QPV.")
+        query_lignes_budget.where_geo(
+            TypeCodeGeo.QPV if ref_qpv == 2015 else TypeCodeGeo.QPV24, code_qpv, source_region, BenefOrLoc.BENEFICIAIRE
+        )
+    elif ref_qpv is None and code_qpv is None:
+        query_lignes_budget.where_qpv_not_null()
+    elif bool(ref_qpv) ^ bool(code_qpv):
+        raise NiveauCodeGeoException("Les paramètres ref_qpv et code_qpv doivent être fournis ensemble.")
 
     _includes_nones = False
     if types_beneficiaires is not None and "autres" in types_beneficiaires:

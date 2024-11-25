@@ -4,9 +4,11 @@ from flask_restx import Namespace, Resource
 
 from flask_pyoidc import OIDCAuthentication
 
-from app.models.visuterritoire.query import France2030, France2030Schema
+from models.schemas.visuterritoire import France2030Schema
 import tempfile
 import csv
+
+from models.entities.visuterritoire.query.VuesVisuTerritoire import France2030
 
 
 api = Namespace(

@@ -1,5 +1,5 @@
 from app import db
-from app.models.demarches.section import Section
+from models.entities.demarches.Section import Section
 
 
 class SectionService:

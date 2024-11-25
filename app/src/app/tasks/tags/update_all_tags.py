@@ -5,7 +5,7 @@ import string
 from celery import subtask
 
 from app import celeryapp, db
-from app.models.tags.Tags import Tags
+from models.entities.common.Tags import Tags
 
 celery = celeryapp.celery
 LOGGER = logging.getLogger()

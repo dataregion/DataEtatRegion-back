@@ -1,17 +1,16 @@
 import logging
 
 from flask import current_app, request
-
-from flask_restx import Namespace, Resource, fields
 from flask_pyoidc import OIDCAuthentication
+from flask_restx import Namespace, Resource, fields
 
-from app import cache
-from app.controller.utils.ControllerUtils import make_cache
-from app.servicesapp.api_externes import ApisExternesService
+from app.clients.demarche_simplifie import get_or_make_api_demarche_simplifie
 from app.models.apis_externes.entreprise import InfoApiEntreprise
-from app.models.apis_externes.subvention import InfoApiSubvention
 from app.models.apis_externes.error import Error as ApiError
-
+from app.models.apis_externes.subvention import InfoApiSubvention
+from app.services.demarches.tokens import TokenService
+from app.servicesapp.api_externes import ApisExternesService
+from app.servicesapp.authentication import ConnectedUser
 
 api = Namespace(
     name="External APIs",
@@ -72,9 +71,11 @@ class DemarcheSimplifie(Resource):
     @api.doc(security="Bearer")
     @api.expect(parser_ds)
     @_document_error_responses(api)
-    @cache.cached(timeout=300, make_cache_key=make_cache)
     def post(self):
-        return service.api_demarche_simplifie.do_post(request.get_data())
+        user = ConnectedUser.from_current_token_identity()
+        token_id = int(request.args["tokenId"])
+        token = TokenService.find_by_uuid_utilisateur_and_token_id(user.sub, token_id).token
+        return get_or_make_api_demarche_simplifie(token).do_post(request.get_data()).get("data")
 
 
 @api.route("/info-entreprise/<siret>")

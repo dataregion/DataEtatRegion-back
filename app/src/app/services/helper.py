@@ -2,12 +2,12 @@ from abc import ABCMeta, abstractmethod
 
 from sqlalchemy import Column
 
-from app.models.enums.TypeCodeGeo import TypeCodeGeo
-from app.models.financial.France2030 import France2030
-from app.models.refs.commune import Commune
-from app.models.refs.siret import Siret
+from models.value_objects.common import TypeCodeGeo
+from models.entities.financial.France2030 import France2030
+from models.entities.refs.Commune import Commune
+from models.entities.refs.Siret import Siret
 
-from app.models.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
+from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
 
 
 class TypeCodeGeoToSqlAlchemyColumnResolver(metaclass=ABCMeta):
@@ -47,7 +47,9 @@ class TypeCodeGeoToFrance2030CodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolv
             case TypeCodeGeo.ARRONDISSEMENT:
                 column = commune.code_arrondissement
             case TypeCodeGeo.QPV:
-                column = beneficiaire.code_qpv
+                column = beneficiaire.code_qpv15
+            case TypeCodeGeo.QPV24:
+                column = beneficiaire.code_qpv24
 
         return column
 
@@ -94,5 +96,7 @@ class TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver(TypeCodeGeoToSqlAlch
                 column = FinancialLines.beneficiaire_commune_arrondissement_code
             case TypeCodeGeo.QPV:
                 column = FinancialLines.beneficiaire_qpv_code
+            case TypeCodeGeo.QPV24:
+                column = FinancialLines.beneficiaire_qpv24_code
 
         return column

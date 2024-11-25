@@ -1,4 +1,4 @@
-DEBUG: true
+DEBUG: info
 task_always_eager: True
 ressources:
   default:
