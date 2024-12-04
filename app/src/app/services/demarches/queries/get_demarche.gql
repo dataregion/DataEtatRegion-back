@@ -29,7 +29,7 @@ query getDemarche(
         activeRevision {
             id
         }
-        dossiers(first: 100, after: $after) {
+        dossiers(first: 100, after: $after, state: accepte) {
             pageInfo {
               endCursor
               hasNextPage
