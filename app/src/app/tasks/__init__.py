@@ -100,6 +100,7 @@ def _get_queue(queue_name: str):
     return queue
 
 
+from .demarches import *  # noqa: E402, F403
 from .files.file_task import *  # noqa: E402, F403
 from .financial.import_financial import *  # noqa: E402, F403
 from .financial.import_france_2030 import *  # noqa: E402, F403

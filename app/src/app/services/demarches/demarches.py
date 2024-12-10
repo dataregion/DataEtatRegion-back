@@ -3,6 +3,7 @@ import logging
 import string
 from datetime import datetime
 from pathlib import Path
+from typing import List
 
 from sqlalchemy import update, exc
 
@@ -11,14 +12,11 @@ from app.clients.demarche_simplifie import get_or_make_api_demarche_simplifie
 from app.services.demarches.dossiers import DossierService
 from app.services.demarches.tokens import TokenService
 from app.services.demarches.valeurs import ValeurService
-from app.servicesapp.api_externes import ApisExternesService
 from models.entities.demarches.Demarche import Demarche
 from models.entities.demarches.Dossier import Dossier
 from models.entities.demarches.ValeurDonnee import ValeurDonnee
 
 logger = logging.getLogger(__name__)
-
-service = ApisExternesService()
 
 
 class DemarcheExistsException(Exception):
@@ -55,7 +53,16 @@ class DemarcheService:
         return db.session.execute(stmt).scalar_one_or_none()
 
     @staticmethod
-    def save(demarche_number: int, demarche_dict: dict) -> Demarche:
+    def find_to_update() -> List[Demarche]:
+        """
+        Récupère les démarches non fermées pour les mettre à jour
+        :return: Demarche[]
+        """
+        stmt = db.select(Demarche).where(Demarche.date_fermeture == None, Demarche.token != None)  # noqa: E711
+        return db.session.execute(stmt).scalars().all()
+
+    @staticmethod
+    def save(demarche_number: int, demarche_dict: dict, token_id: int) -> Demarche:
         """
         Sauvegarde un objet Demarche
         :param demarche_dict:
@@ -75,6 +82,7 @@ class DemarcheService:
                 "date_creation": demarche_dict["data"]["demarche"]["dateCreation"],
                 "date_fermeture": demarche_dict["data"]["demarche"]["dateFermeture"],
                 "date_import": datetime.now(),
+                "token_id": token_id,
             }
             demarche = Demarche(**demarche_data)
             db.session.add(demarche)
@@ -122,7 +130,14 @@ class DemarcheService:
         db.session.commit()
 
     @staticmethod
-    def integrer_demarche(uuid_utilisateur: string, token_id: int, demarche_number: int):
+    def integrer_demarche(uuid_utilisateur: string, token_id: int, demarche_number: int) -> Demarche:
+        """
+        Intégration d'une démarche en BDD
+        :param uuid_utilisateur: ID user Keycloak
+        :param token_id: Token DS pour rappatrier la démarche
+        :param demarche_number: ID de la démmarche à intégrer
+        :return: Demarche
+        """
         # Vérification si la démarche existe déjà en BDD, si oui, on la supprime
         demarche = DemarcheService.find(demarche_number)
         if demarche is not None:
@@ -132,7 +147,7 @@ class DemarcheService:
         demarche_dict = DemarcheService.query_demarche(uuid_utilisateur, token_id, demarche_number)
 
         # Sauvegarde de la démarche
-        demarche: Demarche = DemarcheService.save(demarche_number, demarche_dict)
+        demarche: Demarche = DemarcheService.save(demarche_number, demarche_dict, token_id)
         logging.info(f"[API DEMARCHES] Sauvegarde de la démarche {demarche_number}")
 
         # Sauvegarde des dossiers de la démarche
@@ -146,7 +161,14 @@ class DemarcheService:
         return demarche
 
     @staticmethod
-    def query_demarche(uuid_utilisateur: string, token_id: int, demarche_number: int):
+    def query_demarche(uuid_utilisateur: string, token_id: int, demarche_number: int) -> dict:
+        """
+        Requête de la démarche via API DS et de tous ses dossiers
+        :param uuid_utilisateur: ID user Keycloak
+        :param token_id: Token DS pour rappatrier la démarche
+        :param demarche_number: ID de la démmarche à intégrer
+        :return: dict
+        """
         # Récupération des données de la démarche via l'API Démarches Simplifiées
         query = DemarcheService.get_query_from_file("get_demarche.gql")
         token = TokenService.find_by_uuid_utilisateur_and_token_id(uuid_utilisateur, token_id).token
@@ -163,7 +185,15 @@ class DemarcheService:
         return demarche_dict
 
     @staticmethod
-    def query(token: string, query: string, demarche_number: int, after: string):
+    def query(token: string, query: string, demarche_number: int, after: string) -> dict:
+        """
+        Requête de la démarche via API DS et de tous ses dossiers
+        :param token: Token DS pour rappatrier la démarche
+        :param query: Requête GraphQL
+        :param demarche_number: ID de la démmarche à intégrer
+        :param after: ID de la démmarche à intégrer
+        :return: dict
+        """
         data = {
             "operationName": "getDemarche",
             "query": query,
@@ -176,7 +206,14 @@ class DemarcheService:
         return get_or_make_api_demarche_simplifie(token).do_post(json.dumps(data))
 
     @staticmethod
-    def save_dossiers(demarche: Demarche, dossiers_dict: list[dict], revisions_dict: list[dict]):
+    def save_dossiers(demarche: Demarche, dossiers_dict: list[dict], revisions_dict: list[dict]) -> None:
+        """
+        Intégration des dossiers d'une démarche
+        :param demarche: Démarche associée aux dossiers
+        :param dossiers_dict: Liste des dossiers
+        :param revisions_dict: Liste des révisions
+        :return: none
+        """
         # Insertion des dossiers et des valeurs des champs du dossier
         dossiers: list[dict] = []
         valeurs: list[dict] = []

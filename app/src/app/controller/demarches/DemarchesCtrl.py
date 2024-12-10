@@ -17,7 +17,7 @@ from models.entities.demarches.Demarche import Demarche
 from models.entities.demarches.Donnee import Donnee
 from models.entities.demarches.Reconciliation import Reconciliation
 from models.entities.demarches.ValeurDonnee import ValeurDonnee
-from models.schemas.demarches import TokenSchema
+from models.schemas.demarches import DemarcheSchema, TokenSchema
 
 api = Namespace(
     name="Démarches", path="/", description="Api de gestion des données récupérées de l'API Démarches Simplifiées"
@@ -39,7 +39,7 @@ class DemarcheSimplifie(Resource):
         # Vérification si la démarche existe déjà en BDD, si oui on la supprime
         demarche_number = int(request.args["id"])
         demarche: Demarche = DemarcheService.find(demarche_number)
-        return make_response(jsonify(demarche), HTTPStatus.OK)
+        return make_response(DemarcheSchema().dump(demarche), HTTPStatus.OK)
 
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
@@ -47,7 +47,7 @@ class DemarcheSimplifie(Resource):
     def post(self):
         user = ConnectedUser.from_current_token_identity()
         demarche = DemarcheService.integrer_demarche(user.sub, int(request.form["tokenId"]), int(request.form["id"]))
-        return make_response(jsonify(demarche), HTTPStatus.OK)
+        return make_response(DemarcheSchema().dump(demarche), HTTPStatus.OK)
 
 
 @api.route("/reconciliation")
@@ -191,7 +191,7 @@ class TokenResource(Resource):
     @api.doc(security="Bearer")
     def get(self):
         user = ConnectedUser.from_current_token_identity()
-        tokens = TokenService.find_by_uuid_utilisateur(user.sub)
+        tokens = TokenService.find_enabled_by_uuid_utilisateur(user.sub)
         return make_response(TokenSchema(many=True).dump(tokens), HTTPStatus.OK)
 
     @auth.token_auth("default", scopes_required=["openid"])
