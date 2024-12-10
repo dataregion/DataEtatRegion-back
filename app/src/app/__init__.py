@@ -89,12 +89,13 @@ def create_app_base(
             logging.exception("Impossible de charger la configuration OIDC. Merci de vérifier votre configuration.")
             raise
 
+    # TODO, à terme mettre un cache REDIS ou autre, utilisable pour les autres apis
+    # Utiliser uniquement pour Demarche simplifie pour un POC
+    cache.init_app(app, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 300})
+
     # flask_restx
     app.config.update({"RESTX_INCLUDE_ALL_MODELS": True})
     if expose_endpoint:
-        # TODO, à terme mettre un cache REDIS ou autre, utilisable pour les autres apis
-        # Utiliser uniquement pour Demarche simplifie pour un POC
-        cache.init_app(app, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 300})
         _expose_endpoint(app)
 
     _post_create_app_base(app)

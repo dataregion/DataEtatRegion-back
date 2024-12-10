@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 import os
 from pathlib import Path
+from models.entities.demarches.Token import Token
 import pytest
 
 from models.entities.demarches.Demarche import Demarche
@@ -79,6 +80,22 @@ def init_demarche(database):
     database.session.commit()
 
 
+@pytest.fixture(scope="function")
+def init_tokens(database):
+    tokens = []
+    with open(_data / "tokens.json") as file:
+        for token in json.load(file):
+            token = Token(**token)
+            tokens.append(token)
+            database.session.add(token)
+
+    database.session.commit()
+    yield tokens
+
+    database.session.execute(database.delete(Token))
+    database.session.commit()
+
+
 def test_demarche_exists_success(init_demarche):
     assert DemarcheService.exists(49721) is True
 
@@ -95,7 +112,7 @@ def test_demarche_find_fail(init_demarche):
     assert DemarcheService.find(99999) is None
 
 
-def test_demarche_save_success(init_demarche):
+def test_demarche_save_success(init_tokens, init_demarche):
     new_dict = {
         "data": {
             "demarche": {
@@ -111,13 +128,13 @@ def test_demarche_save_success(init_demarche):
             }
         }
     }
-    new_demarche = DemarcheService.save("99999", new_dict)
+    new_demarche = DemarcheService.save("99999", new_dict, 101)
 
     assert int(new_demarche.number) == 99999
     assert DemarcheService.exists(99999) is True
 
 
-def test_demarche_save_already_exists(init_demarche):
+def test_demarche_save_already_exists(init_tokens, init_demarche):
     new_dict = {
         "data": {
             "demarche": {
@@ -135,7 +152,7 @@ def test_demarche_save_already_exists(init_demarche):
     }
 
     with pytest.raises(DemarcheExistsException, match="La démarche existe déjà en BDD"):
-        DemarcheService.save("49721", new_dict)
+        DemarcheService.save("49721", new_dict, 101)
 
 
 def test_demarche_update_reconciliation_success(init_demarche):

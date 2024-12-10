@@ -26,13 +26,13 @@ def init_tokens(database):
     database.session.commit()
 
 
-def test_find_by_uuid_utilisateur(init_tokens):
-    tokens_user_1 = TokenService.find_by_uuid_utilisateur("USER1")
+def test_find_enabled_by_uuid_utilisateur(init_tokens):
+    tokens_user_1 = TokenService.find_enabled_by_uuid_utilisateur("USER1")
     assert len(tokens_user_1) == 1
     assert tokens_user_1[0].token == "TOKEN1"
 
-    TokenService.find_by_uuid_utilisateur("USER2")
-    assert len(TokenService.find_by_uuid_utilisateur("USER2")) == 1
+    TokenService.find_enabled_by_uuid_utilisateur("USER2")
+    assert len(TokenService.find_enabled_by_uuid_utilisateur("USER2")) == 1
 
 
 def test_find_by_uuid_utilisateur_and_token_id(init_tokens):
@@ -51,7 +51,25 @@ def test_create(init_tokens):
     token_dto = TokenService.create("TOKEN3", "TOKEN3", uuid_utilisateur)
     token = TokenService.find_by_uuid_utilisateur_and_token_id(uuid_utilisateur, token_dto.id)
     assert token is not None
+    assert token.enabled is True
     assert token.token == "TOKEN3"
+
+
+def test_create_existing(init_tokens):
+    uuid_utilisateur = "USER3"
+
+    token_dto = TokenService.create("TOKEN3", "TOKEN3", uuid_utilisateur)
+    token = TokenService.find_by_uuid_utilisateur_and_token_id(uuid_utilisateur, token_dto.id)
+    assert token is not None
+    assert token.token == "TOKEN3"
+
+    TokenService.delete(token.id, uuid_utilisateur)
+    token = TokenService.find_by_uuid_utilisateur_and_token_id(uuid_utilisateur, token_dto.id)
+    assert token is not None and token.enabled is False
+
+    token_dto = TokenService.create("TOKEN3", "TOKEN3", uuid_utilisateur)
+    token = TokenService.find_by_uuid_utilisateur_and_token_id(uuid_utilisateur, token_dto.id)
+    assert token is not None and token.enabled is True
 
 
 def test_update(init_tokens):
@@ -71,6 +89,9 @@ def test_delete(init_tokens):
     uuid_utilisateur = "TOKEN_TO_DELETE"
     token_id = 104
 
-    assert len(TokenService.find_by_uuid_utilisateur(uuid_utilisateur)) == 1
+    assert len(TokenService.find_enabled_by_uuid_utilisateur(uuid_utilisateur)) == 1
     TokenService.delete(token_id, uuid_utilisateur)
-    assert len(TokenService.find_by_uuid_utilisateur(uuid_utilisateur)) == 0
+    tokens = TokenService.find_enabled_by_uuid_utilisateur(uuid_utilisateur)
+    assert len(tokens) == 0
+    token = TokenService.find_by_uuid_utilisateur_and_token_id(uuid_utilisateur, token_id)
+    assert token is not None and token.enabled is False
