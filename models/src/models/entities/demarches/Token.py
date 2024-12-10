@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from cryptography.fernet import Fernet
 from flask import current_app
-from sqlalchemy import Column, String, Integer, LargeBinary
+from sqlalchemy import Boolean, Column, String, Integer, LargeBinary
 
 from app import db
 
@@ -20,6 +20,7 @@ class Token(db.Model):
     nom: Column[str] = Column(String, nullable=False)
     _token: Column[LargeBinary] = Column("token", LargeBinary, nullable=False)
     uuid_utilisateur: Column[str] = Column(String, nullable=False, index=True)
+    enabled: Column[bool] = Column(Boolean, nullable=False, server_default="TRUE")
 
     @property
     def token(self):
