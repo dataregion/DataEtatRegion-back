@@ -6,7 +6,6 @@ from flask import current_app
 from flask_restx import Namespace, Resource, fields
 from flask_restx._http import HTTPStatus
 from marshmallow_jsonschema import JSONSchema
-from sqlalchemy.exc import NoResultFound
 
 from app import db
 from app.controller import ErrorController
