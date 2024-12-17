@@ -91,8 +91,10 @@ class AuditLastImport(Resource):
         stmt = db.select(sqlalchemy.sql.functions.max(AuditUpdateData.date)).where(
             (AuditUpdateData.data_type == enum_type.name) & (AuditUpdateData.application_clientid == clientId)
         )
-        result = db.session.execute(stmt).scalar_one()
+
+        result = db.session.execute(stmt).scalar_one_or_none()
+
         if result is None:
-            raise NoResultFound()
+            return {"date": None}, HTTPStatus.OK
 
         return {"date": result.isoformat()}, HTTPStatus.OK
