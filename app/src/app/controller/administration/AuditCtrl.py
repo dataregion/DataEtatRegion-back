@@ -6,7 +6,6 @@ from flask import current_app
 from flask_restx import Namespace, Resource, fields
 from flask_restx._http import HTTPStatus
 from marshmallow_jsonschema import JSONSchema
-from sqlalchemy.exc import NoResultFound
 
 from app import db
 from app.controller import ErrorController
@@ -91,8 +90,10 @@ class AuditLastImport(Resource):
         stmt = db.select(sqlalchemy.sql.functions.max(AuditUpdateData.date)).where(
             (AuditUpdateData.data_type == enum_type.name) & (AuditUpdateData.application_clientid == clientId)
         )
-        result = db.session.execute(stmt).scalar_one()
+
+        result = db.session.execute(stmt).scalar_one_or_none()
+
         if result is None:
-            raise NoResultFound()
+            return {"date": None}, HTTPStatus.OK
 
         return {"date": result.isoformat()}, HTTPStatus.OK
