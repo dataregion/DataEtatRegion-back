@@ -110,7 +110,7 @@ class BuilderStatementFinancialLine:
         return self
 
     def where_qpv_not_null(self):
-        self._stmt = self._stmt.where(FinancialLines.beneficiaire_qpv24_code is not None)
+        self._stmt = self._stmt.where(FinancialLines.beneficiaire_qpv24_code != None) # noqa: E711
         return self
 
     def where_geo(
@@ -148,16 +148,17 @@ class BuilderStatementFinancialLine:
         #
         # On calcule les patterns valides pour les codes de localisations interministerielles
         #
-        code_locinter_pattern = self._codes_locinterministerielle(type_geo, list_code_geo, source_region)
-        # fmt:off
-        _conds_code_locinter = [
-            FinancialLines.localisationInterministerielle_code.ilike(f"{pattern}%") 
-            for pattern 
-            in code_locinter_pattern
-        ]
-        # fmt:on
-        if len(code_locinter_pattern) > 0:
-            conds.append(or_(*_conds_code_locinter))
+        if benef_or_loc is None or benef_or_loc is BenefOrLoc.LOCALISATION_INTER:
+            code_locinter_pattern = self._codes_locinterministerielle(type_geo, list_code_geo, source_region)
+            # fmt:off
+            _conds_code_locinter = [
+                FinancialLines.localisationInterministerielle_code.ilike(f"{pattern}%") 
+                for pattern 
+                in code_locinter_pattern
+            ]
+            # fmt:on
+            if len(code_locinter_pattern) > 0:
+                conds.append(or_(*_conds_code_locinter))
 
         #
         # Ou les code geo de la commune associée à la localisation interministerielle
