@@ -110,7 +110,7 @@ class BuilderStatementFinancialLine:
         return self
 
     def where_qpv_not_null(self):
-        self._stmt = self._stmt.where(FinancialLines.beneficiaire_qpv24_code != None) # noqa: E711
+        self._stmt = self._stmt.where(FinancialLines.beneficiaire_qpv24_code != None)  # noqa: E711
         return self
 
     def where_geo(
