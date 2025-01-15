@@ -1,3 +1,5 @@
+CREATE SCHEMA IF NOT EXISTS france_relance;
+
 CREATE TABLE IF NOT EXISTS france_relance."LocalisationBretagne" (
 	"Commune" varchar(56) NOT NULL,
 	code_postal int4 NULL,
