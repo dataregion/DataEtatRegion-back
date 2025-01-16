@@ -89,7 +89,7 @@ def downgrade():
 
 
 def _insert_ref():
-    file_crte = "migrations/data/ref_crte.csv"
+    file_crte = "migrations.old/data/ref_crte.csv"
     wget.download(url_csv, out=file_crte)
 
     session = orm.Session(bind=op.get_bind())
