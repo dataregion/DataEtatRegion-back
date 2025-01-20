@@ -101,4 +101,10 @@ def _map_exceptions(func):
             logger.exception(f"[IMPORT] {msg}")
             raise Reessayer.fromIntegrityError(e)
 
+        except sqlalchemy.exc.OperationalError as e:
+            logger.error(f"[OperationalError] {str(e)}")
+            if "deadlock detected" in str(e):
+                logger.error("Deadlock detected: %s", str(e))
+                raise Reessayer.fromIntegrityError(e)
+
     return inner
