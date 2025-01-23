@@ -17,7 +17,7 @@ from models.entities.demarches.Demarche import Demarche
 from models.entities.demarches.Donnee import Donnee
 from models.entities.demarches.Reconciliation import Reconciliation
 from models.entities.demarches.ValeurDonnee import ValeurDonnee
-from models.schemas.demarches import DemarcheSchema, TokenSchema
+from models.schemas.demarches import DemarcheSchema, DonneeSchema, TokenSchema, ValeurDonneeSchema
 
 api = Namespace(
     name="Démarches", path="/", description="Api de gestion des données récupérées de l'API Démarches Simplifiées"
@@ -90,7 +90,8 @@ class DemarchesReconciliation(Resource):
         ReconciliationService.do_reconciliation(int(request.form["id"]), champs_reconciliation, cadre)
         logging.info("[API DEMARCHES] Sauvegarde de la reconciliation de la Démarche en BDD")
 
-        return make_response(jsonify(DemarcheService.find(demarche_number)), HTTPStatus.OK)
+        demarche: Demarche = DemarcheService.find(demarche_number)
+        return make_response(DemarcheSchema(many=False).dump(demarche), HTTPStatus.OK)
 
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
@@ -136,7 +137,8 @@ class DemarchesAffichage(Resource):
         DemarcheService.update_affichage(demarche_number, affichage)
         logging.info("[API DEMARCHES] Sauvegarde de la reconciliation de la Démarche en BDD")
 
-        return make_response(jsonify(DemarcheService.find(demarche_number)), HTTPStatus.OK)
+        demarche: Demarche = DemarcheService.find(demarche_number)
+        return make_response(DemarcheSchema(many=False).dump(demarche), HTTPStatus.OK)
 
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
@@ -159,7 +161,7 @@ class Donnees(Resource):
         """
         demarche_number = int(request.args["id"])
         donnees: list[Donnee] = [row for row in DonneeService.find_by_demarche(demarche_number)]
-        return make_response(jsonify(donnees), HTTPStatus.OK)
+        return make_response(DonneeSchema(many=True).dump(donnees), HTTPStatus.OK)
 
 
 @api.route("/valeurs")
@@ -182,7 +184,7 @@ class ValeurDonneeSimplifie(Resource):
         for idDonnee in idDonnees:
             valeurs.extend(ValeurService.find_by_dossiers(dossiers, int(idDonnee)))
 
-        return make_response(jsonify(valeurs), HTTPStatus.OK)
+        return make_response(ValeurDonneeSchema(many=True).dump(valeurs), HTTPStatus.OK)
 
 
 @api.route("/token")

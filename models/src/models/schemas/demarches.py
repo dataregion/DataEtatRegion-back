@@ -11,15 +11,23 @@ from models.entities.demarches.Type import Type
 from models.entities.demarches.ValeurDonnee import ValeurDonnee
 
 
+class TokenSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Token
+        exclude = ('_token',)
+    token = fields.String()
+
 class DemarcheSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Demarche
 
+    token = fields.Nested(TokenSchema, exclude=("token",))  # Exclude the token field
 
 class DonneeSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Donnee
 
+    demarche = fields.Nested(DemarcheSchema, exclude=("token",))  # Exclude token from Demarche
 
 class DossierSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -49,10 +57,3 @@ class ValeurDonneeSchema(SQLAlchemyAutoSchema):
     dossier_number = fields.Integer()
     donnee_id = fields.Integer()
     valeur = fields.String()
-
-
-class TokenSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = Token
-        exclude = ('_token',)
-    token = fields.String()
