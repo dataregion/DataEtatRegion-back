@@ -6,7 +6,7 @@ from flask_restx._http import HTTPStatus
 
 from app.controller.financial_data.schema_model import register_demarche_schemamodel
 from app.services.demarches.affichage import AffichageService
-from app.services.demarches.demarches import DemarcheService
+from app.services.demarches.demarches import DemarcheService, get_reconciliation_form_data, get_affichage_form_data
 from app.services.demarches.donnees import DonneeService
 from app.services.demarches.dossiers import DossierService
 from app.services.demarches.reconciliations import ReconciliationService
@@ -17,7 +17,7 @@ from models.entities.demarches.Demarche import Demarche
 from models.entities.demarches.Donnee import Donnee
 from models.entities.demarches.Reconciliation import Reconciliation
 from models.entities.demarches.ValeurDonnee import ValeurDonnee
-from models.schemas.demarches import DemarcheSchema, TokenSchema
+from models.schemas.demarches import DemarcheSchema, DonneeSchema, TokenSchema, ValeurDonneeSchema
 
 api = Namespace(
     name="Démarches", path="/", description="Api de gestion des données récupérées de l'API Démarches Simplifiées"
@@ -63,34 +63,12 @@ class DemarchesReconciliation(Resource):
             return HTTPStatus.NOT_FOUND
 
         # Récupération des données de la démarche via l'API Démarches Simplifiées
-        champs_reconciliation = dict()
-        cadre = dict()
-        if "champEJ" in request.form:
-            champs_reconciliation["champEJ"] = int(request.form["champEJ"])
-        elif "champDS" in request.form:
-            champs_reconciliation["champDS"] = int(request.form["champDS"])
-        elif "champMontant" in request.form:
-            champs_reconciliation["champMontant"] = int(request.form["champMontant"])
-            if "centreCouts" in request.form:
-                cadre["centreCouts"] = request.form["centreCouts"]
-            if "domaineFonctionnel" in request.form:
-                cadre["domaineFonctionnel"] = request.form["domaineFonctionnel"]
-            if "refProg" in request.form:
-                cadre["refProg"] = request.form["refProg"]
-            if "annee" in request.form:
-                cadre["annee"] = int(request.form["annee"])
-            if "commune" in request.form:
-                cadre["commune"] = request.form["commune"]
-            if "epci" in request.form:
-                cadre["epci"] = request.form["epci"]
-            if "departement" in request.form:
-                cadre["departement"] = request.form["departement"]
-            if "region" in request.form:
-                cadre["region"] = request.form["region"]
+        champs_reconciliation, cadre = get_reconciliation_form_data(request.form)
         ReconciliationService.do_reconciliation(int(request.form["id"]), champs_reconciliation, cadre)
         logging.info("[API DEMARCHES] Sauvegarde de la reconciliation de la Démarche en BDD")
 
-        return make_response(jsonify(DemarcheService.find(demarche_number)), HTTPStatus.OK)
+        demarche: Demarche = DemarcheService.find(demarche_number)
+        return make_response(DemarcheSchema(many=False).dump(demarche), HTTPStatus.OK)
 
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
@@ -115,28 +93,12 @@ class DemarchesAffichage(Resource):
             return HTTPStatus.NOT_FOUND
 
         # Récupération des données de la démarche via l'API Démarches Simplifiées
-        affichage = {}
-        if "nomProjet" in request.form:
-            affichage["nomProjet"] = int(request.form["nomProjet"])
-        if "descriptionProjet" in request.form:
-            affichage["descriptionProjet"] = int(request.form["descriptionProjet"])
-        if "categorieProjet" in request.form:
-            affichage["categorieProjet"] = int(request.form["categorieProjet"])
-        if "coutProjet" in request.form:
-            affichage["coutProjet"] = int(request.form["coutProjet"])
-        if "montantDemande" in request.form:
-            affichage["montantDemande"] = int(request.form["montantDemande"])
-        if "montantAccorde" in request.form:
-            affichage["montantAccorde"] = int(request.form["montantAccorde"])
-        if "dateFinProjet" in request.form:
-            affichage["dateFinProjet"] = int(request.form["dateFinProjet"])
-        if "contact" in request.form:
-            affichage["contact"] = int(request.form["contact"])
-
+        affichage = get_affichage_form_data(request.form)
         DemarcheService.update_affichage(demarche_number, affichage)
         logging.info("[API DEMARCHES] Sauvegarde de la reconciliation de la Démarche en BDD")
 
-        return make_response(jsonify(DemarcheService.find(demarche_number)), HTTPStatus.OK)
+        demarche: Demarche = DemarcheService.find(demarche_number)
+        return make_response(DemarcheSchema(many=False).dump(demarche), HTTPStatus.OK)
 
     @auth.token_auth("default", scopes_required=["openid"])
     @api.doc(security="Bearer")
@@ -159,7 +121,7 @@ class Donnees(Resource):
         """
         demarche_number = int(request.args["id"])
         donnees: list[Donnee] = [row for row in DonneeService.find_by_demarche(demarche_number)]
-        return make_response(jsonify(donnees), HTTPStatus.OK)
+        return make_response(DonneeSchema(many=True).dump(donnees), HTTPStatus.OK)
 
 
 @api.route("/valeurs")
@@ -180,9 +142,10 @@ class ValeurDonneeSimplifie(Resource):
 
         valeurs: list[ValeurDonnee] = []
         for idDonnee in idDonnees:
-            valeurs.extend(ValeurService.find_by_dossiers(dossiers, int(idDonnee)))
+            donnee: Donnee = DonneeService.get_donnee(idDonnee, demarche_number)
+            valeurs.extend(ValeurService.find_by_dossiers(dossiers, donnee.id))
 
-        return make_response(jsonify(valeurs), HTTPStatus.OK)
+        return make_response(ValeurDonneeSchema(many=True).dump(valeurs), HTTPStatus.OK)
 
 
 @api.route("/token")
