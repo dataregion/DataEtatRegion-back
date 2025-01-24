@@ -6,7 +6,7 @@ from flask_restx._http import HTTPStatus
 
 from app.controller.financial_data.schema_model import register_demarche_schemamodel
 from app.services.demarches.affichage import AffichageService
-from app.services.demarches.demarches import DemarcheService
+from app.services.demarches.demarches import DemarcheService, get_reconciliation_form_data, get_affichage_form_data
 from app.services.demarches.donnees import DonneeService
 from app.services.demarches.dossiers import DossierService
 from app.services.demarches.reconciliations import ReconciliationService
@@ -63,30 +63,7 @@ class DemarchesReconciliation(Resource):
             return HTTPStatus.NOT_FOUND
 
         # Récupération des données de la démarche via l'API Démarches Simplifiées
-        champs_reconciliation = dict()
-        cadre = dict()
-        if "champEJ" in request.form:
-            champs_reconciliation["champEJ"] = int(request.form["champEJ"])
-        elif "champDS" in request.form:
-            champs_reconciliation["champDS"] = int(request.form["champDS"])
-        elif "champMontant" in request.form:
-            champs_reconciliation["champMontant"] = int(request.form["champMontant"])
-            if "centreCouts" in request.form:
-                cadre["centreCouts"] = request.form["centreCouts"]
-            if "domaineFonctionnel" in request.form:
-                cadre["domaineFonctionnel"] = request.form["domaineFonctionnel"]
-            if "refProg" in request.form:
-                cadre["refProg"] = request.form["refProg"]
-            if "annee" in request.form:
-                cadre["annee"] = int(request.form["annee"])
-            if "commune" in request.form:
-                cadre["commune"] = request.form["commune"]
-            if "epci" in request.form:
-                cadre["epci"] = request.form["epci"]
-            if "departement" in request.form:
-                cadre["departement"] = request.form["departement"]
-            if "region" in request.form:
-                cadre["region"] = request.form["region"]
+        champs_reconciliation, cadre = get_reconciliation_form_data(request.form)
         ReconciliationService.do_reconciliation(int(request.form["id"]), champs_reconciliation, cadre)
         logging.info("[API DEMARCHES] Sauvegarde de la reconciliation de la Démarche en BDD")
 
@@ -116,24 +93,7 @@ class DemarchesAffichage(Resource):
             return HTTPStatus.NOT_FOUND
 
         # Récupération des données de la démarche via l'API Démarches Simplifiées
-        affichage = {}
-        if "nomProjet" in request.form:
-            affichage["nomProjet"] = int(request.form["nomProjet"])
-        if "descriptionProjet" in request.form:
-            affichage["descriptionProjet"] = int(request.form["descriptionProjet"])
-        if "categorieProjet" in request.form:
-            affichage["categorieProjet"] = int(request.form["categorieProjet"])
-        if "coutProjet" in request.form:
-            affichage["coutProjet"] = int(request.form["coutProjet"])
-        if "montantDemande" in request.form:
-            affichage["montantDemande"] = int(request.form["montantDemande"])
-        if "montantAccorde" in request.form:
-            affichage["montantAccorde"] = int(request.form["montantAccorde"])
-        if "dateFinProjet" in request.form:
-            affichage["dateFinProjet"] = int(request.form["dateFinProjet"])
-        if "contact" in request.form:
-            affichage["contact"] = int(request.form["contact"])
-
+        affichage = get_affichage_form_data(request.form)
         DemarcheService.update_affichage(demarche_number, affichage)
         logging.info("[API DEMARCHES] Sauvegarde de la reconciliation de la Démarche en BDD")
 
@@ -182,7 +142,8 @@ class ValeurDonneeSimplifie(Resource):
 
         valeurs: list[ValeurDonnee] = []
         for idDonnee in idDonnees:
-            valeurs.extend(ValeurService.find_by_dossiers(dossiers, int(idDonnee)))
+            donnee: Donnee = DonneeService.get_donnee(idDonnee, demarche_number)
+            valeurs.extend(ValeurService.find_by_dossiers(dossiers, donnee.id))
 
         return make_response(ValeurDonneeSchema(many=True).dump(valeurs), HTTPStatus.OK)
 

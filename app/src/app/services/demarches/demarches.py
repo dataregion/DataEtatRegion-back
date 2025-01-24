@@ -32,6 +32,55 @@ def commit_session() -> None:
     db.session.commit()
 
 
+def get_reconciliation_form_data(rec):
+    champs_reconciliation = dict()
+    cadre = dict()
+    if "champEJ" in rec:
+        champs_reconciliation["champEJ"] = rec["champEJ"]
+    elif "champDS" in rec:
+        champs_reconciliation["champDS"] = rec["champDS"]
+    elif "champMontant" in rec:
+        champs_reconciliation["champMontant"] = rec["champMontant"]
+        if "centreCouts" in rec:
+            cadre["centreCouts"] = rec["centreCouts"]
+        if "domaineFonctionnel" in rec:
+            cadre["domaineFonctionnel"] = rec["domaineFonctionnel"]
+        if "refProg" in rec:
+            cadre["refProg"] = rec["refProg"]
+        if "annee" in rec:
+            cadre["annee"] = int(rec["annee"])
+        if "commune" in rec:
+            cadre["commune"] = rec["commune"]
+        if "epci" in rec:
+            cadre["epci"] = rec["epci"]
+        if "departement" in rec:
+            cadre["departement"] = rec["departement"]
+        if "region" in rec:
+            cadre["region"] = rec["region"]
+    return champs_reconciliation, cadre
+
+
+def get_affichage_form_data(aff):
+    affichage = dict()
+    if "nomProjet" in aff:
+        affichage["nomProjet"] = aff["nomProjet"]
+    if "descriptionProjet" in aff:
+        affichage["descriptionProjet"] = aff["descriptionProjet"]
+    if "categorieProjet" in aff:
+        affichage["categorieProjet"] = aff["categorieProjet"]
+    if "coutProjet" in aff:
+        affichage["coutProjet"] = aff["coutProjet"]
+    if "montantDemande" in aff:
+        affichage["montantDemande"] = aff["montantDemande"]
+    if "montantAccorde" in aff:
+        affichage["montantAccorde"] = aff["montantAccorde"]
+    if "dateFinProjet" in aff:
+        affichage["dateFinProjet"] = aff["dateFinProjet"]
+    if "contact" in aff:
+        affichage["contact"] = aff["contact"]
+    return affichage
+
+
 class DemarcheService:
     @staticmethod
     def exists(number: int) -> Demarche:

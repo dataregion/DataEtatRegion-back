@@ -1,5 +1,8 @@
 from app import db
+from app.services.demarches.donnees import DonneeService
+from app.services.demarches.dossiers import DossierService
 from models.entities.demarches.Donnee import Donnee
+from models.entities.demarches.Dossier import Dossier
 from models.entities.demarches.ValeurDonnee import ValeurDonnee
 from models.schemas.demarches import ValeurDonneeSchema
 
@@ -24,8 +27,10 @@ class ValeurService:
     @staticmethod
     def get_dict_valeurs(id_dossier: int, dict_id_donnees: dict):
         id_donnees = []
+        dossier: Dossier = DossierService.find_by_number(id_dossier)
         for id_donnee in dict_id_donnees.values():
-            id_donnees.append(int(id_donnee))
+            donnee: Donnee = DonneeService.get_donnee(id_donnee, dossier.demarche_number)
+            id_donnees.append(donnee.id)
 
         valeurs = ValeurService.find_by_dossier_and_id_donnees(id_dossier, id_donnees)
 
