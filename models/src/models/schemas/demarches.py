@@ -21,13 +21,10 @@ class DemarcheSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Demarche
 
-    token = fields.Nested(TokenSchema, exclude=("token",))  # Exclude the token field
-
 class DonneeSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Donnee
-
-    demarche = fields.Nested(DemarcheSchema, exclude=("token",))  # Exclude token from Demarche
+        exclude = ("demarche",)
 
 class DossierSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -57,3 +54,4 @@ class ValeurDonneeSchema(SQLAlchemyAutoSchema):
     dossier_number = fields.Integer()
     donnee_id = fields.Integer()
     valeur = fields.String()
+    donnee = fields.Nested(DonneeSchema)
