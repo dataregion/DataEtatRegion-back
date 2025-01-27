@@ -36,7 +36,7 @@ class ValeurService:
 
         dict_valeurs = dict()
         for valeur in valeurs:
-            dict_valeurs[valeur["donnee_id"]] = valeur["valeur"]
+            dict_valeurs[valeur["donnee"]["id_ds"]] = valeur["valeur"]
         return dict_valeurs
 
     @staticmethod
