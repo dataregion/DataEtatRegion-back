@@ -14,6 +14,9 @@ package-dir = { "" = "src" }
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.poetry]
+version = "0.1.0"
+
 [tool.setuptools.package-data]
 "*" = ["*.*"]
 
