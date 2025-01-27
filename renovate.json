@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "local>csm/Renovate"
+  ],
+  "pip_requirements": {
+    "enabled": false
+  },
+  "pip_setup": {
+    "enabled": false
+  },
+   "pip-compile": {
+    "fileMatch": ["(^|/)requirements\\.external\\.txt$"]
+  }
+}

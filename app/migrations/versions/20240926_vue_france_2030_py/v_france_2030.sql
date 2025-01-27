@@ -1,3 +1,5 @@
+CREATE SCHEMA IF NOT EXISTS "SGAR";
+
 CREATE TABLE IF NOT EXISTS "SGAR"."FR30_typologie" (
 	"Categorie_typologie" text NULL,
   "Typologie" text NULL

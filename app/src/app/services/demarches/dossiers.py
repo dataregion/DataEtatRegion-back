@@ -7,6 +7,12 @@ from models.entities.demarches.Reconciliation import Reconciliation
 
 
 class DossierService:
+
+    @staticmethod
+    def find_by_number(number: int) -> Dossier:
+        stmt = db.select(Dossier).where(Dossier.number == number)
+        return db.session.execute(stmt).scalar_one_or_none()
+
     @staticmethod
     def find_by_demarche(demarche_number: int, statut: str) -> list[Dossier]:
         stmt = db.select(Dossier).where(Dossier.demarche_number == demarche_number, Dossier.state == statut)

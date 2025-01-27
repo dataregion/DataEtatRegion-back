@@ -43,6 +43,6 @@ class DonneeService:
 
     @staticmethod
     @cache.memoize(timeout=60)
-    def get_donnee(id_ds_donnee: int, demarche_number: int) -> Donnee:
+    def get_donnee(id_ds_donnee: str, demarche_number: int) -> Donnee:
         stmt = db.select(Donnee).where(Donnee.id_ds == id_ds_donnee).where(Donnee.demarche_number == demarche_number)
         return db.session.execute(stmt).scalar_one_or_none()

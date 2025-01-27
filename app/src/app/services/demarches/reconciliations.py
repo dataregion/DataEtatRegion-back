@@ -3,6 +3,8 @@ import re
 import string
 from datetime import datetime
 
+from app.services.demarches.donnees import DonneeService
+from models.entities.demarches.Donnee import Donnee
 from sqlalchemy import delete, and_
 from sqlalchemy.exc import IntegrityError
 
@@ -97,14 +99,14 @@ class ReconciliationService:
     ):
         lignes = []
         if "champEJ" in champs_reconciliation:
-            if champs_reconciliation["champEJ"] in valeurs:
-                valeur_champ_ej = valeurs[champs_reconciliation["champEJ"]]
+            donnee: Donnee = DonneeService.get_donnee(champs_reconciliation["champEJ"], dossier.demarche_number)
+            if donnee.id_ds in valeurs:
+                valeur_champ_ej = valeurs[donnee.id_ds]
                 lignes = ReconciliationService.get_lignes_chorus_num_ej(valeur_champ_ej)
         elif "champMontant" in champs_reconciliation:
-            if champs_reconciliation["champMontant"] in valeurs:
-                valeur_champ_montant = ReconciliationService.convert_valeur_to_float(
-                    valeurs[champs_reconciliation["champMontant"]]
-                )
+            donnee: Donnee = DonneeService.get_donnee(champs_reconciliation["champMontant"], dossier.demarche_number)
+            if donnee.id_ds in valeurs:
+                valeur_champ_montant = ReconciliationService.convert_valeur_to_float(valeurs[donnee.id_ds])
                 if valeur_champ_montant is not None and valeur_champ_montant != "":
                     lignes = ReconciliationService.get_lignes_chorus_siret_montant(
                         dossier.siret, valeur_champ_montant, cadre

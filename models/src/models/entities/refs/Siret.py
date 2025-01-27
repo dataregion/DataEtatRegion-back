@@ -2,7 +2,6 @@ from models import _PersistenceBaseModelInstance
 from models.entities.refs.CategorieJuridique import CategorieJuridique
 from models.entities.refs.Commune import Commune
 from models.entities.common.Audit import _Audit
-from models.entities.refs.Qpv import Qpv
 from sqlalchemy import JSON, Column, ForeignKey, String, Integer
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import association_proxy
