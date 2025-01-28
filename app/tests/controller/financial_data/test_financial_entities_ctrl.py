@@ -16,13 +16,13 @@ def test_missing_arguments(test_client):
     data["fichierCp"] = (file, file.filename)  # type: ignore
     with patching_roles(["ADMIN"]):
         response = test_client.post(
-            "/financial-data/api/v1/ae-cp", data=data, content_type="multipart/form-data", follow_redirects=True
+            "/financial-data/api/v1/region", data=data, content_type="multipart/form-data", follow_redirects=True
         )
         assert response.status_code == 400
         assert {"message": "Missing Argument annee", "type": "error"} == response.json
 
         response_missing_file = test_client.post(
-            "/financial-data/api/v1/ae-cp", data={}, content_type="multipart/form-data", follow_redirects=True
+            "/financial-data/api/v1/region", data={}, content_type="multipart/form-data", follow_redirects=True
         )
         assert response_missing_file.status_code == 400
         assert {"message": "Missing Argument annee", "type": "error"} == response_missing_file.json
@@ -40,7 +40,7 @@ def test_not_role(test_client):
 
     with patching_roles([]):
         response = test_client.post(
-            "/financial-data/api/v1/ae-cp", data=data, content_type="multipart/form-data", follow_redirects=True
+            "/financial-data/api/v1/region", data=data, content_type="multipart/form-data", follow_redirects=True
         )
         assert response.status_code == 403
         assert {"message": "Vous n`avez pas les droits", "type": "error"} == response.json
@@ -53,7 +53,7 @@ def test_bad_file(test_client):
             data["fichierAe"] = (f, "filename.csv")  # type: ignore
             data["fichierCp"] = (f, "filename.csv")  # type: ignore
             response = test_client.post(
-                "/financial-data/api/v1/ae-cp", data=data, content_type="multipart/form-data", follow_redirects=True
+                "/financial-data/api/v1/region", data=data, content_type="multipart/form-data", follow_redirects=True
             )
 
             assert response.status_code == 400
@@ -67,7 +67,7 @@ def test_file_missing_column(test_client):
             data["fichierAe"] = (f, "filename.csv")  # type: ignore
             data["fichierCp"] = (f, "filename.csv")  # type: ignore
             response = test_client.post(
-                "/financial-data/api/v1/ae-cp", data=data, content_type="multipart/form-data", follow_redirects=True
+                "/financial-data/api/v1/region", data=data, content_type="multipart/form-data", follow_redirects=True
             )
 
             assert response.status_code == 400

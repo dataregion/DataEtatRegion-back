@@ -12,12 +12,17 @@ from app.controller.utils.Error import ErrorController
 from app.exceptions.exceptions import DataRegatException, BadRequestDataRegateNum
 
 
-parser_import = reqparse.RequestParser()
-parser_import.add_argument("fichierAe", type=FileStorage, help="fichier AE à importer", location="files", required=True)
-parser_import.add_argument("fichierCp", type=FileStorage, help="fichier CP à importer", location="files", required=True)
-parser_import.add_argument(
+parser_import_region = reqparse.RequestParser()
+parser_import_region.add_argument("fichierAe", type=FileStorage, help="fichier AE à importer", location="files", required=True)
+parser_import_region.add_argument("fichierCp", type=FileStorage, help="fichier CP à importer", location="files", required=True)
+parser_import_region.add_argument(
     "annee", type=int, help="Année d'engagement du fichier Chorus", location="files", required=True
 )
+
+parser_import_nation = reqparse.RequestParser()
+parser_import_nation.add_argument("fichierAe", type=FileStorage, help="fichier AE à importer", location="files", required=True)
+parser_import_nation.add_argument("fichierCp", type=FileStorage, help="fichier CP à importer", location="files", required=True)
+
 
 
 def check_param_annee_import():

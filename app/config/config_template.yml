@@ -97,13 +97,6 @@ NOCODB_PROJECT:
   PROJECT: TOKEN_API
   PROJECT_2: TOKEN_API_PROJECT
 
-FICHIER_NATIONAL_WATCHER:
-  PATH_TO_WATCH: "/home/sawadogos/dataetat/partage-specifique2/TEMP"
-  PATH_A_IMPORTER: "/home/sawadogos/dataetat/partage-specifique2/A_IMPORTER"
-  TEMPS_ATTENTE_FIN_ECRITURE: 2
-  INTERVAL: 1
-  MAX_GROWTH_TIME: 3600
-
 DATA_SOURCE_MAPPING:
   "001": "NATION" #Guadeloupe
   "002": "NATION" #Martinique

@@ -5,7 +5,7 @@ from flask_restx._http import HTTPStatus
 
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
-from app.controller.financial_data import check_param_annee_import, parser_import, check_files_import
+from app.controller.financial_data import check_param_annee_import, parser_import_region, parser_import_nation, check_files_import
 from app.controller.financial_data.schema_model import register_financial_cp_schemamodel
 from app.models.enums.AccountRole import AccountRole
 from models.schemas.financial import FinancialCpSchema
@@ -31,9 +31,9 @@ def handle_invalid_token(e: InvalidTokenError):
     return ErrorController("Token invalide.").to_json(), HTTPStatus.BAD_REQUEST
 
 
-@api.route("/ae-cp")
-class LoadFinancialData(Resource):
-    @api.expect(parser_import)
+@api.route("/region")
+class LoadFinancialDataRegion(Resource):
+    @api.expect(parser_import_region)
     @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     @check_param_annee_import()
@@ -41,8 +41,10 @@ class LoadFinancialData(Resource):
     @api.doc(security="Bearer")
     def post(self):
         """
-        Charge les fichiers issus de Chorus pour enregistrer les autorisations d'engagement (AE) et les crédits de paiement (CP)
+        Charge les fichiers issus de Chorus pour enregistrer les autorisations d'engagement (AE) et les crédits de paiement (CP) au niveau Régional.
         Les lignes sont insérées de façon asynchrone
+
+        La region est récupérer depuis les attributs de l'utilisateur connecté
         """
         user = ConnectedUser.from_current_token_identity()
         client_id = user.azp
@@ -62,6 +64,32 @@ class LoadFinancialData(Resource):
             }
         )
 
+
+@api.route("/national")
+class LoadFinancialDataNation(Resource):
+    @api.expect(parser_import_nation)
+    @auth.token_auth("default", scopes_required=["openid"])
+    @check_permission([AccountRole.COMPTABLE_NATIONAL])
+    @check_files_import()
+    @api.doc(security="Bearer")
+    def post(self):
+        """
+        Charge les fichiers issus de Chorus pour enregistrer les autorisations d'engagement (AE) et les crédits de paiement (CP) au niveau National.
+        Les lignes sont insérées de façon asynchrone
+        """
+        user = ConnectedUser.from_current_token_identity()
+        client_id = user.azp
+
+        file_ae: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierAe"])
+        file_cp: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierCp"])
+
+        #TODO Import
+        return jsonify(
+            {
+                "status": 200,
+                "message": "Fichiers récupérés. Demande d'import des EJ et des DP national en cours."
+            }
+        )
 
 @api.route("/ae/<id>/cp")
 @api.doc(model=fields.List(fields.Nested(model_financial_cp_single_api)))
