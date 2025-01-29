@@ -60,8 +60,10 @@ def delayed_inserts(self):
             )
         else:
             logging.info("[DELAYED] Delayed Insert sur NATIONAL")
-            # TODO import Nation
-            pass
+            csv_options = json.dumps(
+                {"sep": "|", "skiprows": 0, "keep_default_na": False, "na_values": [], "dtype": "str"}
+            )
+            read_csv_and_import_fichier_nat_ae_cp.delay(task.fichier_ae, task.fichier_cp, csv_options)
 
         # Historique de chargement des données
         db.session.add(
@@ -85,31 +87,6 @@ def delayed_inserts(self):
 
         # Suppression de la tâche dans la table
         db.session.execute(delete(AuditInsertFinancialTasks).where(AuditInsertFinancialTasks.id == task.id))
-    db.session.commit()
-
-
-@celery.task(bind=True, name="import_fichier_nat_ae_cp")
-def import_fichier_nat_ae_cp(self, file_ae_path, file_cp_path):
-
-    csv_options = json.dumps({"sep": "|", "skiprows": 0, "keep_default_na": False, "na_values": [], "dtype": "str"})
-
-    read_csv_and_import_fichier_nat_ae_cp.delay(file_ae_path, file_cp_path, csv_options)
-
-    # Historique de chargement des données
-    db.session.add(
-        AuditUpdateData(
-            username="sftp_watcher",
-            filename=os.path.basename(file_ae_path),
-            data_type=DataType.FINANCIAL_DATA_AE,
-        )
-    )
-    db.session.add(
-        AuditUpdateData(
-            username="sftp_watcher",
-            filename=os.path.basename(file_cp_path),
-            data_type=DataType.FINANCIAL_DATA_CP,
-        )
-    )
     db.session.commit()
 
 

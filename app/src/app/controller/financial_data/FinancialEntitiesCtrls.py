@@ -17,7 +17,7 @@ from models.schemas.financial import FinancialCpSchema
 from app.servicesapp import WerkzeugFileStorage
 from app.servicesapp.authentication import ConnectedUser
 from app.servicesapp.exceptions.authentication import InvalidTokenError, NoCurrentRegion
-from app.servicesapp.financial_data import get_financial_cp_of_ae, import_financial_data
+from app.servicesapp.financial_data import get_financial_cp_of_ae, import_financial_data, import_national_data
 
 api = Namespace(name="Engagement", path="/", description="Api de gestion des données financières de l'état")
 
@@ -82,13 +82,13 @@ class LoadFinancialDataNation(Resource):
         Charge les fichiers issus de Chorus pour enregistrer les autorisations d'engagement (AE) et les crédits de paiement (CP) au niveau National.
         Les lignes sont insérées de façon asynchrone
         """
-        # user = ConnectedUser.from_current_token_identity()
-        # client_id = user.azp
+        user = ConnectedUser.from_current_token_identity()
+        client_id = user.azp
 
-        # file_ae: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierAe"])
-        # file_cp: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierCp"])
+        file_ae: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierAe"])
+        file_cp: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierCp"])
 
-        # TODO Import
+        import_national_data(file_ae, file_cp, user.username, client_id=client_id)
         return jsonify(
             {"status": 200, "message": "Fichiers récupérés. Demande d'import des EJ et des DP national en cours."}
         )

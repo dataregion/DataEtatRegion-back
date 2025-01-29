@@ -53,6 +53,28 @@ def import_financial_data(
         )
     )
     db.session.commit()
+    logging.info(f"[IMPORT REGION] AJout d'un import REGIONAL de {annee} pour {client_id}")
+
+
+def import_national_data(file_ae: FileStorageProtocol, file_cp: FileStorageProtocol, username="", client_id=None):
+    """
+    Pour l'import national, ajout dans la table Audit Insert avec source_region = "NATIONAL" et annee =0
+    """
+    # Validation des fichiers
+    save_path_ae = check_file_and_save(file_ae)
+    save_path_cp = check_file_and_save(file_cp)
+    db.session.add(
+        AuditInsertFinancialTasks(
+            fichier_ae=save_path_ae,  # type: ignore
+            fichier_cp=save_path_cp,  # type: ignore
+            source_region="NATIONAL",  # type: ignore
+            annee=0,
+            username=username,  # type: ignore
+            application_clientid=client_id,  # type: ignore
+        )
+    )
+    db.session.commit()
+    logging.info("[IMPORT NATION] AJout d'un import NATIONAL")
 
 
 def import_ademe(file_ademe, username=""):

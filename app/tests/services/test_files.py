@@ -78,6 +78,7 @@ def test_delayed_insert_national(insert_audit_national, database, session):
         patch("app.tasks.files.file_task.read_csv_and_import_ae_cp.delay") as mock_task,
         patch("app.tasks.files.file_task.delete_cp_annee_region") as mock_delete_cp,
         patch("app.tasks.files.file_task.delete_ae_no_cp_annee_region") as mock_delete_ae,
+        patch("app.tasks.files.file_task.read_csv_and_import_fichier_nat_ae_cp.delay") as mock_import_nationals,
     ):
 
         # Exécution de la fonction testée
@@ -89,6 +90,8 @@ def test_delayed_insert_national(insert_audit_national, database, session):
 
         # Vérifier que la tâche Celery d'import region n'est PAS déclenchée
         mock_task.assert_not_called()
+
+        mock_import_nationals.assert_called_once()
 
     # Vérifier qu'aucune entrée AuditUpdateData n'a été insérée
     audits = session.execute(database.select(AuditUpdateData)).scalars().all()
