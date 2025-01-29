@@ -33,6 +33,7 @@ def delayed_inserts(self):
     regions = [row[0] for row in result.fetchall()]
 
     for region in regions:
+
         stmt = (
             select(AuditInsertFinancialTasks)
             .where(AuditInsertFinancialTasks.source_region == region)
@@ -43,17 +44,25 @@ def delayed_inserts(self):
         assert task is not None, "On doit avoir une tâche d'import obligatoirement."
 
         app_clientid = task.application_clientid
-        # Nettoyage de la BDD
-        delete_cp_annee_region(task.annee, task.source_region)
-        delete_ae_no_cp_annee_region(task.annee, task.source_region)
-        # Tâche d'import des AE et des CP
-        read_csv_and_import_ae_cp.delay(
-            task.fichier_ae,
-            task.fichier_cp,
-            json.dumps({"sep": ",", "skiprows": 7}),
-            source_region=task.source_region,
-            annee=task.annee,
-        )
+
+        if region != "NATIONAL":
+            logging.info(f"[DELAYED] Delayed Insert sur region {region}")
+            # Nettoyage de la BDD
+            delete_cp_annee_region(task.annee, task.source_region)
+            delete_ae_no_cp_annee_region(task.annee, task.source_region)
+            # Tâche d'import des AE et des CP
+            read_csv_and_import_ae_cp.delay(
+                task.fichier_ae,
+                task.fichier_cp,
+                json.dumps({"sep": ",", "skiprows": 7}),
+                source_region=task.source_region,
+                annee=task.annee,
+            )
+        else:
+            logging.info("[DELAYED] Delayed Insert sur NATIONAL")
+            # TODO import Nation
+            pass
+
         # Historique de chargement des données
         db.session.add(
             AuditUpdateData(
@@ -61,6 +70,7 @@ def delayed_inserts(self):
                 filename=os.path.basename(task.fichier_ae),
                 data_type=DataType.FINANCIAL_DATA_AE,
                 application_clientid=app_clientid,
+                source_region=region,
             )
         )
         db.session.add(
@@ -69,6 +79,7 @@ def delayed_inserts(self):
                 filename=os.path.basename(task.fichier_cp),
                 data_type=DataType.FINANCIAL_DATA_CP,
                 application_clientid=app_clientid,
+                source_region=region,
             )
         )
 

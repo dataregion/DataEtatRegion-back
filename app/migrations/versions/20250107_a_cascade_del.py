@@ -9,7 +9,7 @@ from alembic import op
 import logging
 
 # revision identifiers, used by Alembic.
-revision = '202500107_a_cascade_del'
+revision = '20250107_a_cascade_del'
 down_revision = '20241218_a_link_demarches_token'
 branch_labels = None
 depends_on = None

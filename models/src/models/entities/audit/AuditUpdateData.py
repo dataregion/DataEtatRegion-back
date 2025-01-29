@@ -20,6 +20,7 @@ class AuditUpdateData(_PersistenceBaseModelInstance()):
     username: Column[str] = Column(String, nullable=False)
     filename: Column[str] = Column(String, nullable=False)
     data_type: Column[str] = Column(String, nullable=False)
+    source_region: Column[str] = Column(String, nullable=True)
     """Type de donnée. Voir `app.models.enums.DataType.DataType`"""
 
     date: Column[datetime] = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
