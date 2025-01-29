@@ -47,7 +47,7 @@ class AdemeImport(Resource):
     @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     @check_file_import()
-    @api.doc(security="Bearer")
+    @api.doc(security="OAuth2AuthorizationCodeBearer")
     def post(self):
         """
         Charge un fichier issue de l'ADEME
@@ -66,7 +66,7 @@ class AdemeImport(Resource):
 
     @api.expect(parser_get)
     @auth.token_auth("default", scopes_required=["openid"])
-    @api.doc(security="Bearer")
+    @api.doc(security="OAuth2AuthorizationCodeBearer")
     def get(self):
         """
         Retourne les lignes de financement ADEME
@@ -94,7 +94,7 @@ class GetAdemeByid(Resource):
     """
 
     @auth.token_auth("default", scopes_required=["openid"])
-    @api.doc(security="Bearer")
+    @api.doc(security="OAuth2AuthorizationCodeBearer")
     def get(self, id: str):
         result = get_ademe(int(id))
 

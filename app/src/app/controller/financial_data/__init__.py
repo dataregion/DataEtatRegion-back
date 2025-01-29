@@ -1,6 +1,5 @@
 from functools import wraps
-
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 from flask_restx import Api, reqparse
 from flask_restx._http import HTTPStatus
 from werkzeug.datastructures import FileStorage
@@ -13,16 +12,23 @@ from app.exceptions.exceptions import DataRegatException, BadRequestDataRegateNu
 
 
 parser_import_region = reqparse.RequestParser()
-parser_import_region.add_argument("fichierAe", type=FileStorage, help="fichier AE à importer", location="files", required=True)
-parser_import_region.add_argument("fichierCp", type=FileStorage, help="fichier CP à importer", location="files", required=True)
+parser_import_region.add_argument(
+    "fichierAe", type=FileStorage, help="fichier AE à importer", location="files", required=True
+)
+parser_import_region.add_argument(
+    "fichierCp", type=FileStorage, help="fichier CP à importer", location="files", required=True
+)
 parser_import_region.add_argument(
     "annee", type=int, help="Année d'engagement du fichier Chorus", location="files", required=True
 )
 
 parser_import_nation = reqparse.RequestParser()
-parser_import_nation.add_argument("fichierAe", type=FileStorage, help="fichier AE à importer", location="files", required=True)
-parser_import_nation.add_argument("fichierCp", type=FileStorage, help="fichier CP à importer", location="files", required=True)
-
+parser_import_nation.add_argument(
+    "fichierAe", type=FileStorage, help="fichier AE à importer", location="files", required=True
+)
+parser_import_nation.add_argument(
+    "fichierCp", type=FileStorage, help="fichier CP à importer", location="files", required=True
+)
 
 
 def check_param_annee_import():
@@ -85,7 +91,6 @@ def check_files_import():
 from app.controller.financial_data.FinancialEntitiesCtrls import api as api_financial_entities  # noqa: E402
 from app.controller.financial_data.AdemeCtrl import api as api_ademe  # noqa: E402
 from app.controller.financial_data.TagsCtrl import api as api_tags  # noqa: E402
-from app.controller.utils.LoginController import api as api_auth  # noqa: E402
 
 from app.controller.financial_data.v2.BudgetCtrls import api_ns as api_budgets  # noqa: E402
 
@@ -93,7 +98,19 @@ from app.controller.financial_data.v2.BudgetCtrls import api_ns as api_budgets  
 api_financial_v1 = Blueprint("financial_data", __name__)
 api_financial_v2 = Blueprint("financial_data_v2", __name__)
 
-authorizations = {"Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}}
+keycloak_config = current_app.config.get("KEYCLOAK_OPENID", {})
+
+authorizations_oauth2 = {
+    "OAuth2AuthorizationCodeBearer": {
+        "type": "oauth2",
+        "flow": "accessCode",
+        "authorizationUrl": f"{keycloak_config.get("URL","")}/realms/{keycloak_config.get("REALM","")}/protocol/openid-connect/auth",
+        "tokenUrl": f"{keycloak_config.get("URL","")}/realms/{keycloak_config.get("REALM","")}/protocol/openid-connect/token",
+        "scopes": {
+            "openid": "openid profile",
+        },
+    }
+}
 
 _description = (
     "API de gestion des données financière"
@@ -107,13 +124,11 @@ api_v1 = Api(
     prefix="/api/v1",
     description=_description,
     title="API Data transform",
-    authorizations=authorizations,
+    authorizations=authorizations_oauth2,
 )
 
 model_tags_single_api = register_tags_schemamodel(api_v1)
 
-
-api_v1.add_namespace(api_auth)
 api_v1.add_namespace(api_tags)
 api_v1.add_namespace(api_financial_entities)
 api_v1.add_namespace(api_ademe)
@@ -131,7 +146,7 @@ api_v2 = Api(
     prefix="/api/v2",
     description=_description,
     title="API Data transform",
-    authorizations=authorizations,
+    authorizations=authorizations_oauth2,
 )
 
 model_tags_single_api = register_tags_schemamodel(api_v2)

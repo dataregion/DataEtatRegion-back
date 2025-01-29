@@ -69,7 +69,6 @@ def create_app_base(
     # Instantiate Flask
     app = Flask(__name__)
     read_config(app, config_filep, extra_config_settings)
-
     db.init_app(app)
     ma.init_app(app)
 
@@ -96,6 +95,7 @@ def create_app_base(
     # flask_restx
     app.config.update({"RESTX_INCLUDE_ALL_MODELS": True})
     if expose_endpoint:
+        app.config.SWAGGER_UI_OAUTH_CLIENT_ID = app.config.get("KEYCLOAK_OPENID", {}).get("CLIENT_ID", None)
         _expose_endpoint(app)
 
     _post_create_app_base(app)

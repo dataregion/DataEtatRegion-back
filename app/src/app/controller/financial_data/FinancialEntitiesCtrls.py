@@ -5,7 +5,12 @@ from flask_restx._http import HTTPStatus
 
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
-from app.controller.financial_data import check_param_annee_import, parser_import_region, parser_import_nation, check_files_import
+from app.controller.financial_data import (
+    check_param_annee_import,
+    parser_import_region,
+    parser_import_nation,
+    check_files_import,
+)
 from app.controller.financial_data.schema_model import register_financial_cp_schemamodel
 from app.models.enums.AccountRole import AccountRole
 from models.schemas.financial import FinancialCpSchema
@@ -38,7 +43,7 @@ class LoadFinancialDataRegion(Resource):
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     @check_param_annee_import()
     @check_files_import()
-    @api.doc(security="Bearer")
+    @api.doc(security="OAuth2AuthorizationCodeBearer")
     def post(self):
         """
         Charge les fichiers issus de Chorus pour enregistrer les autorisations d'engagement (AE) et les crédits de paiement (CP) au niveau Régional.
@@ -71,25 +76,23 @@ class LoadFinancialDataNation(Resource):
     @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.COMPTABLE_NATIONAL])
     @check_files_import()
-    @api.doc(security="Bearer")
+    @api.doc(security="OAuth2AuthorizationCodeBearer")
     def post(self):
         """
         Charge les fichiers issus de Chorus pour enregistrer les autorisations d'engagement (AE) et les crédits de paiement (CP) au niveau National.
         Les lignes sont insérées de façon asynchrone
         """
-        user = ConnectedUser.from_current_token_identity()
-        client_id = user.azp
+        # user = ConnectedUser.from_current_token_identity()
+        # client_id = user.azp
 
-        file_ae: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierAe"])
-        file_cp: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierCp"])
+        # file_ae: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierAe"])
+        # file_cp: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierCp"])
 
-        #TODO Import
+        # TODO Import
         return jsonify(
-            {
-                "status": 200,
-                "message": "Fichiers récupérés. Demande d'import des EJ et des DP national en cours."
-            }
+            {"status": 200, "message": "Fichiers récupérés. Demande d'import des EJ et des DP national en cours."}
         )
+
 
 @api.route("/ae/<id>/cp")
 @api.doc(model=fields.List(fields.Nested(model_financial_cp_single_api)))
@@ -100,7 +103,7 @@ class GetFinancialCpOfAe(Resource):
     """
 
     @auth.token_auth("default", scopes_required=["openid"])
-    @api.doc(security="Bearer")
+    @api.doc(security="OAuth2AuthorizationCodeBearer")
     def get(self, id: str):
         result = get_financial_cp_of_ae(int(id))
 

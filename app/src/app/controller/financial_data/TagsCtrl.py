@@ -33,7 +33,7 @@ class TagsResource(Resource):
     @auth.token_auth("default", scopes_required=["openid"])
     @check_file_import()
     @api.expect(append_tags_input)
-    @api.doc(security="Bearer")
+    @api.doc(security="OAuth2AuthorizationCodeBearer")
     def post(self):
         """Mise à jour des tags des AE depuis un export csv"""
         input_file = request.files["fichier"]
