@@ -18,6 +18,8 @@ from http import HTTPStatus
 
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 
+from app.utilities.observability import SummaryOfTimePerfCounter
+
 api_ns = Namespace(name="Budget", path="/", description="Api d'accès aux données budgetaires.")
 auth: OIDCAuthentication = current_app.extensions["auth"]
 
@@ -171,8 +173,11 @@ class GetHealthcheck(Resource):
         """
         Effectue un GET pour vérifier la disponibilité de l'API des lignes budgetaires
         """
-        result_q = search_lignes_budgetaires(limit=10, page_number=0, source_region="053")
-        result = EnrichedFlattenFinancialLinesSchema(many=True).dump(result_q.items)
+        with SummaryOfTimePerfCounter.cm("hc_search_lignes_budgetaires"):
+            result_q = search_lignes_budgetaires(limit=10, page_number=0, source_region="053")
+
+        with SummaryOfTimePerfCounter.cm("hc_serialize_lignes_budgetaires"):
+            result = EnrichedFlattenFinancialLinesSchema(many=True).dump(result_q.items)
 
         assert len(result) == 10, "On devrait récupérer 10 lignes budgetaires"
 
