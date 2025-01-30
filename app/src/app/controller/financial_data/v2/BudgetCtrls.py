@@ -86,7 +86,7 @@ class BudgetCtrl(Resource):
         page_result = search_lignes_budgetaires(**params)
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result["items"])
 
-        page_result["items"] = result # type: ignore
+        page_result["items"] = result  # type: ignore
         if len(page_result["items"]) == 0:
             return "", HTTPStatus.NO_CONTENT
 
