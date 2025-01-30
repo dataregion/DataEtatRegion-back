@@ -1,4 +1,5 @@
 import logging
+from app.servicesapp.IncrementalPageOfBudgetLines import IncrementalPageOfBudgetLines
 import pandas
 
 from sqlalchemy.orm import contains_eager, selectinload
@@ -184,7 +185,6 @@ def get_ligne_budgetaire(
     result = query_ligne_budget.do_single()
     return result
 
-
 def search_lignes_budgetaires(
     n_ej: list | None = None,
     source: str | None = None,
@@ -250,8 +250,8 @@ def search_lignes_budgetaires(
 
     query_lignes_budget.tags_fullname_in(tags)
 
-    page_result = query_lignes_budget.do_paginate(limit, page_number)
-    return page_result
+    page_incremental_result = query_lignes_budget.do_paginate_incremental(limit, page_number*limit)
+    return page_incremental_result
 
 
 def search_lignes_budgetaires_qpv(

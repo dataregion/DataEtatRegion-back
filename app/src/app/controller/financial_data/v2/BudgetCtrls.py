@@ -1,3 +1,4 @@
+from app.servicesapp.IncrementalPageOfBudgetLines import HasNext
 from flask import current_app
 from flask_pyoidc import OIDCAuthentication
 from app.controller.financial_data.schema_model import register_flatten_financial_lines_schemamodel
@@ -55,12 +56,14 @@ parser_get.add_argument(
 )
 parser_get.add_argument("tags", type=str, action="split", help="Le(s) tag(s) à inclure", required=False)
 
+pagination_incremental_model = api_ns.schema_model("IncrementalPagination", HasNext.jsonschema())
+
 pagination_model = api_ns.schema_model("Pagination", Pagination.definition_jsonschema)
 paginated_budget = api_ns.model(
     "PaginatedBudgetLines",
     {
         "items": fields.List(fields.Nested(model_flatten_budget_schemamodel)),
-        "pageInfo": fields.Nested(pagination_model),
+        "pagination": fields.Nested(pagination_incremental_model),
     },
 )
 
@@ -81,17 +84,13 @@ class BudgetCtrl(Resource):
         params["data_source"] = data_source_mapping.get(user.current_region)
 
         page_result = search_lignes_budgetaires(**params)
-        result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result.items)
+        result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result["items"])
 
-        if len(page_result.items) == 0:
+        page_result["items"] = result # type: ignore
+        if len(page_result["items"]) == 0:
             return "", HTTPStatus.NO_CONTENT
 
-        total = page_result.total if page_result.total is not None else 0
-
-        return {
-            "items": result,
-            "pageInfo": Pagination(total, page_result.page, page_result.per_page).to_json(),
-        }, HTTPStatus.OK
+        return page_result, HTTPStatus.OK
 
 
 @api_ns.route("/budget/data-qpv")
@@ -177,7 +176,7 @@ class GetHealthcheck(Resource):
             result_q = search_lignes_budgetaires(limit=10, page_number=0, source_region="053")
 
         with SummaryOfTimePerfCounter.cm("hc_serialize_lignes_budgetaires"):
-            result = EnrichedFlattenFinancialLinesSchema(many=True).dump(result_q.items)
+            result = EnrichedFlattenFinancialLinesSchema(many=True).dump(result_q["items"])
 
         assert len(result) == 10, "On devrait récupérer 10 lignes budgetaires"
 
