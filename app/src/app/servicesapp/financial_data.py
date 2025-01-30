@@ -321,8 +321,8 @@ def search_lignes_budgetaires_qpv(
 
     query_lignes_budget.tags_fullname_in(tags)
 
-    page_result = query_lignes_budget.do_paginate(limit, page_number)
-    return page_result
+    page_incremental_result = query_lignes_budget.do_paginate_incremental(limit, page_number * limit)
+    return page_incremental_result
 
 
 def get_annees_budget(source_region: str | None = None):
