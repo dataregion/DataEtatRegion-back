@@ -3,8 +3,9 @@ Services liés à la couche d'accès aux données
 """
 
 from enum import Enum
+from app.servicesapp.IncrementalPageOfBudgetLines import IncrementalPageOfBudgetLines
 from models.entities.common.Tags import Tags
-from sqlalchemy import Column, ColumnExpressionArgument, Select, desc, select, or_, func, distinct
+from sqlalchemy import Column, ColumnExpressionArgument, desc, select, or_, func, distinct
 from models.value_objects.common import DataType
 from models.value_objects.common import TypeCodeGeo
 from app.database import db
@@ -28,7 +29,7 @@ class BuilderStatementFinancialLine:
     """
 
     def __init__(self) -> None:
-        stmt: Select = select(FinancialLines)
+        stmt = select(FinancialLines)
         self._stmt = stmt
 
         self._code_geo_column_locinterministerielle_resolver = (
@@ -198,6 +199,32 @@ class BuilderStatementFinancialLine:
         """
 
         return db.paginate(self._stmt, per_page=limit, page=page_number, error_out=False)
+    
+    def do_paginate_incremental(self, limit: int, offset: int) -> IncrementalPageOfBudgetLines:
+        """
+        Effectue la pagination des résultats en utilisant les limites spécifiées.
+        :param limit: Le nombre maximum d'éléments par page.
+        :param offset: L'offset
+        :return: L'objet PaginationIncremental contenant les résultats paginés.
+        """
+        
+        stmt = self._stmt.limit(limit).offset(offset)
+        stmt_plus_one = self._stmt.limit(limit).offset(offset)
+
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        count_plus_one_stmt = select(func.count()).select_from(stmt_plus_one.subquery())
+
+        results = list(db.session.execute(stmt).unique().scalars())
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        count = db.session.execute(count_stmt).scalar()
+        count_plus_one = db.session.execute(count_plus_one_stmt).scalar()
+
+        return {
+            "items": results,
+            "pagination": {
+                "hasNext": count != count_plus_one
+            }
+        }
 
     def do_select_annees(self) -> list[int]:
         """
