@@ -30,7 +30,7 @@ dev = [
   "pre-commit ~= 3.8",
   "faker ~= 28.4",
   "ruff ~= 0.6",
-  "testcontainers ~= 3.4",
+  "testcontainers ~=4.9",
 ]
 
 [tool.pytest.ini_options]
