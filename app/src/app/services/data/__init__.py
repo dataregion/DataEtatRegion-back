@@ -190,16 +190,6 @@ class BuilderStatementFinancialLine:
         self._stmt = self._stmt.where(FinancialLines.source == str(source), FinancialLines.id == id)
         return self
 
-    def do_paginate(self, limit, page_number):
-        """
-        Effectue la pagination des résultats en utilisant les limites spécifiées.
-        :param limit: Le nombre maximum d'éléments par page.
-        :param page_number: Le numéro de la page.
-        :return: L'objet Pagination contenant les résultats paginés.
-        """
-
-        return db.paginate(self._stmt, per_page=limit, page=page_number, error_out=False)
-
     def do_paginate_incremental(self, limit: int, offset: int) -> IncrementalPageOfBudgetLines:
         """
         Effectue la pagination des résultats en utilisant les limites spécifiées.
@@ -211,7 +201,7 @@ class BuilderStatementFinancialLine:
         stmt = self._stmt.limit(limit).offset(offset)
         results = list(db.session.execute(stmt).unique().scalars())
 
-        stmt_count = self._stmt.limit(limit+1).offset(offset)
+        stmt_count = self._stmt.limit(limit + 1).offset(offset)
         count_stmt = select(func.count()).select_from(stmt_count.subquery())
         count = db.session.execute(count_stmt).scalar()
         assert count is not None
