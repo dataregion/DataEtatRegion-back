@@ -209,17 +209,14 @@ class BuilderStatementFinancialLine:
         """
 
         stmt = self._stmt.limit(limit).offset(offset)
-        stmt_plus_one = self._stmt.limit(limit).offset(offset)
-
-        count_stmt = select(func.count()).select_from(stmt.subquery())
-        count_plus_one_stmt = select(func.count()).select_from(stmt_plus_one.subquery())
-
         results = list(db.session.execute(stmt).unique().scalars())
-        count_stmt = select(func.count()).select_from(stmt.subquery())
-        count = db.session.execute(count_stmt).scalar()
-        count_plus_one = db.session.execute(count_plus_one_stmt).scalar()
 
-        return {"items": results, "pagination": {"hasNext": count != count_plus_one}}
+        stmt_count = self._stmt.limit(limit+1).offset(offset)
+        count_stmt = select(func.count()).select_from(stmt_count.subquery())
+        count = db.session.execute(count_stmt).scalar()
+        assert count is not None
+
+        return {"items": results, "pagination": {"hasNext": count > limit}}
 
     def do_select_annees(self) -> list[int]:
         """

@@ -109,17 +109,13 @@ class BudgetQPVCtrl(Resource):
         params["data_source"] = data_source_mapping.get(user.current_region)
 
         page_result = search_lignes_budgetaires_qpv(**params)
-        result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result.items)
+        result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result["items"])
 
-        if len(page_result.items) == 0:
+        page_result["items"] = result  # type: ignore
+        if len(page_result["items"]) == 0:
             return "", HTTPStatus.NO_CONTENT
 
-        total = page_result.total if page_result.total is not None else 0
-
-        return {
-            "items": result,
-            "pageInfo": Pagination(total, page_result.page, page_result.per_page).to_json(),
-        }, HTTPStatus.OK
+        return page_result, HTTPStatus.OK
 
 
 @api_ns.route("/budget/<source>/<id>")
