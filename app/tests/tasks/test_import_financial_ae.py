@@ -8,7 +8,7 @@ from models.entities.financial.FinancialCp import FinancialCp
 from models.entities.refs.CodeProgramme import CodeProgramme
 from models.entities.refs.Region import Region
 from models.entities.refs.Siret import Siret
-from app.tasks.files.file_task import read_csv_and_import_ae_cp, read_csv_and_import_fichier_nat_ae_cp
+from app.tasks.files.file_task import read_csv_and_import_ae_cp
 from app.tasks.financial.import_financial import import_lines_financial_ae
 from tests import TESTS_PATH, delete_references
 from tests.tasks.tags.test_tag_acv import add_references, get_or_create
@@ -35,18 +35,6 @@ def test_split_csv_and_import_ae_and_cp(mock_subtask):
             _chorus / "chorus_ae.csv", _chorus / "financial_cp.csv", json.dumps({"sep": ",", "skiprows": 8}), "32", 2022
         )
     assert 2 == mock_subtask.call_count
-
-
-@patch("app.tasks.financial.import_financial.subtask")
-def test_split_csv_and_import_fichier_nat_ae_cp(mock_subtask):
-    # DO
-    with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
-        read_csv_and_import_fichier_nat_ae_cp(
-            _chorus_national / "ej_data_etat_quot_2024-09-26.csv",
-            _chorus_national / "dp_data_etat_quot_2024-09-26.csv",
-            json.dumps({"sep": "|", "skiprows": 0, "keep_default_na": False, "na_values": [], "dtype": "str"}),
-        )
-    assert 9 == mock_subtask.call_count
 
 
 def test_import_new_line_ae(database, session):

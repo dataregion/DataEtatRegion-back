@@ -2,12 +2,31 @@ import io
 from tests.controller.financial_data import patching_roles
 
 
+def test_missing_arguments(test_client):
+    file_content = b"test content"
+    file = io.BytesIO(file_content)
+    file.filename = "fake_file.csv"  # type: ignore
+
+    data = {}
+    data["fichierAe"] = (file, file.filename)  # type: ignore
+    data["fichierCp"] = (file, file.filename)  # type: ignore
+    with patching_roles(["COMPTABLE_NATIONAL"]):
+        response = test_client.post(
+            "/financial-data/api/v1/national",
+            data=data,
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        assert response.status_code == 400
+        assert {"message": "Missing Argument annee", "type": "error"} == response.json
+
+
 def test_missing_files(test_client):
 
     with patching_roles(["COMPTABLE_NATIONAL"]):
         response = test_client.post(
             "/financial-data/api/v1/national",
-            data={},
+            data={"annee": 2023},
             content_type="multipart/form-data",
             follow_redirects=True,
         )

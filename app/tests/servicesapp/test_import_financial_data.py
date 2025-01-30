@@ -60,7 +60,7 @@ def test_import_file_national_not_allowed():
     with open(sample_pdf, "rb") as f:
         fs = FileStorage(f)
         with pytest.raises(FileNotAllowedException, match=r"n'a pas l'extension requise"):
-            import_national_data(fs, fs)  # type: ignore
+            import_national_data(fs, fs, 2023)  # type: ignore
 
 
 def test_import_national_data_ok(database, session):
@@ -70,7 +70,7 @@ def test_import_national_data_ok(database, session):
     with open(filename_ae, "rb") as f_ae, open(filename_cp, "rb") as f_cp:
         fs_ae = FileStorage(f_ae)
         fs_cp = FileStorage(f_cp)
-        import_national_data(fs_ae, fs_cp, username="test_username", client_id="client")  # type: ignore
+        import_national_data(fs_ae, fs_cp, 2024, username="test_username", client_id="client")  # type: ignore
 
     # ASSERT
     r: AuditInsertFinancialTasks = session.execute(database.select(AuditInsertFinancialTasks)).scalar_one_or_none()
@@ -78,4 +78,4 @@ def test_import_national_data_ok(database, session):
     assert r.fichier_cp is not None, "Le fichier CP doit être renseigné"
     _annee: int = r.annee  # type: ignore
     assert r.source_region == "NATIONAL"
-    assert _annee == 0, "L'année d'import est 0"
+    assert _annee == 2024

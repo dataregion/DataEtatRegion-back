@@ -7,8 +7,7 @@ from app.controller import ErrorController
 from app.controller.Decorators import check_permission
 from app.controller.financial_data import (
     check_param_annee_import,
-    parser_import_region,
-    parser_import_nation,
+    parser_import,
     check_files_import,
 )
 from app.controller.financial_data.schema_model import register_financial_cp_schemamodel
@@ -38,7 +37,7 @@ def handle_invalid_token(e: InvalidTokenError):
 
 @api.route("/region")
 class LoadFinancialDataRegion(Resource):
-    @api.expect(parser_import_region)
+    @api.expect(parser_import)
     @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     @check_param_annee_import()
@@ -72,10 +71,11 @@ class LoadFinancialDataRegion(Resource):
 
 @api.route("/national")
 class LoadFinancialDataNation(Resource):
-    @api.expect(parser_import_nation)
+    @api.expect(parser_import)
     @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.COMPTABLE_NATIONAL])
     @check_files_import()
+    @check_param_annee_import()
     @api.doc(security="OAuth2AuthorizationCodeBearer")
     def post(self):
         """
@@ -87,8 +87,9 @@ class LoadFinancialDataNation(Resource):
 
         file_ae: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierAe"])
         file_cp: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierCp"])
+        annee = int(request.form["annee"])
 
-        import_national_data(file_ae, file_cp, user.username, client_id=client_id)
+        import_national_data(file_ae, file_cp, annee, user.username, client_id=client_id)
         return jsonify(
             {"status": 200, "message": "Fichiers récupérés. Demande d'import des EJ et des DP national en cours."}
         )
