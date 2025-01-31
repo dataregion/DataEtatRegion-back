@@ -1,5 +1,5 @@
 variables:
-  PYTHON_IMAGE: python:3.12.4-slim
+  PYTHON_IMAGE: python:3.12.6-slim
 
 stages:
   - 🧪 test
