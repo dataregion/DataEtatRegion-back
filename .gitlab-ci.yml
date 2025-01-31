@@ -14,6 +14,7 @@ run_tests:
     - cd app/
     - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
   script:
+    - unset DOCKER_AUTH_CONFIG # XXX: On ignore la configuration au sein des tests du à une incompatibilité avec testcontainers
     - coverage run -m pytest
     - coverage report
     - coverage xml
