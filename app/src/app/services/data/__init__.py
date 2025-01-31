@@ -198,13 +198,12 @@ class BuilderStatementFinancialLine:
         :return: L'objet PaginationIncremental contenant les résultats paginés.
         """
 
-        stmt = self._stmt.limit(limit).offset(offset)
-        results = list(db.session.execute(stmt).unique().scalars())
+        stmt = self._stmt.limit(limit + 1).offset(offset)
+        
+        results = list(db.session.execute(stmt).unique().scalars().all())
+        count = len(results)
 
-        stmt_count = self._stmt.limit(limit + 1).offset(offset)
-        count_stmt = select(func.count()).select_from(stmt_count.subquery())
-        count = db.session.execute(count_stmt).scalar()
-        assert count is not None
+        results = results[:limit]
 
         return {"items": results, "pagination": {"hasNext": count > limit}}
 
