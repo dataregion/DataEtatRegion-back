@@ -44,7 +44,7 @@ prometheus-flask-exporter ~= 0.23
 watchdog ~= 5.0.2
 
 cryptography==44.0.0
-geoalchemy2 ~= 0.15.2
+geoalchemy2 ~=0.17.0
 
 geopandas ~= 1.0.1
 

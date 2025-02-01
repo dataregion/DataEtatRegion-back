@@ -108,7 +108,7 @@ flower==2.0.1
     # via -r requirements.external.in
 future==1.0.0
     # via pyjwkest
-geoalchemy2==0.15.2
+geoalchemy2==0.17.0
     # via -r requirements.external.in
 geopandas==1.0.1
     # via -r requirements.external.in
