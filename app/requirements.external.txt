@@ -34,7 +34,7 @@ celery[gevent]==5.4.0
     # via
     #   -r requirements.external.in
     #   flower
-certifi==2024.12.14
+certifi==2025.1.31
     # via
     #   httpcore
     #   httpx
@@ -245,7 +245,7 @@ python-dotenv==1.0.1
     # via pydantic-settings
 python-keycloak==5.3.0
     # via -r requirements.external.in
-pytz==2024.2
+pytz==2025.1
     # via
     #   flask-restx
     #   flower
@@ -278,7 +278,7 @@ rpds-py==0.22.3
     # via
     #   jsonschema
     #   referencing
-shapely==2.0.6
+shapely==2.0.7
     # via geopandas
 six==1.17.0
     # via
