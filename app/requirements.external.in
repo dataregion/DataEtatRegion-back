@@ -41,7 +41,7 @@ api-entreprise >= 3.6.0
 
 prometheus-flask-exporter ~= 0.23
 
-watchdog ~= 5.0.2
+watchdog ~=6.0.0
 
 cryptography==44.0.0
 geoalchemy2 ~=0.17.0
