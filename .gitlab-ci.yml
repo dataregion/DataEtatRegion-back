@@ -56,7 +56,7 @@ run_ruff:
 
 
 .build-docker:
-  image: docker:stable-dind
+  image: docker:27.5.1-dind
   stage: 🔨 build
   variables:
     IMAGE: ""
