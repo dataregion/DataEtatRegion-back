@@ -199,7 +199,7 @@ class BuilderStatementFinancialLine:
         """
 
         stmt = self._stmt.limit(limit + 1).offset(offset)
-        
+
         results = list(db.session.execute(stmt).unique().scalars().all())
         count = len(results)
 
