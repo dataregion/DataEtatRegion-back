@@ -26,6 +26,12 @@ auth: OIDCAuthentication = current_app.extensions["auth"]
 
 model_flatten_budget_schemamodel = register_flatten_financial_lines_schemamodel(api_ns)
 
+
+def theme_list(value):
+    """Empêche le split sur les virgules"""
+    return value.split("|")  # Retourne split les thème sur le pipe
+
+
 parser_get = get_pagination_parser(default_limit=6500)
 parser_get.add_argument("n_ej", type=str, action="split", help="Le numéro EJ")
 parser_get.add_argument("source", type=str, help="Source de la donnée")
@@ -44,7 +50,7 @@ parser_get.add_argument(
 parser_get.add_argument("ref_qpv", type=int, help="Année du référentiel du QPV")
 parser_get.add_argument("code_qpv", type=str, action="split", help="Les codes de QPV")
 parser_get.add_argument(
-    "theme", type=str, action="split", help="Le libelle theme (si code_programme est renseigné, le theme est ignoré)."
+    "theme", type=theme_list, help="Le libelle theme (si code_programme est renseigné, le theme est ignoré)."
 )
 parser_get.add_argument("siret_beneficiaire", type=str, action="split", help="Code siret d'un beneficiaire.")
 parser_get.add_argument("types_beneficiaires", type=str, action="split", help="Types de bénéficiaire.")
