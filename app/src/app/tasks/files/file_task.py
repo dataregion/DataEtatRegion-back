@@ -62,7 +62,7 @@ def delayed_inserts(self):
         else:
             logging.info("[DELAYED] Delayed Insert sur NATIONAL")
             csv_options = json.dumps(
-                {"sep": "|", "skiprows": 0, "keep_default_na": False, "na_values": [], "dtype": "str"}
+                {"sep": ";", "skiprows": 0, "keep_default_na": False, "na_values": [], "dtype": "str"}
             )
             read_csv_and_import_fichier_nat_ae_cp.delay(task.fichier_ae, task.fichier_cp, csv_options, task.annee)
 

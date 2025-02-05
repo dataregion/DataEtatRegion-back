@@ -79,6 +79,16 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
     contrat_etat_region: Column[str] = Column(String(255))
     annee: Column[int] = Column(Integer, nullable=False)  # annee de l'AE chorus
 
+    #Ajout colonne AIFE
+    tranche_fonctionnelle: Column[str] = Column(String,nullable=True)
+    fonds: Column[str] = Column(String,nullable=True)
+    projet_analytique: Column[str] = Column(String,nullable=True)
+    axe_ministeriel_1: Column[str] = Column(String,nullable=True)
+    axe_ministeriel_2: Column[str] = Column(String,nullable=True)
+    societe: Column[str] = Column(String,nullable=True)
+    centre_financier: Column[str] = Column(String,nullable=True)
+
+
     tags: Mapped[Tags] = relationship(
         "Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True
     )
@@ -290,11 +300,8 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
         return [
             "programme",
             "domaine_fonctionnel",
-            "domaine_fonctionnel_label",
             "centre_couts",
-            "centre_couts_label",
             "referentiel_programmation",
-            "referentiel_programmation_label",
             COLUMN_NEJ_NAME,
             "date_replication",
             "n_poste_ej",
@@ -303,26 +310,16 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
             "fournisseur_titulaire_label",
             "siret",
             "compte_code",
-            "compte_code_label",
             "compte_budgetaire",
-            "compte_budgetaire_label",
             "groupe_marchandise",
-            "groupe_marchandise_label",
             "contrat_etat_region",
-            "contrat_etat_region_2",
             "localisation_interministerielle",
-            "localisation_interministerielle_label",
             COLUMN_MONTANT_NAME,
             "centre_financier",
-            "centre_financier_label",
             "tranche_fonctionnelle",
-            "tranche_fonctionnelle_label",
             "axe_ministeriel_1",
-            "axe_ministeriel_1_label",
             "fonds",
-            "fonds_label",
             "projet_analytique",
-            "projet_analytique_label",
             "axe_ministeriel_2",
             "societe"
         ]
@@ -332,11 +329,8 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
         return {
             "programme": str,
             "domaine_fonctionnel": str,
-            "domaine_fonctionnel_label": str,
             "centre_couts": str,
-            "centre_couts_label": str,
             "referentiel_programmation": str,
-            "referentiel_programmation_label": str,
             COLUMN_NEJ_NAME: str,
             "date_replication": str,
             "n_poste_ej": str,
@@ -345,26 +339,16 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
             "fournisseur_titulaire_label": str,
             "siret": str,
             "compte_code": str,
-            "compte_code_label": str,
             "compte_budgetaire": str,
-            "compte_budgetaire_label": str,
             "groupe_marchandise": str,
-            "groupe_marchandise_label": str,
             "contrat_etat_region": str,
-            "contrat_etat_region_2": str,
             "localisation_interministerielle": str,
-            "localisation_interministerielle_label": str,
             COLUMN_MONTANT_NAME: str,
             "centre_financier": str,
-            "centre_financier_label": str,
             "tranche_fonctionnelle": str,
-            "tranche_fonctionnelle_label": str,
             "axe_ministeriel_1": str,
-            "axe_ministeriel_1_label": str,
             "fonds": str,
-            "fonds_label": str,
             "projet_analytique": str,
-            "projet_analytique_label": str,
             "axe_ministeriel_2": str,
             "societe": str
         }

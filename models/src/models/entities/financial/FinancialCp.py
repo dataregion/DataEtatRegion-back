@@ -72,6 +72,18 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
     montant: float = Column(Float)
     annee: int = Column(Integer, nullable=False)
 
+    #ajout donnée issue de AIFE (ces trois colonnes avec le champ n_dp composent la clé unique d'une Dépense)
+    societe: Column[str] = Column(String,nullable=True)
+    exercice_comptable: Column[str] = Column(String,nullable=True)
+    n_poste_dp: Column[str] = Column(String, nullable=True)
+
+    #ajout autre colonne AIFE
+    tranche_fonctionnelle: Column[str] = Column(String,nullable=True)
+    fonds: Column[str] = Column(String,nullable=True)
+    projet_analytique: Column[str] = Column(String,nullable=True)
+    type_piece: Column[str] = Column(String,nullable=True)
+
+
     # Données techniques
 
     file_import_taskid = Column(String(255))
@@ -147,11 +159,8 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
         return [
             "programme",
             "domaine_fonctionnel",
-            "domaine_fonctionnel_label",
             "centre_couts",
-            "centre_couts_label",
             "referentiel_programmation",
-            "referentiel_programmation_label",
             "n_ej",
             "n_poste_ej",
             "n_dp",
@@ -161,26 +170,19 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
             "fournisseur_paye_label",
             "siret",
             "compte_code",
-            "compte_code_label",
             "compte_budgetaire",
-            "compte_budgetaire_label",
             "groupe_marchandise",
-            "groupe_marchandise_label",
             "contrat_etat_region",
-            "contrat_etat_region_2",
             "localisation_interministerielle",
-            "localisation_interministerielle_label",
             "montant",
             "exercice_comptable",
             "n_poste_dp"
-            "centre_financier_label",
+            "programme_doublon",
             "tranche_fonctionnelle",
-            "tranche_fonctionnelle_label"
             "fonds",
-            "fonds_label",
             "projet_analytique",
-            "projet_analytique_label",
-            "societe"
+            "societe",
+            "type_piece"
         ]
 
     @staticmethod
@@ -188,11 +190,8 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
         return {
             "programme": str,
             "domaine_fonctionnel": str,
-            "domaine_fonctionnel_label": str,
             "centre_couts": str,
-            "centre_couts_label": str,
             "referentiel_programmation": str,
-            "referentiel_programmation_label": str,
             "n_ej": str,
             "n_poste_ej": str,
             "n_dp": str,
@@ -202,26 +201,19 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
             "fournisseur_paye_label": str,
             "siret": str,
             "compte_code": str,
-            "compte_code_label": str,
             "compte_budgetaire": str,
-            "compte_budgetaire_label": str,
             "groupe_marchandise": str,
-            "groupe_marchandise_label": str,
             "contrat_etat_region": str,
-            "contrat_etat_region_2": str,
             "localisation_interministerielle": str,
-            "localisation_interministerielle_label": str,
             "montant": str,
             "exercice_comptable": str,
             "n_poste_dp": str,
-            "centre_financier_label": str,
+            "programme_doublon": str,
             "tranche_fonctionnelle": str,
-            "tranche_fonctionnelle_label": str,
             "fonds": str,
-            "fonds_label": str,
             "projet_analytique": str,
-            "projet_analytique_label": str,
-            "societe": str
+            "societe": str,
+            "type_piece": str
         }
 
 def _convert_date_format(date_str):
