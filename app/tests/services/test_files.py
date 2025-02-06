@@ -29,7 +29,7 @@ def insert_audit_national(database):
         fichier_ae="/path/ae",  # type: ignore
         fichier_cp="/path/cp",  # type: ignore
         source_region="NATIONAL",  # type: ignore
-        annee=0,  # type: ignore
+        annee=2025,  # type: ignore
         username="username",  # type: ignore
         application_clientid="client_id",  # type: ignore
     )
@@ -84,14 +84,17 @@ def test_delayed_insert_national(insert_audit_national, database, session):
         # Exécution de la fonction testée
         delayed_inserts()
 
+        # Vérification que la tâche Celery a été appelée une fois avec les bons arguments
+        mock_import_nationals.assert_called_once_with(
+            "/path/ae", "/path/cp", '{"sep": "\\";\\"", "skiprows": 0, "dtype": "str"}', 2025
+        )
+
         # Vérifier que les fonctions de suppression ae cp ne sont PAS appelées
         mock_delete_cp.assert_not_called()
         mock_delete_ae.assert_not_called()
 
         # Vérifier que la tâche Celery d'import region n'est PAS déclenchée
         mock_task.assert_not_called()
-
-        mock_import_nationals.assert_called_once()
 
     # Vérifier qu'aucune entrée AuditUpdateData n'a été insérée
     audits = session.execute(database.select(AuditUpdateData)).scalars().all()

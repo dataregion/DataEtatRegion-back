@@ -137,7 +137,8 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
         if (key == "date_modification_ej" or key == "date_replication") and isinstance(
             value, str
         ):
-            value = datetime.strptime(value, "%d.%m.%Y")
+            # cas où les dates sont au format dd/mm/yyyy
+            value = datetime.strptime(value.replace("/","."), "%d.%m.%Y")
 
         super().__setattr__(key, value)
 

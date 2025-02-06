@@ -9,9 +9,7 @@ from models.entities.financial.FinancialCp import FinancialCp
 from tests.tasks.tags.test_tag_acv import add_references
 from models.entities.refs.Siret import Siret
 from app.tasks.financial.import_financial import import_lines_financial_cp
-from tests import TESTS_PATH, delete_references
-
-_chorus = TESTS_PATH / "data" / "chorus"
+from tests import delete_references
 
 
 def _next_tech_info_fn():

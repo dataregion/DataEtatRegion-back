@@ -61,9 +61,7 @@ def delayed_inserts(self):
             )
         else:
             logging.info("[DELAYED] Delayed Insert sur NATIONAL")
-            csv_options = json.dumps(
-                {"sep": ";", "skiprows": 0, "keep_default_na": False, "na_values": [], "dtype": "str"}
-            )
+            csv_options = json.dumps({"sep": '";"', "skiprows": 0, "dtype": "str"})
             read_csv_and_import_fichier_nat_ae_cp.delay(task.fichier_ae, task.fichier_cp, csv_options, task.annee)
 
         # Historique de chargement des données
@@ -109,7 +107,7 @@ def read_csv_and_import_fichier_nat_ae_cp(self, fichierAe: str, fichierCp: str, 
     _move_file(fichierAe, current_app.config["UPLOAD_FOLDER"] + "/save/")
     _move_file(fichierCp, current_app.config["UPLOAD_FOLDER"] + "/save/")
 
-    _process_batches(ae_list, cp_list)
+    _process_batches(ae_list, cp_list, annee=annee)
 
 
 @celery.task(bind=True, name="read_csv_and_import_ae_cp")
@@ -251,12 +249,16 @@ def _parse_cp(
 def _parse_fichier_nat_ae(output_file: str, annee: int, ae_list: dict) -> list[dict]:
     series = pandas.Series({f"{FinancialAe.annee.key}": annee})
     columns_names = FinancialAe.get_columns_fichier_nat_ae()
+    index_last_col = len(columns_names) - 1
     columns_types = FinancialAe.get_columns_type_fichier_nat_ae()
 
     data_chunk = get_data_chunk(output_file, columns_names, columns_types)
     for chunk in data_chunk:
         for i, line in chunk.iterrows():
             line["data_source"] = "NATION"
+            # clean la première et dernière ligne qui contient un "
+            line[columns_names[0]] = line[columns_names[0]].replace('"', "")
+            line[columns_names[index_last_col]] = line[columns_names[index_last_col]].replace('"', "")
             line["source_region"] = get_code_region_by_code_comp(line["societe"])
             key = f"national_{line["source_region"]}_{annee}_{line[FinancialAe.n_ej.key]}_{line[FinancialAe.n_poste_ej.key]}"
             ae = pandas.concat([line, series]).to_json()
@@ -270,13 +272,16 @@ def _parse_fichier_nat_cp(
     output_file: str, annee: int, chunk_index: int, max_lines: int, ae_list: dict, cp_list: dict
 ) -> list[dict]:
     columns_names = FinancialCp.get_columns_fichier_nat_cp()
+    index_last_col = len(columns_names) - 1
     columns_types = FinancialCp.get_columns_types_fichier_nat_cp()
 
     data_chunk = get_data_chunk(output_file, columns_names, columns_types)
     for chunk in data_chunk:
         for i, line in chunk.iterrows():
-            # cp_data = json.dumps(FinancialCp.from_csv_fichier_nat(line))
             line["data_source"] = "NATION"
+            # clean la première et dernière ligne qui contient un "
+            line[columns_names[0]] = line[columns_names[0]].replace('"', "")
+            line[columns_names[index_last_col]] = line[columns_names[index_last_col]].replace('"', "")
             line["source_region"] = get_code_region_by_code_comp(line["societe"])
             key = f"national_{line["source_region"]}_{annee}_{line[FinancialAe.n_ej.key]}_{line[FinancialAe.n_poste_ej.key]}"
             if key in ae_list.keys():

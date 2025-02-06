@@ -24,7 +24,6 @@ def cleanup_after_tests(database):
 
 
 _chorus = TESTS_PATH / "data" / "chorus"
-_chorus_national = _chorus / "national"
 
 
 @patch("app.tasks.financial.import_financial.subtask")
@@ -60,6 +59,9 @@ def test_import_new_line_ae(database, session):
     assert len(data.montant_ae) == 1
     assert data.montant_ae[0].montant == 22500.12
     assert data.montant_ae[0].annee == 2023
+    assert data.projet_analytique is None
+    assert data.axe_ministeriel_1 is None
+    assert data.axe_ministeriel_2 is None
 
     delete_references(session)
 
@@ -107,14 +109,14 @@ def test_import_lines_ae_with_duplicate_ref(database, session):
 
     import_lines_financial_ae(
         [
-            '{"domaine_fonctionnel": "0216-05-06", "centre_couts": "ADCAIAC075", "referentiel_programmation": "021606010402", "n_ej": "1000176402", "n_poste_ej": 17, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "16.05.02", "contrat_etat_region": "", "localisation_interministerielle": "N1175", "annee": "2023", "montant": 39240.0, "source_region": "11", "programme": "0216", "data_source": "NATION"}',
-            '{"domaine_fonctionnel": "0216-05-11", "centre_couts": "PN50000033", "referentiel_programmation": "021606040101", "n_ej": "1600073826", "n_poste_ej": 12, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "36.05.08", "contrat_etat_region": "", "localisation_interministerielle": "B223939", "annee": "2023", "montant": 64.7, "source_region": "11", "programme": "0216", "data_source": "NATION"}',
-            '{"domaine_fonctionnel": "0216-10-05", "centre_couts": "PRFDCAB053", "referentiel_programmation": "0216081008A5", "n_ej": "2104384696", "n_poste_ej": 1, "siret": "57202862900275", "compte_budgetaire": "63", "groupe_marchandise": "10.03.01", "contrat_etat_region": "", "localisation_interministerielle": "N5253", "annee": "2024", "montant": 650.0, "source_region": "11", "programme": "0216", "data_source": "NATION"}',
-            '{"domaine_fonctionnel": "0216-05-06", "centre_couts": "ADCAIAC075", "referentiel_programmation": "021606010402", "n_ej": "1000176402", "n_poste_ej": 14, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "16.05.02", "contrat_etat_region": "", "localisation_interministerielle": "N1175", "annee": "2023", "montant": 108480.0, "source_region": "11", "programme": "0216", "data_source": "NATION"}',
-            '{"domaine_fonctionnel": "0216-05-06", "centre_couts": "ADCAIAC075", "referentiel_programmation": "021606010402", "n_ej": "1000176402", "n_poste_ej": 11, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "16.05.02", "contrat_etat_region": "", "localisation_interministerielle": "N1175", "annee": "2023", "montant": 99480.0, "source_region": "11", "programme": "0216", "data_source": "NATION"}',
-            '{"domaine_fonctionnel": "0216-03-05", "centre_couts": "MI5ZSIC059", "referentiel_programmation": "021603040101", "n_ej": "1512722596", "n_poste_ej": 1, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "33.03.08", "contrat_etat_region": "", "localisation_interministerielle": "N32", "annee": "2024", "montant": 30838.72, "source_region": "11", "programme": "0216", "data_source": "NATION"}',
-            '{"domaine_fonctionnel": "0216-05-11", "centre_couts": "PN50000033", "referentiel_programmation": "021606040101", "n_ej": "1600073826", "n_poste_ej": 10, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "36.05.08", "contrat_etat_region": "", "localisation_interministerielle": "B223939", "annee": "2023", "montant": 27823.2, "source_region": "11", "programme": "0216", "data_source": "NATION"}',
-            '{"domaine_fonctionnel": "0216-05-06", "centre_couts": "ADCAIAC075", "referentiel_programmation": "021606010402", "n_ej": "1000176402", "n_poste_ej": 2, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "16.05.02", "contrat_etat_region": "", "localisation_interministerielle": "N1175", "annee": "2023", "montant": 133440.0, "source_region": "11", "programme": "0216", "data_source": "NATION"}',
+            '{"domaine_fonctionnel": "0216-05-06", "centre_couts": "ADCAIAC075", "referentiel_programmation": "021606010402", "n_ej": "1000176402", "n_poste_ej": 17, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "16.05.02", "contrat_etat_region": "", "localisation_interministerielle": "N1175", "annee": "2023", "montant": 39240.0, "source_region": "11", "programme": "0216", "data_source": "REGION"}',
+            '{"domaine_fonctionnel": "0216-05-11", "centre_couts": "PN50000033", "referentiel_programmation": "021606040101", "n_ej": "1600073826", "n_poste_ej": 12, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "36.05.08", "contrat_etat_region": "", "localisation_interministerielle": "B223939", "annee": "2023", "montant": 64.7, "source_region": "11", "programme": "0216", "data_source": "REGION"}',
+            '{"domaine_fonctionnel": "0216-10-05", "centre_couts": "PRFDCAB053", "referentiel_programmation": "0216081008A5", "n_ej": "2104384696", "n_poste_ej": 1, "siret": "57202862900275", "compte_budgetaire": "63", "groupe_marchandise": "10.03.01", "contrat_etat_region": "", "localisation_interministerielle": "N5253", "annee": "2024", "montant": 650.0, "source_region": "11", "programme": "0216", "data_source": "REGION"}',
+            '{"domaine_fonctionnel": "0216-05-06", "centre_couts": "ADCAIAC075", "referentiel_programmation": "021606010402", "n_ej": "1000176402", "n_poste_ej": 14, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "16.05.02", "contrat_etat_region": "", "localisation_interministerielle": "N1175", "annee": "2023", "montant": 108480.0, "source_region": "11", "programme": "0216", "data_source": "REGION"}',
+            '{"domaine_fonctionnel": "0216-05-06", "centre_couts": "ADCAIAC075", "referentiel_programmation": "021606010402", "n_ej": "1000176402", "n_poste_ej": 11, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "16.05.02", "contrat_etat_region": "", "localisation_interministerielle": "N1175", "annee": "2023", "montant": 99480.0, "source_region": "11", "programme": "0216", "data_source": "REGION"}',
+            '{"domaine_fonctionnel": "0216-03-05", "centre_couts": "MI5ZSIC059", "referentiel_programmation": "021603040101", "n_ej": "1512722596", "n_poste_ej": 1, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "33.03.08", "contrat_etat_region": "", "localisation_interministerielle": "N32", "annee": "2024", "montant": 30838.72, "source_region": "11", "programme": "0216", "data_source": "REGION"}',
+            '{"domaine_fonctionnel": "0216-05-11", "centre_couts": "PN50000033", "referentiel_programmation": "021606040101", "n_ej": "1600073826", "n_poste_ej": 10, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "36.05.08", "contrat_etat_region": "", "localisation_interministerielle": "B223939", "annee": "2023", "montant": 27823.2, "source_region": "11", "programme": "0216", "data_source": "REGION"}',
+            '{"domaine_fonctionnel": "0216-05-06", "centre_couts": "ADCAIAC075", "referentiel_programmation": "021606010402", "n_ej": "1000176402", "n_poste_ej": 2, "siret": "57202862900275", "compte_budgetaire": "51", "groupe_marchandise": "16.05.02", "contrat_etat_region": "", "localisation_interministerielle": "N1175", "annee": "2023", "montant": 133440.0, "source_region": "11", "programme": "0216", "data_source": "REGION"}',
         ],
         None,
         None,

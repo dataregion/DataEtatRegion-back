@@ -118,13 +118,13 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
         if (key == "n_ej" or key == "n_poste_ej") and value == "#":
             value = None
 
-        if (
+        elif (
             key == "date_base_dp" or key == "date_derniere_operation_dp"
         ) and isinstance(value, str):
             if value == "#":
                 value = None
             else:
-                value = datetime.strptime(value, "%d.%m.%Y")
+                value = datetime.strptime(value.replace("/","."), "%d.%m.%Y")
 
         super().__setattr__(key, value)
 
@@ -176,7 +176,7 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
             "localisation_interministerielle",
             "montant",
             "exercice_comptable",
-            "n_poste_dp"
+            "n_poste_dp",
             "programme_doublon",
             "tranche_fonctionnelle",
             "fonds",
