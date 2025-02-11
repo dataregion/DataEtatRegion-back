@@ -17,7 +17,12 @@ from models.schemas.financial import FinancialCpSchema
 from app.servicesapp import WerkzeugFileStorage
 from app.servicesapp.authentication import ConnectedUser
 from app.servicesapp.exceptions.authentication import InvalidTokenError, NoCurrentRegion
-from app.servicesapp.financial_data import get_financial_cp_of_ae, import_financial_data, import_national_data, import_qpv_lieu_action
+from app.servicesapp.financial_data import (
+    get_financial_cp_of_ae,
+    import_financial_data,
+    import_national_data,
+    import_qpv_lieu_action,
+)
 
 api = Namespace(name="Engagement", path="/", description="Api de gestion des données financières de l'état")
 
@@ -120,9 +125,10 @@ class GetFinancialCpOfAe(Resource):
 parser_import_file = reqparse.RequestParser()
 parser_import_file.add_argument("fichier", type=FileStorage, help="fichier à importer", location="files", required=True)
 
+
 @api.route("/qpv-lieu-action")
 class QpvLieuActionCtrl(Resource):
-    
+
     @api.expect(parser_import_file)
     @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])

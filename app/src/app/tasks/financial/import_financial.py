@@ -2,6 +2,7 @@ import datetime
 import shutil
 from celery import current_task, subtask
 from flask import current_app
+from psycopg import IntegrityError
 from sqlalchemy import delete
 from app import celeryapp, db
 from app.exceptions.exceptions import FinancialException
@@ -386,13 +387,14 @@ def import_file_qpv_lieu_action(self, fichier: str):
                 "ej": str,
                 "code_qpv": str,
                 "code_qp2024": str,
-                "ratio_montant_ej": float
+                "ratio_montant_ej": float,
             },
             chunksize=1000,
         )
 
         i = 0
         for chunk in data_chunk:
+            ejs = []
             qpv_lieu_action = []
             for _, line in chunk.iterrows():
 
@@ -402,22 +404,30 @@ def import_file_qpv_lieu_action(self, fichier: str):
                     new_line = QpvLieuAction.format_dict(line)
                     new_line["file_import_taskid"] = tech_info.file_import_taskid
                     new_line["file_import_lineno"] = tech_info.lineno
-                    qpv_lieu_action.append(new_line)
+                    qpv_lieu_action.append(QpvLieuAction(**new_line))
+                    if new_line["n_ej"] not in ejs:
+                        ejs.append(new_line["n_ej"])
 
                 if line["code_qp2024"] is not None and line["code_qp2024"] != "NR" and line["annee"] >= 2024:
                     line["code_qpv"] = line["code_qp2024"]
                     new_line = QpvLieuAction.format_dict(line)
                     new_line["file_import_taskid"] = tech_info.file_import_taskid
                     new_line["file_import_lineno"] = tech_info.lineno
-                    qpv_lieu_action.append(new_line)
+                    qpv_lieu_action.append(QpvLieuAction(**new_line))
+                    if new_line["n_ej"] not in ejs:
+                        ejs.append(new_line["n_ej"])
 
                 i += 1
-            
+
+            count = db.session.query(FinancialAe).where(FinancialAe.n_ej.in_(ejs)).distinct().count()
+
+            if count != len(ejs):
+                raise IntegrityError("Some EJ does not exist.")
 
             logger.debug(f"[IMPORT][QPV_LIEU_ACTION][LINE] Traitement de la ligne : {tech_info}")
             logger.debug(f"[IMPORT][QPV_LIEU_ACTION][LINE] Nombre de lignes QPV   : {len(qpv_lieu_action)}")
             logger.debug(f"[IMPORT][QPV_LIEU_ACTION][LINE] Contenu du tech info   : {tech_info}")
-            db.session.bulk_insert_mappings(QpvLieuAction, qpv_lieu_action)
+            db.session.bulk_save_objects(qpv_lieu_action)
             db.session.commit()
 
         move_folder = os.path.join(move_folder, timestamp)

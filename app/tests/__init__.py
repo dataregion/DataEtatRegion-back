@@ -16,6 +16,7 @@ from models.entities.refs.DomaineFonctionnel import DomaineFonctionnel
 from models.entities.refs.FournisseurTitulaire import FournisseurTitulaire
 from models.entities.refs.GroupeMarchandise import GroupeMarchandise
 from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
+from models.entities.refs.Qpv import Qpv
 from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
 from models.entities.refs.Region import Region
 from models.entities.refs.Siret import Siret
@@ -58,5 +59,6 @@ def delete_references(session):
     session.execute(delete(Ademe))
     session.execute(delete(France2030))
     session.execute(delete(Siret))
+    session.execute(delete(Qpv))
 
     session.commit()

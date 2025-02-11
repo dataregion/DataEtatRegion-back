@@ -39,13 +39,3 @@ class QpvLieuAction(_Audit, _PersistenceBaseModelInstance()):
         dict["annee"] = int(line_dict["annee"])
         dict["ratio_montant"] = line_dict["ratio_montant_ej"]
         return dict
-    
-
-@listens_for(QpvLieuAction, "before_insert")
-@listens_for(QpvLieuAction, "before_update")
-def check_ej_exists(mapper, connection, target: QpvLieuAction):
-    print("print COUCOUCOU")
-    logging.debug("logging COUCOUCOU")
-    if db.session.query(FinancialAe).filter_by(n_ej=target.n_ej).count() == 0:
-        raise IntegrityError(f"N°EJ {target.n_ej} does not exist.", target, [])
-        # print(f"N°EJ {target.n_ej} does not exist.")
