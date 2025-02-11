@@ -9,6 +9,7 @@ import sqlalchemy.exc
 from models.entities.financial.Ademe import Ademe
 from models.entities.financial.FinancialAe import FinancialAe
 from models.entities.financial.FinancialCp import FinancialCp
+from models.entities.financial.QpvLieuAction import QpvLieuAction
 from models.entities.refs.CentreCouts import CentreCouts
 from models.entities.refs.CodeProgramme import CodeProgramme
 from models.entities.refs.DomaineFonctionnel import DomaineFonctionnel
@@ -363,3 +364,71 @@ def _delete_ademe():
     stmt = delete(Ademe)
     db.session.execute(stmt)
     db.session.commit()
+
+
+@celery.task(bind=True, name="import_file_qpv_lieu_action")
+def import_file_qpv_lieu_action(self, fichier: str):
+    # get file
+    logger.info(f"[IMPORT][QPV_LIEU_ACTION] Start for file {fichier}")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
+    move_folder = current_app.config["UPLOAD_FOLDER"] + "/save/"
+
+    try:
+        current_taskid = current_task.request.id
+        data_chunk = pandas.read_csv(
+            fichier,
+            sep=",",
+            header=0,
+            dtype={
+                "reference": str,
+                "annee": int,
+                "ej": str,
+                "code_qpv": str,
+                "code_qp2024": str,
+                "ratio_montant_ej": float
+            },
+            chunksize=1000,
+        )
+
+        i = 0
+        for chunk in data_chunk:
+            qpv_lieu_action = []
+            for _, line in chunk.iterrows():
+
+                tech_info = LineImportTechInfo(current_taskid, i)
+
+                if line["code_qpv"] is not None and line["code_qpv"] != "NR":
+                    new_line = QpvLieuAction.format_dict(line)
+                    new_line["file_import_taskid"] = tech_info.file_import_taskid
+                    new_line["file_import_lineno"] = tech_info.lineno
+                    qpv_lieu_action.append(new_line)
+
+                if line["code_qp2024"] is not None and line["code_qp2024"] != "NR" and line["annee"] >= 2024:
+                    line["code_qpv"] = line["code_qp2024"]
+                    new_line = QpvLieuAction.format_dict(line)
+                    new_line["file_import_taskid"] = tech_info.file_import_taskid
+                    new_line["file_import_lineno"] = tech_info.lineno
+                    qpv_lieu_action.append(new_line)
+
+                i += 1
+            
+
+            logger.debug(f"[IMPORT][QPV_LIEU_ACTION][LINE] Traitement de la ligne : {tech_info}")
+            logger.debug(f"[IMPORT][QPV_LIEU_ACTION][LINE] Nombre de lignes QPV   : {len(qpv_lieu_action)}")
+            logger.debug(f"[IMPORT][QPV_LIEU_ACTION][LINE] Contenu du tech info   : {tech_info}")
+            db.session.bulk_insert_mappings(QpvLieuAction, qpv_lieu_action)
+            db.session.commit()
+
+        move_folder = os.path.join(move_folder, timestamp)
+        if not os.path.exists(move_folder):
+            os.makedirs(move_folder)
+        logger.info(f"[IMPORT][QPV_LIEU_ACTION] Save file {fichier} in {move_folder}")
+
+        shutil.move(fichier, move_folder)
+        logger.info("[IMPORT][QPV_LIEU_ACTION] End")
+
+        return True
+    except Exception as e:
+        logger.exception(f"[IMPORT][QPV_LIEU_ACTION] Error lors de l'import du fichier: {fichier}")
+        raise e

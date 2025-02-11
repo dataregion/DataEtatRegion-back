@@ -1,7 +1,8 @@
 from flask import jsonify, current_app, request
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, reqparse
 from flask_pyoidc import OIDCAuthentication
 from flask_restx._http import HTTPStatus
+from werkzeug.datastructures import FileStorage
 
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
@@ -16,7 +17,7 @@ from models.schemas.financial import FinancialCpSchema
 from app.servicesapp import WerkzeugFileStorage
 from app.servicesapp.authentication import ConnectedUser
 from app.servicesapp.exceptions.authentication import InvalidTokenError, NoCurrentRegion
-from app.servicesapp.financial_data import get_financial_cp_of_ae, import_financial_data, import_national_data
+from app.servicesapp.financial_data import get_financial_cp_of_ae, import_financial_data, import_national_data, import_qpv_lieu_action
 
 api = Namespace(name="Engagement", path="/", description="Api de gestion des données financières de l'état")
 
@@ -114,3 +115,29 @@ class GetFinancialCpOfAe(Resource):
         financial_cp = FinancialCpSchema(many=True).dump(result)
 
         return financial_cp, 200
+
+
+parser_import_file = reqparse.RequestParser()
+parser_import_file.add_argument("fichier", type=FileStorage, help="fichier à importer", location="files", required=True)
+
+@api.route("/qpv-lieu-action")
+class QpvLieuActionCtrl(Resource):
+    
+    @api.expect(parser_import_file)
+    @auth.token_auth("default", scopes_required=["openid"])
+    @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
+    @check_files_import()
+    @api.doc(security="Bearer")
+    def post(self):
+        """
+        Charge un fichier faisant le lien entre QPV et AE
+        Les lignes sont insérés de manière asynchrone
+        """
+        user = ConnectedUser.from_current_token_identity()
+        file_qpv_lieu_action = request.files["fichier"]
+        task = import_qpv_lieu_action(file_qpv_lieu_action, user.username)
+        return jsonify(
+            {
+                "status": f"Fichier récupéré. Demande d`import des données QPVLieuAction en cours (taches asynchrone id = {task.id}"
+            }
+        )

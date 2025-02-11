@@ -28,3 +28,4 @@ from .financial.FinancialAe import FinancialAe
 from .financial.FinancialCp import FinancialCp
 from .financial.Ademe import Ademe
 from .financial.France2030 import France2030
+from .financial.QpvLieuAction import QpvLieuAction

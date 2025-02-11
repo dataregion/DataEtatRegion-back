@@ -355,3 +355,13 @@ def get_annees_budget(source_region: str | None = None):
 
     query_annees_budget = BuilderStatementFinancialLine().source_region_in(_regions)
     return query_annees_budget.do_select_annees()
+
+
+def import_qpv_lieu_action(file_qpv, username=""):
+    save_path = check_file_and_save(file_qpv)
+
+    logging.info(f"[IMPORT][QPV_LIEU_ACTION] Récupération du fichier {save_path}")
+    from app.tasks.financial.import_financial import import_file_qpv_lieu_action
+
+    task = import_file_qpv_lieu_action.delay(str(save_path))
+    return task
