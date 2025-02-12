@@ -133,7 +133,7 @@ class QpvLieuActionCtrl(Resource):
     @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     @check_files_import()
-    @api.doc(security="Bearer")
+    @api.doc(security="OAuth2AuthorizationCodeBearer")
     def post(self):
         """
         Charge un fichier faisant le lien entre QPV et AE
