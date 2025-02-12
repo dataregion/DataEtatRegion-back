@@ -132,7 +132,7 @@ class QpvLieuActionCtrl(Resource):
     @api.expect(parser_import_file)
     @auth.token_auth("default", scopes_required=["openid"])
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
-    @check_files_import()
+    @check_file_import()
     @api.doc(security="OAuth2AuthorizationCodeBearer")
     def post(self):
         """
