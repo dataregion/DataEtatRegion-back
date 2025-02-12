@@ -7,6 +7,7 @@ from werkzeug.datastructures import FileStorage
 from app.controller import ErrorController
 from app.controller.Decorators import check_permission
 from app.controller.financial_data import (
+    check_file_import,
     check_param_annee_import,
     parser_import,
     check_files_import,
