@@ -1,0 +1,24 @@
+include:
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
+    inputs:
+      image-name: ${REGISTRY}nocode/data-transform
+      image-tag: ${DATA_TRANSFORM_VER}
+      build-context: ./
+      dockerfile-name: ./app/Dockerfile
+      do-login: true
+      registry: ${REGISTRY}
+      registry-login: ${REGISTRY_USER}
+      do-push: true
+      enable-debug: true
+
+
+"🐳 dockerizing data-transform":
+  extends: ".dockerize-${REGISTRY}nocode/data-transform"
+  stage: 🐳 dockerize
+  rules:
+    - if: '$DO_DOCKERIZE == "✅"'
+    - if: '$CI_COMMIT_REF_NAME' # always
+      when: manual
+    - when: never
+  needs: [] # la Dockerization ne dépend de rien. On peut faire tourner le job en //
+  
