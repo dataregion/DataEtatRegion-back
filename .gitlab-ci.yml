@@ -1,120 +1,34 @@
+include:
+  - project: SIBSGAR/DataRegateNum/common-gitlab-templates
+    ref: main
+    file: product-skeleton.gitlab-ci.yml
+  - .gitlab-templates/build.gitlab-ci.yml
+  - .gitlab-templates/test.gitlab-ci.yml
+  - .gitlab-templates/deploy.gitlab-ci.yml
+
 variables:
   PYTHON_IMAGE: python:3.12.6-slim
+  # XXX: Important to reference internal variables into custom ones here
+  # to support variable passing to downward pipeline
+  _TAG_VER: $CI_COMMIT_TAG
+  _SNAP_VER: ${CI_COMMIT_SHORT_SHA}-snapshot
+  DO_DEPLOY_tags: "services,data-transform"
+  _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
+  # XXX shadowing template variables as it is unused as user input in pipeline
+  DO_BUILD: "❌"
+  DO_DEPLOY: "❌" 
+  DO_DOCKERIZE: "❌" # XXX same
 
-stages:
-  - 🧪 test
-  - 🔨 build
-  - 🐣 deploy
-
-run_tests:
-  stage: 🧪 test
-  image: ${PYTHON_IMAGE}
-  before_script:
-    - python --version
-    - cd app/
-    - env
-    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
-  script:
-    - unset DOCKER_AUTH_CONFIG # XXX: On ignore la configuration au sein des tests du à une incompatibilité avec testcontainers
-    - coverage run -m pytest
-    - coverage report
-    - coverage xml
-  artifacts:
-    paths:
-      - tests/coverage.xml
-
-
-run_black:
-  stage: 🧪 test
-  image: pyfound/black:25.1.0@sha256:d849dfe2daaaf4582a7ad5178622700c28cd37f5fac0b3365accdde2013f1e66
-  only:
-    - develop
-    - /^chore.*$/
-    - /^feature.*$/
-    - /^fix.*$/
-    - /^bugfix.*$/
-    - /^hotfix.*$/
-  script:
-    - cd app/
-    - black --check .
-
-run_ruff:
-  stage: 🧪 test
-  image: ${PYTHON_IMAGE}
-  before_script:
-    - cd app/
-    - python --version
-    - pip install .[dev] -r requirements.external.txt
-  script:
-    - ruff check .
-
-.deploy-integ:
-  stage: 🐣 deploy
-  script:
-    - echo ${VERSION}
-    - ssh ${USER_INTEG}@${SERVER_INTEG} "docker network create -d overlay --attachable app_network || true"
-    - ssh ${USER_INTEG}@${SERVER_INTEG} "export VERSION=${VERSION};"'export $(cat ~/stack-nocode/livraison/env-file-integ);docker stack deploy --with-registry-auth --compose-file ~/stack-nocode/compose/integ/data-transform.yml '"${STACK_NAME}"
-
-
-.build-docker:
-  image: docker:28.0.1-dind@sha256:9a651b22672c7151b5d8ca820ed2290b3fe4d4922e9b3f37ab14c8876da6613d
-  stage: 🔨 build
-  variables:
-    IMAGE: ""
-    DOCKERFILE: ""
-  script:
-    - if [[ $VERSION_IMAGE == ""]]; then  echo "VERSION NOT SET"; VERSION_IMAGE=${CI_COMMIT_REF_SLUG}-snapshot; fi
-    - echo ${VERSION_IMAGE}
-    - echo $IMAGE
-    - docker build -f ${DOCKERFILE} -t ${IMAGE} .
-    - echo ${REGISTRY_PASSWORD} | docker login ${REGISTRY} -u ${REGISTRY_USER} --password-stdin
-    - docker tag ${IMAGE} ${IMAGE}:${VERSION_IMAGE}
-    - echo "push ${IMAGE}:${VERSION_IMAGE}" && docker push ${IMAGE}:${VERSION_IMAGE}
-
-# job pour construction image docker
-docker-build-snapshot:
-  extends: .build-docker
-  only:
-    - develop
-    - main
-    - /^chore.*$/
-    - /^feature.*$/
-    - /^fix.*$/
-    - /^bugfix.*$/
-    - /^hotfix.*$/
-  variables:
-    IMAGE: "${REGISTRY}nocode/data-transform/${CI_COMMIT_REF_SLUG}"
-    DOCKERFILE: "app/Dockerfile"
-  before_script:
-    - export VERSION_IMAGE="${CI_COMMIT_SHA:0:8}-snapshot"
-
-
-docker-build-tags:
-  extends: .build-docker
-  only:
-    - tags
-  variables:
-    IMAGE: "${REGISTRY}nocode/data-transform"
-    DOCKERFILE: "app/Dockerfile"
-  before_script:
-    - export VERSION_IMAGE="${CI_COMMIT_REF_NAME}"
-
-
-deploy-integ-tag:
-  extends: .deploy-integ
-  only:
-    - tags
-  before_script:
-    - export VERSION=":${CI_COMMIT_REF_NAME}"
-
-deploy-integ-snapshot:
-  extends: .deploy-integ
+workflow:
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "main"'
-      when: always
-    - if: '$CI_COMMIT_BRANCH =~ "/^(fix|hotfix|feature|bugfix|chore).*\//"'
-      when: manual
-      allow_failure: true
-    - when: never
-  before_script:
-    - export VERSION="/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA:0:8}-snapshot"
+    - if: "$CI_COMMIT_TAG"
+      variables:
+        DO_DOCKERIZE: "✅"
+        _ENABLE_DEPLOY_FOR_PP_AND_P: "✅"
+        DATA_TRANSFORM_VER: $_TAG_VER
+        DO_DEPLOY_extra_vars: DATA_TRANSFORM_VER=$DATA_TRANSFORM_VER
+        DO_UPDATE_DATA_TRANSFORM_VER: "$DATA_TRANSFORM_VER"
+    - if: "$CI_COMMIT_REF_NAME" # always passing
+      variables:
+        DATA_TRANSFORM_VER: "$_SNAP_VER"
+        DO_DEPLOY_extra_vars: 'DATA_TRANSFORM_VER="$DATA_TRANSFORM_VER"'
