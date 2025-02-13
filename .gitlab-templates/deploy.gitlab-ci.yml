@@ -1,0 +1,28 @@
+"🐣 deploy data-transform on integration":
+  stage: "🐣 deploy"
+  trigger:
+    project: SIBSGAR/DataRegateNum/stack
+    branch: main
+    forward:
+      yaml_variables: true
+      pipeline_variables: false
+  variables: 
+    DO_DEPLOY: "✅"
+    DO_DEPLOY_environment: "integ"
+  when: manual
+
+"🚨 deploy data-transform on preprod":
+  stage: "🐣 deploy"
+  trigger:
+    project: SIBSGAR/DataRegateNum/stack
+    branch: main
+    forward:
+      yaml_variables: true
+      pipeline_variables: false
+  variables:
+    DO_DEPLOY: "✅"
+    DO_DEPLOY_environment: "preprod"
+  rules:
+    - if: '$_ENABLE_DEPLOY_FOR_PP_AND_P == "✅"'
+      when: manual
+    - when: never
