@@ -15,7 +15,6 @@ from app.database import db
 @dataclass
 class QpvLieuAction(_Audit, _PersistenceBaseModelInstance()):
     __tablename__ = "qpv_lieu_action"
-    __table_args__ = (UniqueConstraint('code_qpv', 'n_ej', name='uq_qpv_ej'),)
 
     id = Column(Integer, primary_key=True)
     code_reference = Column(String, nullable=False)
