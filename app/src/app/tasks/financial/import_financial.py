@@ -2,7 +2,8 @@ import datetime
 import shutil
 from celery import current_task, subtask
 from flask import current_app
-from psycopg import IntegrityError
+
+# from psycopg import IntegrityError
 from sqlalchemy import delete
 from app import celeryapp, db
 from app.exceptions.exceptions import FinancialException
@@ -419,10 +420,9 @@ def import_file_qpv_lieu_action(self, fichier: str):
 
                 i += 1
 
-            count = db.session.query(FinancialAe).where(FinancialAe.n_ej.in_(ejs)).distinct().count()
-
-            if count != len(ejs):
-                raise IntegrityError("Some EJ does not exist.")
+            # count = db.session.query(FinancialAe).where(FinancialAe.n_ej.in_(ejs)).distinct().count()
+            # if count != len(ejs):
+            #     raise IntegrityError("Some EJ does not exist.")
 
             logger.debug(f"[IMPORT][QPV_LIEU_ACTION][LINE] Traitement de la ligne : {tech_info}")
             logger.debug(f"[IMPORT][QPV_LIEU_ACTION][LINE] Nombre de lignes QPV   : {len(qpv_lieu_action)}")
