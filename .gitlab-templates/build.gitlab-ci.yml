@@ -1,55 +1,22 @@
 include:
   - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
     inputs:
-      image-name: local/my-image
+      image-name: ${REGISTRY}nocode/data-transform
       image-tag: ${CI_COMMIT_SHORT_SHA}-snapshot $CI_COMMIT_TAG
-      # When using do-login. Don't forget to define `REGISTRY_PASSWORD` variable
+      build-context: ./
+      dockerfile-name: ./app/Dockerfile
       do-login: true
-      registry: my.docker.registry.net
-      registry-login: user
+      registry: ${REGISTRY}
+      registry-login: ${REGISTRY_USER}
       do-push: true
-# TODO: here
+      enable-debug: true
 
 
-.build-docker:
-  image: docker:27.5.1-dind@sha256:3ab005a2e4872f0b10fb9c00d4230334043f1281f29299bd3de94a8f14a05e69
-  stage: 🔨 build
-  variables:
-    IMAGE: ""
-    DOCKERFILE: ""
-  script:
-    - if [[ $VERSION_IMAGE == ""]]; then  echo "VERSION NOT SET"; VERSION_IMAGE=${CI_COMMIT_REF_SLUG}-snapshot; fi
-    - echo ${VERSION_IMAGE}
-    - echo $IMAGE
-    - docker build -f ${DOCKERFILE} -t ${IMAGE} .
-    - echo ${REGISTRY_PASSWORD} | docker login ${REGISTRY} -u ${REGISTRY_USER} --password-stdin
-    - docker tag ${IMAGE} ${IMAGE}:${VERSION_IMAGE}
-    - echo "push ${IMAGE}:${VERSION_IMAGE}" && docker push ${IMAGE}:${VERSION_IMAGE}
-
-# job pour construction image docker
-docker-build-snapshot:
-  extends: .build-docker
-  only:
-    - develop
-    - main
-    - /^chore.*$/
-    - /^feature.*$/
-    - /^fix.*$/
-    - /^bugfix.*$/
-    - /^hotfix.*$/
-  variables:
-    IMAGE: "${REGISTRY}nocode/data-transform/${CI_COMMIT_REF_SLUG}"
-    DOCKERFILE: "app/Dockerfile"
-  before_script:
-    - export VERSION_IMAGE="${CI_COMMIT_SHA:0:8}-snapshot"
-
-
-docker-build-tags:
-  extends: .build-docker
-  only:
-    - tags
-  variables:
-    IMAGE: "${REGISTRY}nocode/data-transform"
-    DOCKERFILE: "app/Dockerfile"
-  before_script:
-    - export VERSION_IMAGE="${CI_COMMIT_REF_NAME}"
+"🐳 dockerizing data-transform":
+  extends: ".dockerize-${REGISTRY}nocode/data-transform"
+  stage: 🐳 dockerize
+  rules:
+    - if: '$DO_DOCKERIZE == "✅"'
+    - when: never
+  needs: [] # la Dockerization ne dépend de rien. On peut faire tourner le job en //
+  

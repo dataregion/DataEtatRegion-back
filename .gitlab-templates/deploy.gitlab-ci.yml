@@ -1,25 +1,13 @@
-.deploy-integ:
-  stage: 🐣 deploy
-  script:
-    - echo ${VERSION}
-    - ssh ${USER_INTEG}@${SERVER_INTEG} "docker network create -d overlay --attachable app_network || true"
-    - ssh ${USER_INTEG}@${SERVER_INTEG} "export VERSION=${VERSION};"'export $(cat ~/stack-nocode/livraison/env-file-integ);docker stack deploy --with-registry-auth --compose-file ~/stack-nocode/compose/integ/data-transform.yml '"${STACK_NAME}"
-
-deploy-integ-tag:
-  extends: .deploy-integ
-  only:
-    - tags
-  before_script:
-    - export VERSION=":${CI_COMMIT_REF_NAME}"
-
-deploy-integ-snapshot:
-  extends: .deploy-integ
+"🐣 deploy data-transform-on-integration":
+  stage: "🐣 deploy"
+  trigger:
+    project: SIBSGAR/DataRegateNum/stack
+    branch: main
+    forward:
+      yaml_variables: true
+      pipeline_variables: false
+  variables:
+    WHAT: data-transform
+    WHERE: integ
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "main"'
-      when: always
-    - if: '$CI_COMMIT_BRANCH =~ "/^(fix|hotfix|feature|bugfix|chore).*\//"'
-      when: manual
-      allow_failure: true
-    - when: never
-  before_script:
-    - export VERSION="/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA:0:8}-snapshot"
+    - when: manual
