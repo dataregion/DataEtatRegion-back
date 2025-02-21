@@ -28,7 +28,7 @@
 
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "preprod"
-    # DO_DEPLOY_tags: "services"
+    DO_DEPLOY_tags: "services" # TODO: revise
   when: manual
   rules:
     - if: '$DO_DEPLOY == "✅"'
