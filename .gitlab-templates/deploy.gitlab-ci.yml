@@ -7,7 +7,7 @@
       yaml_variables: true
       pipeline_variables: false
   variables:
-    DATA_TRANSFORM_VER: $CI_COMMIT_TAG
+    DO_UPDATE_DATA_TRANSFORM_VER: $CI_COMMIT_TAG
   rules:
     - if: $CI_COMMIT_TAG
     - when: never
