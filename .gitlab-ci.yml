@@ -1,10 +1,10 @@
 include:
-  - .gitlab-templates/build.gitlab-ci.yml
-  - .gitlab-templates/test.gitlab-ci.yml
-  - .gitlab-templates/deploy.gitlab-ci.yml
   - project: SIBSGAR/DataRegateNum/common-gitlab-templates
     ref: main
     file: product-skeleton.gitlab-ci.yml
+  - .gitlab-templates/build.gitlab-ci.yml
+  - .gitlab-templates/test.gitlab-ci.yml
+  - .gitlab-templates/deploy.gitlab-ci.yml
 
 variables:
   PYTHON_IMAGE: python:3.12.6-slim
@@ -16,5 +16,4 @@ workflow:
         DO_DEPLOY: "✅"
     - if: '$CI_COMMIT_REF_NAME' # always passing
       variables:
-        DO_DOCKERIZE: ✅
-
+        DO_DOCKERIZE: "✅"
