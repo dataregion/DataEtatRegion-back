@@ -1,4 +1,4 @@
-"🐣 deploy data-transform-on-integration":
+"🐣 deploy data-transform on integration":
   stage: "🐣 deploy"
   trigger:
     project: SIBSGAR/DataRegateNum/stack
@@ -15,3 +15,23 @@
   rules:
     - if: '$DO_DEPLOY == "✅"'
     - when: never
+
+"🐣 deploy data-transform on preprod":
+  stage: "🐣 deploy"
+  trigger:
+    project: SIBSGAR/DataRegateNum/stack
+    branch: main
+    forward:
+      yaml_variables: true
+      pipeline_variables: false
+  variables:
+
+    DO_DEPLOY: "✅"
+    DO_DEPLOY_environment: "preprod"
+    # DO_DEPLOY_tags: "services"
+  when: manual
+  rules:
+    - if: '$DO_DEPLOY == "✅"'
+    - when: never
+  needs:
+    - "🐣 deploy data-transform on integration"
