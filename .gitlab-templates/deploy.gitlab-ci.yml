@@ -13,5 +13,5 @@
     DO_DEPLOY_environment: "integ"
     # DO_DEPLOY_tags: "services"
   rules:
-    - if: $CI_COMMIT_TAG
+    - if: '$DO_DEPLOY == "✅"'
     - when: never

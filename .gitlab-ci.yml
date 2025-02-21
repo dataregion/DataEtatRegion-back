@@ -10,3 +10,10 @@ variables:
   PYTHON_IMAGE: python:3.12.6-slim
   # DO_TEST: ✅ # TODO: re enable
   DO_DOCKERIZE: ✅
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+      variables:
+        DO_DEPLOY: "✅"
+  
