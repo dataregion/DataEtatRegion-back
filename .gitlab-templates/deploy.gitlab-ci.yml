@@ -33,5 +33,3 @@
   rules:
     - if: '$DO_DEPLOY == "✅"'
     - when: never
-  needs:
-    - "🐣 deploy data-transform on integration"
