@@ -8,6 +8,7 @@ include:
 
 variables:
   PYTHON_IMAGE: python:3.12.6-slim
+  DO_DEPLOY_forward: "❌"
 
 workflow:
   rules:
