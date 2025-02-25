@@ -19,5 +19,6 @@ workflow:
     - if: '$CI_COMMIT_REF_NAME' # always passing
       variables:
         DO_DOCKERIZE: "✅"
+        DO_DEPLOY: "✅"
         DO_DEPLOY_extra_vars: "DATA_TRANSFORM_VER=${CI_COMMIT_SHORT_SHA}-snapshot"
 
