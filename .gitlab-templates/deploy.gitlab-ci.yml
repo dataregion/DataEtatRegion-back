@@ -26,6 +26,7 @@
       pipeline_variables: false
   variables:
     DO_DEPLOY_environment: "preprod"
+    DO_UPDATE_DATA_TRANSFORM_VER: $CI_COMMIT_TAG
   rules:
     - if: '$DO_DEPLOY == "✅"'
       when: manual
