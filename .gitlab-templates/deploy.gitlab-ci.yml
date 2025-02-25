@@ -9,9 +9,12 @@
   variables:
     DO_DEPLOY_environment: "integ"
     # DO_DEPLOY_tags: "services"
+  when: manual
   rules:
     - if: '$DO_DEPLOY == "✅"'
     - when: never
+  needs:
+    - "🐳 dockerizing data-transform"
 
 "🐣 deploy data-transform on preprod":
   stage: "🐣 deploy"
@@ -27,3 +30,5 @@
   rules:
     - if: '$DO_DEPLOY == "✅"'
     - when: never
+  needs:
+    - "🐳 dockerizing data-transform"
