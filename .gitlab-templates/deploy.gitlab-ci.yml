@@ -22,7 +22,6 @@
       yaml_variables: true
       pipeline_variables: false
   variables:
-    DO_UPDATE_DATA_TRANSFORM_VER_do_commit: "✅"
     DO_DEPLOY_environment: "preprod"
   when: manual
   rules:
