@@ -7,8 +7,6 @@
       yaml_variables: true
       pipeline_variables: false
   variables:
-    DO_UPDATE_DATA_TRANSFORM_VER: $CI_COMMIT_TAG
-    DO_UPDATE_DATA_TRANSFORM_VER_do_commit: "✅"
     DO_DEPLOY_environment: "integ"
     # DO_DEPLOY_tags: "services"
   rules:
@@ -24,8 +22,8 @@
       yaml_variables: true
       pipeline_variables: false
   variables:
+    DO_UPDATE_DATA_TRANSFORM_VER_do_commit: "✅"
     DO_DEPLOY_environment: "preprod"
-    DO_DEPLOY_tags: "services" # TODO: revise
   when: manual
   rules:
     - if: '$DO_DEPLOY == "✅"'
