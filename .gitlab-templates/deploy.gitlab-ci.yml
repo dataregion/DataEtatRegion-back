@@ -7,6 +7,7 @@
       yaml_variables: true
       pipeline_variables: false
   variables:
+    DO_DEPLOY_forward: "✅"
     DO_DEPLOY_environment: "integ"
     # DO_DEPLOY_tags: "services"
   rules:
@@ -25,6 +26,7 @@
       yaml_variables: true
       pipeline_variables: false
   variables:
+    DO_DEPLOY_forward: "✅"
     DO_DEPLOY_environment: "preprod"
     DO_UPDATE_DATA_TRANSFORM_VER: $CI_COMMIT_TAG
   rules:
