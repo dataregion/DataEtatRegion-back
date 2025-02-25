@@ -15,6 +15,7 @@ include:
 "🐳 dockerizing data-transform":
   extends: ".dockerize-${REGISTRY}nocode/data-transform"
   stage: 🐳 dockerize
+  when: manual
   rules:
     - if: '$DO_DOCKERIZE == "✅"'
     - when: never
