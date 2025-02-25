@@ -15,9 +15,10 @@ include:
 "🐳 dockerizing data-transform":
   extends: ".dockerize-${REGISTRY}nocode/data-transform"
   stage: 🐳 dockerize
-  when: manual
   rules:
     - if: '$DO_DOCKERIZE == "✅"'
+    - if: '$CI_COMMIT_REF_NAME' # always
+      when: manual
     - when: never
   needs: [] # la Dockerization ne dépend de rien. On peut faire tourner le job en //
   

@@ -9,12 +9,11 @@
   variables:
     DO_DEPLOY_environment: "integ"
     # DO_DEPLOY_tags: "services"
-  when: manual
   rules:
     - if: '$DO_DEPLOY == "✅"'
+    - if: "$CI_COMMIT_REF_NAME" # always
+      when: manual
     - when: never
-  needs:
-    - "🐳 dockerizing data-transform"
 
 "🐣 deploy data-transform on preprod":
   stage: "🐣 deploy"
@@ -29,6 +28,5 @@
   when: manual
   rules:
     - if: '$DO_DEPLOY == "✅"'
+      when: manual
     - when: never
-  needs:
-    - "🐳 dockerizing data-transform"
