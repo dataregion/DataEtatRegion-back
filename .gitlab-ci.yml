@@ -15,13 +15,13 @@ variables:
 
 workflow:
   rules:
-    - if: $CI_COMMIT_TAG
+    - if: "$CI_COMMIT_TAG"
       variables:
         DO_DOCKERIZE: "✅"
         _ENABLE_DEPLOY_FOR_PP_AND_P: "✅"
         DO_DEPLOY: "✅"
-        DATA_TRANSFORM_VER: $CI_COMMIT_TAG
-        DO_DEPLOY_extra_vars: "DATA_TRANSFORM_VER=${DATA_TRANSFORM_VER}"
+        DATA_TRANSFORM_VER: "$CI_COMMIT_TAG"
+        DO_DEPLOY_extra_vars: "DATA_TRANSFORM_VER=$CI_COMMIT_TAG"
     - if: "$CI_COMMIT_REF_NAME" # always passing
       variables:
         DATA_TRANSFORM_VER: ${DATA_TRANSFORM_SNAP_VER}
