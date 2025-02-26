@@ -11,7 +11,7 @@
     DO_DEPLOY_environment: "integ"
   when: manual
 
-"🐣 deploy data-transform on preprod":
+"🚨 deploy data-transform on preprod":
   stage: "🐣 deploy"
   trigger:
     project: SIBSGAR/DataRegateNum/stack
