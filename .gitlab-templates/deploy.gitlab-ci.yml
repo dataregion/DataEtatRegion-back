@@ -20,7 +20,7 @@
       yaml_variables: true
       pipeline_variables: false
   variables:
-    DO_UPDATE_DATA_TRANSFORM_VER: $CI_COMMIT_TAG
+    DO_UPDATE_DATA_TRANSFORM_VER: ${DATA_TRANSFORM_VER}
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "preprod"
   rules:
