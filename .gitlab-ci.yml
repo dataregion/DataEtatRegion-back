@@ -25,7 +25,7 @@ workflow:
         DO_DEPLOY: "✅"
         DATA_TRANSFORM_VER: $_TAG_VER
         DO_DEPLOY_extra_vars: 'DATA_TRANSFORM_VER="$DATA_TRANSFORM_VER"'
-        DO_UPDATE_DATA_TRANSFORM_VER: "$DATA_TRANSFORM_VER"
+        # DO_UPDATE_DATA_TRANSFORM_VER: "$DATA_TRANSFORM_VER"
     - if: "$CI_COMMIT_REF_NAME" # always passing
       variables:
         DATA_TRANSFORM_VER: "$_SNAP_VER"
