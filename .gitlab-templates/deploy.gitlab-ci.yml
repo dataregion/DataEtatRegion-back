@@ -7,11 +7,12 @@
       yaml_variables: true
       pipeline_variables: false
   variables:
-    DO_DEPLOY_forward: "✅"
+    OG_DO_DEPLOY: "${DO_DEPLOY}"
+    DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "integ"
     # DO_DEPLOY_tags: "services"
   rules:
-    - if: '$DO_DEPLOY == "✅"'
+    - if: '$OG_DO_DEPLOY == "✅"'
       when: manual
     - if: "$CI_COMMIT_REF_NAME" # always
       when: manual
@@ -26,10 +27,11 @@
       yaml_variables: true
       pipeline_variables: false
   variables:
-    DO_DEPLOY_forward: "✅"
+    OG_DO_DEPLOY: "${DO_DEPLOY}"
+    DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "preprod"
     DO_UPDATE_DATA_TRANSFORM_VER: $CI_COMMIT_TAG
   rules:
-    - if: '$DO_DEPLOY == "✅"'
+    - if: '$OG_DO_DEPLOY == "✅"'
       when: manual
     - when: never
