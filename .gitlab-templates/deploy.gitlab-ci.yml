@@ -1,6 +1,6 @@
 .x-forward-variables: &forward-variables
     DO_DEPLOY: "✅"
-    DATA_TRANSFORM_VER: $DATA_TRANSFORM_VER
+    DATA_TRANSFORM_VER: $DATA_TRANSFORM_VER___
     DO_DEPLOY_extra_vars: $DO_DEPLOY_extra_vars
 
 "🐣 deploy data-transform on integration":
