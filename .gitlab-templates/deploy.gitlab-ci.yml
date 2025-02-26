@@ -14,6 +14,7 @@
   script: |
     echo >&2 "data transform version: $DATA_TRANSFORM_VER"
     echo >&2 "data extra vars version: $DO_DEPLOY_extra_vars"
+    echo >&2 "data extra vars version: $DO_DEPLOY_extra_vars_1"
   variables: 
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "integ"
