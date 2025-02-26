@@ -5,7 +5,7 @@
     branch: main
     forward:
       yaml_variables: true
-      pipeline_variables: false
+      pipeline_variables: true
   variables: 
     # XXX: distinction between original deploy command and
     # the one to forward to downward stream
@@ -13,6 +13,10 @@
     OG_DO_DEPLOY: "${DO_DEPLOY}"
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "integ"
+  script:
+    - |
+      echo >&2 "OG: ${OG_DO_DEPLOY}"
+      echo >&2 "DEPLOY: ${DO_DEPLOY}"
   rules:
     - if: '$OG_DO_DEPLOY == "✅"'
       when: manual
@@ -27,7 +31,7 @@
     branch: main
     forward:
       yaml_variables: true
-      pipeline_variables: false
+      pipeline_variables: true
   variables:
     DO_UPDATE_DATA_TRANSFORM_VER: $CI_COMMIT_TAG
     OG_DO_DEPLOY: "${DO_DEPLOY}"
