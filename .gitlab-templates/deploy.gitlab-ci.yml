@@ -2,7 +2,7 @@
     DO_DEPLOY: "✅"
     DATA_TRANSFORM_VER: $DATA_TRANSFORM_VER
     DO_DEPLOY_extra_vars: ${DO_DEPLOY_extra_vars}
-    DO_UPDATE_DATA_TRANSFORM_VER: $DO_UPDATE_DATA_TRANSFORM_VER
+    # DO_UPDATE_DATA_TRANSFORM_VER: $DO_UPDATE_DATA_TRANSFORM_VER
 
 "🐣 deploy data-transform on integration":
   stage: "🐣 deploy"
