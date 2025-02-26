@@ -1,3 +1,8 @@
+.x-forward-variables: &forward-variables
+    DO_DEPLOY: "✅"
+    DATA_TRANSFORM_VER: ${DATA_TRANSFORM_VER}
+    DO_DEPLOY_extra_vars: "DATA_TRANSFORM_VER=${DATA_TRANSFORM_VER}"
+
 "🐣 deploy data-transform on integration":
   stage: "🐣 deploy"
   trigger:
@@ -7,7 +12,7 @@
       yaml_variables: true
       pipeline_variables: false
   variables: 
-    DO_DEPLOY: "✅"
+    <<: *forward-variables
     DO_DEPLOY_environment: "integ"
   when: manual
 
@@ -20,8 +25,7 @@
       yaml_variables: true
       pipeline_variables: false
   variables:
-    DO_UPDATE_DATA_TRANSFORM_VER: ${DATA_TRANSFORM_VER}
-    DO_DEPLOY: "✅"
+    <<: *forward-variables
     DO_DEPLOY_environment: "preprod"
   rules:
     - if: '$_ENABLE_DEPLOY_FOR_PP_AND_P == "✅"'
