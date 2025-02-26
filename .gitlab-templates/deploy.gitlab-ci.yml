@@ -12,7 +12,7 @@
       yaml_variables: true
       pipeline_variables: true
   before_script: |
-    export DATA_TRANSFORM_VER="$DATA_TRANSFORM_VER"
+    export DO_DEPLOY_extra_vars="DATA_TRANSFORM_VER="$DATA_TRANSFORM_VER""
     echo >&2 "data transform version: $DATA_TRANSFORM_VER"
     echo >&2 "data extra vars version: $DO_DEPLOY_extra_vars"
   variables: 
