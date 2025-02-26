@@ -17,7 +17,7 @@
   variables: 
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "integ"
-    DO_DEPLOY_extra_vars: "${DO_DEPLOY_extra_vars}"
+    DO_DEPLOY_extra_vars_1: "${DO_DEPLOY_extra_vars}"
   when: manual
 
 "🚨 deploy data-transform on preprod":
