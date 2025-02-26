@@ -7,15 +7,15 @@
   stage: "🐣 deploy"
   inherit:
     variables: true
-  # trigger:
-  #   project: SIBSGAR/DataRegateNum/stack
-  #   branch: main
-  #   forward:
-  #     yaml_variables: true
-  #     pipeline_variables: true
-  script: |
-    echo >&2 "data transform version: $DATA_TRANSFORM_VER"
-    echo >&2 "data extra vars version: $DO_DEPLOY_extra_vars"
+  trigger:
+    project: SIBSGAR/DataRegateNum/stack
+    branch: main
+    forward:
+      yaml_variables: true
+      pipeline_variables: true
+  # script: |
+  #   echo >&2 "data transform version: $DATA_TRANSFORM_VER"
+  #   echo >&2 "data extra vars version: $DO_DEPLOY_extra_vars"
   variables: 
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "integ"
