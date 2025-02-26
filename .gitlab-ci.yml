@@ -8,8 +8,10 @@ include:
 
 variables:
   PYTHON_IMAGE: python:3.12.6-slim
-  _CI_COMMIT_TAG: $CI_COMMIT_TAG
-  DATA_TRANSFORM_SNAP_VER: ${CI_COMMIT_SHORT_SHA}-snapshot
+  # XXX: Important to reference internal variables into custom ones here
+  # to support variable passing to downward pipeline
+  _TAG_VER: $CI_COMMIT_TAG
+  _SNAP_VER: ${CI_COMMIT_SHORT_SHA}-snapshot
   DO_DEPLOY_tags: "services,data-transform"
   # XXX: intern variable for letting the user being able to choose wether to deploy or not
   _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
@@ -21,10 +23,10 @@ workflow:
         DO_DOCKERIZE: "✅"
         _ENABLE_DEPLOY_FOR_PP_AND_P: "✅"
         DO_DEPLOY: "✅"
-        DATA_TRANSFORM_VER: $_CI_COMMIT_TAG
+        DATA_TRANSFORM_VER: $_TAG_VER
         DO_DEPLOY_extra_vars: 'DATA_TRANSFORM_VER="$DATA_TRANSFORM_VER"'
-        # DO_UPDATE_DATA_TRANSFORM_VER: "$DATA_TRANSFORM_VER"
+        DO_UPDATE_DATA_TRANSFORM_VER: "$DATA_TRANSFORM_VER"
     - if: "$CI_COMMIT_REF_NAME" # always passing
       variables:
-        DATA_TRANSFORM_VER: "$DATA_TRANSFORM_SNAP_VER"
+        DATA_TRANSFORM_VER: "$_SNAP_VER"
         DO_DEPLOY_extra_vars: 'DATA_TRANSFORM_VER="$DATA_TRANSFORM_VER"'
