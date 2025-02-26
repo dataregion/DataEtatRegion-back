@@ -49,6 +49,6 @@
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "preprod"
   rules:
-    - if: '$OG_DO_DEPLOY == "✅"'
+    - if: '$DO_DEPLOY == "✅"'
       when: manual
     - when: never
