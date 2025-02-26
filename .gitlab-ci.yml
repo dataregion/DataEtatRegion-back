@@ -10,12 +10,15 @@ variables:
   PYTHON_IMAGE: python:3.12.6-slim
   DATA_TRANSFORM_SNAP_VER: ${CI_COMMIT_SHORT_SHA}-snapshot
   DO_DEPLOY_tags: "services,data-transform"
+  # XXX: variable interne au projet pour conditionner la disponibilité des jobs de déploiement
+  _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
 
 workflow:
   rules:
     - if: $CI_COMMIT_TAG
       variables:
         DO_DOCKERIZE: "✅"
+        _ENABLE_DEPLOY_FOR_PP_AND_P: "✅"
         DO_DEPLOY: "✅"
         DATA_TRANSFORM_VER: $CI_COMMIT_TAG
         DO_DEPLOY_extra_vars: "DATA_TRANSFORM_VER=${DATA_TRANSFORM_VER}"

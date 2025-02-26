@@ -1,16 +1,12 @@
 "🐣 deploy data-transform on integration":
   stage: "🐣 deploy"
-  # trigger:
-  #   project: SIBSGAR/DataRegateNum/stack
-  #   branch: main
-  #   forward:
-  #     yaml_variables: true
-  #     pipeline_variables: false
+  trigger:
+    project: SIBSGAR/DataRegateNum/stack
+    branch: main
+    forward:
+      yaml_variables: true
+      pipeline_variables: false
   variables: 
-    # XXX: distinction between original deploy command and
-    # the one to forward to downward stream
-    # it's important to be able to use the true value of original in rules section
-    # OG_DO_DEPLOY: "$DO_DEPLOY"
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "integ"
   before_script:
@@ -20,35 +16,21 @@
     - |
       echo >&2 "OG: ${OG_DO_DEPLOY}"
       echo >&2 "DEPLOY: ${DO_DEPLOY}"
-  rules:
-    - if: '$OG_DO_DEPLOY == "✅"'
-      when: manual
-    - if: "$CI_COMMIT_REF_NAME" # always
-      when: manual
-    - when: never
+  when: manual
 
 "🐣 deploy data-transform on preprod":
   stage: "🐣 deploy"
-  # trigger:
-  #   project: SIBSGAR/DataRegateNum/stack
-  #   branch: main
-  #   forward:
-  #     yaml_variables: true
-  #     pipeline_variables: false
-  #
-  before_script:
-    - |
-      export OG_DO_DEPLOY="$DO_DEPLOY"
-  script:
-    - |
-      echo >&2 "OG: ${OG_DO_DEPLOY}"
-      echo >&2 "DEPLOY: ${DO_DEPLOY}"
+  trigger:
+    project: SIBSGAR/DataRegateNum/stack
+    branch: main
+    forward:
+      yaml_variables: true
+      pipeline_variables: false
   variables:
     DO_UPDATE_DATA_TRANSFORM_VER: $CI_COMMIT_TAG
-    # OG_DO_DEPLOY: "$DO_DEPLOY"
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "preprod"
   rules:
-    - if: '$DO_DEPLOY == "✅"'
+    - if: '$_ENABLE_DEPLOY_FOR_PP_AND_P == "✅"'
       when: manual
     - when: never
