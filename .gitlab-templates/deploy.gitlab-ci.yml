@@ -5,12 +5,14 @@
 
 "🐣 deploy data-transform on integration":
   stage: "🐣 deploy"
-  trigger:
-    project: SIBSGAR/DataRegateNum/stack
-    branch: main
-    forward:
-      yaml_variables: true
-      pipeline_variables: false
+  # trigger:
+  #   project: SIBSGAR/DataRegateNum/stack
+  #   branch: main
+  #   forward:
+  #     yaml_variables: true
+  #     pipeline_variables: false
+  script: |
+    echo >&2 "$DATA_TRANSFORM_VER"
   variables: 
     <<: *forward-variables
     DO_DEPLOY_environment: "integ"
