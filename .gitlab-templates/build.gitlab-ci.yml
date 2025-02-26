@@ -2,7 +2,7 @@ include:
   - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
     inputs:
       image-name: ${REGISTRY}nocode/data-transform
-      image-tag: ${CI_COMMIT_SHORT_SHA}-snapshot $CI_COMMIT_TAG
+      image-tag: ${DATA_TRANSFORM_VER}
       build-context: ./
       dockerfile-name: ./app/Dockerfile
       do-login: true
