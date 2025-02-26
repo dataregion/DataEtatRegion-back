@@ -10,7 +10,7 @@
     branch: main
     forward:
       yaml_variables: true
-      pipeline_variables: true
+      pipeline_variables: false
   # script: |
   #   echo >&2 "data transform version: $DATA_TRANSFORM_VER"
   #   echo >&2 "data extra vars version: $DO_DEPLOY_extra_vars"
