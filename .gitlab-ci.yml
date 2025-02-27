@@ -15,7 +15,8 @@ variables:
   DO_DEPLOY_tags: "services,data-transform"
   # XXX: intern variable for letting the user being able to choose wether to deploy or not
   _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
-  DO_DEPLOY: "❌" # XXX disable DO_DEPLOY because unused
+  DO_DEPLOY: "❌" # XXX shadow DO_DEPLOY because unused as command in this pipeline
+  DO_DOCKERIZE: "❌" # XXX same
 
 workflow:
   rules:
@@ -23,7 +24,6 @@ workflow:
       variables:
         DO_DOCKERIZE: "✅"
         _ENABLE_DEPLOY_FOR_PP_AND_P: "✅"
-        DO_DEPLOY: "✅"
         DATA_TRANSFORM_VER: $_TAG_VER
         DO_DEPLOY_extra_vars: DATA_TRANSFORM_VER=$DATA_TRANSFORM_VER
         DO_UPDATE_DATA_TRANSFORM_VER: "$DATA_TRANSFORM_VER"
