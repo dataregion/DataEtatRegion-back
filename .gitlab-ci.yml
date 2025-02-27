@@ -15,6 +15,7 @@ variables:
   DO_DEPLOY_tags: "services,data-transform"
   # XXX: intern variable for letting the user being able to choose wether to deploy or not
   _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
+  DO_DEPLOY: "❌" # XXX disable DO_DEPLOY because unused
 
 workflow:
   rules:
