@@ -13,9 +13,10 @@ variables:
   _TAG_VER: $CI_COMMIT_TAG
   _SNAP_VER: ${CI_COMMIT_SHORT_SHA}-snapshot
   DO_DEPLOY_tags: "services,data-transform"
-  # XXX: intern variable for letting the user being able to choose wether to deploy or not
   _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
-  DO_DEPLOY: "❌" # XXX shadow DO_DEPLOY because unused as command in this pipeline
+  # XXX shadowing template variables as it is unused as user input in pipeline
+  DO_BUILD: "❌"
+  DO_DEPLOY: "❌" 
   DO_DOCKERIZE: "❌" # XXX same
 
 workflow:
