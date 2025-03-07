@@ -28,7 +28,6 @@ def test_get_budget_with_themes(test_client):
                 "referentiel_programmation": None,
                 "tags": None,
                 "source_region": "053",
-                "data_source": None,
             }
         )
         assert response.status_code == 204

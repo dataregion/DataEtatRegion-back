@@ -38,7 +38,7 @@ def positive():
     return require_positive
 
 
-def get_pagination_parser(default_page_number=1, default_limit=100):
+def get_pagination_parser(default_page_number=0, default_limit=100):
     """Returns a request parser for pagination parameters.
 
     Args:

@@ -78,7 +78,7 @@ paginated_budget = api_ns.model(
 class BudgetCtrl(Resource):
     @api_ns.expect(parser_get)
     @auth.token_auth("default", scopes_required=["openid"])
-    @api_ns.doc(security="Bearer")
+    @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune lignes correspondante")
     @api_ns.response(HTTPStatus.OK, description="Lignes correspondante", model=paginated_budget)
     def get(self):
@@ -86,8 +86,6 @@ class BudgetCtrl(Resource):
         user = ConnectedUser.from_current_token_identity()
         params = parser_get.parse_args()
         params["source_region"] = user.current_region
-        data_source_mapping = current_app.config.get("DATA_SOURCE_MAPPING", {})
-        params["data_source"] = data_source_mapping.get(user.current_region)
 
         page_result = search_lignes_budgetaires(**params)
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result["items"])
@@ -103,7 +101,7 @@ class BudgetCtrl(Resource):
 class BudgetQPVCtrl(Resource):
     @api_ns.expect(parser_get)
     @auth.token_auth("default", scopes_required=["openid"])
-    @api_ns.doc(security="Bearer")
+    @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune lignes correspondante")
     @api_ns.response(HTTPStatus.OK, description="Lignes correspondante", model=paginated_budget)
     def get(self):
@@ -111,8 +109,6 @@ class BudgetQPVCtrl(Resource):
         user = ConnectedUser.from_current_token_identity()
         params = parser_get.parse_args()
         params["source_region"] = user.current_region
-        data_source_mapping = current_app.config.get("DATA_SOURCE_MAPPING", {})
-        params["data_source"] = data_source_mapping.get(user.current_region)
 
         page_result = search_lignes_budgetaires_qpv(**params)
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result["items"])
@@ -132,7 +128,7 @@ class GetBudgetCtrl(Resource):
     """
 
     @auth.token_auth("default", scopes_required=["openid"])
-    @api_ns.doc(security="Bearer")
+    @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune ligne correspondante")
     @api_ns.response(HTTPStatus.OK, description="Ligne correspondante", model=model_flatten_budget_schemamodel)
     def get(self, source: DataType, id: str):
@@ -156,7 +152,7 @@ class GetPlageAnnees(Resource):
     """
 
     @auth.token_auth("default", scopes_required=["openid"])
-    @api_ns.doc(security="Bearer")
+    @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.OK, description="Liste des années", model=fields.List(fields.Integer))
     def get(self):
         user = ConnectedUser.from_current_token_identity()
