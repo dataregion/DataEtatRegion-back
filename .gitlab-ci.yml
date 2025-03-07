@@ -18,6 +18,9 @@ variables:
   DO_BUILD: "❌"
   DO_DEPLOY: "❌" 
   DO_DOCKERIZE: "❌" # XXX same
+  DO_INTEG_TESTS: "❌"
+  DO_ANALYZE: "❌"
+
 
 workflow:
   rules:
