@@ -9,6 +9,7 @@
   variables: 
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "integ"
+    UPSTREAM_PROJECT: $CI_PROJECT_PATH
   when: manual
 
 "🚨 deploy data-transform on preprod":
@@ -22,6 +23,7 @@
   variables:
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "preprod"
+    UPSTREAM_PROJECT: $CI_PROJECT_PATH
   rules:
     - if: '$_ENABLE_DEPLOY_FOR_PP_AND_P == "✅"'
       when: manual
@@ -38,6 +40,7 @@
   variables:
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "prod"
+    UPSTREAM_PROJECT: $CI_PROJECT_PATH
   rules:
     - if: '$_ENABLE_DEPLOY_FOR_PP_AND_P == "✅"'
       when: manual
