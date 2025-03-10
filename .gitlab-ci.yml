@@ -12,7 +12,7 @@ variables:
   # to support variable passing to downward pipeline
   _TAG_VER: $CI_COMMIT_TAG
   _SNAP_VER: ${CI_COMMIT_SHORT_SHA}-snapshot
-  DO_DEPLOY_tags: "services,data-transform"
+  DO_DEPLOY_tags: "data-transform"
   _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
   # XXX shadowing template variables as it is unused as user input in pipeline
   DO_BUILD: "❌"
