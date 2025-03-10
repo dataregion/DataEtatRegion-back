@@ -95,7 +95,7 @@ authorizations_oauth2 = {
         "authorizationUrl": f"{keycloak_config.get("URL","")}/realms/{keycloak_config.get("REALM","")}/protocol/openid-connect/auth",
         "tokenUrl": f"{keycloak_config.get("URL","")}/realms/{keycloak_config.get("REALM","")}/protocol/openid-connect/token",
         "scopes": {
-            "openid": "openid profile",
+            "openid": "openid profile email",
         },
     }
 }

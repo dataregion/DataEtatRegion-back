@@ -8,8 +8,6 @@ from flask import Flask
 from flask_caching import Cache
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
-from flask_pyoidc import OIDCAuthentication
-from flask_pyoidc.provider_configuration import ProviderConfiguration, ProviderMetadata, ClientMetadata
 from prometheus_flask_exporter import PrometheusMetrics
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -18,6 +16,8 @@ from app import celeryapp, mailapp
 from flask_cors import CORS
 
 from app.database import db
+from app.auth import KeycloakIntrospectTokenValidator, auth
+
 
 # TODO déplacer en extensions
 ma = Marshmallow()
@@ -126,19 +126,16 @@ def _load_oidc_config(app, oidc_config_filep: str):
     oidc_conf = _read_oidc_config(oidc_config_filep)
     provider_name = next(iter(oidc_conf))
 
-    client_metadata_kwargs = oidc_conf[provider_name]["client_metadata"]
-    provider_metadata_kwargs = oidc_conf[provider_name]["provider_metadata"]
+    client_metadata = oidc_conf[provider_name]["client_metadata"]
+    certs_endpoint = oidc_conf[provider_name]["provider_metadata"]["jwks_endpoint"]
 
-    client_metadata = ClientMetadata(**client_metadata_kwargs)
-    provider_metadata = ProviderMetadata(**provider_metadata_kwargs)
-    provider_config = ProviderConfiguration(
-        provider_metadata=provider_metadata,
-        client_metadata=client_metadata,
+    auth.register_token_validator(
+        KeycloakIntrospectTokenValidator(
+            certs_endpoint,
+            client_metadata["realm"],
+            client_metadata["client_id"],
+        )
     )
-
-    provider_configurations = {}
-    provider_configurations[provider_name] = provider_config
-    auth = OIDCAuthentication(provider_configurations, app)
     app.extensions["auth"] = auth
 
 

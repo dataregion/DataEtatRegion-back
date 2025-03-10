@@ -1,6 +1,5 @@
 from flask import jsonify, current_app, request
 from flask_restx import Namespace, Resource, fields, reqparse
-from flask_pyoidc import OIDCAuthentication
 from flask_restx._http import HTTPStatus
 from werkzeug.datastructures import FileStorage
 
@@ -29,7 +28,7 @@ api = Namespace(name="Engagement", path="/", description="Api de gestion des don
 
 model_financial_cp_single_api = register_financial_cp_schemamodel(api)
 
-auth: OIDCAuthentication = current_app.extensions["auth"]
+auth = current_app.extensions["auth"]
 
 
 @api.errorhandler(NoCurrentRegion)
@@ -45,7 +44,7 @@ def handle_invalid_token(e: InvalidTokenError):
 @api.route("/region")
 class LoadFinancialDataRegion(Resource):
     @api.expect(parser_import)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     @check_param_annee_import()
     @check_files_import()
@@ -79,7 +78,7 @@ class LoadFinancialDataRegion(Resource):
 @api.route("/national")
 class LoadFinancialDataNation(Resource):
     @api.expect(parser_import)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @check_permission([AccountRole.COMPTABLE_NATIONAL])
     @check_files_import()
     @check_param_annee_import()
@@ -110,7 +109,7 @@ class GetFinancialCpOfAe(Resource):
     :return:
     """
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="OAuth2AuthorizationCodeBearer")
     def get(self, id: str):
         result = get_financial_cp_of_ae(int(id))
@@ -131,7 +130,7 @@ parser_import_file.add_argument("fichier", type=FileStorage, help="fichier à im
 class QpvLieuActionCtrl(Resource):
 
     @api.expect(parser_import_file)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     @check_file_import()
     @api.doc(security="OAuth2AuthorizationCodeBearer")

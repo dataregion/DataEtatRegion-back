@@ -50,3 +50,10 @@ class ConfigurationException(DataRegatException):
     def __init__(self, configuration_key: str):
         self.message = f"Configuration for {configuration_key} missing"
         super().__init__(self.message)
+
+
+class ValidTokenException(DataRegatException):
+    """Exception raised when token is not valid"""
+
+    def __init__(self):
+        super().__init__("Forbidden")

@@ -34,7 +34,7 @@ parser_get_loc_child = get_pagination_parser()
 @api.route("/<code>/loc-interministerielle")
 @api.doc(model=api.models["LocalisationInterministerielle"])
 class RefLocalisationByCodeParent(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer", description="Remonte les localisations ministerielle associées au code parent")
     @api.expect(parser_get_loc_child)
     @api.response(200, "Success", api.models["LocalisationInterministeriellePagination"])

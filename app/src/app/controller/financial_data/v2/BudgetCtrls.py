@@ -1,6 +1,5 @@
 from app.servicesapp.IncrementalPageOfBudgetLines import HasNext
 from flask import current_app
-from flask_pyoidc import OIDCAuthentication
 from app.controller.financial_data.schema_model import register_flatten_financial_lines_schemamodel
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
@@ -22,7 +21,7 @@ from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 from app.utilities.observability import SummaryOfTimePerfCounter
 
 api_ns = Namespace(name="Budget", path="/", description="Api d'accès aux données budgetaires.")
-auth: OIDCAuthentication = current_app.extensions["auth"]
+auth = current_app.extensions["auth"]
 
 model_flatten_budget_schemamodel = register_flatten_financial_lines_schemamodel(api_ns)
 
@@ -77,7 +76,7 @@ paginated_budget = api_ns.model(
 @api_ns.route("/budget")
 class BudgetCtrl(Resource):
     @api_ns.expect(parser_get)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune lignes correspondante")
     @api_ns.response(HTTPStatus.OK, description="Lignes correspondante", model=paginated_budget)
@@ -100,7 +99,7 @@ class BudgetCtrl(Resource):
 @api_ns.route("/budget/data-qpv")
 class BudgetQPVCtrl(Resource):
     @api_ns.expect(parser_get)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune lignes correspondante")
     @api_ns.response(HTTPStatus.OK, description="Lignes correspondante", model=paginated_budget)
@@ -127,7 +126,7 @@ class GetBudgetCtrl(Resource):
     :return:
     """
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune ligne correspondante")
     @api_ns.response(HTTPStatus.OK, description="Ligne correspondante", model=model_flatten_budget_schemamodel)
@@ -151,12 +150,13 @@ class GetPlageAnnees(Resource):
     Recupère la plage des années pour lesquelles les données budgetaires courent.
     """
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.OK, description="Liste des années", model=fields.List(fields.Integer))
     def get(self):
         user = ConnectedUser.from_current_token_identity()
         source_region = user.current_region
+        user = user.username
 
         annees = get_annees_budget(source_region)
         if annees is None:

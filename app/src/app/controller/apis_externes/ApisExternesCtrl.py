@@ -1,7 +1,6 @@
 import logging
 
 from flask import current_app, request
-from flask_pyoidc import OIDCAuthentication
 from flask_restx import Namespace, Resource, fields
 
 from app.clients.demarche_simplifie import get_or_make_api_demarche_simplifie
@@ -18,7 +17,7 @@ api = Namespace(
     description="Controlleur qui construit les données via les APIs externes (api entreprise, data_subvention etc..)",
 )
 
-auth: OIDCAuthentication = current_app.extensions["auth"]
+auth = current_app.extensions["auth"]
 
 service = ApisExternesService()
 
@@ -47,7 +46,7 @@ def _document_error_responses(api: Namespace):
 
 @api.route("/info-subvention/<siret>")
 class InfoSubventionCtrl(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.response(200, "Success", model=InfoApiSubvention.schema_model(api))
     @_document_error_responses(api)
@@ -67,7 +66,7 @@ parser_ds = api.model(
 
 @api.route("/demarche-simplifie")
 class DemarcheSimplifie(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.expect(parser_ds)
     @_document_error_responses(api)
@@ -80,7 +79,7 @@ class DemarcheSimplifie(Resource):
 
 @api.route("/info-entreprise/<siret>")
 class InfoEntrepriseCtrl(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.response(
         200,

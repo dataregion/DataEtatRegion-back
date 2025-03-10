@@ -19,7 +19,7 @@ crte_model = api.model("crte", model={"code": fields.String(), "nom": fields.Str
 @api.route("")
 @api.doc(model=crte_model)
 class RefCrte(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.expect(parser_crte)
     @api.response(200, "Success", fields.List(fields.Nested(crte_model)))

@@ -33,7 +33,7 @@ reqpars_get_demarche.add_argument("id", type=int, help="ID de la démarche", loc
 
 @api.route("/demarche")
 class DemarcheSimplifie(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def get(self):
         # Vérification si la démarche existe déjà en BDD, si oui on la supprime
@@ -41,7 +41,7 @@ class DemarcheSimplifie(Resource):
         demarche: Demarche = DemarcheService.find(demarche_number)
         return make_response(DemarcheSchema().dump(demarche), HTTPStatus.OK)
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.expect(reqpars_get_demarche)
     def post(self):
@@ -52,7 +52,7 @@ class DemarcheSimplifie(Resource):
 
 @api.route("/reconciliation")
 class DemarchesReconciliation(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.expect(reqpars_get_demarche)
     def post(self):
@@ -70,7 +70,7 @@ class DemarchesReconciliation(Resource):
         demarche: Demarche = DemarcheService.find(demarche_number)
         return make_response(DemarcheSchema(many=False).dump(demarche), HTTPStatus.OK)
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def get(self):
         demarche_number = int(request.args["id"])
@@ -82,7 +82,7 @@ class DemarchesReconciliation(Resource):
 
 @api.route("/affichage")
 class DemarchesAffichage(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.expect(reqpars_get_demarche)
     def post(self):
@@ -100,7 +100,7 @@ class DemarchesAffichage(Resource):
         demarche: Demarche = DemarcheService.find(demarche_number)
         return make_response(DemarcheSchema(many=False).dump(demarche), HTTPStatus.OK)
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def get(self):
         financial_ae_id = int(request.args["financialAeId"])
@@ -112,7 +112,7 @@ class DemarchesAffichage(Resource):
 
 @api.route("/donnees")
 class Donnees(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def get(self):
         """
@@ -126,7 +126,7 @@ class Donnees(Resource):
 
 @api.route("/valeurs")
 class ValeurDonneeSimplifie(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def get(self):
         """
@@ -150,14 +150,14 @@ class ValeurDonneeSimplifie(Resource):
 
 @api.route("/token")
 class TokenResource(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def get(self):
         user = ConnectedUser.from_current_token_identity()
         tokens = TokenService.find_enabled_by_uuid_utilisateur(user.sub)
         return make_response(TokenSchema(many=True).dump(tokens), HTTPStatus.OK)
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def post(self):
         user = ConnectedUser.from_current_token_identity()
@@ -165,7 +165,7 @@ class TokenResource(Resource):
         token = request.form.get("token")
         return make_response(TokenSchema(many=False).dump(TokenService.create(nom, token, user.sub)), HTTPStatus.OK)
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def put(self):
         user = ConnectedUser.from_current_token_identity()
@@ -176,7 +176,7 @@ class TokenResource(Resource):
             TokenSchema(many=False).dump(TokenService.update(token_id, nom, token, user.sub)), HTTPStatus.OK
         )
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def delete(self):
         user = ConnectedUser.from_current_token_identity()

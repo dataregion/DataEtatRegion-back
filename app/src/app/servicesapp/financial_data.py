@@ -119,7 +119,7 @@ def search_ademe(
         else query.join(Siret, Ademe.ref_siret_beneficiaire)
     )
     query = query.join(Siret.ref_categorie_juridique)
-    query = query.join(Siret.ref_qpv, isouter=True)
+    query = query.join(Siret.ref_qpv15, isouter=True)
 
     # utilisation du builder
     query_ademe = BuilderStatementFinancial(query)

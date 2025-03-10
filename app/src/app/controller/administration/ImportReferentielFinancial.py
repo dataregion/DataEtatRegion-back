@@ -27,7 +27,7 @@ parser.add_argument("fichier", type=FileStorage, help="Fichier calculette", loca
 
 @api.route("")
 class TaskRunImportRef(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @check_permission(AccountRole.ADMIN)
     @api.doc(security="Bearer")
     @api.expect(parser)

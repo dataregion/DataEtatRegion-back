@@ -49,7 +49,7 @@ parser_import_file.add_argument("annee", type=int, help="Année du fichier franc
 @api.route("/france-2030")
 class France2030Import(Resource):
     @api.expect(parser_import_file)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     @check_file_import()
     @api.doc(security="Bearer")
@@ -72,7 +72,7 @@ class France2030Import(Resource):
         )
 
     @api.expect(parser_get)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def get(self):
         """
@@ -100,7 +100,7 @@ parser_searchterm.add_argument("term", type=str, help="The search term")
 
 @api.route("/france-2030-axes")
 class France2030Axes(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def get(self) -> list[SousAxePlanRelancePayload]:
         axes = liste_axes_france2030()
@@ -110,7 +110,7 @@ class France2030Axes(Resource):
 
 @api.route("/france-2030-structures")
 class France2030Structures(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.expect(parser_searchterm)
     @api.doc(security="Bearer")
     def get(self) -> list[StructurePayload]:
@@ -124,7 +124,7 @@ class France2030Structures(Resource):
 @api.route("/france-2030-territoires")
 class France2030Territoires(Resource):
     # TODO: implementer
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.expect(parser_searchterm)
     @api.doc(security="Bearer")
     def get(self) -> list[StructurePayload]:

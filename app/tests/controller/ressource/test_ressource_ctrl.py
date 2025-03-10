@@ -2,7 +2,7 @@ from unittest.mock import patch, MagicMock
 
 
 @patch("app.servicesapp.authentication.connected_user.ConnectedUser.from_current_token_identity")
-@patch("flask_pyoidc.OIDCAuthentication")
+@patch("authlib.integrations.flask_oauth2.ResourceProtector")
 def test_get_ressources(auth_mock, user_mock, test_client):
     mock_user = MagicMock()
     mock_user.current_region = "053"
@@ -24,7 +24,7 @@ def test_get_ressources(auth_mock, user_mock, test_client):
 
 
 @patch("app.servicesapp.authentication.connected_user.ConnectedUser.from_current_token_identity")
-@patch("flask_pyoidc.OIDCAuthentication")
+@patch("authlib.integrations.flask_oauth2.ResourceProtector")
 def test_get_default_ressources(auth_mock, user_mock, test_client):
     mock_user = MagicMock()
     mock_user.current_region = "999"

@@ -39,7 +39,7 @@ def mock_accept_token(*args, **kwargs):
     return wrapper
 
 
-patch("flask_pyoidc.OIDCAuthentication.token_auth", mock_accept_token).start()
+patch("authlib.integrations.flask_oauth2.ResourceProtector.acquire_token", mock_accept_token).start()
 
 
 def delete_references(session):

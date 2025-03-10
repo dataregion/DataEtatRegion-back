@@ -44,7 +44,7 @@ parser_get.add_argument("tags", type=str, action="split", help="Le(s) tag(s) à 
 @api.route("/ademe")
 class AdemeImport(Resource):
     @api.expect(parser_import_file)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     @check_file_import()
     @api.doc(security="OAuth2AuthorizationCodeBearer")
@@ -65,7 +65,7 @@ class AdemeImport(Resource):
         )
 
     @api.expect(parser_get)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="OAuth2AuthorizationCodeBearer")
     def get(self):
         """
@@ -93,7 +93,7 @@ class GetAdemeByid(Resource):
     :return:
     """
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="OAuth2AuthorizationCodeBearer")
     def get(self, id: str):
         result = get_ademe(int(id))

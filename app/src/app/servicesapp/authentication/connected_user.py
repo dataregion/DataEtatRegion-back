@@ -1,5 +1,6 @@
 from typing import Iterable
-from flask import g
+from authlib.integrations.flask_oauth2 import current_token
+
 
 from ..exceptions.authentication import NoCurrentRegion
 
@@ -107,7 +108,7 @@ class ConnectedUser:
 
 
 def _current_token_identity():
-    token = g.current_token_identity
+    token = current_token
     if token is None:
         raise InvalidTokenError("Aucun token présent.")
     return token

@@ -26,7 +26,7 @@ parser.add_argument("other", type=str, help="parametre technique format json", l
 
 @api.route("/run/import-ref")
 class TaskRunImportRef(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @check_permission(AccountRole.ADMIN)
     @api.doc(security="Bearer")
     @api.expect(parser)
@@ -52,7 +52,7 @@ class TaskRunImportRef(Resource):
 
 @api.route("/run/update-siret")
 class SiretRef(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @check_permission(AccountRole.ADMIN)
     @api.doc(security="Bearer")
     def post(self):

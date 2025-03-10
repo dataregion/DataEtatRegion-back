@@ -1,9 +1,6 @@
 from flask import current_app
 from flask import send_file
 from flask_restx import Namespace, Resource
-
-from flask_pyoidc import OIDCAuthentication
-
 from models.schemas.visuterritoire import France2030Schema
 import tempfile
 import csv
@@ -17,7 +14,7 @@ api = Namespace(
     description="Extract pour la vue visuterritoire `v_france_2030`",
 )
 
-auth: OIDCAuthentication = current_app.extensions["auth"]
+auth = current_app.extensions["auth"]
 
 
 @api.route("/download")

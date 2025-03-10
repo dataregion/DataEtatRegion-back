@@ -16,7 +16,7 @@ tags_model = api.model(
 @api.route("")
 @api.doc(model=tags_model)
 class RefTags(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.response(200, "Success", fields.List(fields.Nested(tags_model)))
     def get(self):

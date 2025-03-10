@@ -1,17 +1,16 @@
 from flask import current_app, jsonify
-from flask_pyoidc import OIDCAuthentication
 from app.servicesapp.authentication.connected_user import ConnectedUser
 from flask_restx import Namespace, Resource
 
 api = Namespace(
     name="Ressource", path="/", description="Api d'accès aux ressources disponibles en fonction du code region."
 )
-auth: OIDCAuthentication = current_app.extensions["auth"]
+auth = current_app.extensions["auth"]
 
 
 @api.route("/liste")
 class RessourceCtrl(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     def get(self):
         """Recupère les ressources disponibles en fonction du code region."""

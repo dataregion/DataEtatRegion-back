@@ -46,7 +46,7 @@ class Audit(Resource):
     @api.response(200, "List of update data")
     @api.doc(security="Bearer")
     @api.expect(parser_get)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.response(204, "No Result")
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     def get(self, type: DataType):
@@ -78,7 +78,7 @@ class Audit(Resource):
 
 @api.route("/<type>/last")
 class AuditLastImport(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.marshal_with(api.model("date-last-import", {"date": fields.DateTime}), code=200)
     def get(self, type: DataType):

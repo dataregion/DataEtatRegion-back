@@ -55,7 +55,7 @@ def build_ref_controller(cls, schema_cls: type[Schema], namespace: Namespace, co
     @api.route("")
     @api.doc(model=pagination_with_model)
     class RefControllerList(Resource):
-        @auth.token_auth("default", scopes_required=["openid"])
+        @auth("openid")
         @api.doc(security="Bearer")
         @api.expect(parser_get)
         @api.response(200, "Success", pagination_with_model)
@@ -82,7 +82,7 @@ def build_ref_controller(cls, schema_cls: type[Schema], namespace: Namespace, co
     @api.route("/<code>")
     @api.doc(model=model_single_api)
     class RefByCode(Resource):
-        @auth.token_auth("default", scopes_required=["openid"])
+        @auth("openid")
         @api.doc(security="Bearer")
         @api.response(200, "Success", model_single_api)
         def get(self, code):

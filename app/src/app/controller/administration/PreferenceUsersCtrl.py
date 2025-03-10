@@ -90,7 +90,7 @@ class PreferenceUsers(Resource):
     @api.response(200, "The preference created", preference)
     @api.doc(security="Bearer")
     @api.expect(preference)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     def post(self):
         """
         Create a new preference for the current user
@@ -138,7 +138,7 @@ class PreferenceUsers(Resource):
 
         return PreferenceSchema().dump(pref)
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.response(200, "List of the user's preferences", [list_preference_get])
     def get(self):
@@ -171,7 +171,7 @@ class PreferenceUsers(Resource):
 
 @api.route("/<uuid>")
 class CrudPreferenceUsers(Resource):
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.response(200, "Success if delete")
     def delete(self, uuid):
@@ -197,7 +197,7 @@ class CrudPreferenceUsers(Resource):
             logging.error(f"[PREFERENCE][CTRL] Error when delete preference {uuid} {clientId}", e)
             return abort(message=f"Error when delete preference on application {clientId}", code=HTTPStatus.BAD_REQUEST)
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.expect(preference)
     @api.response(200, "Success if delete")
@@ -260,7 +260,7 @@ class CrudPreferenceUsers(Resource):
             logging.error(f"[PREFERENCE][CTRL] Error when delete preference {uuid}", e)
             return abort(message="Error when delete preference", code=HTTPStatus.BAD_REQUEST)
 
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @api.doc(security="Bearer")
     @api.response(200, "User preference", preference_get)
     def get(self, uuid):
@@ -296,7 +296,7 @@ class UsersSearch(Resource):
     @api.response(200, "Search user by email/username for sharing")
     @api.doc(security="Bearer")
     @api.expect(parser_search)
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     def get(self):
         """
         Search users by userName

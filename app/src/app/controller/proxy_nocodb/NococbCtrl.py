@@ -29,7 +29,7 @@ class NocoDb(Resource):
     @api.expect(args_get)
     @api.response(200, "Success")
     @api.doc(security="Bearer")
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     @retry_on_exception(max_retry=3)  # Ajout du décorateur ici
     def get(self, table, views):
         # le nom du projet correspond au nom du blueprint
@@ -56,7 +56,7 @@ class NocoDb(Resource):
 class ExportCsv(Resource):
     @api.response(200, "Success")
     @api.doc(security="Bearer")
-    @auth.token_auth("default", scopes_required=["openid"])
+    @auth("openid")
     def get(self, table, views):
         project = request.blueprint
         client = build_client(project)
@@ -112,14 +112,3 @@ def build_client(project) -> NocoDBRequestsClient:
     except Exception as clientException:
         logging.error(clientException)
         abort(500, "Erreur interne ")
-
-
-# def build_params(args):
-#     params = {
-#         'limit': 20 if  args['limit'] is None else args['limit'],
-#         'offset': 0 if args['offset'] is None else args['offset'],
-#         'sort': None if args['sort'] is None else args['sort'],
-#         'fields':  None if args['fields'] is None else args['fields'],
-#         'where': None if args['where'] is None else args['where']
-#     }
-#     return params
