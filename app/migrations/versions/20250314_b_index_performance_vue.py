@@ -1,7 +1,7 @@
 """empty message
 
-Revision ID: 20250314_index_performance_vue
-Revises: 20250310_vue_data_qpv
+Revision ID: 20250314_b_index_performance_vue
+Revises: 20250314_a_vue_lieu_action
 Create Date: 2025-03-14 10:15:26.969137
 
 """
@@ -9,8 +9,8 @@ from alembic import op
 import logging
 
 # revision identifiers, used by Alembic.
-revision = '20250314_index_performance_vue'
-down_revision = '20250314_vue_lieu_action'
+revision = '20250314_b_index_performance_vue'
+down_revision = '20250314_a_vue_lieu_action'
 branch_labels = None
 depends_on = None
 

@@ -1,7 +1,7 @@
 """ Suppression superset_data_qpv + intégration à flatten_financial_lines
 
-Revision ID: 20250312_vue_lieu_action
-Revises: 20250314_index_performance_vue
+Revision ID: 20250314_a_vue_lieu_action
+Revises: 20250310_vue_data_qpv
 Create Date: 2024-10-07 11:18:31.381807
 
 """
@@ -11,8 +11,8 @@ import logging
 from pathlib import Path
 
 # revision identifiers, used by Alembic.
-revision = "20250314_vue_lieu_action"
-down_revision = "20250314_index_performance_vue"
+revision = "20250314_a_vue_lieu_action"
+down_revision = "20250310_vue_data_qpv"
 branch_labels = None
 depends_on = None
 
