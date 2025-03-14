@@ -121,8 +121,7 @@ class BuilderStatementFinancialLine:
                 FinancialLines.annee >= 2024, FinancialLines.lieu_action_code_qpv != None  # noqa: E711
             )
         self._stmt = self._stmt.where(
-            FinancialLines.source == DataType.FINANCIAL_DATA_AE,
-            or_(field != None, condition_lieu_action)  # noqa: E711
+            FinancialLines.source == DataType.FINANCIAL_DATA_AE, or_(field != None, condition_lieu_action)  # noqa: E711
         )
         return self
 

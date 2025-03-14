@@ -87,7 +87,7 @@ class BudgetCtrl(Resource):
         params["source_region"] = "53"
 
         page_result = search_lignes_budgetaires(**params)
-        print(len(page_result['items']))
+        print(len(page_result["items"]))
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result["items"])
 
         page_result["items"] = result  # type: ignore
