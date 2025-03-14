@@ -75,19 +75,17 @@ paginated_budget = api_ns.model(
 @api_ns.route("/budget")
 class BudgetCtrl(Resource):
     @api_ns.expect(parser_get)
-    # @auth("openid")
-    # @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
+    @auth("openid")
+    @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune lignes correspondante")
     @api_ns.response(HTTPStatus.OK, description="Lignes correspondante", model=paginated_budget)
     def get(self):
         """Recupère les lignes de données budgetaires génériques"""
-        # user = ConnectedUser.from_current_token_identity()
+        user = ConnectedUser.from_current_token_identity()
         params = parser_get.parse_args()
-        # params["source_region"] = user.current_region
-        params["source_region"] = "53"
+        params["source_region"] = user.current_region
 
         page_result = search_lignes_budgetaires(**params)
-        print(len(page_result["items"]))
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result["items"])
 
         page_result["items"] = result  # type: ignore
