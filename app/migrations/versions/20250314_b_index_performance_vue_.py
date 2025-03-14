@@ -10,7 +10,7 @@ import logging
 
 # revision identifiers, used by Alembic.
 revision = '20250314_index_performance_vue'
-down_revision = '20250310_vue_data_qpv'
+down_revision = '20250314_vue_lieu_action'
 branch_labels = None
 depends_on = None
 
@@ -20,6 +20,7 @@ def upgrade_():
     op.execute("CREATE INDEX IF NOT EXISTS idx_ffl_source_programme_annee ON public.flatten_financial_lines (source_region, annee,programme_code);")
     op.execute("CREATE INDEX IF NOT EXISTS idx_ffl_source_annee ON public.flatten_financial_lines (source_region, annee);")
     op.execute("CREATE INDEX IF NOT EXISTS idx_ffl_source_programme ON flatten_financial_lines (source_region, programme_code);")
+    op.execute("CREATE INDEX IF NOT EXISTS idx_ffl_codes_qpv ON public.flatten_financial_lines USING btree (beneficiaire_qpv24_code, beneficiaire_qpv_code);")
     # ### end Alembic commands ###
 
 
@@ -28,6 +29,7 @@ def downgrade_():
     op.execute("DROP INDEX IF EXISTS idx_ffl_source_programme_annee")
     op.execute("DROP INDEX IF EXISTS idx_ffl_source_annee")
     op.execute("DROP INDEX IF EXISTS idx_ffl_source_programme")
+    op.execute("DROP INDEX IF EXISTS idx_ffl_codes_qpv")
     # ### end Alembic commands ###
 
 
