@@ -5,7 +5,7 @@ Services liés à la couche d'accès aux données
 from enum import Enum
 from app.servicesapp.IncrementalPageOfBudgetLines import IncrementalPageOfBudgetLines
 from models.entities.common.Tags import Tags
-from sqlalchemy import Column, ColumnExpressionArgument, desc, select, or_, func, distinct
+from sqlalchemy import Column, ColumnExpressionArgument, and_, desc, select, or_, func, distinct
 from models.value_objects.common import DataType
 from models.value_objects.common import TypeCodeGeo
 from app.database import db
@@ -110,8 +110,20 @@ class BuilderStatementFinancialLine:
         self._stmt = self._stmt.where(FinancialLines.n_ej == ej).where(FinancialLines.n_poste_ej == poste_ej)
         return self
 
-    def where_qpv_not_null(self):
-        self._stmt = self._stmt.where(FinancialLines.beneficiaire_qpv24_code != None)  # noqa: E711
+    def where_qpv_not_null(self, ref_qpv: int):
+        field = FinancialLines.beneficiaire_qpv_code
+        condition_lieu_action = and_(
+            FinancialLines.annee < 2024, FinancialLines.lieu_action_code_qpv != None  # noqa: E711
+        )
+        if ref_qpv == 2024:
+            field = FinancialLines.beneficiaire_qpv24_code
+            condition_lieu_action = and_(
+                FinancialLines.annee >= 2024, FinancialLines.lieu_action_code_qpv != None  # noqa: E711
+            )
+        self._stmt = self._stmt.where(
+            FinancialLines.source == DataType.FINANCIAL_DATA_AE,
+            or_(field != None, condition_lieu_action)  # noqa: E711
+        )
         return self
 
     def where_geo(

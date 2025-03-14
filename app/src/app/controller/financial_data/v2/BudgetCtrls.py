@@ -9,7 +9,6 @@ from app.servicesapp.financial_data import (
     get_annees_budget,
     get_ligne_budgetaire,
     search_lignes_budgetaires,
-    search_lignes_budgetaires_qpv,
 )
 
 from flask_restx import Namespace, Resource, fields
@@ -76,40 +75,19 @@ paginated_budget = api_ns.model(
 @api_ns.route("/budget")
 class BudgetCtrl(Resource):
     @api_ns.expect(parser_get)
-    @auth("openid")
-    @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
+    # @auth("openid")
+    # @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune lignes correspondante")
     @api_ns.response(HTTPStatus.OK, description="Lignes correspondante", model=paginated_budget)
     def get(self):
         """Recupère les lignes de données budgetaires génériques"""
-        user = ConnectedUser.from_current_token_identity()
+        # user = ConnectedUser.from_current_token_identity()
         params = parser_get.parse_args()
-        params["source_region"] = user.current_region
+        # params["source_region"] = user.current_region
+        params["source_region"] = "53"
 
         page_result = search_lignes_budgetaires(**params)
-        result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result["items"])
-
-        page_result["items"] = result  # type: ignore
-        if len(page_result["items"]) == 0:
-            return "", HTTPStatus.NO_CONTENT
-
-        return page_result, HTTPStatus.OK
-
-
-@api_ns.route("/budget/data-qpv")
-class BudgetQPVCtrl(Resource):
-    @api_ns.expect(parser_get)
-    @auth("openid")
-    @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
-    @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune lignes correspondante")
-    @api_ns.response(HTTPStatus.OK, description="Lignes correspondante", model=paginated_budget)
-    def get(self):
-        """Recupère les lignes de données budgetaires génériques"""
-        user = ConnectedUser.from_current_token_identity()
-        params = parser_get.parse_args()
-        params["source_region"] = user.current_region
-
-        page_result = search_lignes_budgetaires_qpv(**params)
+        print(len(page_result['items']))
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result["items"])
 
         page_result["items"] = result  # type: ignore
