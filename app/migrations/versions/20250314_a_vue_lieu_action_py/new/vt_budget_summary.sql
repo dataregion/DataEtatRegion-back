@@ -17,7 +17,8 @@
       vt_flatten_summarized_ae.code_departement_loc_inter,
       vt_flatten_summarized_ae.code_commune_loc_inter,
       vt_flatten_summarized_ae.code_epci_loc_inter,
-      vt_flatten_summarized_ae.code_crte_loc_inter
+      vt_flatten_summarized_ae.code_crte_loc_inter,
+      vt_flatten_summarized_ae.lieu_action_code_qpv
       FROM vt_flatten_summarized_ae
    UNION
    SELECT vt_flatten_summarized_ademe.id,
@@ -38,5 +39,6 @@
       vt_flatten_summarized_ademe.code_departement_loc_inter,
       vt_flatten_summarized_ademe.code_commune_loc_inter,
       vt_flatten_summarized_ademe.code_epci_loc_inter,
-      vt_flatten_summarized_ademe.code_crte_loc_inter
+      vt_flatten_summarized_ademe.code_crte_loc_inter,
+      vt_flatten_summarized_ademe.lieu_action_code_qpv
       FROM vt_flatten_summarized_ademe;

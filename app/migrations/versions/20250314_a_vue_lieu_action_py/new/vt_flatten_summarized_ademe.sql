@@ -17,7 +17,8 @@ CREATE MATERIALIZED VIEW vt_flatten_summarized_ademe AS
     NULL::text AS code_departement_loc_inter,
     NULL::text AS code_commune_loc_inter,
     NULL::text AS code_epci_loc_inter,
-    NULL::text AS code_crte_loc_inter
+    NULL::text AS code_crte_loc_inter,
+    NULL::text AS lieu_action_code_qpv
    FROM flatten_ademe fa
   WHERE fa.beneficiaire_commune_code IS NOT NULL
   ORDER BY 'ADEME'::text, fa.id;

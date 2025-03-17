@@ -1,9 +1,18 @@
-CREATE INDEX idx_groupby_summary_commune ON vt_m_summary_annee_geo_type_bop (annee, code_programme, source, categorie_juridique, code_commune);
-CREATE INDEX idx_groupby_summary_departement ON vt_m_summary_annee_geo_type_bop (annee, code_programme, source, categorie_juridique, code_departement);
-CREATE INDEX idx_groupby_summary_epci ON vt_m_summary_annee_geo_type_bop (annee, code_programme, source, categorie_juridique, code_epci);
-CREATE INDEX idx_groupby_summary_crte ON vt_m_summary_annee_geo_type_bop (annee, code_programme, source, categorie_juridique, code_crte);
-CREATE INDEX idx_groupby_summary_qpv ON vt_m_summary_annee_geo_type_bop (annee, code_programme, source, categorie_juridique, code_qpv);
-CREATE INDEX idx_groupby_summary_qpv24 ON vt_m_summary_annee_geo_type_bop (annee, code_programme, source, categorie_juridique, code_qpv24);
+CREATE INDEX idx_groupby_summary_commune ON vt_m_summary_annee_geo_type_bop (annee, source, code_programme, source, categorie_juridique, code_commune);
+CREATE INDEX idx_groupby_summary_departement ON vt_m_summary_annee_geo_type_bop (annee, source, code_programme, categorie_juridique, code_departement);
+CREATE INDEX idx_groupby_summary_epci ON vt_m_summary_annee_geo_type_bop (annee, source, code_programme, categorie_juridique, code_epci);
+CREATE INDEX idx_groupby_summary_crte ON vt_m_summary_annee_geo_type_bop (annee, source, code_programme, categorie_juridique, code_crte);
+CREATE INDEX idx_groupby_summary_qpv ON vt_m_summary_annee_geo_type_bop (annee, source, code_programme, categorie_juridique, code_qpv);
+CREATE INDEX idx_groupby_summary_qpv24 ON vt_m_summary_annee_geo_type_bop (annee, source, code_programme, categorie_juridique, code_qpv24);
+
+
+CREATE INDEX idx_sum_summary_commune ON vt_budget_summary (code_programme, annee, source, code_commune, categorie_juridique);
+CREATE INDEX idx_sum_summary_departement ON vt_budget_summary (code_programme, annee, source, code_departement, categorie_juridique);
+CREATE INDEX idx_sum_summary_epci ON vt_budget_summary (code_programme, annee, source, code_epci, categorie_juridique);
+CREATE INDEX idx_sum_summary_crte ON vt_budget_summary (code_programme, annee, source, code_crte, categorie_juridique);
+CREATE INDEX idx_sum_summary_qpv ON vt_budget_summary (code_programme, annee, source, code_qpv, categorie_juridique);
+CREATE INDEX idx_sum_summary_qpv24 ON vt_budget_summary (code_programme, annee, source, code_qpv24, categorie_juridique);
+
 
 CREATE MATERIALIZED VIEW vt_m_montant_par_niveau_bop_annee_type AS
      SELECT ( SELECT sum(fce.montant_ae) AS sum
@@ -16,8 +25,8 @@ CREATE MATERIALIZED VIEW vt_m_montant_par_niveau_bop_annee_type AS
     s.annee,
     s.source,
     s.code_programme AS programme,
-    s.code_commune AS code,
-    s.categorie_juridique AS type
+    s.categorie_juridique AS type,
+    s.code_commune AS code
    FROM vt_m_summary_annee_geo_type_bop s
   WHERE s.code_commune IS NOT NULL
   GROUP BY s.annee, s.source, s.code_programme, s.categorie_juridique, s.code_commune
@@ -32,8 +41,8 @@ UNION
     s.annee,
     s.source,
     s.code_programme AS programme,
-    s.code_departement AS code,
-    s.categorie_juridique AS type
+    s.categorie_juridique AS type,
+    s.code_departement AS code
    FROM vt_m_summary_annee_geo_type_bop s
   WHERE s.code_departement IS NOT NULL
   GROUP BY s.annee, s.source, s.code_programme, s.categorie_juridique, s.code_departement
@@ -48,8 +57,8 @@ UNION
     s.annee,
     s.source,
     s.code_programme AS programme,
-    s.code_epci AS code,
-    s.categorie_juridique AS type
+    s.categorie_juridique AS type,
+    s.code_epci AS code
    FROM vt_m_summary_annee_geo_type_bop s
   WHERE s.code_epci IS NOT NULL
   GROUP BY s.annee, s.source, s.code_programme, s.categorie_juridique, s.code_epci
@@ -64,8 +73,8 @@ UNION
     s.annee,
     s.source,
     s.code_programme AS programme,
-    s.code_crte AS code,
-    s.categorie_juridique AS type
+    s.categorie_juridique AS type,
+    s.code_crte AS code
    FROM vt_m_summary_annee_geo_type_bop s
   WHERE s.code_crte IS NOT NULL
   GROUP BY s.annee, s.source, s.code_programme, s.categorie_juridique, s.code_crte
@@ -80,8 +89,8 @@ UNION
     s.annee,
     s.source,
     s.code_programme AS programme,
-    s.code_qpv AS code,
-    s.categorie_juridique AS type
+    s.categorie_juridique AS type,
+    s.code_qpv AS code
    FROM vt_m_summary_annee_geo_type_bop s
   WHERE s.code_qpv IS NOT NULL
   GROUP BY s.annee, s.source, s.code_programme, s.categorie_juridique, s.code_qpv
@@ -96,8 +105,8 @@ UNION
     s.annee,
     s.source,
     s.code_programme AS programme,
-    s.code_qpv24 AS code,
-    s.categorie_juridique AS type
+    s.categorie_juridique AS type,
+    s.code_qpv24 AS code
    FROM vt_m_summary_annee_geo_type_bop s
   WHERE s.code_qpv24 IS NOT NULL
   GROUP BY s.annee, s.source, s.code_programme, s.categorie_juridique, s.code_qpv24;
