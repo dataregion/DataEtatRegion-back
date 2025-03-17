@@ -30,8 +30,7 @@ CREATE MATERIALIZED VIEW vt_flatten_summarized_ae AS
     fa."localisationInterministerielle_codeDepartement" AS code_departement_loc_inter,
     fa."localisationInterministerielle_commune_code" AS code_commune_loc_inter,
     fa."localisationInterministerielle_commune_codeEpci" AS code_epci_loc_inter,
-    fa."localisationInterministerielle_commune_codeCrte" AS code_crte_loc_inter,
-    fa.lieu_action_code_qpv AS lieu_action_code_qpv
+    fa."localisationInterministerielle_commune_codeCrte" AS code_crte_loc_inter
    FROM flatten_ae fa
   WHERE fa.beneficiaire_commune_code IS NOT NULL
   ORDER BY 'FINANCIAL_DATA_AE'::text, fa.id, fa.n_ej, fa.n_poste_ej, fa.source_region, fa.annee;
