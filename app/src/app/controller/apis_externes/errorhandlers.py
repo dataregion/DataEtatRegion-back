@@ -97,7 +97,7 @@ def handle_unauthorized_on_demarche(error):
 @api.response(500, "Internal Server Error", model=ApiError.schema_model(api))
 def handle_demarche_not_found(error):
     """Lorsque la démarche demandée n'existe pas"""
-    
+
     return dataclasses.asdict(ApiError(code=CODE_DEMARCHE_NOT_FOUND, message="Numéro de démarche inconnu"))
 
 
