@@ -1,4 +1,5 @@
 class ApiDemarchesSimplifieesException(Exception):
+    description: str | None
     pass
 
 
