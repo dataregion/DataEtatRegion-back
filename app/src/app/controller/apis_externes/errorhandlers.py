@@ -75,12 +75,16 @@ def handle_api_entreprise_error(error: ApiEntrepriseError):
 @api.errorhandler(InvalidTokenError)
 @api.response(500, "Internal Server Error", model=ApiError.schema_model(api))
 def handle_invalid_token_error(error):
+    """Lorsque que le token DS est invalide"""
+
     return dataclasses.asdict(ApiError(code=CODE_INVALID_TOKEN, message="Le token sélectionné est invalide"))
 
 
 @api.errorhandler(UnauthorizedOnDemarche)
 @api.response(500, "Internal Server Error", model=ApiError.schema_model(api))
 def handle_unauthorized_on_demarche(error):
+    """Lorsque que le token DS sélectionné ne permet pas d'accéder aux données de l'API"""
+
     return dataclasses.asdict(
         ApiError(
             code=CODE_UNAUTHORIZED_ON_DEMARCHE,
@@ -92,6 +96,8 @@ def handle_unauthorized_on_demarche(error):
 @api.errorhandler(DemarcheNotFound)
 @api.response(500, "Internal Server Error", model=ApiError.schema_model(api))
 def handle_demarche_not_found(error):
+    """Lorsque la démarche demandée n'existe pas"""
+    
     return dataclasses.asdict(ApiError(code=CODE_DEMARCHE_NOT_FOUND, message="Numéro de démarche inconnu"))
 
 
