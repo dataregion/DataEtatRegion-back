@@ -81,6 +81,7 @@ from app.controller.financial_data.AdemeCtrl import api as api_ademe  # noqa: E4
 from app.controller.financial_data.TagsCtrl import api as api_tags  # noqa: E402
 
 from app.controller.financial_data.v2.BudgetCtrls import api_ns as api_budgets  # noqa: E402
+from app.controller.financial_data.v2.BudgetToGristCtrls import api_ns as api_togrist  # noqa: E402
 
 
 api_financial_v1 = Blueprint("financial_data", __name__)
@@ -140,6 +141,7 @@ api_v2 = Api(
 model_tags_single_api = register_tags_schemamodel(api_v2)
 
 api_v2.add_namespace(api_budgets)
+api_v2.add_namespace(api_togrist)
 
 
 @api_financial_v1.errorhandler(DataRegatException)

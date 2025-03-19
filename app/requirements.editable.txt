@@ -1,3 +1,4 @@
 -e .
 # Projets dépendants
 -e ../models
+-e ../gristcli

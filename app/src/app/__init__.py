@@ -119,6 +119,10 @@ def read_config(app, config_filep: str, extra_config_settings: dict):
     logging.info("Force 'SQLALCHEMY_TRACK_MODIFICATIONS' to False")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    if "SQLALCHEMY_GRIST" not in app.config:
+        logging.error("SQLALCHEMY_GRIST not defined")
+        exit(0)
+
 
 def _load_oidc_config(app, oidc_config_filep: str):
     app.config.update(OIDC_REDIRECT_URI="*")

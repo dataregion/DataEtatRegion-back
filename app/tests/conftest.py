@@ -27,6 +27,7 @@ extra_config = {
     "UPLOAD_FOLDER": "/tmp/",
     "IMPORT_BATCH_SIZE": 10,
     "FERNET_SECRET_KEY": "JmfQ9tbvIHNDeEKf5nAW2u_pww0xz2D5zcE23CIVXLQ=",
+    "SQLALCHEMY_GRIST": base_url,
 }
 
 _curr = Path(__file__).parent
