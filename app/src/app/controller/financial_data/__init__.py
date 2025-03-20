@@ -10,6 +10,8 @@ from app.controller.financial_data.schema_model import (
 from app.controller.utils.Error import ErrorController
 from app.exceptions.exceptions import DataRegatException, BadRequestDataRegateNum
 
+from gristcli.gristservices.errors import ApiGristError
+
 
 parser_import = reqparse.RequestParser()
 parser_import.add_argument("fichierAe", type=FileStorage, help="fichier AE à importer", location="files", required=True)
@@ -152,3 +154,8 @@ def handle_exception(e):
 @api_financial_v2.errorhandler(DataRegatException)
 def handle_exception_for_api_v2(e):
     return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
+
+
+@api_financial_v2.errorhandler(ApiGristError)
+def handle_exception_grist(e: ApiGristError):
+    return ErrorController(e.message).to_json(), e.call_error_description.code

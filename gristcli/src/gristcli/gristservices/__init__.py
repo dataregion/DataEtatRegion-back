@@ -1,1 +1,1 @@
-from .users_service import UserDatabaseService
+from .users_service import UserDatabaseService, UserScimService
