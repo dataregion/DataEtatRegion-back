@@ -4,11 +4,12 @@ import requests, logging
 import json
 
 from gristcli.gristservices.errors import TokenNotFound
+from gristcli.gristservices.grist_api import GrisApiService
 from gristcli.gristservices.handlers import _handle_error_grist_api
 from gristcli.models import UserGrist
 
 
-class UserDatabaseService:
+class UserGristDatabaseService:
     def __init__(self, database_url):
         """Initialise le service avec un moteur SQLAlchemy."""
         self.engine = create_engine(database_url, pool_pre_ping=True)
@@ -42,39 +43,19 @@ class UserDatabaseService:
         return result.rowcount > 0
 
 
-class UserScimService:
-    def __init__(self, server: str, token: str):
-        """
-        Initialse Un client Grist pour le endpoint scim (https://support.getgrist.com/api/#tag/scim)
-
-        Parameters:
-            - server : Url du serveur grist
-            - token : token de l'utilisateur ayant le droit sur les service SCIM de grist
-        """
-        self.server = server
-        self.token = token
+class UserScimService(GrisApiService):
 
     def _call(self, uri, method="GET", prefix="/api/scim/v2", json_data=None):
         """
         Rest call grist
         """
-        full_url = self.server + prefix + uri
-        logging.debug(f"sending {method} request to {full_url}")
-        data = json.dumps(json_data).encode("utf8") if json_data is not None else None
-        answer = requests.request(
-            method,
-            full_url,
-            data=data,
-            headers={
-                "Authorization": "Bearer %s" % self.token,
-                "Accept": "application/scim+json",
-                "Content-Type": "application/scim+json",
-            },
+        headers = {
+            "accept": "application/scim+json",
+            "content-yype": "application/scim+json",
+        }
+        return super()._call(
+            uri, method, prefix=prefix, json_data=json_data, headers=headers
         )
-
-        answer.raise_for_status()
-        answer_json = answer.json()
-        return answer_json
 
     @_handle_error_grist_api
     def search_user_by_username(self, username: str) -> UserGrist:

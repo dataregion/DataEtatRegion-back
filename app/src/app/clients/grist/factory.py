@@ -1,6 +1,7 @@
 import functools
 from app.exceptions.exceptions import ConfigurationException
-from gristcli.gristservices.users_service import UserDatabaseService, UserScimService
+from gristcli.gristservices.grist_api import GrisApiService
+from gristcli.gristservices.users_grist_service import UserGristDatabaseService, UserScimService
 from flask import current_app
 import logging
 
@@ -16,11 +17,11 @@ class GristConfiguationException(ConfigurationException):
         super().__init__(configuration_key="Grist")
 
 
-def make_grist_database_client() -> UserDatabaseService:
-    """Builds a UserDatabaseService client using the Flask app's configuration.
+def make_grist_database_client() -> UserGristDatabaseService:
+    """Builds a UserGristDatabaseService client using the Flask app's configuration.
 
     Returns:
-        UserDatabaseService: The UserDatabaseService client.
+        UserGristDatabaseService: The UserGristDatabaseService client.
     """
     config_grist = current_app.config.get("GRIST", {})
     url_grist_db = config_grist.get("DATABASE_URL", None)
@@ -29,7 +30,7 @@ def make_grist_database_client() -> UserDatabaseService:
         logging.error("[GRIST] Missing DATABASE_URL in GRIST configuration")
         raise GristConfiguationException()
 
-    return UserDatabaseService(url_grist_db)
+    return UserGristDatabaseService(url_grist_db)
 
 
 def make_grist_scim_client() -> UserScimService:
@@ -49,8 +50,19 @@ def make_grist_scim_client() -> UserScimService:
     return UserScimService(url, token)
 
 
+def make_grist_api_client(token: str) -> GrisApiService:
+    config_grist = current_app.config.get("GRIST", {})
+    url = config_grist.get("SERVEUR_URL", None)
+
+    if url is None:
+        logging.error("[GRIST] Missing DATABASE_URL in GRIST configuration")
+        raise GristConfiguationException()
+
+    return GrisApiService(url, token)
+
+
 @functools.cache
-def make_or_get_grist_database_client() -> UserDatabaseService:
+def make_or_get_grist_database_client() -> UserGristDatabaseService:
     return make_grist_database_client()
 
 

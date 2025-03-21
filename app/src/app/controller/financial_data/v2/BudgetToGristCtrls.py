@@ -16,5 +16,5 @@ class BugdetToGrist(Resource):
     def get(self):
         """Recupère les lignes de données budgetaires génériques"""
         user = ConnectedUser.from_current_token_identity()
-        GristCliService.send_request_to_grist(user)
-        return "", HTTPStatus.OK
+        user = GristCliService.send_request_to_grist(user)
+        return user, HTTPStatus.OK
