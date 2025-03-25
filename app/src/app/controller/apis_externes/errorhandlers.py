@@ -3,8 +3,8 @@ import dataclasses
 from app.clients.data_subventions import CallError as ApiSubventionCallError
 from app.clients.entreprise import ApiError as ApiEntrepriseError, LimitHitError
 from app.models.apis_externes.error import (
-    Error as ApiError,
     CODE_UNKNOWN,
+    Error as ApiError,
     CODE_CALL_FAILED,
     CODE_LIMIT_HIT,
     CODE_INVALID_TOKEN,

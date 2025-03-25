@@ -1,7 +1,7 @@
 from functools import wraps
 from app.controller import ApiDataEtat
 from flask import Blueprint, request, current_app
-from flask_restx import Api, reqparse
+from flask_restx import reqparse
 from werkzeug.datastructures import FileStorage
 from app.controller.financial_data.schema_model import (
     register_tags_schemamodel,
@@ -108,7 +108,7 @@ _description = (
     "<strong>C'est une API dediée à l'outil interne de consultation budget. "
     "N'utilisez pas cette API pour intégrer nos données à votre système.</strong>"
 )
-api_v1 = Api(
+api_v1 = ApiDataEtat(
     api_financial_v1,
     doc="/doc",
     prefix="/api/v1",

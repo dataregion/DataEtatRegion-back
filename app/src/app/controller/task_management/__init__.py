@@ -1,7 +1,7 @@
 import json
+from app.controller import ApiDataEtat
 from celery.backends.database import TaskExtended
 from flask import Blueprint
-from flask_restx import Api
 from app import ma
 from marshmallow import fields
 
@@ -37,7 +37,7 @@ api_task = Blueprint("task_api", __name__)
 
 authorizations = {"Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}}
 
-api = Api(
+api = ApiDataEtat(
     api_task,
     doc="/doc",
     prefix="/api/v1",

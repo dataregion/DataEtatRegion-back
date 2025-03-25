@@ -23,8 +23,8 @@ class ApiDataEtat(Api):
         Gestionnaire d'exception par défaut pour toutes les API
         Cela peut être un gestionnaire global pour toutes les exceptions.
         """
-        # Si l'erreur est déjà gérée, on la renvoie directement
-        logging.exception(e)  # Log l'exception
+        # Si l'erreur est déjà gérée, on la renvoie directement à Flask
+        logging.exception(e)
         raise e
 
 
