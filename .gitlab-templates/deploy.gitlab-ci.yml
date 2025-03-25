@@ -3,6 +3,7 @@
   trigger:
     project: SIBSGAR/DataRegateNum/stack
     branch: main
+    strategy: depend
     forward:
       yaml_variables: true
       pipeline_variables: false
