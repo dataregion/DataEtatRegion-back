@@ -1,15 +1,14 @@
 from functools import wraps
+from app.controller import ApiDataEtat
 from flask import Blueprint, request, current_app
 from flask_restx import Api, reqparse
-from flask_restx._http import HTTPStatus
 from werkzeug.datastructures import FileStorage
 from app.controller.financial_data.schema_model import (
     register_tags_schemamodel,
 )
 
 from app.controller.utils.Error import ErrorController
-from app.exceptions.exceptions import DataRegatException, BadRequestDataRegateNum
-
+from app.exceptions.exceptions import BadRequestDataRegateNum
 from gristcli.gristservices.errors import ApiGristError
 
 
@@ -130,7 +129,7 @@ _description = (
     "<strong>C'est une API dediée à l'outil interne de consultation budget. "
     "utilisez pas cette API pour intégrer nos données à votre système.</strong>"
 )
-api_v2 = Api(
+api_v2 = ApiDataEtat(
     api_financial_v2,
     version="2.0",
     doc="/api/v2/doc",
@@ -146,16 +145,6 @@ api_v2.add_namespace(api_budgets)
 api_v2.add_namespace(api_togrist)
 
 
-@api_financial_v1.errorhandler(DataRegatException)
-def handle_exception(e):
-    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
-
-
-@api_financial_v2.errorhandler(DataRegatException)
-def handle_exception_for_api_v2(e):
-    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
-
-
-@api_financial_v2.errorhandler(ApiGristError)
+@api_togrist.errorhandler(ApiGristError)
 def handle_exception_grist(e: ApiGristError):
     return ErrorController(e.message).to_json(), e.call_error_description.code
