@@ -1,22 +1,21 @@
 run-tests-e2e:
-  stage: 🧪 post-deploy tests
+  stage: 🧪 test
   image: ${PYTHON_IMAGE}
   before_script:
-    - python --version
     - cd tests_e2e/
     - env
-    - pip install pytest-html pytest pytest-json-report
-  script:
-    - cd tests_e2e/
+    - pip install -r requirement.txt
     - mkdir -p tests_e2e_results
-    - pytest --junitxml=tests_e2e_results/tests.xml --html=tests_e2e_results/tests.html --json-report --json-report-file=tests_e2e_results/tests.json
+  script:
+    - ls -la 
+    - pytest  --api-url=${API_BASE_URL}  --html=tests_e2e_results/tests.html --json-report --json-report-file=tests_e2e_results/tests.json .
   artifacts:
     expire_in: 3 days
     when: always
     paths:
       - tests_e2e_results/*
-  needs:
-    - job: "🐣 deploy data-transform on integration"
+  # needs:
+  #   - job: "🐣 deploy data-transform on integration"
   rules:
     - if: '$DO_INTEG_TESTS == "✅"'
     - when: manual
