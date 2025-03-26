@@ -23,3 +23,26 @@ class UserGrist:
             "preferredLanguage": "fr",
             "locale": "fr",
         }
+    
+class Document:
+    def __init__(self, **kwargs):
+        self.id = kwargs.pop("id", None)
+        self.name = kwargs.pop("name", None)
+        self.access = kwargs.pop("access", None)
+        self.isPinned = kwargs.pop("isPinned", None)
+        self.urlId = kwargs.pop("urlId", None)
+
+    def __repr__(self):
+        return f"Document(id={self.id}, name={self.name}, access={self.access})"
+
+
+class Workspace:
+    def __init__(self, **kwargs):
+        self.id = kwargs.pop("id", None)
+        self.name = kwargs.pop("name", None)
+        self.access = kwargs.pop("access", None)
+        self.orgDomain = kwargs.pop("orgDomain", None)
+        self.docs = [Document(**doc) for doc in kwargs.pop("docs", [])]
+
+    def __repr__(self):
+        return f"Workspace(id={self.id}, name={self.name}, docs={self.docs})"

@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from app.clients.grist.factory import (
     make_grist_api_client,
@@ -44,5 +45,33 @@ class GristCliService:
         logger.debug("[GRIST] Retrive token sucess")
         # TO-Do import data
 
+        workspaces = grist_api.get_personnal_workspace()
+        if len(workspaces) == 0:
+            logger.info("[GRIST] L'utilisateur n'a pas de workspace.")
+            workspace_id = grist_api.create_workspace("Home")
+            logger.debug(f"[GRIST] Création workspace Home {workspace_id}")
+        else:
+            logger.debug(f"[GRIST] Récupération du worskpace {workspaces[0].id}")
+            workspace_id = workspaces[0].id
+
+        docName = GristCliService._build_new_doc_name()
+        logger.info(f"[GRIST] Création document {docName} dans le workspace {workspace_id}")
+        docId = grist_api.create_doc_on_workspace(workspace_id, docName)
+        logger.debug(f"[GRIST] Document {docId} créé")
+
+        logger.debug(f"[GRIST] Création table budget dans le doc {docId} avec les données")
+        # TODO mettre de vrai donnée Budget
+        grist_api.new_table(
+            docId,
+            "budget",
+            cols=[{"id": "ej", "label": "Numero ej"}, {"id": "montantAe", "label": " Montant Engagé"}],
+            records=[{"ej": "121212112", "montantAe": 12}, {"ej": "99999", "montantAe": 12}],
+        )
+
         logger.info(f"[GIRST] End Call go-to-grist for user {userConnected.username}")
-        return grist_api.get_orgs()
+
+    @staticmethod
+    def _build_new_doc_name() -> str:
+        now = datetime.now()
+        date_formatee = now.strftime("%d/%m/%Y à %H:%M")
+        return f"Export budget {date_formatee}"

@@ -12,17 +12,17 @@ class ApiGristException(Exception):
 
 
 class ApiGristError(ApiGristException):
-    """Erreur survenue lors de l'appel à l'API"""
+    """Error occurred during the API call"""
 
     def __init__(self, call_error_description: CallErrorDescription) -> None:
         self.call_error_description = call_error_description
 
 
 class TokenNotFound(ApiGristException):
-    """Erreur survenue lorsqu'un token ets introuvable"""
+    """Error occurred when a token is not found"""
 
     def __init__(self, id) -> None:
         self.call_error_description = CallErrorDescription(
             "400",
-            f"Une erreur s'est produit sur l'ajout d'une clé d'API à l'utilisateur {id}",
+            f"An error occurred while adding an API key to user {id}",
         )

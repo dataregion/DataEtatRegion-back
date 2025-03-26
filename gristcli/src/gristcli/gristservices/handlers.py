@@ -13,7 +13,7 @@ def _handle_httperror(response: Response):
 
 
 def _handle_error_grist_api(f):
-    """Décorateur pour gérer une erreur de l'API Grist"""
+    """Decorator to handle errors from the Grist API"""
 
     @functools.wraps(f)
     def inner(*args, **kwargs):

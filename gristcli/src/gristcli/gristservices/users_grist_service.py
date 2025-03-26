@@ -1,7 +1,6 @@
 import secrets
 from sqlalchemy import create_engine, text
-import requests, logging
-import json
+import logging
 
 from gristcli.gristservices.errors import TokenNotFound
 from gristcli.gristservices.grist_api import GrisApiService
@@ -11,12 +10,12 @@ from gristcli.models import UserGrist
 
 class UserGristDatabaseService:
     def __init__(self, database_url):
-        """Initialise le service avec un moteur SQLAlchemy."""
+        """Initializes the service with an SQLAlchemy engine."""
         self.engine = create_engine(database_url, pool_pre_ping=True)
 
     def get_or_create_api_token(self, id: int):
         """
-        Récupère le token de l"utilisateur à partir d'un id
+        Retrieves the API token for the user based on their ID
         """
         logging.debug(f"Retrieve API key for user {id}")
         with self.engine.connect() as connection:
@@ -27,7 +26,7 @@ class UserGristDatabaseService:
         token = key.get("api_key", None)
         if token is None:
             token = secrets.token_hex(20)
-            logging.debug(f"Api key not found for user {id}. We create one !")
+            logging.debug(f"Api key not found for user {id}. We create one!")
             if self._update_api_key(id, token):
                 return token
             else:
@@ -35,7 +34,7 @@ class UserGristDatabaseService:
         return token
 
     def _update_api_key(self, user_id: int, new_api_key: str):
-        """Met à jour la colonne api_key pour un utilisateur donné."""
+        """Updates the api_key column for a given user."""
         query = text("UPDATE users SET api_key = :api_key WHERE id = :id")
         with self.engine.connect() as connection:
             result = connection.execute(query, {"api_key": new_api_key, "id": user_id})
@@ -45,9 +44,10 @@ class UserGristDatabaseService:
 
 class UserScimService(GrisApiService):
 
+    @_handle_error_grist_api
     def _call(self, uri, method="GET", prefix="/api/scim/v2", json_data=None):
         """
-        Rest call grist
+        Makes a REST API call to Grist
         """
         headers = {
             "accept": "application/scim+json",
@@ -57,10 +57,9 @@ class UserScimService(GrisApiService):
             uri, method, prefix=prefix, json_data=json_data, headers=headers
         )
 
-    @_handle_error_grist_api
     def search_user_by_username(self, username: str) -> UserGrist:
         """
-        Recherche un user en fonction de son userName
+        Searches for a user based on their username
         """
         query = f'?filter=userName eq "{username}"'
         resp = self._call("/Users" + query)
@@ -69,12 +68,12 @@ class UserScimService(GrisApiService):
             return None
 
         logging.debug(
-            f"[GRIST] {len(resources)} user trouvé sur le username {username}"
+            f"[GRIST] {len(resources)} user(s) found for username {username}"
         )
         user_data = resources[0]
         if len(resources) > 1:
             logging.warning(
-                f"[GRIST] {len(resources)} user trouvés sur le username {username}. Récupération du premier id = {user_data.get("id")}"
+                f"[GRIST] {len(resources)} users found for username {username}. Returning the first user with id = {user_data.get('id')}"
             )
         return UserGrist(
             user_id=user_data.get("id"),
@@ -83,10 +82,9 @@ class UserScimService(GrisApiService):
             email=user_data.get("emails", [{}])[0].get("value"),
         )
 
-    @_handle_error_grist_api
     def create_user(self, user: UserGrist) -> UserGrist:
         """
-        Créer un utilisateur dans Grist et le retourne avec son id
+        Creates a user in Grist and returns it with its ID
         """
         user_create = self._call(
             "/Users", method="POST", json_data=user.to_scim_payload()
