@@ -7,9 +7,7 @@ from app.controller.financial_data.schema_model import (
     register_tags_schemamodel,
 )
 
-from app.controller.utils.Error import ErrorController
 from app.exceptions.exceptions import BadRequestDataRegateNum
-from gristcli.gristservices.errors import ApiGristError
 
 
 parser_import = reqparse.RequestParser()
@@ -143,8 +141,3 @@ model_tags_single_api = register_tags_schemamodel(api_v2)
 
 api_v2.add_namespace(api_budgets)
 api_v2.add_namespace(api_togrist)
-
-
-@api_togrist.errorhandler(ApiGristError)
-def handle_exception_grist(e: ApiGristError):
-    return ErrorController(e.message).to_json(), e.call_error_description.code
