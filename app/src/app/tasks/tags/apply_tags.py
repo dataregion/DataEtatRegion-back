@@ -29,6 +29,32 @@ class ContextApplyTags(NamedTuple):
     # Si id spécifié, on applique le tag uniquement sur l'entité (DataType) correspondante
     id: int | None
 
+class _ContextOps():
+    def __init__(self, ctx: ContextApplyTags | None) -> None:
+        self._ctx = ctx
+    
+    @property
+    def context(self) -> ContextApplyTags | None:
+        return self._ctx
+    
+    @staticmethod
+    def ops(context: dict | str | None):
+        _parsed = ContextApplyTags(**json.loads(context)) if context is not None else None # type: ignore
+
+        return _ContextOps(_parsed)
+    
+    @property
+    def conditions(self) -> ColumnElement[bool] | None:
+
+        if self.context is None:
+            return None
+
+        if DataType(self.context.only) is DataType.FINANCIAL_DATA_AE and self.context.id is not None:
+            return Ae.id == self.context.id
+        if DataType(self.context.only) is DataType.FINANCIAL_DATA_CP and self.context.id is not None:
+            return Cp.id == self.context.id
+        
+        raise RuntimeError("")
 
 @_celery.task(bind=True, name="apply_tags_fonds_vert")
 def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: dict | None):
@@ -40,24 +66,22 @@ def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: 
     :param context:
     :return:
     """
-    context = ContextApplyTags(**json.loads(context)) if context is not None else None
-    if context is not None and DataType(context.only) != DataType.FINANCIAL_DATA_AE:
-        return
 
     _logger.info("[TAGS][Fond vert] Application auto du tags fond vert")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][Fond vert] Récupération du tag fond vert id : {tag.id}")
 
     condition = Ae.programme == "380"
-    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
-        condition &= Ae.id == context.id
+    ctx_ops = _ContextOps.ops(context)
+    if ctx_ops.conditions is not None:
+        condition &= ctx_ops.conditions
 
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(condition)
 
 
 @_celery.task(bind=True, name="apply_tags_relance")
-def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: str | None):
+def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: dict | None):
     """
     Applique les tags Fond Vert
     :param self:
@@ -66,10 +90,6 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: str
     :param context:
     :return:
     """
-    context = ContextApplyTags(**json.loads(context)) if context is not None else None
-    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
-        return
-
     _logger.info("[TAGS][Relance] Application auto du tags relance")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag relance id : {tag.id}")
@@ -83,15 +103,17 @@ def apply_tags_relance(self, tag_type: str, _tag_value: str | None, context: str
     _logger.debug(f"[TAGS][{tag.type}] Récupération des programmes appartement au theme Relance")
 
     condition = Ae.programme.in_(list_programme)
-    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
-        condition &= Ae.id == context.id
+
+    ctx_ops = _ContextOps.ops(context)
+    if ctx_ops.conditions is not None:
+        condition &= ctx_ops.conditions
 
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(condition)
 
 
 @_celery.task(bind=True, name="apply_tags_detr")
-def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: str | None):
+def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: dict | None):
     """
     Applique le tag DETR
     :param self:
@@ -100,10 +122,6 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: str | 
     :param context:
     :return:
     """
-    context = ContextApplyTags(**json.loads(context)) if context is not None else None
-    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
-        return
-
     _logger.info("[TAGS][DETR] Application auto du tags DETR")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag DETR id : {tag.id}")
@@ -117,8 +135,10 @@ def apply_tags_detr(self, tag_type: str, _tag_value: str | None, context: str | 
 
     condition = Ae.referentiel_programmation.in_(list_ref_programmation)
     _logger.debug(f"[TAGS][{tag.type}] Récupération des ref programmation DETR")
-    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
-        condition &= Ae.id == context.id
+
+    ctx_ops = _ContextOps.ops(context)
+    if ctx_ops.conditions is not None:
+        condition &= ctx_ops.conditions
 
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(condition)
@@ -134,17 +154,15 @@ def apply_tags_cper_2015_20(self, tag_type: str, tag_value: str | None, context:
     :param context:
     :return:
     """
-    context = ContextApplyTags(**json.loads(context)) if context is not None else None
-    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
-        return
-
     _logger.info("[TAGS][CPER] Application auto du tags CPER 2015-20")
     tag = select_tag(TagVO.from_typevalue(tag_type, tag_value))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
 
     condition = (Ae.contrat_etat_region != "#") & (Ae.annee >= 2015) & (Ae.annee <= 2020)
-    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
-        condition &= Ae.id == context.id
+
+    ctx_ops = _ContextOps.ops(context)
+    if ctx_ops.conditions is not None:
+        condition &= ctx_ops.conditions
 
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(condition)
@@ -160,17 +178,15 @@ def apply_tags_cper_2021_27(self, tag_type: str, tag_value: str | None, context:
     :param context:
     :return:
     """
-    context = ContextApplyTags(**json.loads(context)) if context is not None else None
-    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
-        return
-
     _logger.info("[TAGS][CPER] Application auto du tags CPER 2021-27")
     tag = select_tag(TagVO.from_typevalue(tag_type, tag_value))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CPER id : {tag.id}")
 
     condition = (Ae.contrat_etat_region != "#") & (Ae.annee >= 2021) & (Ae.annee <= 2027)
-    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
-        condition &= Ae.id == context.id
+
+    ctx_ops = _ContextOps.ops(context)
+    if ctx_ops.conditions is not None:
+        condition &= ctx_ops.conditions
 
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(condition)
@@ -186,10 +202,6 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: str | No
     :param context:
     :return:
     """
-    context = ContextApplyTags(**json.loads(context)) if context is not None else None
-    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
-        return
-
     _logger.info("[TAGS][PVD] Application auto du tags PVD")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag PVD id : {tag.id}")
@@ -206,8 +218,10 @@ def apply_tags_pvd(self, tag_type: str, tag_value: str | None, context: str | No
     )
 
     condition = siret_condition | loc_condition
-    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
-        condition &= Ae.id == context.id
+
+    ctx_ops = _ContextOps.ops(context)
+    if ctx_ops.conditions is not None:
+        condition &= ctx_ops.conditions
 
     # Application du tag aux AE
     apply_task = ApplyTagForAutomation(tag)
@@ -224,17 +238,14 @@ def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: 
     :param context:
     :return:
     """
-    context = ContextApplyTags(**json.loads(context)) if context is not None else None
-    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_CP:
-        return
-
     _logger.info("[TAGS][cp-orphelin] Application auto du tags CP Orphelin")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CP ORPHELIN id : {tag.id}")
 
-    condition = Cp.id_ae == None  # noqa: E711
-    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_CP and context.id is not None:
-        condition &= Cp.id == context.id
+    condition =  Cp.id_ae.is_(None)
+    ctx_ops = _ContextOps.ops(context)
+    if ctx_ops.conditions is not None:
+        condition &= ctx_ops.conditions
 
     # Application du tag aux entités
     apply_task = ApplyTagForAutomation(tag)
@@ -251,10 +262,6 @@ def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: str | No
     :param context:
     :return:
     """
-    context = ContextApplyTags(**json.loads(context)) if context is not None else None
-    if context is not None and DataType(context.only) is not DataType.FINANCIAL_DATA_AE:
-        return
-
     _logger.info("[TAGS][ACV] Application auto du tags ACV")
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag ACV id : {tag.id}")
@@ -271,8 +278,9 @@ def apply_tags_acv(self, tag_type: str, tag_value: str | None, context: str | No
     )
 
     condition = siret_condition | loc_condition
-    if context is not None and DataType(context.only) is DataType.FINANCIAL_DATA_AE and context.id is not None:
-        condition &= Ae.id == context.id
+    ctx_ops = _ContextOps.ops(context)
+    if ctx_ops.conditions is not None:
+        condition &= ctx_ops.conditions
 
     # Application du tag aux AE
     apply_task = ApplyTagForAutomation(tag)
