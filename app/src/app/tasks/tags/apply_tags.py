@@ -30,20 +30,21 @@ class ContextApplyTags(NamedTuple):
     # Si id spécifié, on applique le tag uniquement sur l'entité (DataType) correspondante
     id: int | None
 
-class _ContextOps():
+
+class _ContextOps:
     def __init__(self, ctx: ContextApplyTags | None) -> None:
         self._ctx = ctx
-    
+
     @property
     def context(self) -> ContextApplyTags | None:
         return self._ctx
-    
+
     @staticmethod
     def ops(context: dict | str | None):
-        _parsed = ContextApplyTags(**json.loads(context)) if context is not None else None # type: ignore
+        _parsed = ContextApplyTags(**json.loads(context)) if context is not None else None  # type: ignore
 
         return _ContextOps(_parsed)
-    
+
     @property
     def conditions(self) -> ColumnElement[bool] | None:
 
@@ -54,8 +55,9 @@ class _ContextOps():
             return Ae.id == self.context.id
         if DataType(self.context.only) is DataType.FINANCIAL_DATA_CP and self.context.id is not None:
             return Cp.id == self.context.id
-        
+
         raise RuntimeError("")
+
 
 @_celery.task(bind=True, name="apply_tags_fonds_vert")
 def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: dict | None):
@@ -76,15 +78,15 @@ def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: 
     ctx_ops = _ContextOps.ops(context)
     if ctx_ops.conditions is not None:
         condition &= ctx_ops.conditions
-    
+
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(condition)
-    
+
     #
     condition = Ademe.objet.ilike("fonds vert%") | Ademe.objet.like("FV%")
     if ctx_ops.conditions is not None:
         condition &= ctx_ops.conditions
-    
+
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ademe(condition)
 
@@ -251,7 +253,7 @@ def apply_tags_cp_orphelin(self, tag_type: str, tag_value: str | None, context: 
     tag = select_tag(TagVO.from_typevalue(tag_type))
     _logger.debug(f"[TAGS][{tag.type}] Récupération du tag CP ORPHELIN id : {tag.id}")
 
-    condition =  Cp.id_ae.is_(None)
+    condition = Cp.id_ae.is_(None)
     ctx_ops = _ContextOps.ops(context)
     if ctx_ops.conditions is not None:
         condition &= ctx_ops.conditions

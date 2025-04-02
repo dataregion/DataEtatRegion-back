@@ -140,7 +140,7 @@ def add_references(entity, session, region=None):
         get_or_create(session, Siret, code=entity.siret)
     if region:
         get_or_create(session, Region, code=region)
-        
+
     # Dans le cas ou l'entitié est une ligne ADEME
     ademe: Ademe = entity
     if hasattr(entity, "siret_attribuant"):
