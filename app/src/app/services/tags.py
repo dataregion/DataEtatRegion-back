@@ -141,6 +141,15 @@ class ApplyTagForAutomation:
         """
         return self._apply_tags_entity(whereclause, Ae)
 
+    def apply_tags_ademe(self, whereclause):
+        """
+        Applique un tag sur les lignes ADEME retournée par le statement passé en paramètre
+        :param tag: le tag à appliquer
+        :param where_clause: le filtrage
+        :return:
+        """
+        return self._apply_tags_entity(whereclause, Ademe)
+
     def apply_tags_cp(self, whereclause):
         """
         Applique un tag sur les Financial CP retournée par le statement passé en paramètre

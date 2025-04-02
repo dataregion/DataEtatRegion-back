@@ -2,6 +2,7 @@ import json
 import logging
 from typing import NamedTuple
 
+from models.entities.financial.Ademe import Ademe
 from models.value_objects.tags import TagVO
 from sqlalchemy import ColumnElement
 
@@ -75,9 +76,17 @@ def apply_tags_fonds_vert(self, tag_type: str, _tag_value: str | None, context: 
     ctx_ops = _ContextOps.ops(context)
     if ctx_ops.conditions is not None:
         condition &= ctx_ops.conditions
-
+    
     apply_task = ApplyTagForAutomation(tag)
     apply_task.apply_tags_ae(condition)
+    
+    #
+    condition = Ademe.objet.ilike("fonds vert%") | Ademe.objet.like("FV%")
+    if ctx_ops.conditions is not None:
+        condition &= ctx_ops.conditions
+    
+    apply_task = ApplyTagForAutomation(tag)
+    apply_task.apply_tags_ademe(condition)
 
 
 @_celery.task(bind=True, name="apply_tags_relance")
