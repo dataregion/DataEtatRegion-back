@@ -2,6 +2,7 @@ import json
 import datetime
 
 from models.entities.common.Tags import Tags
+from models.entities.financial.Ademe import Ademe
 import pytest
 
 from tests import delete_references
@@ -51,6 +52,49 @@ def insert_financial_ae_for_tag_fond_vert(database, session):
     yield ae
     delete_references(session)
     session.execute(database.delete(FinancialAe))
+    session.commit()
+
+
+def _default_ademe():
+    return Ademe.from_datagouv_csv_line(
+        {
+            "objet": "objet",
+            "dateConvention": "2025-04-02",
+            "montant": "100.0",
+            # proprietés osef
+            "notificationUE": "",
+            "referenceDecision": "",
+            "nature": "",
+            "conditionsVersement": "",
+            "datesPeriodeVersement": "",
+            "pourcentageSubvention": "2",
+            "idAttribuant": "851296632000171",
+            "idBeneficiaire": "851296632000171",
+        }
+    )
+
+
+@pytest.fixture(scope="function")
+def insert_ademe_for_tag_fond_vert(database, session):
+    ademe = _default_ademe()
+    ademe.objet = "FV - object"  # type: ignore
+
+    add_references(ademe, session, region="53")
+    session.add(ademe)
+    session.commit()
+    yield ademe
+    session.execute(database.delete(Ademe))
+    session.commit()
+
+
+@pytest.fixture(scope="function")
+def insert_ademe_no_tag_fond_vert(database, session):
+    ademe = _default_ademe()
+    add_references(ademe, session, region="53")
+    session.add(ademe)
+    session.commit()
+    yield ademe
+    session.execute(database.delete(Ademe))
     session.commit()
 
 
@@ -177,6 +221,38 @@ def test_should_apply_tag_if_context_is_ok(database, tag_fond_vert, insert_finan
     assert tag_assocation.financial_cp is None
     assert tag_assocation.financial_ae == insert_financial_ae_for_tag_fond_vert.id
     assert tag_assocation.auto_applied is True
+
+
+def test_apply_tag_fond_vert_for_ademe(database, tag_fond_vert, insert_ademe_for_tag_fond_vert):
+    # DO
+    apply_tags_fonds_vert(tag_fond_vert.type, None, None)  # type: ignore
+
+    # ASSERT
+    tag_assocation: TagAssociation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_fond_vert.id,
+            TagAssociation.ademe == insert_ademe_for_tag_fond_vert.id,
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is not None
+    assert tag_assocation.ademe == insert_ademe_for_tag_fond_vert.id
+    assert tag_assocation.financial_cp is None
+    assert tag_assocation.financial_ae is None
+    assert tag_assocation.auto_applied is True
+
+
+def test_doesnt_apply_tag_fond_vert_for_ademe(database, tag_fond_vert, insert_ademe_no_tag_fond_vert):
+    # DO
+    apply_tags_fonds_vert(tag_fond_vert.type, None, None)  # type: ignore
+
+    # ASSERT
+    tag_assocation: TagAssociation = database.session.execute(
+        database.select(TagAssociation).where(
+            TagAssociation.tag_id == tag_fond_vert.id,
+            TagAssociation.ademe == insert_ademe_no_tag_fond_vert.id,
+        )
+    ).scalar_one_or_none()
+    assert tag_assocation is None
 
 
 def test_should_not_apply_tag_if_context_is_not_ok(database, tag_fond_vert, insert_financial_ae_for_tag_fond_vert):

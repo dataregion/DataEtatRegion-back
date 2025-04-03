@@ -56,4 +56,5 @@ class ValidTokenException(DataRegatException):
     """Exception raised when token is not valid"""
 
     def __init__(self):
-        super().__init__("Forbidden")
+        self.message = "Forbidden"
+        super().__init__(self.message)

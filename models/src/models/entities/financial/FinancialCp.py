@@ -24,7 +24,7 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
     n_dp: Column[str] = Column(String, nullable=False)
 
     # FK AE
-    id_ae: int = Column(
+    id_ae: Column[int] = Column(
         Integer,
         ForeignKey("financial_ae.id", ondelete="cascade"),
         nullable=True,

@@ -39,6 +39,10 @@ def get_engine_url(bind_key=None):
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 config.set_main_option("sqlalchemy.url", get_engine_url())
+
+# ne surtout pas générer de script pour la BDD Grist
+excluded_bind_names = {"grist"}  
+
 bind_names = []
 if current_app.config.get("SQLALCHEMY_BINDS") is not None:
     bind_names = list(current_app.config["SQLALCHEMY_BINDS"].keys())
@@ -46,6 +50,9 @@ else:
     get_bind_names = getattr(current_app.extensions["migrate"].db, "bind_names", None)
     if get_bind_names:
         bind_names = get_bind_names()
+
+bind_names = [b for b in bind_names if b not in excluded_bind_names]
+
 for bind in bind_names:
     context.config.set_section_option(bind, "sqlalchemy.url", get_engine_url(bind_key=bind))
 target_db = current_app.extensions["migrate"].db

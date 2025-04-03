@@ -1,14 +1,13 @@
 from functools import wraps
+from app.controller import ApiDataEtat
 from flask import Blueprint, request, current_app
-from flask_restx import Api, reqparse
-from flask_restx._http import HTTPStatus
+from flask_restx import reqparse
 from werkzeug.datastructures import FileStorage
 from app.controller.financial_data.schema_model import (
     register_tags_schemamodel,
 )
 
-from app.controller.utils.Error import ErrorController
-from app.exceptions.exceptions import DataRegatException, BadRequestDataRegateNum
+from app.exceptions.exceptions import BadRequestDataRegateNum
 
 
 parser_import = reqparse.RequestParser()
@@ -81,6 +80,7 @@ from app.controller.financial_data.AdemeCtrl import api as api_ademe  # noqa: E4
 from app.controller.financial_data.TagsCtrl import api as api_tags  # noqa: E402
 
 from app.controller.financial_data.v2.BudgetCtrls import api_ns as api_budgets  # noqa: E402
+from app.controller.financial_data.v2.BudgetToGristCtrls import api_ns as api_togrist  # noqa: E402
 
 
 api_financial_v1 = Blueprint("financial_data", __name__)
@@ -106,7 +106,7 @@ _description = (
     "<strong>C'est une API dediée à l'outil interne de consultation budget. "
     "N'utilisez pas cette API pour intégrer nos données à votre système.</strong>"
 )
-api_v1 = Api(
+api_v1 = ApiDataEtat(
     api_financial_v1,
     doc="/doc",
     prefix="/api/v1",
@@ -127,7 +127,7 @@ _description = (
     "<strong>C'est une API dediée à l'outil interne de consultation budget. "
     "utilisez pas cette API pour intégrer nos données à votre système.</strong>"
 )
-api_v2 = Api(
+api_v2 = ApiDataEtat(
     api_financial_v2,
     version="2.0",
     doc="/api/v2/doc",
@@ -140,13 +140,4 @@ api_v2 = Api(
 model_tags_single_api = register_tags_schemamodel(api_v2)
 
 api_v2.add_namespace(api_budgets)
-
-
-@api_financial_v1.errorhandler(DataRegatException)
-def handle_exception(e):
-    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
-
-
-@api_financial_v2.errorhandler(DataRegatException)
-def handle_exception_for_api_v2(e):
-    return ErrorController(e.message).to_json(), HTTPStatus.BAD_REQUEST
+api_v2.add_namespace(api_togrist)

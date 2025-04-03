@@ -1,5 +1,6 @@
+from app.controller import ApiDataEtat
 from flask import Blueprint
-from flask_restx import Api, Namespace
+from flask_restx import Namespace
 
 from app.controller.ref_controller.RefController import build_ref_controller
 from app.controller.ref_controller.RefCrte import api as crte_api
@@ -34,7 +35,7 @@ api_ref = Blueprint("api_ref", __name__)
 
 authorizations = {"Bearer": {"type": "apiKey", "in": "header", "name": "Authorization"}}
 
-api = Api(
+api = ApiDataEtat(
     api_ref,
     doc="/doc",
     prefix="/api/v1",

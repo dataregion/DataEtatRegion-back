@@ -3,6 +3,7 @@
   trigger:
     project: SIBSGAR/DataRegateNum/stack
     branch: main
+    strategy: depend
     forward:
       yaml_variables: true
       pipeline_variables: false
@@ -10,7 +11,10 @@
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "integ"
     UPSTREAM_PROJECT: $CI_PROJECT_PATH
-  when: manual
+  rules: 
+    - if: '$_ENABLE_DEPLOY_FOR_INTEG == "✅"'
+      when: always
+    - when: manual
 
 "🚨 deploy data-transform on preprod":
   stage: "🐣 deploy"

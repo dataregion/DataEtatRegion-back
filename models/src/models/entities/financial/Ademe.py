@@ -33,7 +33,6 @@ class Ademe(FinancialData, _PersistenceBaseModelInstance()):
     conditions_versement = Column(String(255))
     dates_periode_versement = Column(String(255))
     notification_ue = Column(Boolean, default=False)
-    pourcentage_subvention: Column[float] = Column(Float)
 
     # FK
     siret_attribuant = Column(String, ForeignKey("ref_siret.code"), nullable=True)
@@ -80,7 +79,6 @@ class Ademe(FinancialData, _PersistenceBaseModelInstance()):
         ademe.conditions_versement = line_dict["conditionsVersement"]
         ademe.dates_periode_versement = line_dict["datesPeriodeVersement"]
         ademe.notification_ue = notification_ue
-        ademe.pourcentage_subvention = line_dict["pourcentageSubvention"]
 
         ademe.siret_attribuant = line_dict["idAttribuant"]
         ademe.siret_beneficiaire = line_dict["idBeneficiaire"]

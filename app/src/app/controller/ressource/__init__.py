@@ -1,6 +1,6 @@
 import logging
+from app.controller import ApiDataEtat
 from flask import Blueprint
-from flask_restx import Api
 
 from app.controller.ressource.RessourceCtrl import api as ressourceApi
 
@@ -12,6 +12,6 @@ authorizations = {"Bearer": {"type": "apiKey", "in": "header", "name": "Authoriz
 
 _description = "Api d'accès aux ressources disponibles en fonction du code region."
 
-api = Api(api_ressource, doc="/doc", description=_description, authorizations=authorizations)
+api = ApiDataEtat(api_ressource, doc="/doc", description=_description, authorizations=authorizations)
 
 api.add_namespace(ressourceApi)

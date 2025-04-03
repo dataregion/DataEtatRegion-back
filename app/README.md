@@ -48,6 +48,7 @@ Les dépendances sont freeze dans [requirements.external.txt](./requirements.ext
 rm requirements.external.txt
 pip-compile requirements.external.in \
   ../models/pyproject.toml \
+  ../gristcli/pyproject.toml \
   -o requirements.external.txt
 ```
 
