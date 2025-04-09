@@ -1,6 +1,8 @@
 import secrets
 from sqlalchemy import create_engine, text
 import logging
+from urllib.parse import quote
+
 
 from gristcli.gristservices.errors import TokenNotFound
 from gristcli.gristservices.grist_api import GrisApiService
@@ -61,7 +63,9 @@ class UserScimService(GrisApiService):
         """
         Searches for a user based on their username
         """
-        query = f'?filter=userName eq "{username}"'
+        filter_str = f'userName eq "{username}"'
+        encoded_filter = quote(filter_str)
+        query = f'?filter={encoded_filter}'
         resp = self._call("/Users" + query)
         resources = resp.get("Resources", [])
         if not resources:
