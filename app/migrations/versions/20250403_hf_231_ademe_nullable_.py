@@ -8,7 +8,6 @@ Create Date: 2025-04-03 09:39:02.862618
 from alembic import op
 import sqlalchemy as sa
 import logging
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20250403_hf_231_ademe_nullable'
