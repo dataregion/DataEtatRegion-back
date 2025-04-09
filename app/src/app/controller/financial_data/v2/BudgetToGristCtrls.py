@@ -16,7 +16,8 @@ auth = current_app.extensions["auth"]
 
 @api_ns.errorhandler(ApiGristError)
 def handle_exception_grist(e: ApiGristError):
-    return ErrorController(e.message).to_json(), e.call_error_description.code
+    message = e.call_error_description.description
+    return ErrorController(f"Erreur lors de l'API à GRIST : {message}").to_json(), e.call_error_description.code
 
 
 @api_ns.errorhandler(ParsingColumnsError)
