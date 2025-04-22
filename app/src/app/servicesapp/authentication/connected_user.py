@@ -20,6 +20,8 @@ class ConnectedUser:
         self._current_roles = None
         self._current_region = None
         self._username = None
+        self._email = None
+        self._name = None
         self._sub = None
         self._azp = None
 
@@ -50,6 +52,20 @@ class ConnectedUser:
         if self._username is None:
             self._username = self._retrieve_token_username()
         return self._username
+
+    @property
+    def email(self):
+        """Récupère le mail du token"""
+        if self._email is None:
+            self._email = self._retrieve_token_email()
+        return self._email
+
+    @property
+    def name(self):
+        """Récupère le displayname du token"""
+        if self._name is None:
+            self._name = self._retrieve_token_name()
+        return self._name
 
     @property
     def sub(self):
@@ -85,6 +101,20 @@ class ConnectedUser:
         if username is None:
             raise InvalidTokenError()
         return username
+
+    @wrap_all_ex_to(InvalidTokenError)
+    def _retrieve_token_email(self):
+        email = self.token["email"]
+        if email is None:
+            raise InvalidTokenError()
+        return email
+
+    @wrap_all_ex_to(InvalidTokenError)
+    def _retrieve_token_name(self):
+        name = self.token["name"]
+        if name is None:
+            raise InvalidTokenError()
+        return name
 
     @wrap_all_ex_to(InvalidTokenError)
     def _retrieve_token_sub(self):

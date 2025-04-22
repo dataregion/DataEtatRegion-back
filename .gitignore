@@ -29,3 +29,13 @@ app/migrations.old/data/ref_*.csv
 app/requirements.txt
 app/build/
 models/build
+gristcli/build
+
+tests_e2e/assets/*
+tests_e2e/tests.log
+tests_e2e/tests.xml
+tests_e2e/tests.json
+tests_e2e/tests.html
+tests_e2e/resultats_tests.html
+tests_e2e/resultats_tests.json
+tests_e2e/resultats_tests.xml

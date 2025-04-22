@@ -1,5 +1,5 @@
+from app.controller import ApiDataEtat
 from flask import Blueprint
-from flask_restx import Api
 
 from app.controller.laureats_data.France2030Ctrl import api as api_france2030
 
@@ -13,7 +13,7 @@ _description = (
     "N'utilisez pas cette API pour intégrer nos données à votre système.</strong>"
 )
 
-_api = Api(
+_api = ApiDataEtat(
     api_laureats,
     doc="/doc",
     prefix="/api/v1",

@@ -14,9 +14,8 @@ class KeycloakIntrospectTokenValidator(IntrospectTokenValidator):
         super().__init__(None)
 
     def introspect_token(self, token: str) -> dict:
-        signing_key = self.jwks_client.get_signing_key_from_jwt(token)
-
         try:
+            signing_key = self.jwks_client.get_signing_key_from_jwt(token)
             valid_token = jwt.decode(
                 token,
                 signing_key.key,

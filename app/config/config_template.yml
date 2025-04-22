@@ -14,6 +14,13 @@ SQLALCHEMY_BINDS:
     pool_pre_ping: True
     pool_recycle: 30
 
+
+
+GRIST:
+  DATABASE_URL: "postgresql+psycopg://postgres:password@localhost:5432/grist"
+  SERVEUR_URL: "https://grist.nocode.csm.ovh"
+  TOKEN_SCIM: "<TOKEN SCIM>"
+
 SQLALCHEMY_ENGINE_OPTIONS:
   pool_pre_ping: True
   pool_recycle: 30

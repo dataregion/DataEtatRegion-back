@@ -1,6 +1,7 @@
 import json
 import datetime
 from models.entities.common.Tags import Tags
+from models.entities.financial.Ademe import Ademe
 import pytest
 from sqlalchemy import delete
 
@@ -116,28 +117,36 @@ def get_or_create(session, model, **kwargs):
         return instance
 
 
-def add_references(ae, session, region=None):
+def add_references(entity, session, region=None):
     # Using the helper function to get or create related objects
-    if hasattr(ae, "programme") and ae.programme:
-        get_or_create(session, CodeProgramme, code=ae.programme)
-    if hasattr(ae, "centre_couts") and ae.centre_couts:
-        get_or_create(session, CentreCouts, code=ae.centre_couts)
-    if hasattr(ae, "domaine_fonctionnel") and ae.domaine_fonctionnel:
-        get_or_create(session, DomaineFonctionnel, code=ae.domaine_fonctionnel)
-    if hasattr(ae, "fournisseur_titulaire") and ae.fournisseur_titulaire:
-        get_or_create(session, FournisseurTitulaire, code=ae.fournisseur_titulaire)
-    if hasattr(ae, "fournisseur_paye") and ae.fournisseur_paye:
-        get_or_create(session, FournisseurTitulaire, code=ae.fournisseur_paye)
-    if hasattr(ae, "groupe_marchandise") and ae.groupe_marchandise:
-        get_or_create(session, GroupeMarchandise, code=ae.groupe_marchandise)
-    if hasattr(ae, "localisation_interministerielle") and ae.localisation_interministerielle:
-        get_or_create(session, LocalisationInterministerielle, code=ae.localisation_interministerielle)
-    if hasattr(ae, "referentiel_programmation") and ae.referentiel_programmation:
-        get_or_create(session, ReferentielProgrammation, code=ae.referentiel_programmation)
-    if hasattr(ae, "siret") and ae.siret and ae.siret != "#":
-        get_or_create(session, Siret, code=ae.siret)
+    # Dans le cas ou l'entité est une AE
+    if hasattr(entity, "programme") and entity.programme:
+        get_or_create(session, CodeProgramme, code=entity.programme)
+    if hasattr(entity, "centre_couts") and entity.centre_couts:
+        get_or_create(session, CentreCouts, code=entity.centre_couts)
+    if hasattr(entity, "domaine_fonctionnel") and entity.domaine_fonctionnel:
+        get_or_create(session, DomaineFonctionnel, code=entity.domaine_fonctionnel)
+    if hasattr(entity, "fournisseur_titulaire") and entity.fournisseur_titulaire:
+        get_or_create(session, FournisseurTitulaire, code=entity.fournisseur_titulaire)
+    if hasattr(entity, "fournisseur_paye") and entity.fournisseur_paye:
+        get_or_create(session, FournisseurTitulaire, code=entity.fournisseur_paye)
+    if hasattr(entity, "groupe_marchandise") and entity.groupe_marchandise:
+        get_or_create(session, GroupeMarchandise, code=entity.groupe_marchandise)
+    if hasattr(entity, "localisation_interministerielle") and entity.localisation_interministerielle:
+        get_or_create(session, LocalisationInterministerielle, code=entity.localisation_interministerielle)
+    if hasattr(entity, "referentiel_programmation") and entity.referentiel_programmation:
+        get_or_create(session, ReferentielProgrammation, code=entity.referentiel_programmation)
+    if hasattr(entity, "siret") and entity.siret and entity.siret != "#":
+        get_or_create(session, Siret, code=entity.siret)
     if region:
         get_or_create(session, Region, code=region)
+
+    # Dans le cas ou l'entitié est une ligne ADEME
+    ademe: Ademe = entity
+    if hasattr(entity, "siret_attribuant"):
+        get_or_create(session, Siret, code=ademe.siret_attribuant)
+    if hasattr(entity, "siret_beneficiaire"):
+        get_or_create(session, Siret, code=ademe.siret_beneficiaire)
 
     session.commit()
 

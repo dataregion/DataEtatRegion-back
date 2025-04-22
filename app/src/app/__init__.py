@@ -119,6 +119,10 @@ def read_config(app, config_filep: str, extra_config_settings: dict):
     logging.info("Force 'SQLALCHEMY_TRACK_MODIFICATIONS' to False")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    if "GRIST" not in app.config:
+        logging.error("GRIST config not defined")
+        exit(0)
+
 
 def _load_oidc_config(app, oidc_config_filep: str):
     app.config.update(OIDC_REDIRECT_URI="*")
@@ -164,7 +168,9 @@ def _expose_endpoint(app: Flask):
         from app.controller.apis_externes import api_apis_externes
         from app.controller.task_management import api_task
         from app.controller.visuterritoire import api_visuterritoire_v1
-        from app.controller.proxy_nocodb import mount_blueprint  # pour éviter les import circulaire avec oidc
+        from app.controller.proxy_nocodb import (
+            mount_blueprint,
+        )  # pour éviter les import circulaire avec oidc
 
         app.register_blueprint(api_financial_v1, url_prefix="/financial-data")
         app.register_blueprint(api_financial_v2, url_prefix="/financial-data")

@@ -1,6 +1,6 @@
 import logging
+from app.controller import ApiDataEtat
 from flask import Blueprint
-from flask_restx import Api
 
 from app.controller.demarches.DemarchesCtrl import api as demarchesApi
 
@@ -16,6 +16,6 @@ _description = (
     "<strong>C'est une API dediée à la sauvegarde et consultation des données de Démarches Simplifiées.</strong>"
 )
 
-api = Api(api_demarches, doc="/doc", description=_description, authorizations=authorizations)
+api = ApiDataEtat(api_demarches, doc="/doc", description=_description, authorizations=authorizations)
 
 api.add_namespace(demarchesApi)

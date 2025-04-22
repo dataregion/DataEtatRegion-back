@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=6.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gristcli"
+dynamic = ["version"]
+description = "Client Grist, pour lire la bdd users grist et appel aux API"
+dependencies = [
+    "sqlalchemy ~= 2.0.36",
+    "pandas ~= 2.0",
+    "marshmallow-sqlalchemy ~= 1.1",
+    "marshmallow-dataclass ~= 8.5",
+    "marshmallow-jsonschema ~= 0.13"
+]
+
+[tool.poetry]
+version = "0.1.0"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.*"]
