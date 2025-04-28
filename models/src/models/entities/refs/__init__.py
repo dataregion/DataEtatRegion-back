@@ -15,5 +15,5 @@ from .Theme import Theme
 from .Arrondissement import Arrondissement
 from .CategorieJuridique import CategorieJuridique
 from .Commune import Commune
-from .Qpv import Qpv
+from .Qpv import Qpv, QpvCommune
 from .Siret import Siret

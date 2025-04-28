@@ -4,6 +4,7 @@ from flask_restx import Namespace
 
 from app.controller.ref_controller.RefController import build_ref_controller
 from app.controller.ref_controller.RefCrte import api as crte_api
+from app.controller.ref_controller.RefQpv import api as qpv_api
 from app.controller.ref_controller.RefTags import api as api_tags
 from app.controller.ref_controller.RefLocalisationInterministerielle import api as api_loc_interministerielle
 from app.controller.utils.ControllerUtils import ParserArgument
@@ -115,20 +116,6 @@ api_ref_beneficiaire = build_ref_controller(
     cond_opt=(ParserArgument(Siret.denomination, str, "Recherche sur la dénomation du SIRET"),),
 )
 
-api_ref_qpv = build_ref_controller(
-    Qpv,
-    QpvSchema,
-    Namespace(
-        name="Quartier Prioritaire de la politique de la ville",
-        path="/qpv",
-        description="API pour lister les QPV en France",
-    ),
-    cond_opt=(
-        ParserArgument(Qpv.label_commune, str, "Recherche sur le label de la commune associée"),
-        ParserArgument(Qpv.annee_decoupage, int, "Année de découpage des QPV"),
-    ),
-)
-
 
 api.add_namespace(api_auth)
 
@@ -143,4 +130,4 @@ api.add_namespace(crte_api)
 api.add_namespace(api_ref_arrondissement)
 api.add_namespace(api_ref_beneficiaire)
 api.add_namespace(api_tags)
-api.add_namespace(api_ref_qpv)
+api.add_namespace(qpv_api)
