@@ -1,7 +1,9 @@
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
-from sqlalchemy import Column, Integer, String
+from models.entities.refs.QpvCommune import QpvCommune
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.event import listens_for
+from sqlalchemy.orm import Mapped, relationship
 from shapely.wkt import loads as wkt_loads
 from geoalchemy2 import Geometry
 
@@ -18,6 +20,9 @@ class Qpv(_Audit, _PersistenceBaseModelInstance()):
 
     geom = Column(Geometry("GEOMETRY"), nullable=True)
     centroid = Column(Geometry("POINT"), nullable=True)
+    
+    communes = relationship("Commune", secondary=QpvCommune.__table__, backref="commune_qpvs", viewonly=True)
+
 
 # Event listener to automatically calculate the centroid
 @listens_for(Qpv, "before_insert")

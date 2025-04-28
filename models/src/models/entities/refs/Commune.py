@@ -1,5 +1,6 @@
 from models import _PersistenceBaseModelInstance
 from models.entities.refs.Arrondissement import Arrondissement
+from models.entities.refs.QpvCommune import QpvCommune
 from models.entities.common.Audit import _Audit
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
@@ -40,3 +41,5 @@ class Commune(_Audit, _PersistenceBaseModelInstance()):
     ref_arrondissement: Mapped[Arrondissement] = relationship(
         "Arrondissement", lazy="joined"
     )
+    
+    qpvs = relationship("Qpv", secondary=QpvCommune.__table__, backref="qpv_communes", viewonly=True)
