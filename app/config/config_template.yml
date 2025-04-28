@@ -13,6 +13,10 @@ SQLALCHEMY_BINDS:
     url: "postgresql+psycopg://postgres:password@localhost:5432/<DBNAME>?options=-c%20search_path=settings"
     pool_pre_ping: True
     pool_recycle: 30
+  demarches_simplifiees:
+    url: "postgresql+psycopg://postgres:password@localhost:5432/<DBNAME>?options=-c%20search_path=demarches_simplifiees"
+    pool_pre_ping: True
+    pool_recycle: 30
 
 
 

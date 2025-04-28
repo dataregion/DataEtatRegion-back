@@ -29,3 +29,11 @@ class Subvention(metaclass=_InstrumentForFlaskRestx):
     montant_accorde: float
 
     actions_proposees: list[ActionProposee]
+
+    def __post_init__(self):
+        # Vérification et transformation des valeurs pour 'montant_demande' et 'montant_accorde'
+        if isinstance(self.montant_demande, str) and self.montant_demande == "":
+            self.montant_demande = 0
+
+        if isinstance(self.montant_accorde, str) and self.montant_accorde == "":
+            self.montant_accorde = 0
