@@ -6,7 +6,7 @@ from flask_restx._http import HTTPStatus
 from marshmallow_jsonschema import JSONSchema
 from models.entities.refs.Qpv import Qpv
 from models.schemas.refs import QpvSchema
-from sqlalchemy import and_, or_, text, bindparam
+from sqlalchemy import and_, or_
 from sqlalchemy.exc import NoResultFound
 
 from app import db
@@ -28,7 +28,9 @@ parser_qpv.add_argument("limit", type=positive(), required=False, default=100, h
 parser_qpv.add_argument("query", type=str, required=False, help="Recherche sur le code ou le label")
 parser_qpv.add_argument("code_region", type=str, required=False, help="Code région du QPV", action=None)
 parser_qpv.add_argument("code_commune", type=str, required=False, help="Code commune du QPV", action=None)
-parser_qpv.add_argument("label_commune", type=str, required=False, help="Recherche sur le label de la commune associée", action=None)
+parser_qpv.add_argument(
+    "label_commune", type=str, required=False, help="Recherche sur le label de la commune associée", action=None
+)
 parser_qpv.add_argument("annee_decoupage", type=int, required=False, help="Année de découpage des QPV", action=None)
 
 
@@ -39,17 +41,14 @@ pagination_model = api.schema_model("Pagination", Pagination.definition_jsonsche
 
 pagination_with_model = api.model(
     "QpvPagination",
-    {
-        "items": fields.List(fields.Nested(model_single_api)),
-        "pageInfo": fields.Nested(pagination_model)
-    },
+    {"items": fields.List(fields.Nested(model_single_api)), "pageInfo": fields.Nested(pagination_model)},
 )
 
 
 @api.route("/")
 @api.doc(model=pagination_with_model)
 class RefQpv(Resource):
-    
+
     @api.route("")
     @api.doc(model=pagination_with_model)
     class RefQpvList(Resource):
@@ -64,10 +63,9 @@ class RefQpv(Resource):
             # Condition sur code OR label
             conditions = []
             if args.get("query"):
-                conditions.append(or_(
-                    Qpv.code.ilike(f"%{args.get('query')}%"),
-                    Qpv.label.ilike(f"%{args.get('query')}%")
-                ))
+                conditions.append(
+                    or_(Qpv.code.ilike(f"%{args.get('query')}%"), Qpv.label.ilike(f"%{args.get('query')}%"))
+                )
             if args.get("code_region"):
                 conditions.append(Qpv.communes.any(code_region=args.get("code_region")))
             if args.get("code_commune"):
@@ -77,7 +75,6 @@ class RefQpv(Resource):
             if args.get("annee_decoupage"):
                 conditions.append(Qpv.annee_decoupage == args.get("annee_decoupage"))
 
-            
             if conditions:
                 stmt = db.select(Qpv).where(and_(*conditions)).order_by(Qpv.code)
             else:

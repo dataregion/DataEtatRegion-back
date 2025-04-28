@@ -16,7 +16,6 @@ from models.entities.refs.CodeProgramme import CodeProgramme
 from models.entities.refs.DomaineFonctionnel import DomaineFonctionnel
 from models.entities.refs.GroupeMarchandise import GroupeMarchandise
 from models.entities.refs.Ministere import Ministere
-from models.entities.refs.Qpv import Qpv
 from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
 from app.controller.utils.LoginController import api as api_auth
 from models.entities.refs.Siret import Siret
@@ -27,7 +26,6 @@ from models.schemas.refs import (
     DomaineFonctionnelSchema,
     GroupeMarchandiseSchema,
     MinistereSchema,
-    QpvSchema,
     ReferentielProgrammationSchema,
     SiretSchema,
 )

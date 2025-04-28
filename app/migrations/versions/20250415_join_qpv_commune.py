@@ -9,7 +9,6 @@ import re
 from alembic import op
 import sqlalchemy as sa
 import logging
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20250415_join_qpv_commune'
