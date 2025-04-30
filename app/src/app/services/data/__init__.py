@@ -110,13 +110,12 @@ class BuilderStatementFinancialLine:
         self._stmt = self._stmt.where(FinancialLines.n_ej == ej).where(FinancialLines.n_poste_ej == poste_ej)
         return self
 
-    def where_qpv_not_null(self, ref_qpv: int):
-        field = FinancialLines.beneficiaire_qpv_code
+    def where_qpv_not_null(self, ref_qpv: int, field: Column):
+        field = FinancialLines.lieu_action_code_qpv
         condition_lieu_action = and_(
             FinancialLines.annee < 2024, FinancialLines.lieu_action_code_qpv != None  # noqa: E711
         )
         if ref_qpv == 2024:
-            field = FinancialLines.beneficiaire_qpv24_code
             condition_lieu_action = and_(
                 FinancialLines.annee >= 2024, FinancialLines.lieu_action_code_qpv != None  # noqa: E711
             )

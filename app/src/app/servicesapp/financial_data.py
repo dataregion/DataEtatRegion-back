@@ -16,6 +16,8 @@ from models.entities.financial.FinancialAe import FinancialAe
 from models.entities.refs.CategorieJuridique import CategorieJuridique
 from models.entities.refs.Siret import Siret
 from models.entities.common.Tags import Tags
+from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
+
 from app.services import BuilderStatementFinancial, FileStorageProtocol
 from app.services import BuilderStatementFinancialCp
 from models.value_objects.tags import TagVO
@@ -266,7 +268,7 @@ def search_lignes_budgetaires(
                 TypeCodeGeo.QPV if ref_qpv == 2015 else TypeCodeGeo.QPV24, code_qpv, source_region
             )
         else:
-            query_lignes_budget.where_qpv_not_null(ref_qpv)
+            query_lignes_budget.where_qpv_not_null(ref_qpv, FinancialLines.lieu_action_code_qpv)
 
     _includes_nones = False
     if types_beneficiaires is not None and "autres" in types_beneficiaires:

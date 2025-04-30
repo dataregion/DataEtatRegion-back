@@ -91,6 +91,9 @@ class FlattenFinancialLines(_PersistenceBaseModelInstance()):
     centreCouts_description = Column(String)
     data_source = Column(String)
     lieu_action_code_qpv = Column(String)
+    lieu_action_label_qpv = Column(String)
+
+    date_modification = Column(DateTime)
 
 
 class EnrichedFlattenFinancialLines(FlattenFinancialLines):
