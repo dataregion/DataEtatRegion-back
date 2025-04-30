@@ -62,7 +62,8 @@ CREATE OR REPLACE VIEW public.flatten_ae AS
     rs_rqpv24.code AS beneficiaire_qpv24_code,
     rs_rqpv24.label AS beneficiaire_qpv24_label,
     qla.code_qpv AS lieu_action_code_qpv,
-    root.date_modification_ej AS date_modification
+    root.date_modification_ej AS date_modification,
+    refq.label as lieu_action_label_qpv
    FROM financial_ae root
      LEFT JOIN ref_siret rs ON root.siret::text = rs.code::text
      LEFT JOIN ref_categorie_juridique rs_rcj ON rs.categorie_juridique::text = rs_rcj.code::text
@@ -80,6 +81,7 @@ CREATE OR REPLACE VIEW public.flatten_ae AS
      LEFT JOIN ref_groupe_marchandise rgm ON root.groupe_marchandise::text = rgm.code::text
      LEFT JOIN ref_centre_couts rcc ON root.centre_couts::text = rcc.code::text     
      LEFT JOIN qpv_lieu_action qla ON root.n_ej::text = qla.n_ej::text
+     LEFT join ref_qpv refq on qla.code_qpv::text =  refq.code::text
      LEFT JOIN (  SELECT id_financial_ae, SUM(montant) AS montant_ae
 	    FROM montant_financial_ae
 	    GROUP BY id_financial_ae

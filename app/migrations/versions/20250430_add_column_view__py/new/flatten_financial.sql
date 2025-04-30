@@ -61,7 +61,8 @@ CREATE OR REPLACE VIEW public._flatten_financial_lines
       flatten_ae.beneficiaire_qpv24_code,
       flatten_ae.beneficiaire_qpv24_label,
       flatten_ae.lieu_action_code_qpv,
-      flatten_ae.date_modification
+      flatten_ae.date_modification,
+      flatten_ae.lieu_action_label_qpv
       FROM flatten_ae
    UNION ALL
    SELECT flatten_ademe.source,
@@ -126,7 +127,8 @@ CREATE OR REPLACE VIEW public._flatten_financial_lines
       flatten_ademe.beneficiaire_qpv24_code,
       flatten_ademe.beneficiaire_qpv24_label,
       flatten_ademe.lieu_action_code_qpv,
-      flatten_ademe.date_modification
+      flatten_ademe.date_modification,
+      flatten_ademe.lieu_action_label_qpv
       FROM flatten_ademe
    UNION ALL
    SELECT flatten_orphan_cp.source,
@@ -191,5 +193,6 @@ CREATE OR REPLACE VIEW public._flatten_financial_lines
       flatten_orphan_cp.beneficiaire_qpv24_code,
       flatten_orphan_cp.beneficiaire_qpv24_label,
       flatten_orphan_cp.lieu_action_code_qpv,
-      flatten_orphan_cp.date_modification
+      flatten_orphan_cp.date_modification,
+      flatten_orphan_cp.lieu_action_label_qpv
       FROM flatten_orphan_cp;

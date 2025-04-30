@@ -61,7 +61,8 @@ CREATE OR REPLACE VIEW public.flatten_orphan_cp
     rs_rqpv24.code AS beneficiaire_qpv24_code,
     rs_rqpv24.label AS beneficiaire_qpv24_label,
     NULL::text AS lieu_action_code_qpv,
-    NULL::timestamp without time zone AS "date_modification"
+    NULL::timestamp without time zone AS "date_modification",
+    NULL::text AS lieu_action_label_qpv
    FROM financial_cp root
      LEFT JOIN ref_siret rs ON root.siret::text = rs.code::text
      LEFT JOIN ref_categorie_juridique rs_rcj ON rs.categorie_juridique::text = rs_rcj.code::text
