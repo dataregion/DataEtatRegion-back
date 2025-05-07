@@ -21,6 +21,7 @@ from app.services.helper import (
 class BenefOrLoc(Enum):
     BENEFICIAIRE = "beneficiaire"
     LOCALISATION_INTER = "localisationInterministerielle"
+    LOCALISATION_QPV = "localisation_action_qpv"
 
 
 class BuilderStatementFinancialLine:
@@ -124,6 +125,21 @@ class BuilderStatementFinancialLine:
         )
         return self
 
+    def where_geo_loc_qpv(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):
+        if list_code_geo is None:
+            return self
+        
+        
+        self._where_geo(
+            type_geo,
+            list_code_geo,
+            source_region,
+            None,
+            FinancialLines.lieu_action_code_qpv,
+            BenefOrLoc.LOCALISATION_QPV
+        )
+        return self
+
     def where_geo(
         self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str, benef_or_loc: BenefOrLoc = None
     ):
@@ -183,7 +199,7 @@ class BuilderStatementFinancialLine:
         # Ou les code geo de la commune associée au bénéficiaire
         #
         if column_codegeo_commune_beneficiaire is not None and (
-            benef_or_loc is None or benef_or_loc == BenefOrLoc.BENEFICIAIRE
+            benef_or_loc is None or benef_or_loc == BenefOrLoc.BENEFICIAIRE or benef_or_loc == BenefOrLoc.LOCALISATION_QPV
         ):
             conds.append(column_codegeo_commune_beneficiaire.in_(list_code_geo))
 
