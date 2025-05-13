@@ -255,23 +255,23 @@ def search_lignes_budgetaires(
         .data_source_is(data_source)
     )
 
-    if niveau_geo is not None and code_geo is not None: # On recherche sur le beneficaire
+    if niveau_geo is not None and code_geo is not None:  # On recherche sur le beneficaire
         query_lignes_budget.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
     elif bool(niveau_geo) ^ bool(code_geo):
         raise NiveauCodeGeoException("Les paramètres niveau_geo et code_geo doivent être fournis ensemble.")
 
-    if ref_qpv is not None: ## special Data QPV. On recherche sur le
+    if ref_qpv is not None:  ## special Data QPV. On recherche sur le
         if ref_qpv != 2015 and ref_qpv != 2024:
             raise NiveauCodeGeoException("Mauvaise année de découpage QPV.")
         if code_qpv is not None:
-             query_lignes_budget.where_geo_loc_qpv(
+            query_lignes_budget.where_geo_loc_qpv(
                 TypeCodeGeo.QPV if ref_qpv == 2015 else TypeCodeGeo.QPV24, code_qpv, source_region
             )
-            # query_lignes_budget.where_geo(
-            #     TypeCodeGeo.QPV if ref_qpv == 2015 else TypeCodeGeo.QPV24, code_qpv, source_region
-            # )
+        # query_lignes_budget.where_geo(
+        #     TypeCodeGeo.QPV if ref_qpv == 2015 else TypeCodeGeo.QPV24, code_qpv, source_region
+        # )
         else:
-            query_lignes_budget.where_qpv_not_null(ref_qpv, FinancialLines.lieu_action_code_qpv)
+            query_lignes_budget.where_qpv_not_null(FinancialLines.lieu_action_code_qpv)
 
     _includes_nones = False
     if types_beneficiaires is not None and "autres" in types_beneficiaires:

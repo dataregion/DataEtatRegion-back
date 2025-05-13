@@ -382,6 +382,7 @@ def import_file_qpv_lieu_action(self, fichier: str):
             fichier,
             sep=",",
             header=0,
+            keep_default_na=False,
             dtype={
                 "reference": str,
                 "annee": int,
@@ -392,7 +393,6 @@ def import_file_qpv_lieu_action(self, fichier: str):
             },
             chunksize=1000,
         )
-
         i = 0
         for chunk in data_chunk:
             ejs = []
@@ -401,16 +401,12 @@ def import_file_qpv_lieu_action(self, fichier: str):
 
                 tech_info = LineImportTechInfo(current_taskid, i)
 
-                if line["code_qpv"] is not None and line["code_qpv"] != "NR":
-                    new_line = QpvLieuAction.format_dict(line)
-                    new_line["file_import_taskid"] = tech_info.file_import_taskid
-                    new_line["file_import_lineno"] = tech_info.lineno
-                    qpv_lieu_action.append(QpvLieuAction(**new_line))
-                    if new_line["n_ej"] not in ejs:
-                        ejs.append(new_line["n_ej"])
-
-                if line["code_qp2024"] is not None and line["code_qp2024"] != "NR" and line["annee"] >= 2024:
+                # si code qpv 0224, on le garde
+                if line["code_qp2024"] and line["code_qp2024"] != "NR":
+                    logger.debug("[IMPORT][QPV_LIEU_ACTION][LINE] QPV 2024 détecter")
                     line["code_qpv"] = line["code_qp2024"]
+
+                if line["code_qpv"] and line["code_qpv"] != "NR":
                     new_line = QpvLieuAction.format_dict(line)
                     new_line["file_import_taskid"] = tech_info.file_import_taskid
                     new_line["file_import_lineno"] = tech_info.lineno
@@ -419,10 +415,6 @@ def import_file_qpv_lieu_action(self, fichier: str):
                         ejs.append(new_line["n_ej"])
 
                 i += 1
-
-            # count = db.session.query(FinancialAe).where(FinancialAe.n_ej.in_(ejs)).distinct().count()
-            # if count != len(ejs):
-            #     raise IntegrityError("Some EJ does not exist.")
 
             logger.debug(f"[IMPORT][QPV_LIEU_ACTION][LINE] Traitement de la ligne : {tech_info}")
             logger.debug(f"[IMPORT][QPV_LIEU_ACTION][LINE] Nombre de lignes QPV   : {len(qpv_lieu_action)}")

@@ -111,32 +111,23 @@ class BuilderStatementFinancialLine:
         self._stmt = self._stmt.where(FinancialLines.n_ej == ej).where(FinancialLines.n_poste_ej == poste_ej)
         return self
 
-    def where_qpv_not_null(self, ref_qpv: int, field: Column):
+    def where_qpv_not_null(self, field: Column):
         field = FinancialLines.lieu_action_code_qpv
-        condition_lieu_action = and_(
-            FinancialLines.annee < 2024, FinancialLines.lieu_action_code_qpv != None  # noqa: E711
-        )
-        if ref_qpv == 2024:
-            condition_lieu_action = and_(
-                FinancialLines.annee >= 2024, FinancialLines.lieu_action_code_qpv != None  # noqa: E711
-            )
         self._stmt = self._stmt.where(
-            FinancialLines.source == DataType.FINANCIAL_DATA_AE, or_(field != None, condition_lieu_action)  # noqa: E711
-        )
+            FinancialLines.source == DataType.FINANCIAL_DATA_AE, field != None)  # noqa: E711
         return self
 
     def where_geo_loc_qpv(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):
         if list_code_geo is None:
             return self
-        
-        
+
         self._where_geo(
             type_geo,
             list_code_geo,
             source_region,
             None,
             FinancialLines.lieu_action_code_qpv,
-            BenefOrLoc.LOCALISATION_QPV
+            BenefOrLoc.LOCALISATION_QPV,
         )
         return self
 
@@ -199,7 +190,9 @@ class BuilderStatementFinancialLine:
         # Ou les code geo de la commune associée au bénéficiaire
         #
         if column_codegeo_commune_beneficiaire is not None and (
-            benef_or_loc is None or benef_or_loc == BenefOrLoc.BENEFICIAIRE or benef_or_loc == BenefOrLoc.LOCALISATION_QPV
+            benef_or_loc is None
+            or benef_or_loc == BenefOrLoc.BENEFICIAIRE
+            or benef_or_loc == BenefOrLoc.LOCALISATION_QPV
         ):
             conds.append(column_codegeo_commune_beneficiaire.in_(list_code_geo))
 
