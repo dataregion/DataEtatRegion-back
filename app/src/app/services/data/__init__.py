@@ -5,7 +5,7 @@ Services liés à la couche d'accès aux données
 from enum import Enum
 from app.servicesapp.IncrementalPageOfBudgetLines import IncrementalPageOfBudgetLines
 from models.entities.common.Tags import Tags
-from sqlalchemy import Column, ColumnExpressionArgument, and_, desc, select, or_, func, distinct
+from sqlalchemy import Column, ColumnExpressionArgument, desc, select, or_, func, distinct
 from models.value_objects.common import DataType
 from models.value_objects.common import TypeCodeGeo
 from app.database import db
@@ -113,8 +113,7 @@ class BuilderStatementFinancialLine:
 
     def where_qpv_not_null(self, field: Column):
         field = FinancialLines.lieu_action_code_qpv
-        self._stmt = self._stmt.where(
-            FinancialLines.source == DataType.FINANCIAL_DATA_AE, field != None)  # noqa: E711
+        self._stmt = self._stmt.where(FinancialLines.source == DataType.FINANCIAL_DATA_AE, field != None)  # noqa: E711
         return self
 
     def where_geo_loc_qpv(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):

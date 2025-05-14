@@ -16,7 +16,7 @@ _data = TESTS_PATH / "data"
 
 @pytest.fixture(scope="function")
 def add_qpv_1(database):
-    qpv_1 = Qpv(**{"code": "QP044017", "label": "QPV Test 1"})
+    qpv_1 = Qpv(**{"code": "QN04417I", "label": "QPV Test 1"})
     database.session.add(qpv_1)
     database.session.commit()
     yield qpv_1
@@ -26,7 +26,7 @@ def add_qpv_1(database):
 
 @pytest.fixture(scope="function")
 def add_qpv_2(database):
-    qpv_2 = Qpv(**{"code": "QP044011", "label": "QPV Test 2"})
+    qpv_2 = Qpv(**{"code": "QN04405M", "label": "QPV Test 2"})
     database.session.add(qpv_2)
     database.session.commit()
     yield qpv_2
@@ -117,21 +117,9 @@ def test_import_file_qpv_lieu_action(app, database, session, add_qpv_1, add_qpv_
         database.select(QpvLieuAction).where(QpvLieuAction.n_ej == "2103609602")
     ).scalar_one_or_none()
     assert data.id is not None
-    assert data.code_qpv == "QP044017"
+    assert data.code_qpv == "QN04417I"
     assert data.ratio_montant == 5000
 
     database.session.execute(database.delete(QpvLieuAction))
     database.session.commit()
     delete_references(session)
-
-
-# def test_import_file_qpv_lieu_action_no_ej(app, database, session, add_qpv_1, add_qpv_2):
-
-#     with patch("shutil.move", return_value=None):
-#         with pytest.raises(IntegrityError) as exc_info:
-#             import_file_qpv_lieu_action(_data / "qpv_lieu_action.csv")
-#         assert str(exc_info.value) == "Some EJ does not exist."
-
-#     database.session.execute(database.delete(QpvLieuAction))
-#     database.session.commit()
-#     delete_references(session)
