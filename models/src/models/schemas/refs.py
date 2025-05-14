@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import Schema, fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from models.entities.refs.Arrondissement import Arrondissement
 from models.entities.refs.CentreCouts import CentreCouts
@@ -115,6 +115,18 @@ class QpvSchema(SQLAlchemyAutoSchema):
     label = fields.String()
     label_commune = fields.String()
     annee_decoupage = fields.Integer()
+    geom = GeometryField(dump_only=True)
+    centroid = GeometryField(dump_only=True)
+
+class QpvEnrichedSchema(Schema):
+    code_qpv = fields.String()
+    nom_qpv = fields.String()
+    code_commune = fields.String()
+    nom_commune = fields.String()
+    code_departement = fields.String()
+    nom_departement = fields.String()
+    code_epci = fields.String()
+    nom_epci = fields.String()
     geom = GeometryField(dump_only=True)
     centroid = GeometryField(dump_only=True)
 

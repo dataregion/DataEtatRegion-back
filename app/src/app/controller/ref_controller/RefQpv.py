@@ -4,9 +4,11 @@ from flask import current_app
 from flask_restx import Namespace, Resource, reqparse, fields
 from flask_restx._http import HTTPStatus
 from marshmallow_jsonschema import JSONSchema
+from models.entities.refs import Commune
 from models.entities.refs.Qpv import Qpv
-from models.schemas.refs import QpvSchema
-from sqlalchemy import and_, or_
+from models.entities.refs.QpvCommune import QpvCommune
+from models.schemas.refs import QpvEnrichedSchema, QpvSchema
+from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import NoResultFound
 
 from app import db
@@ -38,6 +40,11 @@ schema_many = QpvSchema(many=True)
 model_json = JSONSchema().dump(schema_many)["definitions"]["QpvSchema"]
 model_single_api = api.schema_model("Qpv", model_json)
 pagination_model = api.schema_model("Pagination", Pagination.definition_jsonschema)
+
+
+schema_many_qpv_with_commune = QpvEnrichedSchema(many=True)
+model_json_qpv = JSONSchema().dump(schema_many_qpv_with_commune)["definitions"]["QpvEnrichedSchema"]
+model_qpv_with_commune = api.schema_model("QpvWithCommune", model_json_qpv)
 
 pagination_with_model = api.model(
     "QpvPagination",
@@ -102,6 +109,39 @@ class RefQpv(Resource):
                 result = db.session.execute(db.select(Qpv).filter_by(code=code)).scalar_one()
                 schema_m = QpvSchema()
                 result = schema_m.dump(result)
+                return result, HTTPStatus.OK
+            except NoResultFound:
+                return "", HTTPStatus.NOT_FOUND
+
+    @api.route("/region/<code_region>")
+    class RefQpvRegion(Resource):
+        @auth("openid")
+        @api.doc(security="Bearer")
+        @api.response(200, "Success", model_qpv_with_commune)
+        def get(self, code_region):
+            try:
+                stmt = (
+                    select(
+                        Qpv.code.label("code_qpv"),
+                        Qpv.label.label("nom_qpv"),
+                        Qpv.geom,
+                        Qpv.centroid,
+                        Commune.code.label("code_commune"),
+                        Commune.label_commune.label("nom_commune"),
+                        Commune.code_departement,
+                        Commune.label_departement.label("nom_departement"),
+                        Commune.code_epci,
+                        Commune.label_epci.label("nom_epci"),
+                    )
+                    .join(QpvCommune, QpvCommune.qpv_id == Qpv.id)
+                    .join(Commune, Commune.id == QpvCommune.commune_id)
+                    .where(and_(Commune.code_region == code_region, Qpv.annee_decoupage == 2024))
+                )
+                result = db.session.execute(stmt).fetchall()
+                qpvs = [dict(row._mapping) for row in result]
+                schema_many = QpvEnrichedSchema(many=True)
+
+                result = schema_many.dump(qpvs)
                 return result, HTTPStatus.OK
             except NoResultFound:
                 return "", HTTPStatus.NOT_FOUND
