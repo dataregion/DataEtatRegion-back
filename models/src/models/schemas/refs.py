@@ -119,8 +119,8 @@ class QpvSchema(SQLAlchemyAutoSchema):
     centroid = GeometryField(dump_only=True)
 
 class QpvEnrichedSchema(Schema):
-    code_qpv = fields.String()
-    nom_qpv = fields.String()
+    code = fields.String()
+    label = fields.String()
     code_commune = fields.String()
     nom_commune = fields.String()
     code_departement = fields.String()

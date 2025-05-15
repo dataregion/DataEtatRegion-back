@@ -122,8 +122,8 @@ class RefQpv(Resource):
             try:
                 stmt = (
                     select(
-                        Qpv.code.label("code_qpv"),
-                        Qpv.label.label("nom_qpv"),
+                        Qpv.code,
+                        Qpv.label,
                         Qpv.geom,
                         Qpv.centroid,
                         Commune.code.label("code_commune"),
