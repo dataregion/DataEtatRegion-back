@@ -4,7 +4,7 @@ FROM python:3.12.6-alpine@sha256:7130f75b1bb16c7c5d802782131b4024fe3d7a87ce7d936
 RUN \
  apk add --no-cache postgresql-libs && \
  apk add --no-cache --virtual .build-deps gcc gdal gdal-dev gdal-tools proj proj-dev proj-util geos geos-dev musl-dev postgresql-dev && \
- pip install psycopg[c,pool]==3.2.6  && \
+ pip install psycopg[c]  && \
  pip install pip-tools
 
 EXPOSE 80
