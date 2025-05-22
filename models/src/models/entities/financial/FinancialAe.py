@@ -146,7 +146,7 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
         # Applicatin montant négatif
         if self._should_update_montant_ae(new_financial):
             nouveau_montant = (
-                float(new_financial[COLUMN_MONTANT_NAME].replace(",", "."))
+                self._convert_montant_float(new_financial[COLUMN_MONTANT_NAME])
                 if isinstance(new_financial[COLUMN_MONTANT_NAME], str)
                 else new_financial[COLUMN_MONTANT_NAME]
             )
@@ -258,7 +258,7 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
             return False
 
         nouveau_montant = (
-            float(new_financial[COLUMN_MONTANT_NAME].replace(",", "."))
+            self._convert_montant_float(new_financial[COLUMN_MONTANT_NAME])
             if isinstance(new_financial[COLUMN_MONTANT_NAME], str)
             else new_financial[COLUMN_MONTANT_NAME]
         )
