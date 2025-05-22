@@ -130,3 +130,27 @@ def test_import_new_line_cp_with_ae(session):
     assert financial_cp.n_ej == "2103105755"
     assert financial_cp.montant == 252
     delete_references(session)
+
+
+def test_import_new_line_cp_ae_with_montant_string(session):
+    # given
+    data_cp = '{"programme":"152","domaine_fonctionnel":"0152-04-01","centre_couts":"BG00\\/GN5GDPL044","referentiel_programmation":"BG00\\/015234300101","n_ej":"2103105755","n_poste_ej":"5","n_dp":100011636,"date_base_dp":"25.12.2022","date_derniere_operation_dp":"18.01.2023","n_sf":"#","data_sf":"#","fournisseur_paye":"1400875965","fournisseur_paye_label":"AE EXIST","siret":"#","compte_code":"PCE\\/6113110000","compte_budgetaire":"D\\u00e9penses de fonction","groupe_marchandise":"36.01.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"S198063","montant":" 1 171,20 ", "data_source":"REGION"}'
+    data_ae = '{"annee":2002, "source_region":"53","programme":"152","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","n_ej":"2103105755","n_poste_ej":5,"date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"85129663200017","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53","montant":"303 431,00", "data_source":"REGION"}'
+    financial_ae = FinancialAe(**json.loads(data_ae))
+    add_references(financial_ae, session, region="53")
+    session.add(financial_ae)
+    session.commit()
+
+    # DO
+    import_lines_financial_cp([{"data": data_cp, "task": _next_tech_info()}], 0, "53", 2023)
+
+    financial_cp = session.execute(db.select(FinancialCp).filter_by(n_dp="100011636")).scalar_one_or_none()
+    assert financial_cp.id_ae == financial_ae.id
+    assert financial_cp.annee == 2023
+    assert financial_cp.programme == "152"
+    assert financial_cp.n_poste_ej == 5
+    assert financial_cp.n_ej == "2103105755"
+    assert financial_cp.montant == 1171.20
+
+    assert financial_ae.montant_ae_total == 303431.0
+    delete_references(session)
