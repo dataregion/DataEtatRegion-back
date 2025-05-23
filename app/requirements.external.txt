@@ -6,7 +6,7 @@
 #
 aiofiles==24.1.0
     # via python-keycloak
-alembic==1.15.2
+alembic==1.16.1
     # via flask-migrate
 amqp==5.3.1
     # via kombu
@@ -47,7 +47,7 @@ chardet==5.2.0
     # via -r requirements.external.in
 charset-normalizer==3.4.2
     # via requests
-click==8.2.0
+click==8.2.1
     # via
     #   celery
     #   click-didyoumean
@@ -255,7 +255,7 @@ requests==2.32.3
     #   requests-toolbelt
 requests-toolbelt==1.0.0
     # via python-keycloak
-rpds-py==0.25.0
+rpds-py==0.25.1
     # via
     #   jsonschema
     #   referencing
@@ -277,7 +277,7 @@ sqlparse==0.5.3
     # via -r requirements.external.in
 tenacity==9.1.2
     # via -r requirements.external.in
-tornado==6.5
+tornado==6.5.1
     # via flower
 typeguard==4.4.2
     # via marshmallow-dataclass
