@@ -11,6 +11,27 @@ include:
       do-push: true
       enable-debug: true
 
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
+    inputs:
+      image-name: ${REGISTRY}nocode/grist-plugins
+      image-tag: ${DATA_TRANSFORM_VER}
+      build-context: ./
+      dockerfile-name: ./grist-plugins/Dockerfile
+      do-login: true
+      registry: ${REGISTRY}
+      registry-login: ${REGISTRY_USER}
+      do-push: true
+      enable-debug: true
+
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
+    inputs:
+      image-name: nocode/data-etat-python-base
+      build-context: ./
+      dockerfile-name: ./docker/Dockerfile.base
+      do-login: false
+      do-push: false
+      enable-debug: true
+
 
 "🐳 dockerizing data-transform":
   extends: ".dockerize-${REGISTRY}nocode/data-transform"
@@ -20,5 +41,28 @@ include:
     - if: '$CI_COMMIT_REF_NAME' # always
       when: manual
     - when: never
-  needs: [] # la Dockerization ne dépend de rien. On peut faire tourner le job en //
+  needs: ["🐳 dockerizing base image"] 
   
+
+
+"🐳 dockerizing grist-plugins-dataEtat":
+  extends: ".dockerize-${REGISTRY}nocode/grist-plugins"
+  stage: 🐳 dockerize
+  rules:
+    - if: '$DO_DOCKERIZE == "✅"'
+    - if: '$CI_COMMIT_REF_NAME' # always
+      when: manual
+    - when: never
+  needs: ["🐳 dockerizing base image"] 
+
+
+
+"🐳 dockerizing base image":
+  extends: ".dockerize-nocode/data-etat-python-base"
+  stage: 🐳 dockerize
+  rules:
+    - if: '$DO_DOCKERIZE == "✅"'
+    - if: '$CI_COMMIT_REF_NAME' # always
+      when: manual
+    - when: never
+  needs: [] # la Dockerization ne dépend de rien. On peut faire tourner le job en //
