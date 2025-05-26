@@ -10,9 +10,12 @@ EXPOSE 80
 RUN mkdir -p /appli/workdir
 
 COPY app/requirements.external.txt .
-RUN pip install -r requirements.external.txt
 
-COPY . /appli/
+COPY app /appli/app
+COPY models /appli/models
+COPY gristcli /appli/gristcli
+
+
 RUN rm /appli/app/config/**
 # ## Ces deux liens symboliques sont pour que la nouvelle structure soit 
 # ## retro compatible avec les anciennes stack

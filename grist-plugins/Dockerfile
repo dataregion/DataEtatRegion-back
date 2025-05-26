@@ -3,11 +3,13 @@ FROM nocode/data-etat-python-base:latest
 
 EXPOSE 8000
 
-COPY pyproject.toml /appli/
-COPY src /appli/src
+COPY grist-plugins/pyproject.toml /appli/
+COPY grist-plugins/requirements.external.txt /appli/
+COPY grist-plugins/src /appli/src
 
-WORKDIR /appli
 
-RUN pip install -e ./src/grist_plugin
+RUN pip install -e . -r requirements.external.txt
 
-CMD ["uvicorn", "grist_plugin.main:app", "--host", "0.0.0.0", "--port", "8000"]
+WORKDIR /appli/src
+
+CMD ["uvicorn", "grist_plugins.main:app", "--host", "0.0.0.0", "--port", "8000"]
