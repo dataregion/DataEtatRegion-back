@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vers Superset</title>
+    <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+    <link rel="stylesheet" href="/static/to_superset.css">
+
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <h1>Envoyer vers Superset</h1>
+
+    <form action="{{actions}}" method="post">
+        <button type="submit">Envoyer vers Superset</button>
+    </form>
+</body>
+
+<script>
+    grist.ready({
+        requiredAccess: 'read table'
+    });
+
+
+
+    async function fetchTableData() {
+        try {
+            const table = await grist.getTable();
+            console.log("📊 Table reçue :", table);
+
+           
+        } catch (err) {
+            console.error("❌ Erreur en récupérant la table :", err);
+        }
+    }
+
+    async function getAllColumns() {
+        const table = await grist.getTable();
+        const tableId = await table._platform.getTableId();
+        console.log("tableId ",tableId);
+        const tables = await grist.docApi.fetchTable('_grist_Tables');
+        console.log("tables ",tables);
+        const columns = await grist.docApi.fetchTable('_grist_Tables_column');
+        console.log("colums ",columns);
+        const fields = Object.keys(columns);
+        console.log("fields ",fields);
+        
+        const tableRef = tables.id[tables.tableId.indexOf(tableId)];
+        const tableColumns = [];
+        for (const index in columns.parentId) {
+            if (columns.parentId[index] === tableRef) {
+            tableColumns.push(
+                Object.fromEntries(fields.map((f) => [f, columns[f][index]])),
+            );
+            }
+        }
+        console.log("tableColumns ",tableColumns);
+        return tableColumns;
+    }
+
+    // Appel de la fonction
+    getAllColumns();
+</script>
+
+</html>

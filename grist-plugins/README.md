@@ -46,3 +46,12 @@ Les dépendances sont freeze dans [requirements.external.txt](./requirements.ext
 rm requirements.external.txt
 pip-compile requirements.external.in -o requirements.external.txt
 ```
+
+### Lancement des plugins 
+
+Se rendre dans le dossier src/grist_plugins
+
+```bash
+cd src/grist_plugins
+fastapi dev main.py 
+```

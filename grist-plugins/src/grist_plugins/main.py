@@ -1,18 +1,13 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from pathlib import Path
+from routes import to_superset
 
 app = FastAPI()
 
-BASE_DIR = Path(__file__).resolve().parent
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Templating
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+templates = Jinja2Templates(directory="templates")
 
-# Static files
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
-
-@app.get("/")
-def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "title": "Hello Grist"})
+# Inclusion des routes
+app.include_router(to_superset.router)
