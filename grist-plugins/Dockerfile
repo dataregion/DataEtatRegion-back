@@ -8,7 +8,7 @@ COPY grist-plugins/requirements.external.txt /appli/
 COPY grist-plugins/src /appli/src
 
 
-RUN pip install -e . -r requirements.external.txt
+RUN pip install . -r requirements.external.txt
 
 WORKDIR /appli/src
 
