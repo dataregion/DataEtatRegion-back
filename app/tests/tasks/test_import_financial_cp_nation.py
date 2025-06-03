@@ -21,7 +21,7 @@ def cleanup_after_tests(database):
 
 def test_import_new_line_cp_nation(database, session):
     # GIVEN
-    data = '{"programme":"0354","domaine_fonctionnel":"0354-02","centre_couts":"ADCSDAT076","referentiel_programmation":"035301010301","n_ej":"2104583353","n_poste_ej":"1","n_dp":"100379604","date_base_dp":"11\\/12\\/2024","date_derniere_operation_dp":"13\\/12\\/2024","fournisseur_paye":"1000972118","fournisseur_paye_label":"AGENCE NATIONALE DES TITRES","siret":"13000326200024","compte_code":"6541100000","compte_budgetaire":"64","groupe_marchandise":"12.01.01","contrat_etat_region":"","localisation_interministerielle":"N1175","montant":"100,18","exercice_comptable":"2024","n_poste_dp":"2","programme_doublon":"0354","tranche_fonctionnelle":"","fonds":"","projet_analytique":"","societe":"ADCE","type_piece":"RE","data_source":"NATION","source_region":"00"}'
+    data = '{"programme":"0354","domaine_fonctionnel":"0354-02","centre_couts":"ADCSDAT076","referentiel_programmation":"035301010301","n_ej":"2104583353","n_poste_ej":"1","n_dp":"100379604","date_base_dp":"11\\/12\\/2024","date_derniere_operation_dp":"13\\/12\\/2024","fournisseur_paye":"1000972118","fournisseur_paye_label":"AGENCE NATIONALE DES TITRES","siret":"13000326200024","compte_code":"6541100000","compte_budgetaire":"64","groupe_marchandise":"12.01.01","contrat_etat_region":"","localisation_interministerielle":"N1175","montant":"100,18","exercice_comptable":"2024","n_poste_dp":"2","programme_doublon":"0354","tranche_fonctionnelle":"","fonds":"","projet_analytique":"","societe":"DILA","type_piece":"RE","data_source":"NATION","source_region":"00"}'
 
     # chorus = FinancialAe(**json.loads(data))
     get_or_create(session, Siret, code="13000326200024")
@@ -51,7 +51,7 @@ def test_import_new_line_cp_nation(database, session):
     assert cp.montant == 100.18
     assert cp.domaine_fonctionnel == "0354-02"
     assert cp.projet_analytique is None
-    assert cp.societe == "ADCE"
+    assert cp.societe == "DILA"
     assert cp.type_piece == "RE"
     assert cp.localisation_interministerielle == "N1175"
     assert cp.compte_budgetaire == "64"
