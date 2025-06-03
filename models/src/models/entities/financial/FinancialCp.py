@@ -105,11 +105,15 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
         :param source_region:
         :param annee:
         """
+        
+        self.update_attribute(line_chorus)
 
-        self.source_region = source_region
+        if source_region is not None :
+            self.source_region = source_region
+        else :
+            self.source_region = get_code_region_by_code_comp(self.societe)
         self.annee = annee
 
-        self.update_attribute(line_chorus)
 
     def should_update(self, new_financial: dict) -> bool:
         return True
@@ -121,7 +125,7 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
         elif (
             key == "date_base_dp" or key == "date_derniere_operation_dp"
         ) and isinstance(value, str):
-            if value == "#":
+            if value in ("#", ""):
                 value = None
             else:
                 value = datetime.strptime(value.replace("/","."), "%d.%m.%Y")
