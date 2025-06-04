@@ -1,3 +1,12 @@
+async function getDocId() {
+  return await grist.docApi.getDocName()
+}
+
+async function getTableId() {
+  return await grist.getTable().getTableId();
+}
+
+
 async function initGrist() {
     grist.ready({
         requiredAccess: 'full'
@@ -6,12 +15,15 @@ async function initGrist() {
     const form = document.getElementById("syncForm");
     const button = document.getElementById("submitBtn");
 
+    const docId = await getDocId();
+    const tableId = await getTableId();
+
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
       button.disabled = true
       button.replaceChildren("Synchronisation")
       try {
-        const response = await fetch("http://localhost:8000/launch-sync", {
+        const response = await fetch(`/launch-sync?docId=${docId}&tableId=${tableId}`, {
           method: 'POST'
         });
         if (!response.ok) {

@@ -1,14 +1,10 @@
 import logging
 from typing import List
 from app import db, celeryapp
-from app.clients.grist.factory import (
-    make_grist_api_client,
-    make_or_get_grist_database_client,
-    make_or_get_grist_scim_client,
-)
-from gristcli.gristservices.users_grist_service import UserGristDatabaseService, UserScimService
-from gristcli.models import Record, Table
-from models.entities.refs import Theme
+from app.clients.grist.factory import make_grist_api_client
+from gristcli.models import Record
+from models import Base
+from models.entities.refs.SynchroGrist import SynchroGrist
 from sqlalchemy import insert, select, update
 
 
@@ -17,50 +13,63 @@ logger = logging.getLogger()
 celery = celeryapp.celery
 
 
+def get_model_by_tablename(tablename):
+    for cls in Base.registry._class_registry.values():
+        if hasattr(cls, "__tablename__") and cls.__tablename__ == tablename:
+            return cls
+    return None
+
+
 @celery.task(name="sync_referentiels_with_grist", bind=True)
-def sync_referentiels_from_grist(self, user_mail: str, docId: str):
-    userService: UserGristDatabaseService = make_or_get_grist_database_client()
-    userScimService: UserScimService = make_or_get_grist_scim_client()
-    # check user exist
-    logger.info(f"[GRIST] Start Call sync-grist-to-db for user {user_mail}")
-    user = userScimService.search_user_by_username(user_mail)
-    if user is None:
-        logger.debug("[GRIST] No user.")
-        return
+def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, table_name: str):
+    try:
+        logger.info("[GRIST][SYNC] Start Call sync-grist-to-db")
+        grist_api = make_grist_api_client(token)
 
-    # Recup token
-    logger.debug(f"[GRIST] Get Api key for user {user.username}")
-    token = userService.get_or_create_api_token(user.user_id)
-    grist_api = make_grist_api_client(token)
-    logger.debug("[GRIST] Retrieve token sucess")
+        stmt = select(SynchroGrist).where(
+            SynchroGrist.grist_doc_id == doc_id,
+            SynchroGrist.grist_table_id == table_id,
+            SynchroGrist.grist_table_name == table_name,
+        )
+        sg: SynchroGrist = db.session.execute(stmt).scalar_one_or_none()
+        if sg is None:
+            raise Exception("No synchro for Grist defined.")
 
-    # Fetch data from grist
-    tables: List[Table] = grist_api.get_tables_of_doc(docId)
-    for t in tables:
+        model = get_model_by_tablename(table_name)
+        if model is None:
+            raise Exception("Can't find model to synchronize.")
 
-        # On ne gère que les thèmes
-        if t.id == "Themes":
-            themes = list(db.session.execute(select(Theme)).scalars().all())
-            records: List[Record] = grist_api.get_records_of_table(docId, t.id)
+        referentiels = list(db.session.execute(select(model)).scalars().all())
+        records: List[Record] = grist_api.get_records_of_table(sg.grist_doc_id, sg.grist_table_id)
 
-            # Traitement de chaque ligne de la table grist
-            for r in records:
-                stmt = None
-                match: Theme | None = next((t for t in themes if t.grist_row_id == r.id), None)
-                if match is None:
-                    stmt = insert(Theme).values(grist_row_id=r.id, label=r.fields["libelle"])
-                    db.session.execute(stmt)
-                    continue
+        # Traitement de chaque ligne de la table grist
+        for r in records:
+            stmt = None
+            match = next((t for t in referentiels if t.grist_row_id == r.id), None)
+            if match is None:
+                stmt = insert(model).values(synchro_grist_id=sg.id, grist_row_id=r.id, label=r.fields["libelle"])
+                logging.info(f"[GRIST][SYNC] INSERT Nouveau thème : {r.fields["libelle"]}")
+                db.session.execute(stmt)
+                continue
 
-                themes.remove(match)
-                if match.label != r.fields["libelle"]:
-                    stmt = update(Theme).where(Theme.grist_row_id == r.id).values(label=r.fields["libelle"])
-                    db.session.execute(stmt)
+            referentiels.remove(match)
+            if match.label != r.fields["libelle"]:
+                stmt = (
+                    update(model)
+                    .where(model.synchro_grist_id == sg.id, model.grist_row_id == r.id)
+                    .values(label=r.fields["libelle"])
+                )
+                logging.info(f"[GRIST][SYNC] UPDATE Thème {r.id} : {r.fields["libelle"]}")
+                db.session.execute(stmt)
 
-            if len(themes) > 0:
-                for t in themes:
-                    stmt = update(Theme).where(Theme.id == t.id).values(is_deleted=True)
-                    db.session.execute(stmt)
+        if len(referentiels) > 0:
+            for t in referentiels:
+                stmt = update(model).where(model.id == t.id).values(is_deleted=True)
+                logging.info(f"[GRIST][SYNC] SOFT DELETE Thème {t.grist_row_id}")
+                db.session.execute(stmt)
 
-    db.session.commit()
-    logger.info(f"[GRIST] End Call sync-grist-to-db for user {user.username}")
+        db.session.commit()
+        logger.info("[GRIST][SYNC] End Call sync-grist-to-db")
+    except Exception as e:
+        logger.exception(f"[GRIST][SYNC] Error lors de la synchro du référentiel {table_name}.")
+        raise e

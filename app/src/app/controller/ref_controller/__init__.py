@@ -7,6 +7,7 @@ from app.controller.ref_controller.RefCrte import api as crte_api
 from app.controller.ref_controller.RefQpv import api as qpv_api
 from app.controller.ref_controller.RefTags import api as api_tags
 from app.controller.ref_controller.RefLocalisationInterministerielle import api as api_loc_interministerielle
+from app.controller.ref_controller.SyncDbWithGristCtrls import api_ns as api_syncdb  # noqa: E402
 from app.controller.utils.ControllerUtils import ParserArgument
 from models.entities.refs.Arrondissement import Arrondissement
 
@@ -129,3 +130,4 @@ api.add_namespace(api_ref_arrondissement)
 api.add_namespace(api_ref_beneficiaire)
 api.add_namespace(api_tags)
 api.add_namespace(qpv_api)
+api.add_namespace(api_syncdb)

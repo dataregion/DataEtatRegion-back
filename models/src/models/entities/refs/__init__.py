@@ -17,3 +17,4 @@ from .CategorieJuridique import CategorieJuridique
 from .Commune import Commune
 from .Qpv import Qpv, QpvCommune
 from .Siret import Siret
+from .SynchroGrist import SynchroGrist

@@ -1,3 +1,13 @@
+async function getGristDocId() {
+  try {
+    const docId = await grist.docApi.getDocName();
+    return docApi;
+  } catch (error) {
+    console.error('Erreur lors de la récupération du docId:', error);
+    throw error;
+  }
+}
+
 // Récupère le token d'accès et l'URL de base
 async function getGristAuthInfo() {
   try {

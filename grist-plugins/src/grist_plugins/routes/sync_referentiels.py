@@ -9,13 +9,14 @@ templates = Jinja2Templates(directory="templates")
 router = APIRouter()
 settings = Settings()
 
+
 @router.get("/sync-referentiels", response_class=HTMLResponse)
-async def to_superset_page(request: Request):
+async def sync_referentiels(request: Request):
     return templates.TemplateResponse("sync_referentiels.html", {"request": request})
 
 
 @router.post("/launch-sync")
-def launch_sync():
+def launch_sync(docId: str, tableId: str):
   with requests.Session() as session:
-    with session.post(f"{settings.url_sync_db}?token={settings.token_sync_db}") as response:
-      return JSONResponse(status_code=response.status_code, content={ "message": "Référentiels synchronisés !"})
+    with session.post(f"{settings.url_sync_db}?docId={docId}&tableId={tableId}&tableName=ref_theme&token={settings.token_sync_db}") as response:
+      return JSONResponse(status_code=response.status_code, content={ "message": "Demande de synchronisation envoyée"})
