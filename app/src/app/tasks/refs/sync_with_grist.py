@@ -1,9 +1,11 @@
-from http import HTTPStatus
 import logging
 from typing import List
 from app import db, celeryapp
-from app.clients.grist.factory import make_grist_api_client, make_or_get_grist_database_client, make_or_get_grist_scim_client
-from flask import current_app
+from app.clients.grist.factory import (
+    make_grist_api_client,
+    make_or_get_grist_database_client,
+    make_or_get_grist_scim_client,
+)
 from gristcli.gristservices.users_grist_service import UserGristDatabaseService, UserScimService
 from gristcli.models import Record, Table
 from models.entities.refs import Theme
@@ -33,7 +35,7 @@ def sync_referentiels_from_grist(self, user_mail: str, docId: str):
     logger.debug("[GRIST] Retrieve token sucess")
 
     # Fetch data from grist
-    tables : List[Table] = grist_api.get_tables_of_doc(docId)
+    tables: List[Table] = grist_api.get_tables_of_doc(docId)
     for t in tables:
 
         # On ne gère que les thèmes
@@ -59,6 +61,6 @@ def sync_referentiels_from_grist(self, user_mail: str, docId: str):
                 for t in themes:
                     stmt = update(Theme).where(Theme.id == t.id).values(is_deleted=True)
                     db.session.execute(stmt)
-            
+
     db.session.commit()
     logger.info(f"[GRIST] End Call sync-grist-to-db for user {user.username}")

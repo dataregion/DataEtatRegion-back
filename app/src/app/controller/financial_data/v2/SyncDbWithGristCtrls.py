@@ -2,12 +2,9 @@ import logging
 from app.clients.grist.factory import GristConfiguationException
 from app.controller.Decorators import authM2M
 from app.controller.utils.Error import ErrorController
-from app.exceptions.exceptions import BadRequestDataRegateNum
 from app.services.grist.__init_ import ParsingColumnsError
-from app.servicesapp.authentication.connected_user import ConnectedUser
-from app.services.grist.go_to_grist import GristCliService
-from flask import current_app, request
-from flask_restx import Namespace, Resource, fields
+from flask import current_app
+from flask_restx import Namespace, Resource
 from http import HTTPStatus
 
 from gristcli.gristservices.errors import ApiGristError
@@ -17,7 +14,9 @@ from app.tasks.refs.sync_with_grist import sync_referentiels_from_grist
 logger = logging.getLogger()
 
 
-api_ns = Namespace(name="SyncDbWithGrist", path="/sync-referentiels", description="Api pour synchroniser la DB avec Grist")
+api_ns = Namespace(
+    name="SyncDbWithGrist", path="/sync-referentiels", description="Api pour synchroniser la DB avec Grist"
+)
 auth = current_app.extensions["auth"]
 
 
@@ -44,7 +43,7 @@ class SyncRefWithGrist(Resource):
     @api_ns.response(403, "Forbidden")
     def post(self):
         """Récupère les données du doc Grist référentiels et synchronise les tables de référentiels"""
-  
+
         tech_user = config_grist.get("TECH_USER", None)
         doc_id = config_grist.get("REFERENTIELS_DOC_ID", None)
 

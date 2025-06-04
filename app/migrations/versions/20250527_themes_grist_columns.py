@@ -8,7 +8,6 @@ Create Date: 2025-05-27 15:39:24.658368
 from alembic import op
 import sqlalchemy as sa
 import logging
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20250527_themes_grist_columns'

@@ -82,5 +82,7 @@ def authM2M(expected_token):
             if token != expected_token:
                 raise PermissionError("Unauthorized: Invalid token")
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorator
