@@ -4,7 +4,7 @@ from typing import List
 import requests
 
 from gristcli.gristservices.handlers import _handle_error_grist_api
-from gristcli.models import Workspace
+from gristcli.models import Record, Table, Workspace
 
 
 class GrisApiService:
@@ -141,3 +141,13 @@ class GrisApiService:
             self._call(f"docs/{docId}/tables/{table_create}/records", method='POST', json_data=map_records)
 
         return {}
+    
+    def get_tables_of_doc(self, docId: str) -> List[Table]:
+        response = self._call(f"docs/{docId}/tables")
+        tables = [Table(**data) for data in response["tables"]]
+        return tables
+    
+    def get_records_of_table(self, docId: str, tableId: str) -> List[Record]:
+        response = self._call(f"docs/{docId}/tables/{tableId}/records")
+        records = [Record(**data) for data in response["records"]]
+        return records

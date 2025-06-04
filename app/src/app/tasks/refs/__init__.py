@@ -12,4 +12,5 @@ Ou Class_Name est le nom de la classe du model du référentiel.
 __all__ = (
     "import_line_one_ref_default",
     "import_line_ref_localisation_interministerielle",
+    "sync_with_grist",
 )

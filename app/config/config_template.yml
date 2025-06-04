@@ -24,6 +24,9 @@ GRIST:
   DATABASE_URL: "postgresql+psycopg://postgres:password@localhost:5432/grist"
   SERVEUR_URL: "https://grist.nocode.csm.ovh"
   TOKEN_SCIM: "<TOKEN SCIM>"
+  TECH_USER: "<USER_MAIL>"
+  REFERENTIELS_DOC_ID: "<DOC_ID>"
+  TOKEN_SYNC_DB: "<TOKEN_SYNC_DB>"
 
 SQLALCHEMY_ENGINE_OPTIONS:
   pool_pre_ping: True

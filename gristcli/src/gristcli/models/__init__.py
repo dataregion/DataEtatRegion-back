@@ -1,3 +1,6 @@
+import json
+
+
 class UserGrist:
     def __init__(
         self, username: str, display_name: str, email: str, user_id: str = None
@@ -46,3 +49,26 @@ class Workspace:
 
     def __repr__(self):
         return f"Workspace(id={self.id}, name={self.name}, docs={self.docs})"
+
+
+class Table:
+    def __init__(self, **kwargs):
+        self.id = kwargs.pop("id", None)
+        self.tableRef = kwargs.pop("tableRef", None)
+        self.onDemand = kwargs.pop("onDemand", None)
+
+    def __repr__(self):
+        return f"Table(id={self.id}, tableRef={self.tableRef}, access={self.onDemand})"
+
+
+class Record:
+    def __init__(self, **kwargs):
+        self.id = kwargs.pop("id", None)
+        self.fields = {}
+        fields = kwargs.pop("fields", None)
+        if fields is not None:
+            for key, value in fields.items():
+                self.fields[key] = value
+
+    def __repr__(self):
+        return f"Record(id={self.id}, fields={json.dumps(self.fields)})"
