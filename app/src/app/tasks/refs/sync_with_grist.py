@@ -29,7 +29,7 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
         stmt = select(SynchroGrist).where(
             SynchroGrist.grist_doc_id == doc_id,
             SynchroGrist.grist_table_id == table_id,
-            SynchroGrist.grist_table_name == table_name,
+            SynchroGrist.dataetat_table_name == table_name,
         )
         sg: SynchroGrist = db.session.execute(stmt).scalar_one_or_none()
         if sg is None:

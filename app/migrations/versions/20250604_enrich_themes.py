@@ -25,9 +25,9 @@ def upgrade_():
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('grist_doc_id', sa.String(), nullable=True),
         sa.Column('grist_table_id', sa.String(), nullable=True),
-        sa.Column('grist_table_name', sa.String(), nullable=True),
+        sa.Column('dataetat_table_name', sa.String(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('grist_table_name')
+        sa.UniqueConstraint('dataetat_table_name')
     )
     with op.batch_alter_table('ref_theme', schema=None) as batch_op:
         batch_op.add_column(sa.Column('synchro_grist_id', sa.Integer(), nullable=True))
