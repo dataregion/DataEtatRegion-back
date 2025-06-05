@@ -10,4 +10,4 @@ class SynchroGrist(_PersistenceBaseModelInstance()):
 
     grist_doc_id: Column[str] = Column(String)
     grist_table_id: Column[str] = Column(String)
-    grist_table_name: Column[str] = Column(String, unique=True)
+    dataetat_table_name: Column[str] = Column(String, unique=True)
