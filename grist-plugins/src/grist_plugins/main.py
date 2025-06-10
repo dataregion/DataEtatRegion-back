@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
-from routes import to_superset, sync_referentiels
+from .routes import to_superset, sync_referentiels
 
 app = FastAPI()
 
