@@ -1,3 +1,4 @@
+from pathlib import Path
 from fastapi.responses import JSONResponse
 import requests
 
@@ -9,7 +10,8 @@ from .routes import to_superset, sync_referentiels
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+static_path = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=static_path), name="static")
 
 templates = Jinja2Templates(directory="templates")
 
