@@ -1,0 +1,7 @@
+"Print pipeline variables for debug":
+  stage: ☢️ analyze
+  script:
+    - |
+      echo "Commit ref name   : $CI_COMMIT_REF_NAME"
+      echo "Pipeline source   : $CI_PIPELINE_SOURCE"
+      echo "Gitlab user login : $GITLAB_USER_LOGIN"
