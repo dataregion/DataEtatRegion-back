@@ -15,5 +15,7 @@ CREATE OR REPLACE VIEW superset_lignes_financieres AS
   FROM flatten_financial_lines;
 
 
-
-
+CREATE INDEX IF NOT EXISTS idx_ffl_source_programme_annee ON public.flatten_financial_lines (source_region, annee,programme_code);
+CREATE INDEX IF NOT EXISTS idx_ffl_source_annee ON public.flatten_financial_lines (source_region, annee);
+CREATE INDEX IF NOT EXISTS idx_ffl_source_programme ON flatten_financial_lines (source_region, programme_code);
+CREATE INDEX IF NOT EXISTS idx_ffl_codes_qpv ON public.flatten_financial_lines USING btree (beneficiaire_qpv24_code, beneficiaire_qpv_code);
