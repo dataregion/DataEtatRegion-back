@@ -22,7 +22,7 @@ attrs==25.3.0
     # via
     #   jsonschema
     #   referencing
-authlib==1.5.2
+authlib==1.6.0
     # via -r requirements.external.in
 billiard==4.2.1
     # via celery
