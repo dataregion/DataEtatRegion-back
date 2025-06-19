@@ -1,7 +1,21 @@
+.default-analyze: &default-analyze
+  rules:
+    - if: '$DO_ANALYZE == "✅"'
+    - if: '$DO_ANALYZE == "❌"'
+      when: manual
+    - when: never
+
 "Print pipeline variables for debug":
+  <<: *default-analyze
   stage: ☢️ analyze
   script:
     - |
       echo "Commit ref name   : $CI_COMMIT_REF_NAME"
       echo "Pipeline source   : $CI_PIPELINE_SOURCE"
       echo "Gitlab user login : $GITLAB_USER_LOGIN"
+      echo "DO_ANALYZE        : $DO_ANALYZE"
+      echo "DO_TEST           : $DO_TEST"
+      echo "DO_BUILD          : $DO_BUILD"
+      echo "DO_DEPLOY         : $DO_DEPLOY"
+      echo "DO_DOCKERIZE      : $DO_DOCKERIZE"
+      echo "DO_INTEG_TESTS    : $DO_INTEG_TESTS"

@@ -17,11 +17,12 @@ variables:
   DO_DEPLOY_tags: "data-transform"
   _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
   # XXX shadowing template variables as it is unused as user input in pipeline
+  DO_ANALYZE: "❌"
+  DO_TEST: "❌"
   DO_BUILD: "❌"
   DO_DEPLOY: "❌" 
-  DO_DOCKERIZE: "❌" # XXX same
+  DO_DOCKERIZE: "❌"
   DO_INTEG_TESTS: "❌"
-  DO_ANALYZE: "❌"
   # VARIABLE POUR tests 2E2
   API_BASE_URL: "https://api.nocode.csm.ovh"
 
@@ -40,6 +41,7 @@ workflow:
         DATA_TRANSFORM_VER: "$_SNAP_VER"
         DO_DEPLOY_extra_vars: 'DATA_TRANSFORM_VER="$DATA_TRANSFORM_VER"'
         _ENABLE_DEPLOY_FOR_INTEG: "✅"
+        DO_ANALYZE: "✅"
         DO_TEST: "✅"
         DO_INTEG_TESTS: "✅"
         DO_DOCKERIZE: "✅"
@@ -47,6 +49,7 @@ workflow:
       variables:
         DATA_TRANSFORM_VER: "$_SNAP_VER"
         DO_DEPLOY_extra_vars: 'DATA_TRANSFORM_VER="$DATA_TRANSFORM_VER"'
+        DO_ANALYZE: "✅"
         DO_TEST: "✅"
     - if: "$CI_COMMIT_REF_NAME" # always passing
       variables:
