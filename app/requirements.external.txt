@@ -103,7 +103,7 @@ flower==2.0.1
     # via -r requirements.external.in
 geoalchemy2==0.17.1
     # via -r requirements.external.in
-geopandas==1.0.1
+geopandas==1.1.0
     # via -r requirements.external.in
 gevent==25.5.1
     # via celery

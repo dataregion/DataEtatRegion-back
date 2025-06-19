@@ -50,7 +50,7 @@ watchdog ~=6.0.0
 cryptography==45.0.4
 geoalchemy2 ~=0.17.0
 
-geopandas ~= 1.0.1
+geopandas ~=1.1.0
 
 pyunpack ~= 0.3
 chardet ~= 5.2.0
