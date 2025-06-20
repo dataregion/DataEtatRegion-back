@@ -1,4 +1,20 @@
+.default-deploy-integ: &default-deploy-integ
+  rules:
+    - if: '$_ENABLE_DEPLOY_FOR_INTEG == "✅"'
+    - if: '$_ENABLE_DEPLOY_FOR_INTEG == "⚙️"'
+      when: manual
+    - when: never
+
+.default-deploy-pp-p: &default-deploy-pp-p
+  rules:
+    - if: '$_ENABLE_DEPLOY_FOR_PP_AND_P == "✅"'
+      when: manual # XXX tout le temps manuel
+    - if: '$_ENABLE_DEPLOY_FOR_PP_AND_P == "⚙️"'
+      when: manual
+    - when: never
+  
 "🐣 deploy data-transform on integration":
+  <<: *default-deploy-integ
   stage: "🐣 deploy"
   trigger:
     project: SIBSGAR/DataRegateNum/stack
@@ -11,12 +27,9 @@
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "integ"
     UPSTREAM_PROJECT: $CI_PROJECT_PATH
-  rules: 
-    - if: '$_ENABLE_DEPLOY_FOR_INTEG == "✅"'
-      when: always
-    - when: manual
 
 "🚨 deploy data-transform on preprod":
+  <<: *default-deploy-pp-p
   stage: "🐣 deploy"
   trigger:
     project: SIBSGAR/DataRegateNum/stack
@@ -28,12 +41,9 @@
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "preprod"
     UPSTREAM_PROJECT: $CI_PROJECT_PATH
-  rules:
-    - if: '$_ENABLE_DEPLOY_FOR_PP_AND_P == "✅"'
-      when: manual
-    - when: never
 
 "🚨 deploy data-transform on prod":
+  <<: *default-deploy-pp-p
   stage: "🐣 deploy"
   trigger:
     project: SIBSGAR/DataRegateNum/stack
@@ -45,7 +55,3 @@
     DO_DEPLOY: "✅"
     DO_DEPLOY_environment: "prod"
     UPSTREAM_PROJECT: $CI_PROJECT_PATH
-  rules:
-    - if: '$_ENABLE_DEPLOY_FOR_PP_AND_P == "✅"'
-      when: manual
-    - when: never
