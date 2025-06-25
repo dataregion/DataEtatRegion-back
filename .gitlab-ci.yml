@@ -51,6 +51,17 @@ workflow:
         _ENABLE_DEPLOY_FOR_INTEG: "✅"
         _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
         DO_INTEG_TESTS: "⚙️"
+    # Cas d'un build de feature, fix etc
+    - if: '$CI_COMMIT_REF_NAME =~ "/^feature\//" || $CI_COMMIT_REF_NAME =~ "/^feat\//" || $CI_COMMIT_REF_NAME =~ "/^fix\//" || $CI_COMMIT_REF_NAME =~ "/^bugfix\//"'
+      variables:
+        DATA_TRANSFORM_VER: "$_SNAP_VER"
+        DO_DEPLOY_extra_vars: 'DATA_TRANSFORM_VER="$DATA_TRANSFORM_VER"'
+        DO_ANALYZE: "✅"
+        DO_TEST: "✅"
+        DO_DOCKERIZE: "✅"
+        _ENABLE_DEPLOY_FOR_INTEG: "⚙️"
+        _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
+        DO_INTEG_TESTS: "⚙️"
     # Cas d'une MR renovate
     - if: '$CI_COMMIT_REF_NAME =~ "/^renovate\//" && $CI_PIPELINE_SOURCE == "merge_request_event"'
       variables:
