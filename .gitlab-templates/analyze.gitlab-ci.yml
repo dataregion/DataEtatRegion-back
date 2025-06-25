@@ -1,13 +1,7 @@
-.default-analyze: &default-analyze
-  rules:
-    - if: '$DO_ANALYZE == "✅"'
-    - if: '$DO_ANALYZE == "⚙️"'
-      when: manual
-    - when: never
-
 "Print pipeline variables for debug":
-  <<: *default-analyze
   stage: ☢️ analyze
+  rules:
+    - when: never # XXX: à réactiver au besoin
   script:
     - |
       echo "Commit ref name         : $CI_COMMIT_REF_NAME"
