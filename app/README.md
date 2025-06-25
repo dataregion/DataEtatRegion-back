@@ -16,6 +16,8 @@ Elles permettent également d'intégrer les fichiers Chorus de l'état pour reco
 
 # Pour le développement
 
+## [Concepts de base](./../.markdowns/installation_venv_for_application.md)
+
 ## Fichiers de configuration
 
 Copier le fichier [config_template.yml](./config/config_template.yml) en config.yml.
@@ -28,23 +30,9 @@ Copier le fichier [oidc_template.yml](./config/oidc_template.yml) en config.yml.
 cp config/oidc_template.yml config/oidc.yml
 ```
 
-
-## Installation
-
-*Initialisez un venv python*. Puis:
+## Mettre à jour les dépendances
 
 ```bash
-pip install .[dev] -r requirements.external.txt
-pip install -r requirements.editable.txt --no-deps # Utile pour les phase de développement
-```
-
-### Mettre à jour les dépendances
-
-Les dépendances sont freeze dans [requirements.external.txt](./requirements.external.txt), voici comment regénérer une version plus à jour:
-
-```bash
-# éditer requirements.external.in au besoin
-# L'idée est de freeze toutes les dépendances *externes* dont aurait besoin le projet.
 rm requirements.external.txt
 pip-compile requirements.external.in \
   ../models/pyproject.toml \

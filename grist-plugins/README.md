@@ -27,22 +27,11 @@ Ce projet contient regroupement les Widgets utilisable par Grist pour DataEtat
 
 # Pour le développement
 
-## Installation
+## [Concepts de base](./../.markdowns/installation_venv_for_application.md)
 
-*Initialisez un venv python*. Puis:
-
-```bash
-pip install .[dev] -r requirements.external.txt
-pip install -r requirements.editable.txt --no-deps # Utile pour les phase de développement
-```
-
-### Mettre à jour les dépendances
-
-Les dépendances sont freeze dans [requirements.external.txt](./requirements.external.txt), voici comment regénérer une version plus à jour:
+## Mettre à jour les dépendances
 
 ```bash
-# éditer requirements.external.in au besoin
-# L'idée est de freeze toutes les dépendances *externes* dont aurait besoin le projet.
 rm requirements.external.txt
 pip-compile requirements.external.in -o requirements.external.txt
 ```
