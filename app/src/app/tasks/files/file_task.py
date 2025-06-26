@@ -12,7 +12,12 @@ from app import celeryapp, db
 from models.entities.audit.AuditUpdateData import AuditUpdateData
 from models.entities.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
 from models.value_objects.common import DataType
-from app.services.financial_data import delete_ae_no_cp_annee_region, delete_cp_annee_region
+from app.services.financial_data import (
+    delete_ae_no_cp_annee_national,
+    delete_ae_no_cp_annee_region,
+    delete_cp_annee_national,
+    delete_cp_annee_region,
+)
 from app.tasks.financial import LineImportTechInfo
 from app.tasks.financial.import_financial import (
     _send_subtask_financial_ae,
@@ -62,6 +67,9 @@ def delayed_inserts(self):
         else:
             logging.info("[DELAYED] Delayed Insert sur NATIONAL")
             csv_options = json.dumps({"sep": '";"', "skiprows": 0, "dtype": "str"})
+            # Nettoyage de la BDD
+            delete_cp_annee_national(task.annee)
+            delete_ae_no_cp_annee_national(task.annee)
             read_csv_and_import_fichier_nat_ae_cp.delay(task.fichier_ae, task.fichier_cp, csv_options, task.annee)
 
         # Historique de chargement des données
