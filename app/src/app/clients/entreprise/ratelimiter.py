@@ -6,8 +6,8 @@ from pyrate_limiter import Limiter, RequestRate, RedisBucket
 from api_entreprise import JSON_RESOURCE_IDENTIFIER
 
 
-def _make_rate_limiter():
-    config = current_app.config["API_ENTREPRISE"]
+def _make_rate_limiter(config_path: str):
+    config = current_app.config[config_path]
 
     ratelimiter = config["RATELIMITER"]
     ratelimiter_redis = ratelimiter["REDIS"]

@@ -3,7 +3,7 @@ import logging
 from api_entreprise import ApiError
 
 from app import db
-from app.clients.entreprise import get_or_make_api_entreprise, DonneesEtablissement
+from app.clients.entreprise import get_or_make_api_entreprise_batch, DonneesEtablissement
 from app.clients.geo import get_info_commune, ApiGeoException
 from models.entities.refs.Commune import Commune
 from models.entities.refs.Siret import Siret
@@ -27,7 +27,7 @@ def _map(siret: Siret, etablissement: DonneesEtablissement):
 
 
 def _api():
-    return get_or_make_api_entreprise()
+    return get_or_make_api_entreprise_batch()
 
 
 def check_siret(siret):
