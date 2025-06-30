@@ -14,7 +14,7 @@ aniso8601==10.0.1
     # via flask-restx
 anyio==4.9.0
     # via httpx
-api-entreprise==3.7.1
+api-entreprise==3.7.2
     # via -r requirements.external.in
 async-property==0.2.2
     # via python-keycloak
