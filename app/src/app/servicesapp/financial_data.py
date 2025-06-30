@@ -197,12 +197,7 @@ def _get_request_regions(sanitized_region: str) -> list[str]:
     return ["00", sanitized_region]
 
 
-def get_ligne_budgetaire(
-    source: DataType,
-    id: int,
-    source_region: str | None = None,
-    data_source: str | None = None
-):
+def get_ligne_budgetaire(source: DataType, id: int, source_region: str | None = None, data_source: str | None = None):
     """
     Recherche la ligne budgetaire selon son ID et sa source region
     """
@@ -302,6 +297,7 @@ def get_annees_budget(source_region: str | None = None, data_source: str | None 
     if source_region is None:
         return BuilderStatementFinancialLine().do_select_annees(None, data_source)
     return BuilderStatementFinancialLine().do_select_annees(_regions, data_source)
+
 
 def import_qpv_lieu_action(file_qpv, username=""):
     save_path = check_file_and_save(file_qpv)

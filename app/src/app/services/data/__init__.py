@@ -5,7 +5,7 @@ Services liés à la couche d'accès aux données
 from enum import Enum
 from app.servicesapp.IncrementalPageOfBudgetLines import IncrementalPageOfBudgetLines
 from models.entities.common.Tags import Tags
-from sqlalchemy import Column, ColumnExpressionArgument, desc, select, or_, func, distinct
+from sqlalchemy import Column, ColumnExpressionArgument, desc, select, or_, distinct
 from models.value_objects.common import DataType
 from models.value_objects.common import TypeCodeGeo
 from app.database import db
@@ -231,17 +231,11 @@ class BuilderStatementFinancialLine:
         concernées par la recherche
         """
         subq = select(distinct(FinancialLines.annee)).order_by(desc(FinancialLines.annee))
-        print("_____________________")
         if regions is not None:
-            print("set source_region : " + str(regions))
             subq = subq.where(FinancialLines.source_region.in_(regions))
         if data_source is not None:
-            print("set data_source : " + data_source)
             subq = subq.where(FinancialLines.data_source == data_source)
-        # subq = subq.subquery()
-        stmt = select(func.array_agg(subq.c[0]))
         result = db.session.execute(subq).scalars().all()
-        print(result)
         return result  # type: ignore
 
     def do_single(self):
