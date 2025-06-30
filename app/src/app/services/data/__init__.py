@@ -225,14 +225,23 @@ class BuilderStatementFinancialLine:
 
         return {"items": results, "pagination": {"hasNext": count > limit}}
 
-    def do_select_annees(self) -> list[int]:
+    def do_select_annees(self, regions: list[str] | None, data_source: str | None) -> list[int]:
         """
         Retourne l'ensemble des années ordonnées par ordre decroissant
         concernées par la recherche
         """
-        subq = select(distinct(FinancialLines.annee)).order_by(desc(FinancialLines.annee)).subquery()
+        subq = select(distinct(FinancialLines.annee)).order_by(desc(FinancialLines.annee))
+        print("_____________________")
+        if regions is not None:
+            print("set source_region : " + str(regions))
+            subq = subq.where(FinancialLines.source_region.in_(regions))
+        if data_source is not None:
+            print("set data_source : " + data_source)
+            subq = subq.where(FinancialLines.data_source == data_source)
+        # subq = subq.subquery()
         stmt = select(func.array_agg(subq.c[0]))
-        result = db.session.execute(stmt).scalar_one_or_none()
+        result = db.session.execute(subq).scalars().all()
+        print(result)
         return result  # type: ignore
 
     def do_single(self):

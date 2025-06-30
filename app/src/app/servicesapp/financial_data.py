@@ -182,10 +182,12 @@ def _check_file(fichier: str, columns_name):
         raise InvalidFile(message="Le fichier contient des valeurs vides")
 
 
-def _sanitize_source_region(source_region) -> str:
+def _sanitize_source_region(source_region: str, data_source: str) -> str:
     """Normalise la source region pour requête en bdd, supprime le leading '0' si besoin."""
     sanitized = source_region.lstrip("0") if source_region else None
-    if sanitized is None:
+    print("SANITIZED " + str(sanitized))
+    print("DATA_SOURCE " + str(data_source))
+    if sanitized is None and data_source != "NATION":
         raise NoCurrentRegion()
     return sanitized
 
@@ -199,16 +201,20 @@ def get_ligne_budgetaire(
     source: DataType,
     id: int,
     source_region: str | None = None,
+    data_source: str | None = None
 ):
     """
     Recherche la ligne budgetaire selon son ID et sa source region
     """
-    source_region = _sanitize_source_region(source_region)
+    source_region = _sanitize_source_region(source_region, data_source)
     _regions = _get_request_regions(source_region)
 
     query_ligne_budget = (
-        BuilderStatementFinancialLine().par_identifiant_technique(source, id).source_region_in(_regions)
+        BuilderStatementFinancialLine().par_identifiant_technique(source, id).data_source_is(data_source)
     )
+    if source_region is not None:
+        query_ligne_budget = query_ligne_budget.source_region_in(_regions)
+
     result = query_ligne_budget.do_single()
     return result
 
@@ -241,7 +247,7 @@ def search_lignes_budgetaires(
     correspondant aux critères de recherche utilisateur.
     """
 
-    source_region = _sanitize_source_region(source_region)
+    source_region = _sanitize_source_region(source_region, data_source)
     _regions = _get_request_regions(source_region)
 
     query_lignes_budget = (
@@ -253,11 +259,12 @@ def search_lignes_budgetaires(
         .centres_couts_in(centres_couts)
         .domaine_fonctionnel_in(domaine_fonctionnel)
         .referentiel_programmation_in(referentiel_programmation)
-        .source_region_in(_regions)
         .n_ej_in(n_ej)
         .source_is(source)
         .data_source_is(data_source)
     )
+    if source_region is not None:
+        query_lignes_budget = query_lignes_budget.source_region_in(_regions)
 
     if niveau_geo is not None and code_geo is not None:  # On recherche sur le beneficaire
         query_lignes_budget.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
@@ -288,13 +295,13 @@ def search_lignes_budgetaires(
     return page_incremental_result
 
 
-def get_annees_budget(source_region: str | None = None):
-    source_region = _sanitize_source_region(source_region)
+def get_annees_budget(source_region: str | None = None, data_source: str | None = None):
+    source_region = _sanitize_source_region(source_region, data_source)
     _regions = _get_request_regions(source_region)
 
-    query_annees_budget = BuilderStatementFinancialLine().source_region_in(_regions)
-    return query_annees_budget.do_select_annees()
-
+    if source_region is None:
+        return BuilderStatementFinancialLine().do_select_annees(None, data_source)
+    return BuilderStatementFinancialLine().do_select_annees(_regions, data_source)
 
 def import_qpv_lieu_action(file_qpv, username=""):
     save_path = check_file_and_save(file_qpv)

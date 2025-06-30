@@ -83,7 +83,10 @@ class BudgetCtrl(Resource):
         """Recupère les lignes de données budgetaires génériques"""
         user = ConnectedUser.from_current_token_identity()
         params = parser_get.parse_args()
-        params["source_region"] = user.current_region
+        if user.current_region != "NAT":
+            params["source_region"] = user.current_region
+        else:
+            params["data_source"] = "NATION"
 
         page_result = search_lignes_budgetaires(**params)
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(page_result["items"])
@@ -108,10 +111,15 @@ class GetBudgetCtrl(Resource):
     @api_ns.response(HTTPStatus.OK, description="Ligne correspondante", model=model_flatten_budget_schemamodel)
     def get(self, source: DataType, id: str):
         user = ConnectedUser.from_current_token_identity()
-        source_region = user.current_region
+        source_region = None
+        data_source = None
+        if user.current_region != "NAT":
+            source_region = user.current_region
+        else:
+            data_source = "NATION"
 
         id_i = int(id)
-        ligne = get_ligne_budgetaire(source, id_i, source_region)
+        ligne = get_ligne_budgetaire(source, id_i, source_region, data_source)
 
         if ligne is None:
             return "", HTTPStatus.NO_CONTENT
@@ -131,10 +139,14 @@ class GetPlageAnnees(Resource):
     @api_ns.response(HTTPStatus.OK, description="Liste des années", model=fields.List(fields.Integer))
     def get(self):
         user = ConnectedUser.from_current_token_identity()
-        source_region = user.current_region
-        user = user.username
+        source_region = None
+        data_source = None
+        if user.current_region != "NAT":
+            source_region = user.current_region
+        else:
+            data_source = "NATION"
 
-        annees = get_annees_budget(source_region)
+        annees = get_annees_budget(source_region, data_source)
         if annees is None:
             return [], HTTPStatus.OK
         return annees, HTTPStatus.OK
