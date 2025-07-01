@@ -29,6 +29,7 @@ app/migrations.old/data/ref_*.csv
 app/requirements.txt
 app/build/
 grist-plugins/build
+services/build
 models/build
 gristcli/build
 

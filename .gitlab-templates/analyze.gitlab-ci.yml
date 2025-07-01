@@ -15,3 +15,14 @@
       echo "DO_DEPLOY               : $DO_DEPLOY"
       echo "DO_DEPLOY_FOR_INTEG     : $_ENABLE_DEPLOY_FOR_INTEG"
       echo "DO_DEPLOY_FOR_PP_AND_P  : $_ENABLE_DEPLOY_FOR_PP_AND_P"
+
+"Analyse d'architecture pour app":
+  stage: ☢️ analyze
+  image: ${PYTHON_IMAGE}
+  before_script:
+    - python --version
+    - cd app/
+    - env
+    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
+  script:
+    - lint-imports --config .importlinter.toml --no-cache --show-timings
