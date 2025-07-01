@@ -26,6 +26,8 @@ from app.servicesapp.exceptions.authentication import NoCurrentRegion
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
 
+from app.utilities.observability import gauge_of_currently_executing, summary_of_time
+
 
 def import_financial_data(
     file_ae: FileStorageProtocol,
@@ -211,6 +213,8 @@ def get_ligne_budgetaire(
     return result
 
 
+@gauge_of_currently_executing()
+@summary_of_time()
 def search_lignes_budgetaires(
     n_ej: list | None = None,
     source: str | None = None,
