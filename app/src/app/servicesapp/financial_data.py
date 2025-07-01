@@ -38,7 +38,7 @@ def import_financial_data(
     client_id=None,
 ):
     # Sanitize des paramètres
-    _source_region = _sanitize_source_region(source_region)
+    _source_region = _sanitize_source_region(source_region, "REGION")
     # Validation des fichiers
     save_path_ae = check_file_and_save(file_ae)
     save_path_cp = check_file_and_save(file_cp)
@@ -185,8 +185,6 @@ def _check_file(fichier: str, columns_name):
 def _sanitize_source_region(source_region: str, data_source: str) -> str:
     """Normalise la source region pour requête en bdd, supprime le leading '0' si besoin."""
     sanitized = source_region.lstrip("0") if source_region else None
-    print("SANITIZED " + str(sanitized))
-    print("DATA_SOURCE " + str(data_source))
     if sanitized is None and data_source != "NATION":
         raise NoCurrentRegion()
     return sanitized
