@@ -1,3 +1,4 @@
+from http import HTTPStatus
 import logging
 
 from flask import current_app, request
@@ -93,3 +94,18 @@ class InfoEntrepriseCtrl(Resource):
         entreprise = service.entreprise(siret)
         json = InfoApiEntreprise.ma_schema.dump(entreprise)
         return json
+
+
+@api.route("/api-entreprise-batch/healthcheck")
+class GetHealthcheckSiren(Resource):
+
+    def get(self):
+        """
+        Effectue un GET pour vérifier la disponibilité de l'API Siren Batch
+        """
+        # Siret NumihFrance
+        siret = "18310021300028"
+        entreprise = service.entreprise(siret, use_batch=True)
+
+        assert entreprise.donnees_etablissement.siret == siret
+        return HTTPStatus.OK

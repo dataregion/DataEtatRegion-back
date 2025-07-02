@@ -1,7 +1,11 @@
 import logging
 
 from app.clients.data_subventions import get_or_make_app_api_subventions_client
-from app.clients.entreprise import get_or_make_api_entreprise, ApiEntrepriseClientError
+from app.clients.entreprise import (
+    get_or_make_api_entreprise,
+    get_or_make_api_entreprise_batch,
+    ApiEntrepriseClientError,
+)
 from app.models.apis_externes.entreprise import InfoApiEntreprise
 from app.models.apis_externes.subvention import InfoApiSubvention
 
@@ -15,6 +19,7 @@ class ApisExternesService:
 
     def __init__(self) -> None:
         self.api_entreprise = get_or_make_api_entreprise()
+        self.api_entreprise_batch = get_or_make_api_entreprise_batch()
         self.api_subvention = get_or_make_app_api_subventions_client()
 
     def subvention(self, siret: str):
@@ -23,12 +28,13 @@ class ApisExternesService:
 
         return InfoApiSubvention(subventions=subventions, contacts=contacts)
 
-    def entreprise(self, siret: str) -> InfoApiEntreprise:
-        siren = _siren(siret)
-        donnees_etab = self.api_entreprise.donnees_etablissement(siret)
+    def entreprise(self, siret: str, use_batch=False) -> InfoApiEntreprise:
+
+        _api = self.api_entreprise_batch if use_batch else self.api_entreprise
+        donnees_etab = _api.donnees_etablissement(siret)
 
         #
-        # TODO: Verrue le temps d'avoir notre compte API entreprise
+        # TODO: Verrue le temps d'avoir notre compte API entreprise ou implémenter l'api entreprise
         # avec les droits suffisants
         #
         # ca = self.api_entreprise.chiffre_d_affaires(siret)
@@ -42,22 +48,25 @@ class ApisExternesService:
         qualibat = None
         qualibat_indispo = False
 
-        try:
-            tva = self.api_entreprise.numero_tva_intercommunautaire(siren)
-        except ApiEntrepriseClientError as e:
-            tva_indispo = True
-            logging.exception(e)
-        try:
-            rge = self.api_entreprise.certifications_rge(siret)
-        except ApiEntrepriseClientError as e:
-            rge_indispo = True
-            logging.exception(e)
+        if not use_batch:
+            siren = _siren(siret)
 
-        try:
-            qualibat = self.api_entreprise.certification_qualibat(siret)
-        except ApiEntrepriseClientError as e:
-            qualibat_indispo = True
-            logging.exception(e)
+            try:
+                tva = _api.numero_tva_intercommunautaire(siren)
+            except ApiEntrepriseClientError as e:
+                tva_indispo = True
+                logging.exception(e)
+            try:
+                rge = _api.certifications_rge(siret)
+            except ApiEntrepriseClientError as e:
+                rge_indispo = True
+                logging.exception(e)
+
+            try:
+                qualibat = _api.certification_qualibat(siret)
+            except ApiEntrepriseClientError as e:
+                qualibat_indispo = True
+                logging.exception(e)
 
         return InfoApiEntreprise(
             donnees_etablissement=donnees_etab,
