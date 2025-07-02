@@ -33,6 +33,8 @@ services/build
 models/build
 gristcli/build
 
+.import_linter_cache
+
 tests_e2e/assets/*
 tests_e2e/tests.log
 tests_e2e/tests.xml
