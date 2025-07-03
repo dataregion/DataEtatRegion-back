@@ -1,6 +1,7 @@
 from pathlib import Path
 import random
 
+from models.entities.financial.query import FlattenFinancialLines
 import pytest
 from sqlalchemy import text
 
@@ -111,8 +112,26 @@ def test_client(app):
 
 @pytest.fixture(scope="session")
 def database(app, connections, request):
+    views_sql = {
+        "flatten_financial_lines": "SELECT 1 AS dummy",
+        "vt_flatten_summarized_ademe": "SELECT 1 AS dummy",
+        "vt_flatten_summarized_ae": "SELECT 1 AS dummy",
+        "vt_budget_summary": "SELECT 1 AS dummy",
+        "vt_m_summary_annee_geo_type_bop": "SELECT 1 AS dummy",
+        "vt_m_montant_par_niveau_bop_annee_type": "SELECT 1 AS dummy",
+    }
+    tablename = FlattenFinancialLines.__tablename__
+    if tablename in db.metadata.tables:
+        db.metadata.remove(db.metadata.tables[tablename])
+
     with app.app_context():
         db.create_all()
+
+        conn = db.session.connection()
+        for view, sql in views_sql.items():
+            conn.execute(text(f"CREATE MATERIALIZED VIEW {view} AS {sql}"))
+        db.session.commit()
+
     return db
 
 
@@ -141,3 +160,32 @@ def session(connections, database, request):
 def faker_seed():
     global FAKER_SEED
     return FAKER_SEED
+
+
+# def materialized_views(app):
+#     """
+#     Crée les materialized views utilisées dans les tests, avec des requêtes minimales valides.
+#     """
+#     views_sql = {
+#         "flatten_financial_lines": "SELECT 1 AS dummy",
+#         "vt_flatten_summarized_ademe": "SELECT 1 AS dummy",
+#         "vt_flatten_summarized_ae": "SELECT 1 AS dummy",
+#         "vt_budget_summary": "SELECT 1 AS dummy",
+#         "vt_m_summary_annee_geo_type_bop": "SELECT 1 AS dummy",
+#         "vt_m_montant_par_niveau_bop_annee_type": "SELECT 1 AS dummy",
+#     }
+
+#     with app.app_context():
+#         conn = db.session.connection()
+#         for view, sql in views_sql.items():
+#             conn.execute(text(f"DROP MATERIALIZED VIEW IF EXISTS {view} CASCADE"))
+#             conn.execute(text(f"CREATE MATERIALIZED VIEW {view} AS {sql}"))
+#         db.session.commit()
+
+#     yield
+
+#     with app.app_context():
+#         conn = db.session.connection()
+#         for view in views_sql:
+#             conn.execute(text(f"DROP MATERIALIZED VIEW IF EXISTS {view} CASCADE"))
+#         db.session.commit()

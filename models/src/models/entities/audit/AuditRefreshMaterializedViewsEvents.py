@@ -1,8 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from models import _PersistenceBaseModelInstance
 from models.value_objects.audit import RefreshMaterializedViewsEvent
-from sqlalchemy import Column, DateTime, Integer, String,JSON
-
+from sqlalchemy import Column, DateTime, Integer, String
 
 
 class AuditRefreshMaterializedViewsEvents(_PersistenceBaseModelInstance()):
@@ -15,16 +14,20 @@ class AuditRefreshMaterializedViewsEvents(_PersistenceBaseModelInstance()):
 
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
     event: Column[str] = Column(String, nullable=False)
-    date: Column[datetime] = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    date: Column[datetime] = Column(
+        DateTime(timezone=True), default=datetime.now(timezone.utc), nullable=False
+    )
     table = Column(String, nullable=True)
 
     @staticmethod
-    def create(event: RefreshMaterializedViewsEvent, table: str) -> "AuditRefreshMaterializedViewsEvents":
+    def create(
+        event: RefreshMaterializedViewsEvent, table: str
+    ) -> "AuditRefreshMaterializedViewsEvents":
         """Crée un row qui représente un evenement de rafraichissement de vue materialisées"""
         _evt = str(event)
 
         model = AuditRefreshMaterializedViewsEvents()
         model.event = _evt  # type: ignore
-        model.table = table # type: ignore
+        model.table = table  # type: ignore
 
         return model

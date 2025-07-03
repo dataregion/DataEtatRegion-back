@@ -12,7 +12,7 @@ from models.entities.audit.AuditRefreshMaterializedViewsEvents import (
 
 import time
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 celery: Celery = celeryapp.celery
 
@@ -60,14 +60,16 @@ def maj_materialized_views(self):
     views_to_refresh = []
 
     for view, dependencies in view_dependencies.items():
-        last_refresh = last_date_update_view[view]
+        last_refresh: AuditRefreshMaterializedViewsEvents = last_date_update_view[view]
         if last_refresh is None:
             _logger.debug(f"Do refresh {view} (never refreshed)")
             views_to_refresh.append(view)
             continue
 
         for label, _ in dependencies:
-            if max_updated_ats[label] and max_updated_ats[label] > last_refresh:
+            if max_updated_ats[label] is not None and max_updated_ats[label].astimezone(
+                timezone.utc
+            ) > last_refresh.date.astimezone(timezone.utc):
                 _logger.debug(f"Do refresh {view} (update in {label})")
                 views_to_refresh.append(view)
                 break
