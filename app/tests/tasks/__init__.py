@@ -6,7 +6,14 @@ from models.entities.financial.FinancialCp import FinancialCp
 from models.entities.refs import Siret
 
 
+def build_siret(update_date: datetime):
+    siret = Siret(**{"code": "90933627300000", "denomination": "TEST"})
+    siret.updated_at = update_date
+    return siret
+
+
 def build_ademe(update_date: datetime):
+    siret = build_siret(update_date)
     ademe = Ademe.from_datagouv_csv_line(
         {
             "objet": "objet",
@@ -19,8 +26,8 @@ def build_ademe(update_date: datetime):
             "conditionsVersement": "",
             "datesPeriodeVersement": "",
             "pourcentageSubvention": "2",
-            "idAttribuant": "90933627300000",
-            "idBeneficiaire": "90933627300000",
+            "idAttribuant": siret.code,
+            "idBeneficiaire": siret.code,
         }
     )
     ademe.updated_at = update_date
@@ -37,7 +44,7 @@ def build_financial_ae(update_date: datetime):
         centre_couts="BG00\\/DREETS0035",
         referentiel_programmation="BG00\\/010300000108",
         fournisseur_titulaire="1001465507",
-        siret="90933627300000",
+        siret=build_siret(update_date).code,
         localisation_interministerielle="N35",
         groupe_marchandise="groupe",
         date_modification_ej=datetime.now(),
@@ -64,7 +71,7 @@ def build_financial_cp(update_date: datetime):
             "fournisseur_paye": "1000373509",
             "groupe_marchandise": "groupe",
             "compte_budgetaire": "co",
-            "siret": "851296632000171",
+            "siret": build_siret(update_date).code,
             "data_source": "REGION",
         },
         annee=2021,
@@ -72,9 +79,3 @@ def build_financial_cp(update_date: datetime):
     )
     cp.updated_at = update_date
     return cp
-
-
-def build_siret(update_date: datetime):
-    siret = Siret(**{"code": "90933627300000", "denomination": "TEST"})
-    siret.updated_at = update_date
-    return siret
