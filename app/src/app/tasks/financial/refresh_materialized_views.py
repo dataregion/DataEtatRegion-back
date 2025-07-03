@@ -1,7 +1,8 @@
 from typing import List
 from celery import Celery
 from app import celeryapp, db
-from models.entities.financial import Ademe
+from models.entities.financial import Ademe, FinancialAe, FinancialCp
+from models.entities.refs import Siret
 from models.value_objects.audit import RefreshMaterializedViewsEvent
 from sqlalchemy import desc, func, text
 
@@ -11,13 +12,11 @@ from models.entities.audit.AuditRefreshMaterializedViewsEvents import (
 
 import time
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 celery: Celery = celeryapp.celery
 
 _logger = logging.getLogger(__name__)
-
-_safety_timedelta = timedelta(hours=6)
 
 
 class LastRefreshMaterializedViewTooRecent(Exception):
@@ -28,42 +27,62 @@ class LastRefreshMaterializedViewTooRecent(Exception):
 
 @celery.task(bind=True, name="maj_materialized_view")
 def maj_materialized_views(self):
-    # FINANCIAL_AE
-    # max_updated_at_financial_ae = db.session.query(func.max(FinancialAe.FinancialAe.updated_at)).scalar()
+    view_dependencies = {
+        "vt_flatten_summarized_ademe": [("Ademe", Ademe.Ademe.updated_at)],
+        "vt_budget_summary": [("Ademe", Ademe.Ademe.updated_at), ("FinancialAe", FinancialAe.FinancialAe.updated_at)],
+        "vt_m_summary_annee_geo_type_bop": [
+            ("Ademe", Ademe.Ademe.updated_at),
+            ("FinancialAe", FinancialAe.FinancialAe.updated_at),
+        ],
+        "vt_m_montant_par_niveau_bop_annee_type": [
+            ("Ademe", Ademe.Ademe.updated_at),
+            ("FinancialAe", FinancialAe.FinancialAe.updated_at),
+        ],
+        "vt_flatten_summarized_ae": [("FinancialAe", FinancialAe.FinancialAe.updated_at)],
+        "flatten_financial_lines": [
+            ("Ademe", Ademe.Ademe.updated_at),
+            ("FinancialAe", FinancialAe.FinancialAe.updated_at),
+            ("FinancialCp", FinancialCp.FinancialCp.updated_at),
+            ("Siret", Siret.updated_at),
+        ],
+    }
 
-    # last_update_financial_ae = _get_last_refresh_materialized_view_event(FinancialAe.FinancialAe.__tablename__)
+    _logger.debug("Get Last date updated views")
+    last_date_update_view = {view: _get_last_refresh_materialized_view_event(view) for view in view_dependencies}
 
-    # ADEME
-    max_updated_at_ademe = db.session.query(func.max(Ademe.Ademe.updated_at)).scalar()
-
-    last_update_ademe = _get_last_refresh_materialized_view_event(Ademe.Ademe.__tablename__)
+    max_updated_ats = {}
+    for deps in view_dependencies.values():
+        for label, col in deps:
+            if label not in max_updated_ats:
+                _logger.debug(f"Get Last date updated for {col}")
+                max_updated_ats[label] = db.session.query(func.max(col)).scalar()
 
     views_to_refresh = []
 
-    ademe_updated = last_update_ademe is None or (max_updated_at_ademe > last_update_ademe)
-    # financial_ae_updated = (last_update_financial_ae is None or (max_updated_at_financial_ae > last_update_financial_ae))
+    for view, dependencies in view_dependencies.items():
+        last_refresh = last_date_update_view[view]
+        if last_refresh is None:
+            _logger.debug(f"Do refresh {view} (never refreshed)")
+            views_to_refresh.append(view)
+            continue
 
-    if ademe_updated:
-        _logger.info("Ademe to updated")
-        views_to_refresh.append("vt_flatten_summarized_ademe")
-        views_to_refresh.append("vt_budget_summary")
-        views_to_refresh.append("vt_m_summary_annee_geo_type_bop")
-        views_to_refresh.append("vt_m_montant_par_niveau_bop_annee_type")
+        for label, _ in dependencies:
+            if max_updated_ats[label] and max_updated_ats[label] > last_refresh:
+                _logger.debug(f"Do refresh {view} (update in {label})")
+                views_to_refresh.append(view)
+                break
 
-        views_to_refresh.append("flatten_financial_lines")
-        views_to_refresh.append("vt_flatten_summarized_ae")
-
-    if len(views_to_refresh) > 0:
+    if views_to_refresh:
         _do_maj_materialized_views(views_to_refresh)
 
 
-def _get_last_refresh_materialized_view_event(table: str) -> datetime | None:
+def _get_last_refresh_materialized_view_event(view: str) -> datetime | None:
     """
     Retourne la date de dernier refresh d'une vue
     """
     last = (
         db.session.query(AuditRefreshMaterializedViewsEvents)
-        .where(AuditRefreshMaterializedViewsEvents.table == table)
+        .where(AuditRefreshMaterializedViewsEvents.table == view)
         .order_by(desc(AuditRefreshMaterializedViewsEvents.date))
         .first()
     )
