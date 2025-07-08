@@ -26,3 +26,25 @@
     - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
   script:
     - lint-imports --config .importlinter.toml --no-cache --show-timings
+
+"Analyse syntaxique":
+  stage: ☢️ analyze
+  image: pyfound/black:25.1.0@sha256:d849dfe2daaaf4582a7ad5178622700c28cd37f5fac0b3365accdde2013f1e66
+  script:
+    - black --check app/
+    - black --check grist-plugins/
+    - black --check services/
+    - black --check models/
+    - black --check gristcli/
+
+"Analyse ruff":
+  stage: ☢️ analyze
+  image: ${PYTHON_IMAGE}
+  before_script:
+    - pip install ruff
+  script:
+    - ruff check .
+    - ruff check grist-plugins/
+    - ruff check services/
+    - ruff check models/
+    - ruff check gristcli/
