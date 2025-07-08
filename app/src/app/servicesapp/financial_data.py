@@ -1,6 +1,9 @@
 import logging
+from app.servicesapp.exceptions.authentication import NoCurrentRegion
 import pandas
 
+from services.regions import sanitize_source_region_for_bdd_request
+from services.regions import get_request_regions
 from sqlalchemy.orm import contains_eager, selectinload
 
 from app import db
@@ -22,12 +25,13 @@ from app.services import BuilderStatementFinancial, FileStorageProtocol
 from app.services import BuilderStatementFinancialCp
 from models.value_objects.tags import TagVO
 from services.financial_data import BuilderStatementFinancialLine
-from app.servicesapp.exceptions.authentication import NoCurrentRegion
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
 
 from app.utilities.observability import gauge_of_currently_executing, summary_of_time
+from services.utils import convert_exception
 
+app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanitize_source_region_for_bdd_request)
 
 def import_financial_data(
     file_ae: FileStorageProtocol,
@@ -38,7 +42,7 @@ def import_financial_data(
     client_id=None,
 ):
     # Sanitize des paramètres
-    _source_region = _sanitize_source_region(source_region, "REGION")
+    _source_region = app_layer_sanitize_region(source_region, "REGION")
     # Validation des fichiers
     save_path_ae = check_file_and_save(file_ae)
     save_path_cp = check_file_and_save(file_cp)
@@ -182,26 +186,13 @@ def _check_file(fichier: str, columns_name):
         raise InvalidFile(message="Le fichier contient des valeurs vides")
 
 
-def _sanitize_source_region(source_region: str, data_source: str) -> str | None:
-    """Normalise la source region pour requête en bdd, supprime le leading '0' si besoin."""
-    sanitized = source_region.lstrip("0") if source_region else None
-    if sanitized is None and data_source != "NATION":
-        raise NoCurrentRegion()
-    return sanitized
-
-
-def _get_request_regions(sanitized_region: str) -> list[str]:
-    # On autorise tout le monde a voir les données "Administration centrale" dont le code en base est "00"
-    return ["00", sanitized_region]
-
-
 def get_ligne_budgetaire(source: DataType, id: int, source_region: str | None = None, data_source: str | None = None):
     """
     Recherche la ligne budgetaire selon son ID et sa source region
     """
     _session = db.session()
-    source_region = _sanitize_source_region(source_region, data_source)
-    _regions = _get_request_regions(source_region)
+    source_region = app_layer_sanitize_region(source_region, data_source)
+    _regions = get_request_regions(source_region)
 
     query_ligne_budget = (
         BuilderStatementFinancialLine(_session).par_identifiant_technique(source, id).data_source_is(data_source)
@@ -241,8 +232,8 @@ def search_lignes_budgetaires(
     correspondant aux critères de recherche utilisateur.
     """
 
-    source_region = _sanitize_source_region(source_region, data_source)
-    _regions = _get_request_regions(source_region)
+    source_region = app_layer_sanitize_region(source_region, data_source)
+    _regions = get_request_regions(source_region)
 
     _session = db.session()
 
@@ -292,8 +283,8 @@ def search_lignes_budgetaires(
 
 
 def get_annees_budget(source_region: str | None = None, data_source: str | None = None):
-    source_region = _sanitize_source_region(source_region, data_source)
-    _regions = _get_request_regions(source_region)
+    source_region = app_layer_sanitize_region(source_region, data_source)
+    _regions = get_request_regions(source_region)
 
     _session = db.session()
 

@@ -5,7 +5,7 @@ from authlib.integrations.flask_oauth2 import current_token
 from ..exceptions.authentication import NoCurrentRegion
 
 from ..exceptions.authentication import InvalidTokenError
-from app.utilities.exhandling import wrap_all_ex_to
+from services.utils import wrap_all_ex_to
 
 
 class ConnectedUser:
