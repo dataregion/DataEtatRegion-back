@@ -14,7 +14,7 @@ from sqlalchemy.orm import contains_eager
 
 from models.entities.refs.Siret import Siret
 from app.services.file_service import check_file_and_save
-from app.services.helper import TypeCodeGeoToFrance2030CodeGeoResolver
+from services.helper import TypeCodeGeoToFrance2030CodeGeoResolver
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 
 

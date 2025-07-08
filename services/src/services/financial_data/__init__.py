@@ -3,19 +3,15 @@ Services liés à la couche d'accès aux données
 """
 
 from enum import Enum
-from app.servicesapp.IncrementalPageOfBudgetLines import IncrementalPageOfBudgetLines
+from typing import TypedDict
+from services.helper import TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver
 from models.entities.common.Tags import Tags
-from sqlalchemy import Column, ColumnExpressionArgument, desc, select, or_, distinct
-from models.value_objects.common import DataType
-from models.value_objects.common import TypeCodeGeo
-from app.database import db
-
 from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
+from models.value_objects.common import DataType, TypeCodeGeo
 from models.value_objects.tags import TagVO
-from app.services.helper import (
-    TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver,
-    TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver,
-)
+from services.helper import TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver
+from sqlalchemy import Column, ColumnExpressionArgument, desc, distinct, or_, select
+from sqlalchemy.orm.session import Session
 
 
 class BenefOrLoc(Enum):
@@ -24,12 +20,30 @@ class BenefOrLoc(Enum):
     LOCALISATION_QPV = "localisation_action_qpv"
 
 
+class HasNext(TypedDict):
+    hasNext: bool
+
+    @staticmethod
+    def jsonschema() -> dict:
+        return {
+            "type": "object",
+            "properties": {"hasNext": {"type": "boolean"}},
+            "required": ["hasNext"],
+        }  # type: ignore
+
+
+class IncrementalPageOfBudgetLines(TypedDict):
+    pagination: HasNext
+    items: list
+
+
 class BuilderStatementFinancialLine:
     """
     Constructeur de requête SQLAlchemy pour la vue budget
     """
 
-    def __init__(self) -> None:
+    def __init__(self, session: Session) -> None:
+        self.__session = session
         stmt = select(FinancialLines)
         self._stmt = stmt
 
@@ -169,8 +183,8 @@ class BuilderStatementFinancialLine:
             code_locinter_pattern = self._codes_locinterministerielle(type_geo, list_code_geo, source_region)
             # fmt:off
             _conds_code_locinter = [
-                FinancialLines.localisationInterministerielle_code.ilike(f"{pattern}%") 
-                for pattern 
+                FinancialLines.localisationInterministerielle_code.ilike(f"{pattern}%")
+                for pattern
                 in code_locinter_pattern
             ]
             # fmt:on
@@ -218,7 +232,7 @@ class BuilderStatementFinancialLine:
 
         stmt = self._stmt.limit(limit + 1).offset(offset)
 
-        results = list(db.session.execute(stmt).unique().scalars().all())
+        results = list(self.__session.execute(stmt).unique().scalars().all())
         count = len(results)
 
         results = results[:limit]
@@ -235,7 +249,7 @@ class BuilderStatementFinancialLine:
             subq = subq.where(FinancialLines.source_region.in_(regions))
         if data_source is not None:
             subq = subq.where(FinancialLines.data_source == data_source)
-        result = db.session.execute(subq).scalars().all()
+        result = self.__session.execute(subq).scalars().all()
         return result  # type: ignore
 
     def do_single(self):
@@ -243,7 +257,7 @@ class BuilderStatementFinancialLine:
         Effectue la recherche et retourne le seul résultat
         :return:
         """
-        return db.session.execute(self._stmt).unique().scalar_one_or_none()
+        return self.__session.execute(self._stmt).unique().scalar_one_or_none()
 
     def _stmt_where_field_in(self, field: Column, set_of_values: list | None, can_be_null=False):
         if set_of_values is None:

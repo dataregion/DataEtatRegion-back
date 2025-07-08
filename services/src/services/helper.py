@@ -1,13 +1,12 @@
-from abc import ABCMeta, abstractmethod
-
-from sqlalchemy import Column
-
-from models.value_objects.common import TypeCodeGeo
 from models.entities.financial.France2030 import France2030
+from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
 from models.entities.refs.Commune import Commune
 from models.entities.refs.Siret import Siret
+from models.value_objects.common import TypeCodeGeo
+from sqlalchemy import Column
 
-from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
+
+from abc import ABCMeta, abstractmethod
 
 
 class TypeCodeGeoToSqlAlchemyColumnResolver(metaclass=ABCMeta):

@@ -21,7 +21,7 @@ from models.entities.financial.query.FlattenFinancialLines import EnrichedFlatte
 from app.services import BuilderStatementFinancial, FileStorageProtocol
 from app.services import BuilderStatementFinancialCp
 from models.value_objects.tags import TagVO
-from app.services.data import BuilderStatementFinancialLine
+from services.financial_data import BuilderStatementFinancialLine
 from app.servicesapp.exceptions.authentication import NoCurrentRegion
 from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
@@ -182,7 +182,7 @@ def _check_file(fichier: str, columns_name):
         raise InvalidFile(message="Le fichier contient des valeurs vides")
 
 
-def _sanitize_source_region(source_region: str, data_source: str) -> str:
+def _sanitize_source_region(source_region: str, data_source: str) -> str | None:
     """Normalise la source region pour requête en bdd, supprime le leading '0' si besoin."""
     sanitized = source_region.lstrip("0") if source_region else None
     if sanitized is None and data_source != "NATION":
@@ -199,11 +199,12 @@ def get_ligne_budgetaire(source: DataType, id: int, source_region: str | None = 
     """
     Recherche la ligne budgetaire selon son ID et sa source region
     """
+    _session = db.session()
     source_region = _sanitize_source_region(source_region, data_source)
     _regions = _get_request_regions(source_region)
 
     query_ligne_budget = (
-        BuilderStatementFinancialLine().par_identifiant_technique(source, id).data_source_is(data_source)
+        BuilderStatementFinancialLine(_session).par_identifiant_technique(source, id).data_source_is(data_source)
     )
     if source_region is not None:
         query_ligne_budget = query_ligne_budget.source_region_in(_regions)
@@ -242,9 +243,11 @@ def search_lignes_budgetaires(
 
     source_region = _sanitize_source_region(source_region, data_source)
     _regions = _get_request_regions(source_region)
+    
+    _session = db.session()
 
     query_lignes_budget = (
-        BuilderStatementFinancialLine()
+        BuilderStatementFinancialLine(_session)
         .beneficiaire_siret_in(siret_beneficiaire)
         .code_programme_in(code_programme)
         .themes_in(theme)
@@ -291,10 +294,12 @@ def search_lignes_budgetaires(
 def get_annees_budget(source_region: str | None = None, data_source: str | None = None):
     source_region = _sanitize_source_region(source_region, data_source)
     _regions = _get_request_regions(source_region)
+    
+    _session = db.session()
 
     if source_region is None:
-        return BuilderStatementFinancialLine().do_select_annees(None, data_source)
-    return BuilderStatementFinancialLine().do_select_annees(_regions, data_source)
+        return BuilderStatementFinancialLine(_session).do_select_annees(None, data_source)
+    return BuilderStatementFinancialLine(_session).do_select_annees(_regions, data_source)
 
 
 def import_qpv_lieu_action(file_qpv, username=""):
