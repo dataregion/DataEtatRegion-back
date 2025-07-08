@@ -33,6 +33,7 @@ from services.utils import convert_exception
 
 app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanitize_source_region_for_bdd_request)
 
+
 def import_financial_data(
     file_ae: FileStorageProtocol,
     file_cp: FileStorageProtocol,
