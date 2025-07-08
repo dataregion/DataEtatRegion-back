@@ -36,6 +36,7 @@ cp config/oidc_template.yml config/oidc.yml
 rm requirements.external.txt
 pip-compile requirements.external.in \
   ../models/pyproject.toml \
+  ../services/pyproject.toml \
   ../gristcli/pyproject.toml \
   -o requirements.external.txt
 ```
