@@ -243,7 +243,7 @@ def search_lignes_budgetaires(
 
     source_region = _sanitize_source_region(source_region, data_source)
     _regions = _get_request_regions(source_region)
-    
+
     _session = db.session()
 
     query_lignes_budget = (
@@ -294,7 +294,7 @@ def search_lignes_budgetaires(
 def get_annees_budget(source_region: str | None = None, data_source: str | None = None):
     source_region = _sanitize_source_region(source_region, data_source)
     _regions = _get_request_regions(source_region)
-    
+
     _session = db.session()
 
     if source_region is None:
