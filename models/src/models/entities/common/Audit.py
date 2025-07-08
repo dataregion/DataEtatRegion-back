@@ -19,7 +19,13 @@ class _Audit(object):
 
     @declared_attr
     def updated_at(cls):
-        return deferred(Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow))
+        return deferred(
+            Column(
+                DateTime,
+                default=datetime.datetime.utcnow,
+                onupdate=datetime.datetime.utcnow,
+            )
+        )
 
     @staticmethod
     def exclude_schema():

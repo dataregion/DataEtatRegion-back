@@ -41,5 +41,7 @@ class Commune(_Audit, _PersistenceBaseModelInstance()):
     ref_arrondissement: Mapped[Arrondissement] = relationship(
         "Arrondissement", lazy="joined"
     )
-    
-    qpvs = relationship("Qpv", secondary=QpvCommune.__table__, backref="qpv_communes", viewonly=True)
+
+    qpvs = relationship(
+        "Qpv", secondary=QpvCommune.__table__, backref="qpv_communes", viewonly=True
+    )

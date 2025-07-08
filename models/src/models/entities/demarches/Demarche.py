@@ -31,5 +31,5 @@ class Demarche(_PersistenceBaseModelInstance()):
     token_id: Column[int] = Column(
         Integer, ForeignKey("tokens.id", name="demarches_token_id_fkey"), nullable=True
     )
-    
+
     token: Mapped[Token] = relationship("Token", lazy="select")

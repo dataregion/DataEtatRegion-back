@@ -1,5 +1,6 @@
 from setuptools import setup
 
+
 def read_requirements(filename):
     with open(filename) as f:
         return f.read().splitlines()

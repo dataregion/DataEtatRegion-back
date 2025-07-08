@@ -7,6 +7,7 @@ templates_path = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=templates_path)
 router = APIRouter()
 
+
 @router.get("/to-superset", response_class=HTMLResponse)
 async def to_superset_page(request: Request):
     return templates.TemplateResponse("to_superset.html", {"request": request})

@@ -19,6 +19,11 @@ async def sync_referentiels(request: Request):
 
 @router.post("/launch-sync")
 def launch_sync(docId: str, tableId: str):
-  with requests.Session() as session:
-    with session.post(f"{settings.url_sync_db}?docId={docId}&tableId={tableId}&tableName=ref_theme&token={settings.token_sync_db}") as response:
-      return JSONResponse(status_code=response.status_code, content={ "message": "Demande de synchronisation envoyée"})
+    with requests.Session() as session:
+        with session.post(
+            f"{settings.url_sync_db}?docId={docId}&tableId={tableId}&tableName=ref_theme&token={settings.token_sync_db}"
+        ) as response:
+            return JSONResponse(
+                status_code=response.status_code,
+                content={"message": "Demande de synchronisation envoyée"},
+            )

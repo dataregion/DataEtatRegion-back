@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 
 Base = None
 
+
 def _PersistenceBaseModelInstance():
     """The base model class setup for this module"""
     global Base
@@ -12,7 +13,8 @@ def _PersistenceBaseModelInstance():
         raise Exception("Module is not initialized correcly, please use init function")
     return Base
 
-def init(base = None):
+
+def init(base=None):
     """Initialise le module persistence en utilisant une classe de base pour les modèles SA"""
     global Base
     if base is None:

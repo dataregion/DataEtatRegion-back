@@ -14,17 +14,21 @@ from models.entities.demarches.ValeurDonnee import ValeurDonnee
 class TokenSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Token
-        exclude = ('_token',)
+        exclude = ("_token",)
+
     token = fields.String()
+
 
 class DemarcheSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Demarche
 
+
 class DonneeSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Donnee
         exclude = ("demarche",)
+
 
 class DossierSchema(SQLAlchemyAutoSchema):
     class Meta:

@@ -65,15 +65,13 @@ class UserScimService(GrisApiService):
         """
         filter_str = f'userName eq "{username}"'
         encoded_filter = quote(filter_str)
-        query = f'?filter={encoded_filter}'
+        query = f"?filter={encoded_filter}"
         resp = self._call("/Users" + query)
         resources = resp.get("Resources", [])
         if not resources:
             return None
 
-        logging.debug(
-            f"[GRIST] {len(resources)} user(s) found for username {username}"
-        )
+        logging.debug(f"[GRIST] {len(resources)} user(s) found for username {username}")
         user_data = resources[0]
         if len(resources) > 1:
             logging.warning(

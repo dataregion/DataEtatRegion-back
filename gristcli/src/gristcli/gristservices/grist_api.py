@@ -65,7 +65,9 @@ class GrisApiService:
 
         Returns the response from the API call.
         """
-        resp = self._call("orgs/docs/workspaces", method="POST", json_data={"name": name})
+        resp = self._call(
+            "orgs/docs/workspaces", method="POST", json_data={"name": name}
+        )
         return resp
 
     def create_doc_on_workspace(self, workspaceId: int, docName: str):
@@ -79,7 +81,9 @@ class GrisApiService:
         Returns the response from the API call.
         """
         json_data = {"name": docName, "isPinned": False}
-        return self._call(f"workspaces/{workspaceId}/docs", method="POST", json_data=json_data)
+        return self._call(
+            f"workspaces/{workspaceId}/docs", method="POST", json_data=json_data
+        )
 
     def new_table(self, docId: str, tableId: str, cols: List[dict], records=None):
         """
@@ -93,9 +97,9 @@ class GrisApiService:
 
         Example:
         ```
-            [ 
-                {"col_id_1":"value of row 1 col 1", "col_id_2": "value of row 1 col 2"}, 
-                {"col_id_1":"value of row 2 col 1", "col_id_2": "value of row 2 col 2"}, 
+            [
+                {"col_id_1":"value of row 1 col 1", "col_id_2": "value of row 1 col 2"},
+                {"col_id_1":"value of row 2 col 1", "col_id_2": "value of row 2 col 2"},
             ]
         ```
 
@@ -112,41 +116,35 @@ class GrisApiService:
                 {
                     "id": tableId,
                     "columns": [
-                        {
-                            "id": c["id"],
-                            "fields": {
-                                "label": c['label']
-                            }
-                        } for c in cols
-                    ]
-                }]
-
-            }
+                        {"id": c["id"], "fields": {"label": c["label"]}} for c in cols
+                    ],
+                }
+            ]
+        }
         logging.debug(f"Create table {tableId} {json_table}")
 
-        response = self._call(f"docs/{docId}/tables", method='POST', json_data=json_table)
-        table_create = response.get('tables')[0].get('id')
+        response = self._call(
+            f"docs/{docId}/tables", method="POST", json_data=json_table
+        )
+        table_create = response.get("tables")[0].get("id")
         logging.debug(f"Table id {table_create} create OK")
 
         if records is not None:
             logging.debug("Insert records in table")
-            map_records = {
-                "records": [
-                    {
-                        "fields": row
-                    }
-                    for row in records
-                ]
-            }
-            self._call(f"docs/{docId}/tables/{table_create}/records", method='POST', json_data=map_records)
+            map_records = {"records": [{"fields": row} for row in records]}
+            self._call(
+                f"docs/{docId}/tables/{table_create}/records",
+                method="POST",
+                json_data=map_records,
+            )
 
         return {}
-    
+
     def get_tables_of_doc(self, docId: str) -> List[Table]:
         response = self._call(f"docs/{docId}/tables")
         tables = [Table(**data) for data in response["tables"]]
         return tables
-    
+
     def get_records_of_table(self, docId: str, tableId: str) -> List[Record]:
         response = self._call(f"docs/{docId}/tables/{tableId}/records")
         records = [Record(**data) for data in response["records"]]

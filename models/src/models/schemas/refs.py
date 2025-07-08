@@ -6,7 +6,9 @@ from models.entities.refs.CodeProgramme import CodeProgramme
 from models.entities.refs.Commune import Commune
 from models.entities.refs.DomaineFonctionnel import DomaineFonctionnel
 from models.entities.refs.GroupeMarchandise import GroupeMarchandise
-from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
+from models.entities.refs.LocalisationInterministerielle import (
+    LocalisationInterministerielle,
+)
 from models.entities.refs.Ministere import Ministere
 from models.entities.refs.Qpv import Qpv
 from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
@@ -22,6 +24,7 @@ class GeometryField(fields.Field):
     def _jsonschema_type_mapping(self):
         # Return a basic string type for JSON schema generation
         return {"type": "string"}
+
 
 class ArrondissementSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -117,6 +120,7 @@ class QpvSchema(SQLAlchemyAutoSchema):
     annee_decoupage = fields.Integer()
     geom = GeometryField(dump_only=True)
     centroid = GeometryField(dump_only=True)
+
 
 class QpvEnrichedSchema(Schema):
     code = fields.String()

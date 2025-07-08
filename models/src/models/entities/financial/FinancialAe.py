@@ -79,15 +79,14 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
     contrat_etat_region: Column[str] = Column(String(255))
     annee: Column[int] = Column(Integer, nullable=False)  # annee de l'AE chorus
 
-    #Ajout colonne AIFE
-    tranche_fonctionnelle: Column[str] = Column(String,nullable=True)
-    fonds: Column[str] = Column(String,nullable=True)
-    projet_analytique: Column[str] = Column(String,nullable=True)
-    axe_ministeriel_1: Column[str] = Column(String,nullable=True)
-    axe_ministeriel_2: Column[str] = Column(String,nullable=True)
-    societe: Column[str] = Column(String,nullable=True)
-    centre_financier: Column[str] = Column(String,nullable=True)
-
+    # Ajout colonne AIFE
+    tranche_fonctionnelle: Column[str] = Column(String, nullable=True)
+    fonds: Column[str] = Column(String, nullable=True)
+    projet_analytique: Column[str] = Column(String, nullable=True)
+    axe_ministeriel_1: Column[str] = Column(String, nullable=True)
+    axe_ministeriel_2: Column[str] = Column(String, nullable=True)
+    societe: Column[str] = Column(String, nullable=True)
+    centre_financier: Column[str] = Column(String, nullable=True)
 
     tags: Mapped[Tags] = relationship(
         "Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True
@@ -138,7 +137,7 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
             value, str
         ):
             # cas où les dates sont au format dd/mm/yyyy
-            value = datetime.strptime(value.replace("/","."), "%d.%m.%Y")
+            value = datetime.strptime(value.replace("/", "."), "%d.%m.%Y")
 
         super().__setattr__(key, value)
 
@@ -322,7 +321,7 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
             "fonds",
             "projet_analytique",
             "axe_ministeriel_2",
-            "societe"
+            "societe",
         ]
 
     @staticmethod
@@ -351,7 +350,7 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
             "fonds": str,
             "projet_analytique": str,
             "axe_ministeriel_2": str,
-            "societe": str
+            "societe": str,
         }
 
     def _serialize(self, code: String, attr, obj: "FinancialAe", **kwargs):

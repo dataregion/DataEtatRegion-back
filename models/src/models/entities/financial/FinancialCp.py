@@ -72,17 +72,16 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
     montant: float = Column(Float)
     annee: int = Column(Integer, nullable=False)
 
-    #ajout donnée issue de AIFE (ces trois colonnes avec le champ n_dp composent la clé unique d'une Dépense)
-    societe: Column[str] = Column(String,nullable=True)
-    exercice_comptable: Column[str] = Column(String,nullable=True)
+    # ajout donnée issue de AIFE (ces trois colonnes avec le champ n_dp composent la clé unique d'une Dépense)
+    societe: Column[str] = Column(String, nullable=True)
+    exercice_comptable: Column[str] = Column(String, nullable=True)
     n_poste_dp: Column[str] = Column(String, nullable=True)
 
-    #ajout autre colonne AIFE
-    tranche_fonctionnelle: Column[str] = Column(String,nullable=True)
-    fonds: Column[str] = Column(String,nullable=True)
-    projet_analytique: Column[str] = Column(String,nullable=True)
-    type_piece: Column[str] = Column(String,nullable=True)
-
+    # ajout autre colonne AIFE
+    tranche_fonctionnelle: Column[str] = Column(String, nullable=True)
+    fonds: Column[str] = Column(String, nullable=True)
+    projet_analytique: Column[str] = Column(String, nullable=True)
+    type_piece: Column[str] = Column(String, nullable=True)
 
     # Données techniques
 
@@ -105,15 +104,14 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
         :param source_region:
         :param annee:
         """
-        
+
         self.update_attribute(line_chorus)
 
-        if source_region is not None :
+        if source_region is not None:
             self.source_region = source_region
-        else :
+        else:
             self.source_region = get_code_region_by_code_comp(self.societe)
         self.annee = annee
-
 
     def should_update(self, new_financial: dict) -> bool:
         return True
@@ -128,7 +126,7 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
             if value in ("#", ""):
                 value = None
             else:
-                value = datetime.strptime(value.replace("/","."), "%d.%m.%Y")
+                value = datetime.strptime(value.replace("/", "."), "%d.%m.%Y")
 
         super().__setattr__(key, value)
 
@@ -186,7 +184,7 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
             "fonds",
             "projet_analytique",
             "societe",
-            "type_piece"
+            "type_piece",
         ]
 
     @staticmethod
@@ -217,8 +215,9 @@ class FinancialCp(FinancialData, _PersistenceBaseModelInstance()):
             "fonds": str,
             "projet_analytique": str,
             "societe": str,
-            "type_piece": str
+            "type_piece": str,
         }
+
 
 def _convert_date_format(date_str):
     if pd.isna(date_str):  # Gérer les NaN (y compris sous forme de float)

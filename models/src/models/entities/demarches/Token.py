@@ -24,8 +24,14 @@ class Token(db.Model):
 
     @property
     def token(self):
-        return Fernet(current_app.config["FERNET_SECRET_KEY"]).decrypt(self._token).decode("utf-8")
+        return (
+            Fernet(current_app.config["FERNET_SECRET_KEY"])
+            .decrypt(self._token)
+            .decode("utf-8")
+        )
 
     @token.setter
     def token(self, value):
-        self._token = Fernet(current_app.config["FERNET_SECRET_KEY"]).encrypt(value.encode())
+        self._token = Fernet(current_app.config["FERNET_SECRET_KEY"]).encrypt(
+            value.encode()
+        )

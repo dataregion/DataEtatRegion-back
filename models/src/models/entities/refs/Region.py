@@ -13,7 +13,7 @@ class Region(_Audit, _PersistenceBaseModelInstance()):
 comp_code_region = {
     "ADCE": "00",  # Administration centrale
     "DILA": "00",  # DILA
-    "CSPE": "00", 
+    "CSPE": "00",
     "ALSA": "44",  # Alsace => Grand Est
     "AQUI": "75",  # Aquitaine => Nouvelle-Aquitaine
     "AUVE": "84",  # Auvergne => Auvergne-Rhône-Alpes

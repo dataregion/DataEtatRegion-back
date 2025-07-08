@@ -26,7 +26,8 @@ class UserGrist:
             "preferredLanguage": "fr",
             "locale": "fr",
         }
-    
+
+
 class Document:
     def __init__(self, **kwargs):
         self.id = kwargs.pop("id", None)

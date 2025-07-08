@@ -1,5 +1,7 @@
 from models.entities.financial.France2030 import France2030
-from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
+from models.entities.financial.query.FlattenFinancialLines import (
+    EnrichedFlattenFinancialLines as FinancialLines,
+)
 from models.entities.refs.Commune import Commune
 from models.entities.refs.Siret import Siret
 from models.value_objects.common import TypeCodeGeo
@@ -53,7 +55,9 @@ class TypeCodeGeoToFrance2030CodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolv
         return column
 
 
-class TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolver):
+class TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver(
+    TypeCodeGeoToSqlAlchemyColumnResolver
+):
     def code_geo_column(self, niveau_geo: TypeCodeGeo | str) -> Column[str] | None:
         type_geo = self.parse_niveau_geo(niveau_geo)
 
@@ -61,22 +65,30 @@ class TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver(TypeCodeGeo
 
         match type_geo:
             case TypeCodeGeo.REGION:
-                column = FinancialLines.localisationInterministerielle_commune_codeRegion
+                column = (
+                    FinancialLines.localisationInterministerielle_commune_codeRegion
+                )
             case TypeCodeGeo.DEPARTEMENT:
-                column = FinancialLines.localisationInterministerielle_commune_codeDepartement
+                column = (
+                    FinancialLines.localisationInterministerielle_commune_codeDepartement
+                )
             case TypeCodeGeo.EPCI:
                 column = FinancialLines.localisationInterministerielle_commune_codeEpci
             case TypeCodeGeo.CRTE:
                 column = FinancialLines.localisationInterministerielle_commune_codeCrte
             case TypeCodeGeo.ARRONDISSEMENT:
-                column = FinancialLines.localisationInterministerielle_commune_arrondissement_code
+                column = (
+                    FinancialLines.localisationInterministerielle_commune_arrondissement_code
+                )
             case TypeCodeGeo.COMMUNE:
                 column = FinancialLines.localisationInterministerielle_commune_code
 
         return column
 
 
-class TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolver):
+class TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver(
+    TypeCodeGeoToSqlAlchemyColumnResolver
+):
     def code_geo_column(self, niveau_geo: TypeCodeGeo | str) -> Column[str] | None:
         type_geo = self.parse_niveau_geo(niveau_geo)
 
