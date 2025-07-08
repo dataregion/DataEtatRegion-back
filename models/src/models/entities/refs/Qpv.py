@@ -1,9 +1,9 @@
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
 from models.entities.refs.QpvCommune import QpvCommune
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.event import listens_for
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import relationship
 from shapely.wkt import loads as wkt_loads
 from geoalchemy2 import Geometry
 

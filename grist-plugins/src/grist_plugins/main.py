@@ -1,6 +1,4 @@
 from pathlib import Path
-from fastapi.responses import JSONResponse
-import requests
 
 from fastapi import FastAPI
 from fastapi.templating import Jinja2Templates

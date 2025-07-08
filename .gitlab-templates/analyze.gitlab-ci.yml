@@ -36,6 +36,7 @@
     - black --check services/
     - black --check models/
     - black --check gristcli/
+    - black --check tests_e2e/
 
 "Analyse ruff":
   stage: ☢️ analyze
@@ -43,8 +44,9 @@
   before_script:
     - pip install ruff
   script:
-    - ruff check .
+    - ruff check app/
     - ruff check grist-plugins/
     - ruff check services/
     - ruff check models/
     - ruff check gristcli/
+    - ruff check tests_e2e/

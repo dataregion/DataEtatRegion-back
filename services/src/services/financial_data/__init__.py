@@ -113,8 +113,9 @@ class BuilderStatementFinancialLine:
         conds = []
         if types_beneficiaires is not None and includes_none:
             _cond = (
-                FinancialLines.beneficiaire_categorieJuridique_type == None
-            )  # noqa: E711
+                FinancialLines.beneficiaire_categorieJuridique_type
+                == None  # noqa: E711
+            )
             conds.append(_cond)
 
         if types_beneficiaires is not None:
@@ -144,8 +145,9 @@ class BuilderStatementFinancialLine:
     def where_qpv_not_null(self, field: Column):
         field = FinancialLines.lieu_action_code_qpv
         self._stmt = self._stmt.where(
-            FinancialLines.source == DataType.FINANCIAL_DATA_AE, field != None
-        )  # noqa: E711
+            FinancialLines.source == DataType.FINANCIAL_DATA_AE,
+            field != None,  # noqa: E711
+        )
         return self
 
     def where_geo_loc_qpv(
@@ -169,7 +171,7 @@ class BuilderStatementFinancialLine:
         type_geo: TypeCodeGeo,
         list_code_geo: list[str],
         source_region: str,
-        benef_or_loc: BenefOrLoc = None,
+        benef_or_loc: BenefOrLoc | None = None,
     ):
         if list_code_geo is None:
             return self
@@ -200,7 +202,7 @@ class BuilderStatementFinancialLine:
         source_region: str,
         column_codegeo_commune_loc_inter: Column[str] | None,
         column_codegeo_commune_beneficiaire: Column[str] | None,
-        benef_or_loc: BenefOrLoc = None,
+        benef_or_loc: BenefOrLoc | None = None,
     ):
         conds = []
 

@@ -1,5 +1,4 @@
 from . import *  # noqa: F403
-from tests_e2e import TESTS_PATH
 from tests_e2e.utils import call_request
 
 

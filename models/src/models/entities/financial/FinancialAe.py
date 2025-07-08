@@ -18,7 +18,6 @@ from models.entities.refs.LocalisationInterministerielle import (
     LocalisationInterministerielle,
 )
 from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
-from models.entities.refs.Region import get_code_region_by_code_comp
 from models.entities.refs.Siret import Siret
 
 

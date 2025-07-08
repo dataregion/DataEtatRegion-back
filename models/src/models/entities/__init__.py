@@ -4,7 +4,7 @@
 from .common.Audit import _Audit
 from .common.Tags import Tags, TagAssociation
 
-from .refs import *  # noqa: F403. Ici on importe toutes les refs
+from .refs import *  # noqa: F403
 
 from .audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
 from .audit.AuditRefreshMaterializedViewsEvents import (

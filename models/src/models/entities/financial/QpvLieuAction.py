@@ -1,15 +1,8 @@
 from dataclasses import dataclass
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
-from models.entities.financial.FinancialAe import FinancialAe
-from psycopg import IntegrityError
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, UniqueConstraint
-from sqlalchemy.event import listens_for
+from sqlalchemy import Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-
-import logging
-
-from app.database import db
 
 
 @dataclass

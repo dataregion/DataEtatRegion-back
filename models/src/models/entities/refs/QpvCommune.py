@@ -1,10 +1,5 @@
 from models import _PersistenceBaseModelInstance
-from models.entities.common.Audit import _Audit
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.event import listens_for
-from sqlalchemy.orm import Mapped, relationship
-from shapely.wkt import loads as wkt_loads
-from geoalchemy2 import Geometry
+from sqlalchemy import Column, ForeignKey, Integer
 
 
 class QpvCommune(_PersistenceBaseModelInstance()):

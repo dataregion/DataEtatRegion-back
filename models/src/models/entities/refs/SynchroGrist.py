@@ -1,6 +1,5 @@
 from models import _PersistenceBaseModelInstance
-from models.entities.common.Audit import _Audit
-from sqlalchemy import Boolean, Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String
 
 
 class SynchroGrist(_PersistenceBaseModelInstance()):
