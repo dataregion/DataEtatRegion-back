@@ -1,8 +1,9 @@
 from http import HTTPStatus
 import logging
 
-from app.exceptions.exceptions import DataRegatException, ValidTokenException
+from app.exceptions.exceptions import ValidTokenException
 from flask import current_app
+from models.exceptions import DataRegatException
 from sqlalchemy.exc import NoResultFound
 from app.controller.utils.Error import ErrorController
 from flask_restx import Api

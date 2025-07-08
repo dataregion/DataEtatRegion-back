@@ -1,8 +1,8 @@
 from app.controller.utils.Error import ErrorController
 from app.exceptions.exceptions import BadRequestDataRegateNum
-from app.services.grist.__init_ import ParsingColumnsError
+from app.servicesapp.grist import ParsingColumnsError
 from app.servicesapp.authentication.connected_user import ConnectedUser
-from app.services.grist.go_to_grist import GristCliService
+from app.servicesapp.grist.go_to_grist import GristCliService
 from flask import current_app, request
 from flask_restx import Namespace, Resource, fields
 from http import HTTPStatus

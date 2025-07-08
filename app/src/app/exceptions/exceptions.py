@@ -1,5 +1,4 @@
-class DataRegatException(Exception):
-    pass
+from models.exceptions import DataRegatException
 
 
 class FinancialException(Exception):

@@ -2,6 +2,7 @@
 root_packages = [
   "app",
   "gristcli",
+  "services",
   "models",
 ] 
 
@@ -11,6 +12,7 @@ type = "layers"
 layers = [
   "app",
   "gristcli",
+  "services",
   "models",
 ]
 
@@ -21,5 +23,5 @@ source_modules = [
   "gristcli"
 ]
 forbidden_modules = [
-  "models", "app"
+  "services", "models", "app"
 ]

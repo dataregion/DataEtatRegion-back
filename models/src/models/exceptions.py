@@ -1,0 +1,2 @@
+class DataRegatException(Exception):
+    pass

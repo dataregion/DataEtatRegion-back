@@ -2,7 +2,7 @@ import logging
 from app.clients.grist.factory import GristConfiguationException
 from app.controller.Decorators import authM2M
 from app.controller.utils.Error import ErrorController
-from app.services.grist.__init_ import ParsingColumnsError
+from app.servicesapp.grist import ParsingColumnsError
 from flask import current_app, request
 from flask_restx import Namespace, Resource
 from http import HTTPStatus
