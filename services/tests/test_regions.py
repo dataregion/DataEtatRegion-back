@@ -1,6 +1,5 @@
 import pytest
 from services.regions import sanitize_source_region_for_bdd_request
-from services.regions import NoCurrentRegion
 
 @pytest.mark.parametrize(
         "source_region, data_source, expected",
@@ -23,5 +22,5 @@ def test_sanitize_source_region_for_bdd_request(source_region, data_source, expe
         ]
 )
 def test_ko_sanitize_source_region_for_bdd_request(source_region, data_source):
-    with pytest.raises(NoCurrentRegion):
+    with pytest.raises(ValueError):
         sanitize_source_region_for_bdd_request(source_region, data_source)

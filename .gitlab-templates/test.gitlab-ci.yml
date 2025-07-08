@@ -1,19 +1,11 @@
 .default-tests: &default-tests
+  stage: 🧪 test
+  image: ${PYTHON_IMAGE}
   rules:
     - if: '$DO_TEST == "✅"'
     - if: '$DO_TEST == "⚙️"'
       when: manual
     - when: never
-
-run_tests:
-  <<: *default-tests
-  stage: 🧪 test
-  image: ${PYTHON_IMAGE}
-  before_script:
-    - python --version
-    - cd app/
-    - env
-    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
   script:
     - unset DOCKER_AUTH_CONFIG # XXX: On ignore la configuration au sein des tests du à une incompatibilité avec testcontainers
     - coverage run -m pytest
@@ -23,9 +15,21 @@ run_tests:
     paths:
       - tests/coverage.xml
 
+run_services_tests:
+  <<: *default-tests
+  before_script:
+    - cd services/
+    - env
+    - pip install .[dev]
 
+run_app_tests:
+  <<: *default-tests
+  before_script:
+    - cd app/
+    - env
+    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
 
-run_black:
+run_black_app:
   <<: *default-tests
   stage: 🧪 test
   image: pyfound/black:25.1.0@sha256:d849dfe2daaaf4582a7ad5178622700c28cd37f5fac0b3365accdde2013f1e66
@@ -33,7 +37,7 @@ run_black:
     - cd app/
     - black --check .
 
-run_ruff:
+run_ruff_app:
   <<: *default-tests
   stage: 🧪 test
   image: ${PYTHON_IMAGE}
