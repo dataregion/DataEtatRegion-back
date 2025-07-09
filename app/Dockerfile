@@ -22,6 +22,7 @@ COPY app/requirements.external.txt .
 COPY app /build/app
 COPY models /build/models
 COPY gristcli /build/gristcli
+COPY services /build/services
 
 WORKDIR /build/app
 # Install des dépendances Python dans un venv temporaire
