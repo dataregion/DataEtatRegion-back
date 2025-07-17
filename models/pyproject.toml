@@ -9,6 +9,9 @@ description = "Modèles communs pour l'application DRN"
 dependencies = [
     "sqlalchemy ~= 2.0.36",
     "pandas ~= 2.0",
+    "geopandas ~= 1.1.0", 
+    "geoalchemy2 ~=0.17.0 ",
+    "cryptography==45.0.5",
     "marshmallow-sqlalchemy ~= 1.1",
     "marshmallow-dataclass ~= 8.5",
     "marshmallow-jsonschema ~= 0.13"

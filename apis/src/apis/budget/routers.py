@@ -1,9 +1,7 @@
-
 from http import HTTPStatus
 from typing import Annotated
 
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
-from requests import Session
 
 from fastapi import APIRouter, Depends, Request
 
@@ -11,7 +9,12 @@ from models.dtos.budget_query_params import BudgetQueryParams
 from services.authentication.connected_user import ConnectedUser
 from services.utilities.observability import SummaryOfTimePerfCounter
 
-from apis.budget.servicesapp import get_list_colonnes_grouping, get_list_colonnes_tableau, get_query_params, get_results
+from apis.budget.servicesapp import (
+    get_list_colonnes_grouping,
+    get_list_colonnes_tableau,
+    get_query_params,
+    get_results,
+)
 from apis.utils.annotations import handle_exceptions
 from apis.utils.models import APISuccess
 
@@ -26,7 +29,9 @@ router = APIRouter()
 @handle_exceptions
 def ofe():
     with SummaryOfTimePerfCounter.cm("hc_search_lignes_budgetaires"):
-        result_q = get_list_colonnes_tableau(limit=10, page_number=0, source_region="053")
+        result_q = get_list_colonnes_tableau(
+            limit=10, page_number=0, source_region="053"
+        )
 
     with SummaryOfTimePerfCounter.cm("hc_serialize_lignes_budgetaires"):
         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(result_q["items"])
@@ -42,27 +47,27 @@ def get_colonnes_tableau():
     return APISuccess(
         status_code=HTTPStatus.OK,
         message="Liste des colonnes disponibles pour le tableau",
-        data=get_list_colonnes_tableau()
+        data=get_list_colonnes_tableau(),
     ).to_json_response()
 
 
 @router.get("/grouping")
 @handle_exceptions
 def get_colonnes_grouping():
-  return APISuccess(
-      code=HTTPStatus.OK,
-      message="Liste des colonnes disponibles pour le grouping",
-      data=get_list_colonnes_grouping()
-  ).to_json_response()
-    
+    return APISuccess(
+        code=HTTPStatus.OK,
+        message="Liste des colonnes disponibles pour le grouping",
+        data=get_list_colonnes_grouping(),
+    ).to_json_response()
+
 
 @router.get("")
 @handle_exceptions
 # @auth("openid")
 def get_lignes_financieres(request: Request):
-    
+
     params: BudgetQueryParams = get_query_params(request)
-    
+
     user = ConnectedUser.from_current_token_identity()
     if user.current_region != "NAT":
         params.source_region = user.current_region
@@ -76,14 +81,10 @@ def get_lignes_financieres(request: Request):
         return APISuccess(
             code=HTTPStatus.NO_CONTENT,
             message="Aucun résultat ne correspond à vos critères de recherche",
-            data=[]
+            data=[],
         )
 
-    api_response = APISuccess(
-        code=HTTPStatus.OK,
-        message=message,
-        data=data
-    )
+    api_response = APISuccess(code=HTTPStatus.OK, message=message, data=data)
     api_response.set_pagination(params.page, has_next)
     return api_response
 
