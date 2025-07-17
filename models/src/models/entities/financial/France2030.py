@@ -35,11 +35,11 @@ class France2030(FinancialData, _PersistenceBaseModelInstance()):
 
     # FK
     siret = Column(String, ForeignKey("ref_siret.code"), nullable=True)
-    beneficiaire: Mapped[Siret] = relationship("Siret")
+    # beneficiaire: Mapped[Siret] = relationship("Siret")
     code_nomenclature = Column(
         String, ForeignKey("nomenclature_france_2030.code"), nullable=True
     )
-    nomenclature = relationship("NomenclatureFrance2030")
+    # nomenclature = relationship("NomenclatureFrance2030")
 
     # autres champs
     annee: Column[int] = Column(

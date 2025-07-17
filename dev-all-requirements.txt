@@ -1,0 +1,6 @@
+-e ./models
+-e ./services
+-e ./gristcli
+-e ./apis
+-e ./app
+-e ./grist-plugins
