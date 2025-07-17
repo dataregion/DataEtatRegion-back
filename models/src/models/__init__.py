@@ -3,7 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-Base = None
+Base = declarative_base()
 
 
 def _PersistenceBaseModelInstance():

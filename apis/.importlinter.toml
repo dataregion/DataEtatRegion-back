@@ -1,0 +1,27 @@
+[tool.importlinter]
+root_packages = [
+  "apis",
+  "gristcli",
+  "services",
+  "models",
+] 
+
+[[tool.importlinter.contracts]]
+name = "L'architecture en couche est respectée"
+type = "layers"
+layers = [
+  "apis",
+  "gristcli",
+  "services",
+  "models",
+]
+
+[[tool.importlinter.contracts]]
+name = "gristcli ne tire pas module projet"
+type = "forbidden"
+source_modules = [
+  "gristcli"
+]
+forbidden_modules = [
+  "services", "models", "apis"
+]
