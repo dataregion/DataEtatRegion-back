@@ -15,7 +15,9 @@ class AuditRefreshMaterializedViewsEvents(_PersistenceBaseModelInstance()):
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
     event: Column[str] = Column(String, nullable=False)
     date: Column[datetime] = Column(
-        DateTime(timezone=True), default=datetime.now(timezone.utc), nullable=False
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
     )
     table = Column(String, nullable=True)
 
