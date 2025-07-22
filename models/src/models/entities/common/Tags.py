@@ -30,9 +30,9 @@ class Tags(_Audit, _PersistenceBaseModelInstance()):
     """Nom du tag destiné à l'affichage UI"""
     enable_rules_auto: Column[bool] = Column(Boolean, nullable=False, default=False)
 
-    # associations: Mapped[List["TagAssociation"]] = relationship(
-    #     cascade="all, delete", back_populates="tag"
-    # )
+    associations: Mapped[List["TagAssociation"]] = relationship(
+        cascade="all, delete", back_populates="tag"
+    )
 
     @hybrid_property
     def fullname(self):
@@ -73,4 +73,4 @@ class TagAssociation(_Audit, _PersistenceBaseModelInstance()):
     # indique si le tag a été appliqué par un script auto ou non
     auto_applied = Column(Boolean, default=False, nullable=False)
 
-    # tag: Mapped[Tags] = relationship(back_populates="associations")
+    tag: Mapped[Tags] = relationship(back_populates="associations")

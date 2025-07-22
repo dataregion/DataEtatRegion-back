@@ -17,9 +17,12 @@ certifi==2025.6.15
     #   httpx
     #   pyogrio
     #   pyproj
+    #   requests
     #   sentry-sdk
 cffi==1.17.1
     # via cryptography
+charset-normalizer==3.4.2
+    # via requests
 click==8.2.1
     # via
     #   rich-toolkit
@@ -62,6 +65,7 @@ idna==3.10
     #   anyio
     #   email-validator
     #   httpx
+    #   requests
 jinja2==3.1.6
     # via fastapi
 markdown-it-py==3.0.0
@@ -105,6 +109,14 @@ pandas==2.3.1
     #   geopandas
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
+prometheus-client==0.22.1
+    # via -r requirements.external.in
+psycopg[pool]==3.2.9
+    # via -r requirements.external.in
+psycopg-binary==3.2.9
+    # via -r requirements.external.in
+psycopg-pool==3.2.6
+    # via psycopg
 pycparser==2.22
     # via cffi
 pydantic[email]==2.11.7
@@ -129,6 +141,8 @@ pytz==2025.2
     # via pandas
 pyyaml==6.0.2
     # via uvicorn
+requests==2.32.4
+    # via -r requirements.external.in
 rich==14.0.0
     # via
     #   rich-toolkit
@@ -169,6 +183,7 @@ typer==0.16.0
 typing-extensions==4.14.1
     # via
     #   fastapi
+    #   psycopg-pool
     #   pydantic
     #   pydantic-core
     #   rich-toolkit
@@ -184,7 +199,9 @@ typing-inspection==0.4.1
 tzdata==2025.2
     # via pandas
 urllib3==2.5.0
-    # via sentry-sdk
+    # via
+    #   requests
+    #   sentry-sdk
 uvicorn[standard]==0.35.0
     # via
     #   fastapi

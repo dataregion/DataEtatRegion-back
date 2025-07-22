@@ -102,17 +102,17 @@ class EnrichedFlattenFinancialLines(FlattenFinancialLines):
     des données associées à l'application (ie: les tags).
     """
 
-    # tags: Mapped[List[Tags]] = relationship(
-    #     "Tags",
-    #     uselist=True,
-    #     lazy="joined",
-    #     secondary="tag_association",
-    #     primaryjoin=(
-    #         "or_("
-    #         "and_(EnrichedFlattenFinancialLines.id==TagAssociation.financial_ae, EnrichedFlattenFinancialLines.source=='FINANCIAL_DATA_AE'),"
-    #         "and_(EnrichedFlattenFinancialLines.id==TagAssociation.financial_cp, EnrichedFlattenFinancialLines.source=='FINANCIAL_DATA_CP'),"
-    #         "and_(EnrichedFlattenFinancialLines.id==TagAssociation.ademe, EnrichedFlattenFinancialLines.source=='ADEME'),"
-    #         ")"
-    #     ),
-    #     viewonly=True,
-    # )
+    tags: Mapped[List[Tags]] = relationship(
+        "Tags",
+        uselist=True,
+        lazy="joined",
+        secondary="tag_association",
+        primaryjoin=(
+            "or_("
+            "and_(EnrichedFlattenFinancialLines.id==TagAssociation.financial_ae, EnrichedFlattenFinancialLines.source=='FINANCIAL_DATA_AE'),"
+            "and_(EnrichedFlattenFinancialLines.id==TagAssociation.financial_cp, EnrichedFlattenFinancialLines.source=='FINANCIAL_DATA_CP'),"
+            "and_(EnrichedFlattenFinancialLines.id==TagAssociation.ademe, EnrichedFlattenFinancialLines.source=='ADEME'),"
+            ")"
+        ),
+        viewonly=True,
+    )
