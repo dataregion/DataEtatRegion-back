@@ -7,7 +7,6 @@ class InvalidTokenError(AuthenticationError):
 
     pass
 
-
 class NoCurrentRegion(InvalidTokenError):
     """Exception raised when requesting current region and its not available"""
 

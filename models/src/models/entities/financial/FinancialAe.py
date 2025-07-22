@@ -87,25 +87,25 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
     societe: Column[str] = Column(String, nullable=True)
     centre_financier: Column[str] = Column(String, nullable=True)
 
-    # tags: Mapped[Tags] = relationship(
-    #     "Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True
-    # )
-    # montant_ae = relationship("MontantFinancialAe", uselist=True, lazy="select")
-    # financial_cp = relationship("FinancialCp", uselist=True, lazy="select")
-    # ref_programme: Mapped[CodeProgramme] = relationship("CodeProgramme", lazy="select")
-    # ref_domaine_fonctionnel: Mapped[DomaineFonctionnel] = relationship(
-    #     "DomaineFonctionnel", lazy="select"
-    # )
-    # ref_groupe_marchandise: Mapped[GroupeMarchandise] = relationship(
-    #     "GroupeMarchandise", lazy="select"
-    # )
-    # ref_ref_programmation: Mapped[ReferentielProgrammation] = relationship(
-    #     "ReferentielProgrammation", lazy="select"
-    # )
-    # ref_siret: Mapped[Siret] = relationship("Siret", lazy="select")
-    # ref_localisation_interministerielle: Mapped[LocalisationInterministerielle] = (
-    #     relationship("LocalisationInterministerielle", lazy="select")
-    # )
+    tags: Mapped[Tags] = relationship(
+        "Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True
+    )
+    montant_ae = relationship("MontantFinancialAe", uselist=True, lazy="select")
+    financial_cp = relationship("FinancialCp", uselist=True, lazy="select")
+    ref_programme: Mapped[CodeProgramme] = relationship("CodeProgramme", lazy="select")
+    ref_domaine_fonctionnel: Mapped[DomaineFonctionnel] = relationship(
+        "DomaineFonctionnel", lazy="select"
+    )
+    ref_groupe_marchandise: Mapped[GroupeMarchandise] = relationship(
+        "GroupeMarchandise", lazy="select"
+    )
+    ref_ref_programmation: Mapped[ReferentielProgrammation] = relationship(
+        "ReferentielProgrammation", lazy="select"
+    )
+    ref_siret: Mapped[Siret] = relationship("Siret", lazy="select")
+    ref_localisation_interministerielle: Mapped[LocalisationInterministerielle] = (
+        relationship("LocalisationInterministerielle", lazy="select")
+    )
 
     @hybrid_property
     def montant_ae_total(self):

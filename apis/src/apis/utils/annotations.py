@@ -1,26 +1,30 @@
 from functools import wraps
 from http import HTTPStatus
 from typing import Callable
+import traceback
 
 from apis.utils.models import APIError
 
 
 def handle_exceptions(func: Callable):
   @wraps(func)
-  async def wrapper(*args, **kwargs):
+  def wrapper(*args, **kwargs):
     try:
-      return await func(*args, **kwargs)
+      return func(*args, **kwargs)
     except ValueError as ve:
+      print(ve)
       return APIError(
         code=HTTPStatus.BAD_REQUEST,
         detail=str(ve)
       ).to_json_response()
     except PermissionError as pe:
+      print(pe)
       return APIError(
         code=HTTPStatus.FORBIDDEN,
         detail=str(pe)
       ).to_json_response()
     except Exception as e:
+      traceback.print_exc()
       return APIError(
         code=HTTPStatus.INTERNAL_SERVER_ERROR,
         detail=str(e)

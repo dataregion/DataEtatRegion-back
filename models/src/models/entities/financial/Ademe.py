@@ -38,16 +38,16 @@ class Ademe(FinancialData, _PersistenceBaseModelInstance()):
     siret_attribuant = Column(String, ForeignKey("ref_siret.code"), nullable=True)
     siret_beneficiaire = Column(String, ForeignKey("ref_siret.code"), nullable=True)
 
-    # ref_siret_attribuant: Mapped[Siret] = relationship(
-    #     "Siret", lazy="select", foreign_keys=[siret_attribuant]
-    # )
-    # ref_siret_beneficiaire: Mapped[Siret] = relationship(
-    #     "Siret", lazy="select", foreign_keys=[siret_beneficiaire]
-    # )
+    ref_siret_attribuant: Mapped[Siret] = relationship(
+        "Siret", lazy="select", foreign_keys=[siret_attribuant]
+    )
+    ref_siret_beneficiaire: Mapped[Siret] = relationship(
+        "Siret", lazy="select", foreign_keys=[siret_beneficiaire]
+    )
 
-    # tags: Mapped[Tags] = relationship(
-    #     "Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True
-    # )
+    tags: Mapped[Tags] = relationship(
+        "Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True
+    )
 
     # Données techniques
     file_import_taskid = Column(String(255))

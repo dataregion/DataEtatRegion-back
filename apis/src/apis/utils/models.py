@@ -18,16 +18,16 @@ class PaginationMeta:
 
 @dataclass
 class APIResponse:
-  success: bool
   code: HTTPStatus
-  # timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+  success: bool | None = None
+  timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
   def to_clean_dict(self):
     clean = {}
-    clean["timestamp"] = self.timestamp.isoformat()
     for attr, value in self.__dict__.items():
         if attr != "code":
           clean[attr] = value
+    clean["timestamp"] = self.timestamp.isoformat()
     return clean
   
   def to_json_response(self) -> JSONResponse:
@@ -39,13 +39,11 @@ class APIResponse:
 
 @dataclass
 class APIError(APIResponse):
-  error: str
+  error: str | None = None
   detail: str | None = None
 
   def __post_init__(self):
     self.success = False
-    if not isinstance(self.code, HTTPStatus):
-        self.code = HTTPStatus(self.code)
 
 
 @dataclass

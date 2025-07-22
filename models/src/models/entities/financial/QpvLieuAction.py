@@ -22,7 +22,7 @@ class QpvLieuAction(_Audit, _PersistenceBaseModelInstance()):
     file_import_taskid = Column(String(255))
     file_import_lineno = Column(Integer())
 
-    # ref_qpv = relationship("Qpv", foreign_keys=[code_qpv], lazy="joined")
+    ref_qpv = relationship("Qpv", foreign_keys=[code_qpv], lazy="joined")
 
     @staticmethod
     def format_dict(line_dict: dict):
