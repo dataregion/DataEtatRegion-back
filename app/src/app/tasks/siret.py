@@ -4,6 +4,7 @@ import tempfile
 import zipfile
 
 import pandas
+from datetime import datetime
 import numpy as np
 import requests
 from celery import subtask
@@ -83,13 +84,19 @@ def update_siret_task(self, index: int, code: str):
 
 
 @celery.task(name="update_link_siret_qpv_from_website", bind=True)
-def update_link_siret_qpv_from_website(self, url: str, qpv_colname: str = "plg_qp15"):
+def update_link_siret_qpv_from_website(self, url: str = "", day_of_week: int = 5, qpv_colname: str = "plg_qp15"):
     """
     Télécharge le fichier des liens QPV/Siret et lance la mise à jours des liens
     :param self:
     :param qpv_colname: la colonne des QPV a utiliser ex: plg_qp15 ou plg_qp24
     :return:
     """
+    today = datetime.today()
+    # Vérifie que c’est le deuxième day of week du mois
+    if today.weekday() != day_of_week or not (8 <= today.day <= 15):
+        logger.info(f"Tâche ignorée : aujourd'hui ({today.date()}) n'est pas le second {day_of_week} du mois.")
+        return
+
     logger.info("Récupération du fichier des QPV/Siret")
     response = requests.get(url, stream=True)
     response.raise_for_status()
