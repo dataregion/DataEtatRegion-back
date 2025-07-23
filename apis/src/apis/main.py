@@ -13,7 +13,6 @@ from apis.referentiels.api import app as app_referentiels
 
 from models import Base
 
-print("Registered tables:", list(Base.metadata.tables.keys()))
 
 """Create a FastAPI application."""
 app = FastAPI(

@@ -1,27 +1,28 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
+from models.value_objects.common import DataType
 
-from apis.budget.dtos.grouped_data import GroupedData
+from apis.budget.models.grouped_data import GroupedData
+from apis.budget.models.budget_query_params import FinancialLineQueryParams, SourcesQueryParams
+from apis.budget.services.colonnes import get_list_colonnes_grouping
+from apis.budget.services.query_data import get_annees_budget, get_ligne, get_lignes
 from apis.database import get_db
-from apis.budget.dtos.budget_query_params import BudgetQueryParams
-from apis.budget.servicesapp import get_annees_budget, get_list_colonnes_grouping, get_results
 from apis.security import ConnectedUser
-from apis.utils.annotations import handle_exceptions
-from apis.utils.models import APISuccess
+from apis.shared.decorators import handle_exceptions
+from apis.shared.models import APIError, APISuccess
 
 
 router = APIRouter()
 
-@router.get("/lignes")
+@router.get("", summary="Récupére les lignes financières, mécanisme de grouping pour récupérer les montants agrégés", response_class=JSONResponse)
 @handle_exceptions
-# @auth("openid")
-# def get_lignes_financieres(params: BudgetQueryParams = Depends(), user: ConnectedUser = Depends(get_connected_user), db: Session = Depends(get_db)):
-def get_lignes_financieres(params: BudgetQueryParams = Depends(), db: Session = Depends(get_db)):
-
+# @auth("openid") user: ConnectedUser = Depends(get_connected_user)
+def get_lignes_financieres(params: FinancialLineQueryParams = Depends(), db: Session = Depends(get_db)):
     user: ConnectedUser = ConnectedUser({"region": "053"})
     if user.current_region != "NAT":
         params.source_region = user.current_region
@@ -31,10 +32,12 @@ def get_lignes_financieres(params: BudgetQueryParams = Depends(), db: Session = 
     # Mapping colonnes grouping
     if params.grouping is not None:
         params.map_colonnes(get_list_colonnes_grouping())
-
-    message, data, grouped, has_next = get_results(db, params)
+    
+    message = "Liste des données financières"
+    data, grouped, has_next = get_lignes(db, params)
     if grouped:
-        data = [GroupedData(**d) for d in data]
+        message = "Liste des montants agrégés"
+        data = [GroupedData(**d).to_dict() for d in data]
     else:
         data = EnrichedFlattenFinancialLinesSchema(many=True).dump(data)
 
@@ -43,78 +46,65 @@ def get_lignes_financieres(params: BudgetQueryParams = Depends(), db: Session = 
             code=HTTPStatus.NO_CONTENT,
             message="Aucun résultat ne correspond à vos critères de recherche",
             data=[],
-        )
+        ).to_json_response()
+    
+    return APISuccess(
+        code=HTTPStatus.OK,
+        message=message,
+        data=data,
+        has_next=has_next,
+        current_page=params.page
+    ).to_json_response()
 
-    api_response = APISuccess(code=HTTPStatus.OK, message=message, data=data)
-    api_response.set_pagination(params.page, has_next)
-    return api_response
 
-
-@router.get("/annees")
+@router.get("/{id:int}", summary="Récupére les infos budgetaires en fonction de son identifiant technique", response_class=JSONResponse)
 @handle_exceptions
-# @auth("openid")
-# def get_lignes_financieres(params: BudgetQueryParams = Depends(), user: ConnectedUser = Depends(get_connected_user), db: Session = Depends(get_db)):
-def get_annees(params: BudgetQueryParams = Depends(), db: Session = Depends(get_db)):
-    """
-    Recupère la plage des années pour lesquelles les données budgetaires courent.
-    """
-
-    user = ConnectedUser.from_current_token_identity()
-    source_region = None
-    data_source = None
+# @auth("openid") user: ConnectedUser = Depends(get_connected_user)
+def get_lignes_financieres_by_source(id: int, params: SourcesQueryParams = Depends(), db: Session = Depends(get_db)):
+    
+    if not params.source:
+        return APIError(
+            code=HTTPStatus.UNPROCESSABLE_ENTITY,
+            error="La paramètre `source` est requis."
+        ).to_json_response()
+    
+    user: ConnectedUser = ConnectedUser({"region": "053"})
     if user.current_region != "NAT":
-        source_region = user.current_region
+        params.source_region = user.current_region
     else:
-        data_source = "NATION"
+        params.data_source = "NATION"
 
-    annees = get_annees_budget(source_region, data_source)
-    return APISuccess(code=HTTPStatus.OK, message="Liste des années présentes dans les lignes financières", data=annees)
+    ligne = get_ligne(db, params, id)
+    if ligne is None:
+        return APISuccess(
+            code=HTTPStatus.NO_CONTENT,
+            message="Aucun résultat ne correspond à vos critères de recherche",
+            data=[],
+        ).to_json_response()
+    
+    return APISuccess(
+        code=HTTPStatus.OK,
+        message="Ligne financière",
+        data=EnrichedFlattenFinancialLinesSchema().dump(ligne)
+    ).to_json_response()
 
 
+@router.get("/annees", summary="Recupère la plage des années pour lesquelles les données budgetaires courent.", response_class=JSONResponse)
+@handle_exceptions
+# @auth("openid") user: ConnectedUser = Depends(get_connected_user)
+def get_annees(params: SourcesQueryParams = Depends(), db: Session = Depends(get_db)):
+    user: ConnectedUser = ConnectedUser({"region": "053"})
+    if user.current_region != "NAT":
+        params.source_region = user.current_region
+    else:
+        params.data_source = "NATION"
 
-# @api_ns.route("/budget/<source>/<id>")
-# class GetBudgetCtrl(Resource):
-#     """
-#     Récupére les infos budgetaires en fonction de son identifiant technique
-#     :return:
-#     """
-
-#     @auth("openid")
-#     @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
-#     @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune ligne correspondante")
-#     @api_ns.response(HTTPStatus.OK, description="Ligne correspondante", model=model_flatten_budget_schemamodel)
-#     def get(self, source: DataType, id: str):
-#         user = ConnectedUser.from_current_token_identity()
-#         source_region = None
-#         data_source = None
-#         if user.current_region != "NAT":
-#             source_region = user.current_region
-#         else:
-#             data_source = "NATION"
-
-#         id_i = int(id)
-#         ligne = get_ligne_budgetaire(source, id_i, source_region, data_source)
-
-#         if ligne is None:
-#             return "", HTTPStatus.NO_CONTENT
-
-#         ligne_payload = EnrichedFlattenFinancialLinesSchema().dump(ligne)
-#         return ligne_payload, HTTPStatus.OK
+    return APISuccess(
+        code=HTTPStatus.OK,
+        message="Liste des années présentes dans les lignes financières",
+        data=get_annees_budget(db, params)
+    ).to_json_response()
 
 
 
-# @router.get("/users")
-# @handle_exceptions
-# def get(self):
-#     """
-#     Effectue un GET pour vérifier la disponibilité de l'API des lignes budgetaires
-#     """
-#     with SummaryOfTimePerfCounter.cm("hc_search_lignes_budgetaires"):
-#         result_q = search_lignes_budgetaires(limit=10, page_number=0, source_region="053")
 
-#     with SummaryOfTimePerfCounter.cm("hc_serialize_lignes_budgetaires"):
-#         result = EnrichedFlattenFinancialLinesSchema(many=True).dump(result_q["items"])
-
-#     assert len(result) == 10, "On devrait récupérer 10 lignes budgetaires"
-
-#     return HTTPStatus.OK

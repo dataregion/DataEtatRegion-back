@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from apis.referentiels.routers.healthcheck import router as router_healthcheck
+from apis.referentiels.routers import all_referentiel_routers
 
 
 app = FastAPI(
@@ -12,5 +13,7 @@ app = FastAPI(
     separate_input_output_schemas=False,
 )
 
+app.include_router(router_healthcheck, prefix="/healthcheck", tags=["Healthcheck"])
 
-app.include_router(router_healthcheck, tags=["Healthcheck"])
+for router in all_referentiel_routers:
+    app.include_router(router)
