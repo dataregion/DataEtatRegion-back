@@ -1,25 +1,35 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from apis.utils.annotations import handle_exceptions
-from apis.utils.models import APISuccess
+from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
+from services.utilities.observability import SummaryOfTimePerfCounter
+
+from apis.budget.models.budget_query_params import FinancialLineQueryParams
+from apis.budget.services.query_data import get_lignes
+from apis.database import get_db
+from apis.shared.decorators import handle_exceptions
+from apis.shared.models import APISuccess
 
 
 router = APIRouter()
 
-@router.get("/healthcheck")
+@router.get("", summary="Vérification de la disponibilité de l'API des lignes budgetaires")
 @handle_exceptions
-def healthcheck():
-    # with SummaryOfTimePerfCounter.cm("hc_search_lignes_budgetaires"):
-    #     result_q = get_list_colonnes_tableau(
-    #         limit=10, page_number=0, source_region="053"
-    #     )
+def healthcheck(db: Session = Depends(get_db), params: FinancialLineQueryParams = Depends()):
+    params.colonnes = "source"
+    params.source_region = "053"
+    params.page = 1
+    params.page_size = 10
 
-    # with SummaryOfTimePerfCounter.cm("hc_serialize_lignes_budgetaires"):
-    #     result = EnrichedFlattenFinancialLinesSchema(many=True).dump(result_q["items"])
+    with SummaryOfTimePerfCounter.cm("hc_search_lignes_budgetaires"):
+        data, grouped, has_next = get_lignes(db, params)
 
-    # assert len(result) == 10, "On devrait récupérer 10 lignes budgetaires"
+    with SummaryOfTimePerfCounter.cm("hc_serialize_lignes_budgetaires"):
+        data = EnrichedFlattenFinancialLinesSchema(many=True).dump(data)
+
+    assert len(data) == 10
 
     return APISuccess(
         code=HTTPStatus.OK,

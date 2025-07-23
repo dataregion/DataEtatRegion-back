@@ -3,10 +3,34 @@
 from typing import Literal
 from fastapi import Query
 
-from apis.budget.dtos.colonne import Colonne
+from models.value_objects.common import DataType
+
+from apis.budget.models.colonne import Colonne
+from apis.shared.query_builder import V3QueryParams
 
 
-class BudgetQueryParams:
+class SourcesQueryParams(V3QueryParams):
+
+    def __init__(
+        self,
+        source_region: str | None = Query(None),
+        data_source: str | None = Query(None),
+        source: str | None = Query(None),
+        colonnes: str | None = Query(None),
+        page: int = Query(1, ge=1),
+        page_size: int = Query(100, ge=1, le=500),
+        sort_by: str | None = Query(None),
+        sort_order: Literal["asc", "desc"] | None = Query(None),
+        search: str | None = Query(None),
+        fields_search: str | None = Query(None),
+    ):
+        super().__init__(colonnes, page, page_size, sort_by, sort_order, search, fields_search)
+        self.source_region = source_region
+        self.data_source = data_source
+        self.source = DataType(source) if source is not None else None
+
+
+class FinancialLineQueryParams(SourcesQueryParams):
 
     def __init__(
         self,
@@ -27,18 +51,17 @@ class BudgetQueryParams:
         domaine_fonctionnel: str | None = Query(None),
         referentiel_programmation: str | None = Query(None),
         tags: str | None = Query(None),
-        colonnes: str | None = Query(None),
         grouping: str | None = Query(None),
         grouped: str | None = Query(None),
+        colonnes: str | None = Query(None),
         page: int = Query(1, ge=1),
-        page_size: int = Query(100, ge=1, le=1000),
+        page_size: int = Query(100, ge=1, le=500),
         sort_by: str | None = Query(None),
         sort_order: Literal["asc", "desc"] | None = Query(None),
         search: str | None = Query(None),
+        fields_search: str | None = Query(None),
     ):
-        self.source_region = source_region
-        self.data_source = data_source
-        self.source = source
+        super().__init__(source_region, data_source, source, colonnes, page, page_size, sort_by, sort_order, search, fields_search)
         self.n_ej = self._split(n_ej)
         self.code_programme = self._split(code_programme)
         self.niveau_geo = niveau_geo
@@ -53,24 +76,13 @@ class BudgetQueryParams:
         self.domaine_fonctionnel = self._split(domaine_fonctionnel)
         self.referentiel_programmation = self._split(referentiel_programmation)
         self.tags = self._split(tags)
-        self.colonnes = self._split(colonnes)
         self.grouping = self._split(grouping)
         self.grouped = self._split(grouped)
-        self.page = page
-        self.page_size = page_size
-        self.sort_by = sort_by
-        self.sort_order = sort_order
-        self.search = search
 
-
-    def __post_init__(self):
         if bool(self.niveau_geo) ^ bool(self.code_geo):
             raise ValueError("Les paramètres 'niveau_geo' et 'code_geo' doivent être fournis ensemble.")
         if bool(self.ref_qpv) ^ bool(self.code_qpv):
             raise ValueError("Les paramètres 'ref_qpv' et 'code_qpv' doivent être fournis ensemble.")
-
-    def _split(self, val: str | None, separator: str = ',') -> list | None:
-        return val.split(separator) if val else None
         
     def map_colonnes(self, list_colonnes: list[Colonne]):
         casted = []

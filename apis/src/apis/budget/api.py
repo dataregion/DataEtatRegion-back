@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from apis.budget.routers.healthcheck import router as router_healthcheck
 from apis.budget.routers.lignes_financieres import router as router_lignes_financieres
-from apis.budget.routers.utils import router as router_utils
+from apis.budget.routers.colonnes import router as router_colonnes
 
 
 app = FastAPI(
@@ -14,7 +14,6 @@ app = FastAPI(
     separate_input_output_schemas=False,
 )
 
-
-app.include_router(router_healthcheck, tags=["Healthcheck"])
-app.include_router(router_utils, tags=["Utilitaires"])
-app.include_router(router_lignes_financieres, tags=["Lignes financières"])
+app.include_router(router_healthcheck, prefix="/healthcheck", tags=["Healthcheck"])
+app.include_router(router_colonnes, prefix="/colonnes", tags=["Liste des colonnes"])
+app.include_router(router_lignes_financieres, prefix="/lignes", tags=["Lignes financières"])

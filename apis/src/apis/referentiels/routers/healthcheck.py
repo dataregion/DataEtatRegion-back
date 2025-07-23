@@ -2,15 +2,15 @@ from http import HTTPStatus
 
 from fastapi import APIRouter
 
-from apis.utils.annotations import handle_exceptions
-from apis.utils.models import APISuccess
+from apis.shared.decorators import handle_exceptions
+from apis.shared.models import APISuccess
 
 
 router = APIRouter()
 
-@router.get("/healthcheck")
+@router.get("")
 @handle_exceptions
-def ofe():
+def healthcheck():
     return APISuccess(
         status_code=HTTPStatus.OK,
         message="Healthcheck OK",
