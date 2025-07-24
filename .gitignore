@@ -33,6 +33,7 @@ app/requirements.txt
 app/build/
 grist-plugins/build
 services/build
+services/dist
 models/build
 gristcli/build
 
