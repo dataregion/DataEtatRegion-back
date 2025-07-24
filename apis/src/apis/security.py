@@ -107,11 +107,11 @@ class ConnectedUser:
         return self.token["sub"]
     
 keycloak_url_realm = f"{config['KEYCLOAK_OPENID']['URL']}/realms/{config['KEYCLOAK_OPENID']['REALM']}"
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{keycloak_url_realm}/protocol/openid-connect/token")
 JWKS_URL = f"{keycloak_url_realm}/protocol/openid-connect/certs"
 ALGORITHMS = ["RS256"]
+_jwk_set = None
 
-_jwk_set = None  # In-memory cache of Keycloak's public keys
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{keycloak_url_realm}/protocol/openid-connect/token")
 
 def fetch_jwk_set():
     global _jwk_set
@@ -130,6 +130,7 @@ def get_connected_user(token: str = Depends(oauth2_scheme)) -> ConnectedUser:
         })
         claims.validate()
     except JoseError as e:
+        print('ok')
         raise HTTPException(status_code=401, detail=f"Token validation failed: {str(e)}")
 
     return ConnectedUser(dict(claims))

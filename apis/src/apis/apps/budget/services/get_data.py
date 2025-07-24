@@ -9,6 +9,7 @@ from services.utilities.observability import gauge_of_currently_executing, summa
 from services.utils import convert_exception
 
 from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams, SourcesQueryParams
+from apis.apps.budget.services.get_colonnes import get_list_colonnes_tableau
 from apis.apps.budget.services.query_builder import FinancialLineQueryBuilder, SourcesQueryBuilder
 from apis.shared.exceptions import NoCurrentRegion
 
@@ -39,6 +40,10 @@ def get_lignes(db: Session, params: FinancialLineQueryParams):
     source_region = app_layer_sanitize_region(params.source_region, params.data_source)
     _regions = get_request_regions(source_region)
 
+    # Aucune colonne précisée ? On ne requête que les colonnes par défaut
+    if not params.colonnes:
+        params.colonnes = [c.code for c in get_list_colonnes_tableau() if c.default]
+
     builder = (
         FinancialLineQueryBuilder(db, params)
         .beneficiaire_siret_in(params.siret_beneficiaire)
@@ -59,16 +64,17 @@ def get_lignes(db: Session, params: FinancialLineQueryParams):
         .tags_fullname_in(params.tags)
     )
 
-    # DYNAMIC CONDITIONS
+    # Ajout de conditions liées à la mécanique de grouping
     if builder.dynamic_conditions is not None:
         for col, value in builder.dynamic_conditions.items():
             builder.where_field_is(getattr(builder._model, col), value)
 
-    # GROUP BY
+    # Group by si nécessaire
     if builder.groupby_colonne:
         builder._query = builder._query.group_by(builder.groupby_colonne.code)
 
-    # Retrieve data
+    # Pagination et récupération des données
+    builder = builder.paginate()
     data, has_next = builder.select_all()
 
     return data, builder.groupby_colonne is not None, has_next

@@ -1,13 +1,12 @@
 import logging
 import requests
 
-from .models import Subvention, ActionProposee, RepresentantLegal
-from .handlers import _handle_response_in_error
+from apis.clients.data_subventions.models import Subvention, ActionProposee, RepresentantLegal
+from apis.clients.data_subventions.handlers import _handle_response_in_error
+from apis.clients.utils import _dict_get_nested
 
-from ..utils import _dict_get_nested
 
-LOGGER = logging.getLogger()
-
+logger = logging.getLogger()
 
 class ApiSubventions:
     def __init__(self, token, url) -> None:
