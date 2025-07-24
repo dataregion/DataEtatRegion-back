@@ -29,8 +29,7 @@ def db_session():
 def token():
     keycloak_url = config["KEYCLOAK_OPENID"]["URL"]
     realm = config["KEYCLOAK_OPENID"]["REALM"]
-    client_id = config["KEYCLOAK_OPENID"]["CLIENT_ID"]
-    client_secret = config["KEYCLOAK_OPENID"]["SECRET_KEY"]
+    client_id = "bretagne.budget"
 
     username = test_config["TEST_USER"]
     password = test_config["TEST_PASSWORD"]
@@ -42,7 +41,6 @@ def token():
         data={
             "grant_type": "password",
             "client_id": client_id,
-            "client_secret": client_secret,
             "username": username,
             "password": password,
         },
