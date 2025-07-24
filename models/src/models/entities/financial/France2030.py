@@ -15,7 +15,6 @@ from sqlalchemy.orm import relationship, Mapped
 from models.entities.financial.FinancialData import FinancialData
 from models.entities.refs.Siret import Siret
 
-from flask import current_app
 
 @dataclass
 class France2030(FinancialData, _PersistenceBaseModelInstance()):
