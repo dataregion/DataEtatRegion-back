@@ -5,6 +5,8 @@
 /.idea
 **/__pycache__
 apis/src/apis/config/config.yml
+apis/tests/config.yml
+apis/tests/test.db
 app/config/config.yml
 app/migrations/data/ref_*.csv
 app/config/oidc.yml
