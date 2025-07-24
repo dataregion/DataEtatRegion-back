@@ -4,6 +4,8 @@
 #
 #    pip-compile --output-file=requirements.external.txt ../gristcli/pyproject.toml ../models/pyproject.toml ../services/pyproject.toml requirements.external.in
 #
+aiofiles==24.1.0
+    # via python-keycloak
 annotated-types==0.7.0
     # via pydantic
 anyio==4.9.0
@@ -11,6 +13,10 @@ anyio==4.9.0
     #   httpx
     #   starlette
     #   watchfiles
+api-entreprise==3.7.2
+    # via -r requirements.external.in
+async-property==0.2.2
+    # via python-keycloak
 certifi==2025.6.15
     # via
     #   httpcore
@@ -29,7 +35,11 @@ click==8.2.1
     #   typer
     #   uvicorn
 cryptography==45.0.5
-    # via models (../models/pyproject.toml)
+    # via
+    #   jwcrypto
+    #   models (../models/pyproject.toml)
+deprecation==2.1.0
+    # via python-keycloak
 dnspython==2.7.0
     # via email-validator
 email-validator==2.2.0
@@ -60,6 +70,7 @@ httpx==0.27.2
     # via
     #   fastapi
     #   fastapi-cloud-cli
+    #   python-keycloak
 idna==3.10
     # via
     #   anyio
@@ -68,17 +79,21 @@ idna==3.10
     #   requests
 jinja2==3.1.6
     # via fastapi
+jwcrypto==1.5.6
+    # via python-keycloak
 markdown-it-py==3.0.0
     # via rich
 markupsafe==3.0.2
     # via jinja2
-marshmallow==4.0.0
+marshmallow==3.26.1
     # via
+    #   api-entreprise
     #   marshmallow-dataclass
     #   marshmallow-jsonschema
     #   marshmallow-sqlalchemy
 marshmallow-dataclass==8.7.1
     # via
+    #   api-entreprise
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
 marshmallow-jsonschema==0.13.0
@@ -101,8 +116,10 @@ numpy==2.3.1
     #   shapely
 packaging==25.0
     # via
+    #   deprecation
     #   geoalchemy2
     #   geopandas
+    #   marshmallow
     #   pyogrio
 pandas==2.3.1
     # via
@@ -131,18 +148,30 @@ pyogrio==0.11.0
     # via geopandas
 pyproj==3.7.1
     # via geopandas
+pyrate-limiter==2.10.0
+    # via api-entreprise
 python-dateutil==2.9.0.post0
     # via pandas
 python-dotenv==1.1.1
     # via uvicorn
+python-keycloak==5.7.0
+    # via -r requirements.external.in
 python-multipart==0.0.20
     # via fastapi
 pytz==2025.2
     # via pandas
 pyyaml==6.0.2
     # via uvicorn
+redis==4.6.0
+    # via api-entreprise
 requests==2.32.4
-    # via -r requirements.external.in
+    # via
+    #   -r requirements.external.in
+    #   api-entreprise
+    #   python-keycloak
+    #   requests-toolbelt
+requests-toolbelt==1.0.0
+    # via python-keycloak
 rich==14.0.0
     # via
     #   rich-toolkit
@@ -183,6 +212,7 @@ typer==0.16.0
 typing-extensions==4.14.1
     # via
     #   fastapi
+    #   jwcrypto
     #   psycopg-pool
     #   pydantic
     #   pydantic-core

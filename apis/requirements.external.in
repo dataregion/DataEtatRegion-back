@@ -1,5 +1,5 @@
-fastapi[standard]~=0.115.12
-sqlalchemy~=2.0.41
+fastapi[standard] ~= 0.115.12
+sqlalchemy ~= 2.0.41
 
 psycopg ~= 3.1
 psycopg-binary ~= 3.1
@@ -7,4 +7,7 @@ psycopg[pool] ~= 3.1
 
 requests ~= 2.32.4
 
-prometheus-client~=0.22.1
+prometheus-client ~= 0.22.1
+
+python-keycloak ~= 5.3
+api-entreprise >= 3.7.2

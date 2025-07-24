@@ -1,6 +1,0 @@
-default:
-  client_metadata:
-    realm: <realm>
-    client_id: back-api
-  provider_metadata:
-    jwks_endpoint: https://auth.nocode.csm.ovh/realms/Regions/protocol/openid-connect/certs

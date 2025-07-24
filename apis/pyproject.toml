@@ -20,3 +20,17 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
+
+[project.optional-dependencies]
+dev = [
+  "import-linter ~= 2.3",
+  "pytest ~= 8.3",
+  "pytest-cov ~=6.0",
+  "mypy ~= 1.11",
+  "black ~=25.1",
+  "pip-tools ~= 7.4",
+  "pre-commit ~=4.1",
+  "faker ~=37.4",
+  "ruff ~= 0.6",
+  "testcontainers ~=4.9",
+]
