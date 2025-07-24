@@ -8,13 +8,13 @@ from models.entities import *  # type: ignore # noqa: F403
 from models.schemas import *  # type: ignore  # noqa: F403
 from models.value_objects import *  # type: ignore  # noqa: F403
 
-from apis.budget.api import app as app_budget
-from apis.referentiels.api import app as app_referentiels
+from apis.apps.administration.api import app as app_administration
+from apis.apps.budget.api import app as app_budget
+from apis.apps.referentiels.api import app as app_referentiels
 
 from models import Base
 
 
-"""Create a FastAPI application."""
 app = FastAPI(
     title="API V3 - Data Etat",
     docs_url="/docs",
@@ -23,6 +23,6 @@ app = FastAPI(
     separate_input_output_schemas=False,
 )
 
-# Mount sub-apps
+app.mount("/v3/administration", app_administration)
 app.mount("/v3/budget", app_budget)
 app.mount("/v3/referentiels", app_referentiels)

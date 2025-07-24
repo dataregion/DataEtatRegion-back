@@ -8,6 +8,9 @@ from typing import Iterable
 
 from services.utils import wrap_all_ex_to
 
+from apis.config import config
+from apis.shared.exceptions import InvalidTokenError, NoCurrentRegion
+
 
 class ConnectedUser:
     """
@@ -68,47 +71,44 @@ class ConnectedUser:
             self._sub = self._retrieve_token_sub()
         return self._sub
 
-    # @wrap_all_ex_to(InvalidTokenError)
+    @wrap_all_ex_to(InvalidTokenError)
     def _retrieve_token_roles(self):
         roles = self.token.get("roles")
         assert isinstance(roles, Iterable), "Les rôles devraient être une liste"
         return [r.upper() for r in roles]
 
-    # @wrap_all_ex_to(InvalidTokenError)
+    @wrap_all_ex_to(InvalidTokenError)
     def _retrieve_token_azp(self):
         azp = self.token.get("azp")
         assert isinstance(azp, str), "Le claim azp doit être une string"
         return azp
 
-    # @wrap_all_ex_to(NoCurrentRegion)
+    @wrap_all_ex_to(NoCurrentRegion)
     def _retrieve_token_region(self):
         region = self.token.get("region")
-        # if not region:
-            # raise NoCurrentRegion()
+        if not region:
+            raise NoCurrentRegion()
         return region
 
-    # @wrap_all_ex_to(InvalidTokenError)
+    @wrap_all_ex_to(InvalidTokenError)
     def _retrieve_token_username(self):
         return self.token["username"]
 
-    # @wrap_all_ex_to(InvalidTokenError)
+    @wrap_all_ex_to(InvalidTokenError)
     def _retrieve_token_email(self):
         return self.token["email"]
 
-    # @wrap_all_ex_to(InvalidTokenError)
+    @wrap_all_ex_to(InvalidTokenError)
     def _retrieve_token_name(self):
         return self.token["name"]
 
-    # @wrap_all_ex_to(InvalidTokenError)
+    @wrap_all_ex_to(InvalidTokenError)
     def _retrieve_token_sub(self):
         return self.token["sub"]
     
-oauth2_scheme = OAuth2PasswordBearer(
-    # authorizationUrl="http://localhost:8080/realms/Regions/protocol/openid-connect/auth",
-    tokenUrl="http://localhost:8080/realms/Regions/protocol/openid-connect/token",
-)
-KEYCLOAK_ISSUER = "http://localhost:8080/realms/Regions"
-JWKS_URL = f"{KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
+keycloak_url_realm = f"{config['KEYCLOAK_OPENID']['URL']}/realms/{config['KEYCLOAK_OPENID']['REALM']}"
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{keycloak_url_realm}/protocol/openid-connect/token")
+JWKS_URL = f"{keycloak_url_realm}/protocol/openid-connect/certs"
 ALGORITHMS = ["RS256"]
 
 _jwk_set = None  # In-memory cache of Keycloak's public keys
@@ -125,7 +125,7 @@ def get_connected_user(token: str = Depends(oauth2_scheme)) -> ConnectedUser:
     try:
         jwk_set = fetch_jwk_set()
         claims = jwt.decode(token, key=jwk_set, claims_options={
-            "iss": {"essential": True, "value": KEYCLOAK_ISSUER},
+            "iss": {"essential": True, "value": keycloak_url_realm},
             "exp": {"essential": True},
         })
         claims.validate()

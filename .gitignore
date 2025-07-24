@@ -4,6 +4,7 @@
 .vscode
 /.idea
 **/__pycache__
+apis/src/apis/config/config.yml
 app/config/config.yml
 app/migrations/data/ref_*.csv
 app/config/oidc.yml
