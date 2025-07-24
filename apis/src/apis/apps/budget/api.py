@@ -11,7 +11,6 @@ app = FastAPI(
     docs_url="/docs",
     version="3.0",
     swagger_ui_parameters={"syntaxHighlight.theme": "obsidian", "docExpansion": "none"},
-    separate_input_output_schemas=False,
 )
 
 app.include_router(router_healthcheck, prefix="/healthcheck", tags=["Healthcheck"])

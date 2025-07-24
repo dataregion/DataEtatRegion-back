@@ -10,8 +10,8 @@ from models.value_objects.common import DataType
 
 from apis.apps.budget.models.grouped_data import GroupedData
 from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams, SourcesQueryParams
-from apis.apps.budget.services.colonnes import get_list_colonnes_grouping
-from apis.apps.budget.services.query_data import get_annees_budget, get_ligne, get_lignes
+from apis.apps.budget.services.get_colonnes import get_list_colonnes_grouping
+from apis.apps.budget.services.get_data import get_annees_budget, get_ligne, get_lignes
 from apis.database import get_db
 from apis.security import ConnectedUser, get_connected_user
 from apis.shared.decorators import handle_exceptions
@@ -30,8 +30,9 @@ def handle_national(params: FinancialLineQueryParams, user: ConnectedUser) -> Fi
 
 @router.get("", summary="Récupére les lignes financières, mécanisme de grouping pour récupérer les montants agrégés", response_class=JSONResponse)
 @handle_exceptions
-def get_lignes_financieres(params: FinancialLineQueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(get_connected_user)):
-
+def get_lignes_financieres(params: FinancialLineQueryParams = Depends(), db: Session = Depends(get_db)):
+    user = ConnectedUser({"region": "053"})
+    print(user.current_region)
     params = handle_national(params, user)
     if params.grouping is not None:
         params.map_colonnes(get_list_colonnes_grouping())

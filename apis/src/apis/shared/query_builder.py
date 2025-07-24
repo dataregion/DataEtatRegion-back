@@ -1,7 +1,7 @@
 from typing import Literal
 
 from fastapi import Query
-from sqlalchemy import Column, select, or_
+from sqlalchemy import Column, ColumnExpressionArgument, select, or_
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -40,13 +40,17 @@ class V3QueryBuilder:
         self._select_model = True
 
         if self._params.colonnes is not None:
-            selected_colonnes = [getattr(self._model, c) for c in self._params.colonnes if c in inspect(self._model).columns]
+            selected_colonnes = [getattr(self._model, c) for c in self._params.colonnes if c in inspect(self._model).columns.keys()]
             self.select_custom_colonnes(selected_colonnes)
 
     def select_custom_colonnes(self, colonnes: list):
         self._query = select(*colonnes)
         self._select_model = False
         return self
+
+    def where_custom(self, where: ColumnExpressionArgument[bool]):
+        self._query = self._query.where(where)
+        return self._query
 
     def where_field_is(self, colonne: Column, value: dict, can_be_null=False):
         if value is None:
@@ -94,6 +98,7 @@ class V3QueryBuilder:
         return self
     
     def paginate(self):
+        print("paginate")
         offset = (self._params.page - 1) * self._params.page_size
         self._query = self._query.offset(offset).limit(self._params.page_size + 1)
         return self

@@ -4,7 +4,7 @@ import logging
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from apis.apps.budget.services.colonnes import (
+from apis.apps.budget.services.get_colonnes import (
     get_list_colonnes_grouping,
     get_list_colonnes_tableau,
 )
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 @router.get("/tableau", summary="Liste des colonnes possibles pour le tableau")
 @handle_exceptions
 def get_colonnes_tableau(user: ConnectedUser = Depends(get_connected_user), db: Session = Depends(get_db)):
-    logging.debug("[PREFERENCE][CTRL] Post users prefs")
+    logger.debug("[COLONNES] Récupération des colonnes pour le tableau")
     return APISuccess(
         code=HTTPStatus.OK,
         message="Liste des colonnes disponibles pour le tableau",
@@ -30,6 +30,7 @@ def get_colonnes_tableau(user: ConnectedUser = Depends(get_connected_user), db: 
 @router.get("/grouping", summary="Liste des colonnes possibles pour le grouping")
 @handle_exceptions
 def get_colonnes_grouping(user: ConnectedUser = Depends(get_connected_user), db: Session = Depends(get_db)):
+    logger.debug("[COLONNES] Récupération des colonnes pour le grouping")
     return APISuccess(
         code=HTTPStatus.OK,
         message="Liste des colonnes disponibles pour le grouping",

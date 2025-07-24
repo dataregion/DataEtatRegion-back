@@ -271,7 +271,3 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
         where_clause = or_(*conds)
         self._query = self._query.where(where_clause)
         return self._query
-
-    def where_custom(self, where: ColumnExpressionArgument[bool]):
-        self._query = self._query.where(where)
-        return self._query

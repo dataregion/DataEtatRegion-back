@@ -1,0 +1,18 @@
+from fastapi.responses import JSONResponse
+from fastapi.testclient import TestClient
+
+from apis.security import ConnectedUser
+
+
+def test_get_colonnes_tableau(client: TestClient, token):
+    response: JSONResponse = client.get("/v3/budget/lignes?page=1&page_size=5", headers = {
+        "Authorization": f"Bearer {token}"
+    })
+    print(response)
+    assert response.status_code == 200
+    assert "data" in response.body
+
+def test_get_colonnes_grouping(client: TestClient):
+    response = client.get("/v3/budget/lignes?page=1&page_size=5")
+    assert response.status_code == 200
+    assert "data" in response.json()
