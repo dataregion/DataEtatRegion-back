@@ -1,6 +1,6 @@
 # 🧾 Algorithme d’import des fichiers AE/CP
 
-## 1. 📥 Import initial (année N, région R)
+## 1. 📥 Import initial (année N, source Region ou Nation)
 
 ### 🔄 Nettoyage préalable :
 - ❌ Suppression des CP existants pour l’année **N** et la région **R**.
@@ -10,12 +10,22 @@
 
 ### 📑 Parsing des fichiers
 
+
+#### ETAPE SUPP (nouvelle règle) 	🆕 	🆕 	🆕 	🆕 	🆕 	🆕 
+
+Sur le fichier des AE : 
+- supprimer toutes les lignes où le montant = 0 
+
 #### Fichier **AE** :
 - Chaque ligne est stockée dans une **map `ae_list`**, avec comme **clé** :
   ```
   regional_{source_region}_{annee}_{n_ej}_{n_poste_ej}
   ```
 - ➕ Permet de regrouper plusieurs AE pour un même `(n_ej, n_poste_ej)`.
+
+- 	🆕	🆕 	🆕 	🆕   NOUVELLE REGLE : 
+   - Si on a plusieurs AE en doublon (même poste et même EJ), alors on fait la somme des montants et on ne conserve que les données de la dernière lignes de la liste AE
+
 
 #### Fichier **CP** :
 - Pour chaque ligne CP :
@@ -105,6 +115,7 @@ Pour chaque AE :
 - Le montant le plus récent (6820.7) est conservé selon les règles métier.
 
 🟢 **Montant final stocké en base : 6820.7**
+🆕  	🆕  Avec les nouvelles REGLE : on aurait 62456.15+6820.7 = 69276.85
 
 
 #### Lignes d’entrée (même EJ/poste) avec un  montant positif et un montant négatif sur la même année  :
@@ -119,3 +130,4 @@ Pour chaque AE :
 - les deux montants sont insérés sur l'année 2025
 
 🟢 **Montant final stocké en base : -2225.07 et 2394.18**
+	🆕  	🆕  Avec les nouvelles REGLE : on aurait 2394.18-2225.07 = 169.11
