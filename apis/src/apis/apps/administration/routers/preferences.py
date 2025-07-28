@@ -2,8 +2,8 @@ import datetime
 from http import HTTPStatus
 import logging
 
-import sqlalchemy
 from marshmallow import ValidationError
+import sqlalchemy
 from sqlalchemy import cast
 from sqlalchemy.orm import lazyload, Session
 from fastapi import APIRouter, Depends
@@ -11,18 +11,20 @@ from fastapi import APIRouter, Depends
 from models.entities.preferences.Preference import Preference, Share
 from models.schemas.preferences import PreferenceFormSchema, PreferenceSchema
 
+from apis.config import config
 from apis.database import get_db
-from apis.security import ConnectedUser, get_connected_user
+from apis.security.connected_user import ConnectedUser
+from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
-from apis.shared.models import APIError, APISuccess
 
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+keycloak_validator = KeycloakTokenValidator(config)
 
 @router.post("", summary="Création d'une nouvelle préférence pour l'utilisateur connecté")
 @handle_exceptions
-def create_preference(user: ConnectedUser = Depends(get_connected_user), db: Session = Depends(get_db)):
+def create_preference(user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
     clientId = user.azp
 
     logger.debug("[PREFERENCE][CTRL] Post users prefs")
@@ -65,7 +67,7 @@ def create_preference(user: ConnectedUser = Depends(get_connected_user), db: Ses
 
 @router.get("", summary="Retourne la liste des préférences de l'utilisateur connecté")
 @handle_exceptions
-def get_preferences(user: ConnectedUser = Depends(get_connected_user), db: Session = Depends(get_db)):
+def get_preferences(user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
     clientId = user.azp
     logging.debug(f"get users prefs {clientId}")
 
@@ -89,7 +91,7 @@ def get_preferences(user: ConnectedUser = Depends(get_connected_user), db: Sessi
 
 @router.get("/{uuid}", summary="Récupère une préférence de l'utilisateur connecté")
 @handle_exceptions
-def get_preferences(uuid: str, user: ConnectedUser = Depends(get_connected_user), db: Session = Depends(get_db)):
+def get_preferences(uuid: str, user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
     logger.debug(f"Get users prefs {uuid}")
     clientId = user.azp
 
@@ -110,7 +112,7 @@ def get_preferences(uuid: str, user: ConnectedUser = Depends(get_connected_user)
 
 @router.put("/{uuid}", summary="Met à jour la préférence de l'utilisateur connecté")
 @handle_exceptions
-def update_preference(uuid: str, user: ConnectedUser = Depends(get_connected_user), db: Session = Depends(get_db)):
+def update_preference(uuid: str, user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
     clientId = user.azp
 
     # application = get_origin_referrer(request)
@@ -166,7 +168,7 @@ def update_preference(uuid: str, user: ConnectedUser = Depends(get_connected_use
 
 @router.delete("/{uuid}", summary="Supprime la préférence de l'utilisateur connecté")
 @handle_exceptions
-def delete_preference(uuid: str, user: ConnectedUser = Depends(get_connected_user), db: Session = Depends(get_db)):
+def delete_preference(uuid: str, user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
     logging.debug(f"Delete users prefs {uuid}")
     user = ConnectedUser.from_current_token_identity()
     clientId = user.azp

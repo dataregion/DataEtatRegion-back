@@ -12,8 +12,6 @@ from apis.apps.administration.api import app as app_administration
 from apis.apps.budget.api import app as app_budget
 from apis.apps.referentiels.api import app as app_referentiels
 
-from models import Base
-
 
 app = FastAPI(
     title="API V3 - Data Etat",

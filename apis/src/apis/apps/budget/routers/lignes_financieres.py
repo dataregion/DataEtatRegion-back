@@ -12,14 +12,17 @@ from apis.apps.budget.models.grouped_data import GroupedData
 from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams, SourcesQueryParams
 from apis.apps.budget.services.get_colonnes import get_list_colonnes_grouping
 from apis.apps.budget.services.get_data import get_annees_budget, get_ligne, get_lignes
+from apis.config import config
 from apis.database import get_db
-from apis.security import ConnectedUser, get_connected_user
+from apis.security.connected_user import ConnectedUser
+from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APIError, APISuccess
 
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+keycloak_validator = KeycloakTokenValidator(config)
 
 def handle_national(params: FinancialLineQueryParams, user: ConnectedUser) -> FinancialLineQueryParams:
     if user.current_region != "NAT":
@@ -63,7 +66,7 @@ def get_lignes_financieres(params: FinancialLineQueryParams = Depends(), db: Ses
 
 @router.get("/{id:int}", summary="Récupére les infos budgetaires en fonction de son identifiant technique", response_class=JSONResponse)
 @handle_exceptions
-def get_lignes_financieres_by_source(id: int, params: SourcesQueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(get_connected_user)):
+def get_lignes_financieres_by_source(id: int, params: SourcesQueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(keycloak_validator.get_connected_user())):
     
     if not params.source:
         return APIError(
@@ -90,7 +93,7 @@ def get_lignes_financieres_by_source(id: int, params: SourcesQueryParams = Depen
 
 @router.get("/annees", summary="Recupère la plage des années pour lesquelles les données budgetaires courent.", response_class=JSONResponse)
 @handle_exceptions
-def get_annees(params: SourcesQueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(get_connected_user)):
+def get_annees(params: SourcesQueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(keycloak_validator.get_connected_user())):
     params = handle_national(params, user)
     return APISuccess(
         code=HTTPStatus.OK,

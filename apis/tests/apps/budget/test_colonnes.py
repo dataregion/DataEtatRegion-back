@@ -1,8 +1,6 @@
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
-from apis.security import ConnectedUser
-
 
 def test_get_colonnes_tableau(client: TestClient, token):
     response: JSONResponse = client.get("/v3/budget/lignes?page=1&page_size=5", headers = {

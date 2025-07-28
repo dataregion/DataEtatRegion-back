@@ -10,18 +10,21 @@ from models.schemas.refs import QpvSchema
 from apis.apps.budget.models.budget_query_params import V3QueryParams
 from apis.apps.referentiels.services.get_data import get_all_data
 from apis.apps.referentiels.services.referentiels_router_factory import create_referentiel_router
+from apis.config import config
 from apis.database import get_db
-from apis.security import ConnectedUser, get_connected_user
+from apis.security.connected_user import ConnectedUser
+from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
 
 
 logger = logging.getLogger(__name__)
-router = create_referentiel_router(Qpv, QpvSchema, logger, "qpv")
+keycloak_validator = KeycloakTokenValidator(config)
+router = create_referentiel_router(Qpv, QpvSchema, keycloak_validator, logger, "qpv")
 
 @router.get("/{annee}", summary="Find all QPV by annee", response_class=JSONResponse)
 @handle_exceptions
-def find_all_by_annee_decoupage(annee: str, params: V3QueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(get_connected_user)):
+def find_all_by_annee_decoupage(annee: str, params: V3QueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(keycloak_validator.get_connected_user())):
     if annee != "2015" and annee != "2024":
         raise ValueError("L'année de découpage renseignée est erronée.")
     

@@ -1,11 +1,4 @@
-from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
-from authlib.jose import jwt, JsonWebKey, JoseError
-
-import requests
-
 from typing import Iterable
-
 from services.utils import wrap_all_ex_to
 
 from apis.config import config
@@ -105,32 +98,3 @@ class ConnectedUser:
     @wrap_all_ex_to(InvalidTokenError)
     def _retrieve_token_sub(self):
         return self.token["sub"]
-    
-keycloak_url_realm = f"{config['KEYCLOAK_OPENID']['URL']}/realms/{config['KEYCLOAK_OPENID']['REALM']}"
-JWKS_URL = f"{keycloak_url_realm}/protocol/openid-connect/certs"
-ALGORITHMS = ["RS256"]
-_jwk_set = None
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{keycloak_url_realm}/protocol/openid-connect/token")
-
-def fetch_jwk_set():
-    global _jwk_set
-    if _jwk_set is None:
-        response = requests.get(JWKS_URL)
-        response.raise_for_status()
-        _jwk_set = JsonWebKey.import_key_set(response.json())
-    return _jwk_set
-
-def get_connected_user(token: str = Depends(oauth2_scheme)) -> ConnectedUser:
-    try:
-        jwk_set = fetch_jwk_set()
-        claims = jwt.decode(token, key=jwk_set, claims_options={
-            "iss": {"essential": True, "value": keycloak_url_realm},
-            "exp": {"essential": True},
-        })
-        claims.validate()
-    except JoseError as e:
-        print('ok')
-        raise HTTPException(status_code=401, detail=f"Token validation failed: {str(e)}")
-
-    return ConnectedUser(dict(claims))
