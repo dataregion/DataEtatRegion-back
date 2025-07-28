@@ -10,7 +10,6 @@ from services.utilities.observability import SummaryOfTimePerfCounter
 from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams
 from apis.apps.budget.services.get_data import get_lignes
 from apis.database import get_db
-from apis.security import ConnectedUser, get_connected_user
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
 

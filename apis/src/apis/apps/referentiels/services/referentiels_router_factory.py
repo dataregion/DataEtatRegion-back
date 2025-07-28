@@ -8,8 +8,10 @@ from typing import Type
 
 from apis.apps.budget.models.budget_query_params import V3QueryParams
 from apis.apps.referentiels.services.get_data import get_all_data, get_one_data
+from apis.config import config
 from apis.database import get_db
-from apis.security import ConnectedUser, get_connected_user
+from apis.security.connected_user import ConnectedUser
+from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
 from apis.shared.query_builder import V3QueryBuilder
@@ -17,6 +19,7 @@ from apis.shared.query_builder import V3QueryBuilder
 def create_referentiel_router(
     model: Type[DeclarativeBase],
     schema: SQLAlchemyAutoSchema,
+    keycloak_validator: KeycloakTokenValidator,
     logger: Logger,
     model_name: str,
     code_column: str = "code",
@@ -27,7 +30,7 @@ def create_referentiel_router(
 
     @router.get("", summary=f"Liste de tous les {model_name}", response_class=JSONResponse)
     @handle_exceptions
-    def list_all(params: V3QueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(get_connected_user)):
+    def list_all(params: V3QueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(keycloak_validator.get_connected_user())):
         logger.debug(f"[{model_name.upper()}] Récupération des {model_name}")
 
         data, has_next = get_all_data(model, db, params)
@@ -49,7 +52,7 @@ def create_referentiel_router(
 
     @router.get("/{code}", summary=f"Get {model_name} by code", response_class=JSONResponse)
     @handle_exceptions
-    def get_by_code(code: str, params: V3QueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(get_connected_user)):
+    def get_by_code(code: str, params: V3QueryParams = Depends(), db: Session = Depends(get_db), user: ConnectedUser = Depends(keycloak_validator.get_connected_user())):
         logger.debug(f"[{model_name.upper()}] Récupération de {model_name} par {code_column} : {code}")
 
         data = get_one_data(model, db, params, [
