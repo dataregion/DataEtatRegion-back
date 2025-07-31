@@ -5,7 +5,10 @@ from models.schemas.visuterritoire import France2030Schema
 import tempfile
 import csv
 
+from app import db
+
 from models.entities.visuterritoire.query.VuesVisuTerritoire import France2030
+from sqlalchemy import select
 
 
 api = Namespace(
@@ -22,8 +25,10 @@ class ZipExtract(Resource):
     def get(self):
         """Récupère les données de montant d'ae par niveau, bop, année et type"""
         schema = France2030Schema()
-        rows = France2030.query.all()
         fieldsnames = list(schema.fields.keys())
+
+        stmt = select(France2030).execution_options(yield_per=1000)
+        rows = db.session.scalars(stmt)
 
         with tempfile.NamedTemporaryFile(mode="w+", newline="", delete=True) as file:
             writer = csv.DictWriter(file, fieldsnames)
