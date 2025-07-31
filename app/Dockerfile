@@ -53,6 +53,7 @@ ENV PATH="/venv/bin:$PATH"
 COPY app /appli/app
 COPY models /appli/models
 COPY gristcli /appli/gristcli
+COPY services /appli/services
 
 RUN rm /appli/app/config/**
 # ## Ces deux liens symboliques sont pour que la nouvelle structure soit 
