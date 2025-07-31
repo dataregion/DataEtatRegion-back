@@ -1,6 +1,8 @@
 from flask import current_app
 from flask import send_file
 from flask_restx import Namespace, Resource
+from sqlalchemy import select
+from app import db
 
 from models.schemas.visuterritoire import MontantParNiveauBopAnneeTypeSchema
 import tempfile
@@ -24,8 +26,10 @@ class ZipExtract(Resource):
         """Récupère les données de montant d'ae par niveau, bop, année et type"""
 
         schema = MontantParNiveauBopAnneeTypeSchema()
-        rows = MontantParNiveauBopAnneeType.query.all()
         fieldsnames = list(schema.fields.keys())
+
+        stmt = select(MontantParNiveauBopAnneeType).execution_options(yield_per=1000)
+        rows = db.session.scalars(stmt)
 
         with tempfile.NamedTemporaryFile(mode="w+", newline="", delete=True) as file:
             writer = csv.DictWriter(file, fieldsnames)
