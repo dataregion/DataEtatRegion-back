@@ -26,7 +26,7 @@ class V3QueryParams:
         self.search = search
         self.fields_search = self._split(fields_search)
 
-    def _split(self, val: str | None, separator: str = ',') -> list | None:
+    def _split(self, val: str | None, separator: str = ",") -> list | None:
         return val.split(separator) if val else None
 
 
@@ -40,7 +40,11 @@ class V3QueryBuilder:
         self._select_model = True
 
         if self._params.colonnes is not None:
-            selected_colonnes = [getattr(self._model, c) for c in self._params.colonnes if c in inspect(self._model).columns.keys()]
+            selected_colonnes = [
+                getattr(self._model, c)
+                for c in self._params.colonnes
+                if c in inspect(self._model).columns.keys()
+            ]
             self.select_custom_colonnes(selected_colonnes)
 
     def select_custom_colonnes(self, colonnes: list):
@@ -55,15 +59,23 @@ class V3QueryBuilder:
     def where_field_is(self, colonne: Column, value: dict, can_be_null=False):
         if value is None:
             return
-        
-        complete_cond = [colonne == value['type'](value['value']) if 'type' in value else value['value']]
+
+        complete_cond = [
+            (
+                colonne == value["type"](value["value"])
+                if "type" in value
+                else value["value"]
+            )
+        ]
         if can_be_null:
             complete_cond.append(colonne.is_(None))
 
         self._query = self._query.where(or_(*complete_cond))
         return self
 
-    def where_field_in(self, colonne: Column, set_of_values: list | None, can_be_null=False):
+    def where_field_in(
+        self, colonne: Column, set_of_values: list | None, can_be_null=False
+    ):
         if set_of_values is None:
             return
 
@@ -83,7 +95,11 @@ class V3QueryBuilder:
             sortby_colonne = getattr(self._model, self._params.sort_by, None)
             if isinstance(sortby_colonne, InstrumentedAttribute):
                 direction = self._params.sort_order or "asc"
-                self._query = self._query.order_by(sortby_colonne.asc() if direction == "asc" else sortby_colonne.desc())
+                self._query = self._query.order_by(
+                    sortby_colonne.asc()
+                    if direction == "asc"
+                    else sortby_colonne.desc()
+                )
         return self
 
     def search(self):
@@ -96,13 +112,13 @@ class V3QueryBuilder:
             if filters:
                 self._query = self._query.filter(or_(*filters))
         return self
-    
+
     def paginate(self):
         print("paginate")
         offset = (self._params.page - 1) * self._params.page_size
         self._query = self._query.offset(offset).limit(self._params.page_size + 1)
         return self
-    
+
     def select_all(self):
         data = []
         if self._select_model:
@@ -111,9 +127,8 @@ class V3QueryBuilder:
             data = list(self._session.execute(self._query).mappings().all())
 
         count_plus_one = len(data)
-        data = data[:self._params.page_size]
+        data = data[: self._params.page_size]
         return data, self._params.page_size < count_plus_one
-    
+
     def select_one(self):
         return self._session.execute(self._query).unique().scalar_one_or_none()
-    

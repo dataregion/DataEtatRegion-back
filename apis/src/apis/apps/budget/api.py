@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 
 from apis.apps.budget.routers.healthcheck import router as router_healthcheck
-from apis.apps.budget.routers.lignes_financieres import router as router_lignes_financieres
+from apis.apps.budget.routers.lignes_financieres import (
+    router as router_lignes_financieres,
+)
 from apis.apps.budget.routers.colonnes import router as router_colonnes
 
 
@@ -15,4 +17,6 @@ app = FastAPI(
 
 app.include_router(router_healthcheck, prefix="/healthcheck", tags=["Healthcheck"])
 app.include_router(router_colonnes, prefix="/colonnes", tags=["Liste des colonnes"])
-app.include_router(router_lignes_financieres, prefix="/lignes", tags=["Lignes financières"])
+app.include_router(
+    router_lignes_financieres, prefix="/lignes", tags=["Lignes financières"]
+)

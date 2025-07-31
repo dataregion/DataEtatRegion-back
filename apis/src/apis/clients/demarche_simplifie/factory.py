@@ -3,7 +3,11 @@ import logging
 
 import requests
 
-from apis.clients.demarche_simplifie.errors import InvalidTokenError, UnauthorizedOnDemarche, DemarcheNotFound
+from apis.clients.demarche_simplifie.errors import (
+    InvalidTokenError,
+    UnauthorizedOnDemarche,
+    DemarcheNotFound,
+)
 from apis.config import config
 
 
@@ -13,14 +17,20 @@ class ApiDemarcheSimplifie:
         self._url = url
 
     def do_post(self, data) -> dict:
-        headers = {"Authorization": f"Bearer {self._token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {self._token}",
+            "Content-Type": "application/json",
+        }
         answer = requests.post(url=self._url, headers=headers, data=data)
 
         if answer.status_code == 403:
             raise InvalidTokenError
         elif len(answer.json().get("errors") or "") > 0:
             error_message = answer.json().get("errors")[0].get("message")
-            if error_message == "An object of type Demarche was hidden due to permissions":
+            if (
+                error_message
+                == "An object of type Demarche was hidden due to permissions"
+            ):
                 raise UnauthorizedOnDemarche
             elif error_message == "Demarche not found":
                 raise DemarcheNotFound
@@ -38,7 +48,10 @@ def make_api_demarche_simplifie(token) -> ApiDemarcheSimplifie:
         url = config_demarches["URL"]
 
     except KeyError as e:
-        logging.warning("Impossible de trouver la configuration de l'API demarche simplifie.", exc_info=e)
+        logging.warning(
+            "Impossible de trouver la configuration de l'API demarche simplifie.",
+            exc_info=e,
+        )
         return None
 
     return ApiDemarcheSimplifie(token, url)

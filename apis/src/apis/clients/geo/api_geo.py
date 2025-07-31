@@ -10,7 +10,10 @@ LOGGER = logging.getLogger()
 
 proxies = None
 if os.environ.get("HTTP_PROXY") and os.environ.get("HTTPS_PROXY"):
-    proxies = {"http": os.environ.get("HTTP_PROXY"), "https": os.environ.get("HTTPS_PROXY")}
+    proxies = {
+        "http": os.environ.get("HTTP_PROXY"),
+        "https": os.environ.get("HTTPS_PROXY"),
+    }
 
 
 class ApiGeoException(Exception):

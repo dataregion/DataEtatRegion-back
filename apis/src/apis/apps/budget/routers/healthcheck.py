@@ -17,9 +17,14 @@ from apis.shared.models import APISuccess
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-@router.get("", summary="Vérification de la disponibilité de l'API des lignes budgetaires")
+
+@router.get(
+    "", summary="Vérification de la disponibilité de l'API des lignes budgetaires"
+)
 @handle_exceptions
-def healthcheck(db: Session = Depends(get_db), params: FinancialLineQueryParams = Depends()):
+def healthcheck(
+    db: Session = Depends(get_db), params: FinancialLineQueryParams = Depends()
+):
     params.colonnes = "source"
     params.source_region = "053"
     params.page = 1

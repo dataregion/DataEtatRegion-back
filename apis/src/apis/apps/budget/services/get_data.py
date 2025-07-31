@@ -1,20 +1,34 @@
-from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines
+from models.entities.financial.query.FlattenFinancialLines import (
+    EnrichedFlattenFinancialLines,
+)
 from models.value_objects.common import DataType, TypeCodeGeo
 
 from sqlalchemy import distinct
 from sqlalchemy.orm import Session
 
 from services.regions import get_request_regions, sanitize_source_region_for_bdd_request
-from services.utilities.observability import gauge_of_currently_executing, summary_of_time
+from services.utilities.observability import (
+    gauge_of_currently_executing,
+    summary_of_time,
+)
 from services.utils import convert_exception
 
-from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams, SourcesQueryParams
+from apis.apps.budget.models.budget_query_params import (
+    FinancialLineQueryParams,
+    SourcesQueryParams,
+)
 from apis.apps.budget.services.get_colonnes import get_list_colonnes_tableau
-from apis.apps.budget.services.query_builder import FinancialLineQueryBuilder, SourcesQueryBuilder
+from apis.apps.budget.services.query_builder import (
+    FinancialLineQueryBuilder,
+    SourcesQueryBuilder,
+)
 from apis.shared.exceptions import NoCurrentRegion
 
 
-app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanitize_source_region_for_bdd_request)
+app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(
+    sanitize_source_region_for_bdd_request
+)
+
 
 def get_ligne(db: Session, params: SourcesQueryParams, id: int):
     """
@@ -30,6 +44,7 @@ def get_ligne(db: Session, params: SourcesQueryParams, id: int):
         .source_region_in(_regions)
     )
     return builder.select_one()
+
 
 @gauge_of_currently_executing()
 @summary_of_time()
@@ -60,7 +75,11 @@ def get_lignes(db: Session, params: FinancialLineQueryParams):
         .source_is(params.source)
         .data_source_is(params.data_source)
         .source_region_in(_regions)
-        .categorie_juridique_in(params.types_beneficiaire, includes_none=params.types_beneficiaire is not None and "autres" in params.types_beneficiaire)
+        .categorie_juridique_in(
+            params.types_beneficiaire,
+            includes_none=params.types_beneficiaire is not None
+            and "autres" in params.types_beneficiaire,
+        )
         .tags_fullname_in(params.tags)
     )
 
@@ -81,14 +100,16 @@ def get_lignes(db: Session, params: FinancialLineQueryParams):
 
 
 def get_annees_budget(db: Session, params: SourcesQueryParams):
-    params.source_region = app_layer_sanitize_region(params.source_region, params.data_source)
+    params.source_region = app_layer_sanitize_region(
+        params.source_region, params.data_source
+    )
     _regions = get_request_regions(params.source_region)
 
     builder = (
         SourcesQueryBuilder(db, params)
-        .select_custom_colonnes([
-            distinct(EnrichedFlattenFinancialLines.annee).label("annee")
-        ])
+        .select_custom_colonnes(
+            [distinct(EnrichedFlattenFinancialLines.annee).label("annee")]
+        )
         .source_region_in(_regions)
         .data_source_is(params.data_source)
     )

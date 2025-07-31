@@ -1,6 +1,14 @@
 from enum import Enum
 from typing import TypedDict
-from sqlalchemy import Column, ColumnExpressionArgument, desc, distinct, func, or_, select
+from sqlalchemy import (
+    Column,
+    ColumnExpressionArgument,
+    desc,
+    distinct,
+    func,
+    or_,
+    select,
+)
 from sqlalchemy.orm.session import Session
 
 from models.entities.common.Tags import Tags
@@ -14,7 +22,10 @@ from services.helper import (
 )
 from services.helper import TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver
 
-from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams, SourcesQueryParams
+from apis.apps.budget.models.budget_query_params import (
+    FinancialLineQueryParams,
+    SourcesQueryParams,
+)
 from apis.apps.budget.models.colonne import Colonne
 from apis.shared.enums import BenefOrLoc
 from apis.shared.query_builder import V3QueryBuilder
@@ -32,7 +43,9 @@ class SourcesQueryBuilder(V3QueryBuilder):
 
     def source_region_in(self, source_region: list[str] | None):
         """Filtre sur la source region. Notons que ce filtre est passant sur les lignes sans source regions"""
-        self.where_field_in(FinancialLines.source_region, source_region, can_be_null=True)
+        self.where_field_in(
+            FinancialLines.source_region, source_region, can_be_null=True
+        )
         return self
 
     def data_source_is(self, data_source: str | None = None):
@@ -45,7 +58,7 @@ class SourcesQueryBuilder(V3QueryBuilder):
             FinancialLines.source == str(source.value), FinancialLines.id == id
         )
         return self
-    
+
 
 class FinancialLineQueryBuilder(SourcesQueryBuilder):
     """
@@ -72,7 +85,9 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
         self.dynamic_conditions = None
 
         if params.grouping is not None:
-            self.groupby_colonne, self.dynamic_conditions = self._rec_grouping_mechanisme(params.grouping, params.grouped, {})
+            self.groupby_colonne, self.dynamic_conditions = (
+                self._rec_grouping_mechanisme(params.grouping, params.grouped, {})
+            )
             if params.grouped is None or len(params.grouped) < len(params.grouping):
                 colonnes = [
                     getattr(FinancialLines, self.groupby_colonne.code).label("colonne"),
@@ -82,14 +97,16 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
                 ]
                 self.select_custom_colonnes(colonnes)
 
-    def _rec_grouping_mechanisme(self, grouping: list[Colonne], grouped: list[str] | None, conditions: dict):
+    def _rec_grouping_mechanisme(
+        self, grouping: list[Colonne], grouped: list[str] | None, conditions: dict
+    ):
         if grouped is None or len(grouped) == 0:
             return grouping[0] if len(grouping) > 0 else None, conditions
-        conditions[grouping[0].code] = { "value": grouped[0] }
+        conditions[grouping[0].code] = {"value": grouped[0]}
         if grouping[0].type is not None:
-            conditions[grouping[0].code]['type'] = grouping[0].type
+            conditions[grouping[0].code]["type"] = grouping[0].type
         return self._rec_grouping_mechanisme(grouping[1:], grouped[1:], conditions)
-    
+
     """
     Méthodes de création de conditions
     """
@@ -114,12 +131,16 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
         self.where_field_in(FinancialLines.annee, annees)
         return self
 
-    def niveau_code_geo_in(self, niveau_geo: str | None, code_geo: list | None, source_region: str | None):
+    def niveau_code_geo_in(
+        self, niveau_geo: str | None, code_geo: list | None, source_region: str | None
+    ):
         if niveau_geo is not None and code_geo is not None:
             self.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
         return self
 
-    def niveau_code_qpv_in(self, ref_qpv: str | None, code_qpv: list | None, source_region: str | None):
+    def niveau_code_qpv_in(
+        self, ref_qpv: str | None, code_qpv: list | None, source_region: str | None
+    ):
         if ref_qpv is not None:
             if code_qpv is not None:
                 decoupage = TypeCodeGeo.QPV if ref_qpv == 2015 else TypeCodeGeo.QPV24
@@ -137,18 +158,24 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
         return self
 
     def referentiel_programmation_in(self, ref_prog: list[str] | None):
-        self.where_field_in(
-            FinancialLines.referentielProgrammation_code, ref_prog
-        )
+        self.where_field_in(FinancialLines.referentielProgrammation_code, ref_prog)
         return self
 
-    def categorie_juridique_in(self, types_beneficiaires: list[str] | None, includes_none: bool = False,):
+    def categorie_juridique_in(
+        self,
+        types_beneficiaires: list[str] | None,
+        includes_none: bool = False,
+    ):
         conds = []
         if types_beneficiaires is not None and includes_none:
             conds.append(FinancialLines.beneficiaire_categorieJuridique_type)
 
         if types_beneficiaires is not None:
-            conds.append(FinancialLines.beneficiaire_categorieJuridique_type.in_(types_beneficiaires))
+            conds.append(
+                FinancialLines.beneficiaire_categorieJuridique_type.in_(
+                    types_beneficiaires
+                )
+            )
 
         cond = or_(*conds)
         self._query = self._query.where(cond)
@@ -163,7 +190,9 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
         return self
 
     def ej(self, ej: str, poste_ej: int):
-        self._stmt = self._query.where(FinancialLines.n_ej == ej).where(FinancialLines.n_poste_ej == poste_ej)
+        self._stmt = self._query.where(FinancialLines.n_ej == ej).where(
+            FinancialLines.n_poste_ej == poste_ej
+        )
         return self
 
     def where_qpv_not_null(self, field: Column):
@@ -218,7 +247,7 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
             benef_or_loc,
         )
         return self
-    
+
     def _where_geo(
         self,
         type_geo: TypeCodeGeo,
@@ -239,7 +268,9 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
             if type_geo is TypeCodeGeo.REGION:
                 code_locinter_pattern = [f"N{code}" for code in list_code_geo]
             elif type_geo is TypeCodeGeo.DEPARTEMENT:
-                code_locinter_pattern = [f"N{source_region}{code}" for code in list_code_geo]
+                code_locinter_pattern = [
+                    f"N{source_region}{code}" for code in list_code_geo
+                ]
             # fmt:off
             _conds_code_locinter = [
                 FinancialLines.localisationInterministerielle_code.ilike(f"{pattern}%")

@@ -16,7 +16,9 @@ def make_app_api_subventions_client() -> ApiSubventions:
         url = config_subventions["URL"]
         token = config_subventions["TOKEN"]
     except KeyError as e:
-        logging.warning("Impossible de trouver la confiugration de l'API subvention", exc_info=e)
+        logging.warning(
+            "Impossible de trouver la confiugration de l'API subvention", exc_info=e
+        )
         return None
 
     return ApiSubventions(token, url)

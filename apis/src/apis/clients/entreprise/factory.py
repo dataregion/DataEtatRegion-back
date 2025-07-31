@@ -11,7 +11,7 @@ def _make_api_entreprise_from_config(config_key: str) -> ApiEntreprise | None:
     """Fabrique un client API à partir d'une clé de configuration Flask."""
     timeout = 5
     try:
-        config_entreprise= config[config_key]
+        config_entreprise = config[config_key]
 
         url = config_entreprise["URL"]
         token = config_entreprise["TOKEN"]

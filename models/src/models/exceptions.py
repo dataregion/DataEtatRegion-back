@@ -25,7 +25,9 @@ class BadRequestDataRegateNum(DataRegatException):
 class FileNotAllowedException(DataRegatException):
     """Exception raised when file not allowed."""
 
-    def __init__(self, name="FileNotAllowed", message="le fichier n'a pas la bonne extension"):
+    def __init__(
+        self, name="FileNotAllowed", message="le fichier n'a pas la bonne extension"
+    ):
         self.message = message
         self.name = name
         super().__init__(f"[{self.name}] {self.message}")
@@ -34,7 +36,9 @@ class FileNotAllowedException(DataRegatException):
 class InvalidFile(DataRegatException):
     """Exception raised when file content is not correct."""
 
-    def __init__(self, name="InvalidFile", message="le fichier contient des informations erronés"):
+    def __init__(
+        self, name="InvalidFile", message="le fichier contient des informations erronés"
+    ):
         self.message = message
         self.name = name
         super().__init__(f"[{self.name}] {self.message}")

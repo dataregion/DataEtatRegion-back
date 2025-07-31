@@ -1,11 +1,11 @@
 class Colonne:
-    
+
     def __init__(
         self,
         code: str | None = None,
         label: str | None = None,
         type: str | None = str,
-        default: bool = True
+        default: bool = True,
     ):
         self.code = code
         self.label = label
@@ -17,5 +17,5 @@ class Colonne:
             "code": self.code,
             "label": self.label,
             "type": self.type,
-            "default": self.default
+            "default": self.default,
         }

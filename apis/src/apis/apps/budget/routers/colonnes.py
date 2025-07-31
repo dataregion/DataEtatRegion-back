@@ -20,9 +20,13 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator(config)
 
+
 @router.get("/tableau", summary="Liste des colonnes possibles pour le tableau")
 @handle_exceptions
-def get_colonnes_tableau(user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
+def get_colonnes_tableau(
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    db: Session = Depends(get_db),
+):
     logger.debug("[COLONNES] Récupération des colonnes pour le tableau")
     return APISuccess(
         code=HTTPStatus.OK,
@@ -30,9 +34,13 @@ def get_colonnes_tableau(user: ConnectedUser = Depends(keycloak_validator.get_co
         data=[c.to_dict() for c in get_list_colonnes_tableau()],
     ).to_json_response()
 
+
 @router.get("/grouping", summary="Liste des colonnes possibles pour le grouping")
 @handle_exceptions
-def get_colonnes_grouping(user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
+def get_colonnes_grouping(
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    db: Session = Depends(get_db),
+):
     logger.debug("[COLONNES] Récupération des colonnes pour le grouping")
     return APISuccess(
         code=HTTPStatus.OK,

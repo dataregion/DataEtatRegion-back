@@ -15,15 +15,19 @@ def load_test_config():
     with open(config_path, "r") as file:
         return yaml.safe_load(file)
 
+
 test_config = load_test_config()
+
 
 @pytest.fixture(scope="session")
 def client():
     return TestClient(app)
 
+
 @pytest.fixture
 def db_session():
     return get_test_db()
+
 
 @pytest.fixture(scope="session")
 def token():
