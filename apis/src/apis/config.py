@@ -11,4 +11,5 @@ def read_config():
         config_data = {}
     return config_data
 
+
 config = read_config()

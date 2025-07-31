@@ -22,20 +22,17 @@ def handle_exceptions(func: Callable):
         except ValueError as ve:
             traceback.print_exc()
             return APIError(
-                code=HTTPStatus.BAD_REQUEST,
-                detail=str(ve)
+                code=HTTPStatus.BAD_REQUEST, detail=str(ve)
             ).to_json_response()
         except PermissionError as pe:
             traceback.print_exc()
             return APIError(
-                code=HTTPStatus.FORBIDDEN,
-                detail=str(pe)
+                code=HTTPStatus.FORBIDDEN, detail=str(pe)
             ).to_json_response()
         except Exception as e:
             traceback.print_exc()
             return APIError(
-                code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                detail=str(e)
+                code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e)
             ).to_json_response()
 
     return wrapper
@@ -63,7 +60,9 @@ def check_permission(permissions):
             elif isinstance(permissions, list):
                 permissions_to_check = permissions
             else:
-                raise TypeError("permissions should be an AccountRole or a list of AccountRole")
+                raise TypeError(
+                    "permissions should be an AccountRole or a list of AccountRole"
+                )
 
             if user.roles is None:
                 return PermissionError("Vous n'avez pas les droits")

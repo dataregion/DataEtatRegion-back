@@ -22,7 +22,9 @@ class Mail:
             smtp = smtplib.SMTP(self.server, self.port)
 
         try:
-            mail = self._prepare_message(subject, recipients, template_html, template_text)
+            mail = self._prepare_message(
+                subject, recipients, template_html, template_text
+            )
 
             if self.pwd is not None:
                 smtp.login(self.from_email, self.pwd)

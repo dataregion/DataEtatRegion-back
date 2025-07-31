@@ -1,5 +1,3 @@
-
-
 from typing import Literal
 from fastapi import Query
 
@@ -24,7 +22,9 @@ class SourcesQueryParams(V3QueryParams):
         search: str | None = Query(None),
         fields_search: str | None = Query(None),
     ):
-        super().__init__(colonnes, page, page_size, sort_by, sort_order, search, fields_search)
+        super().__init__(
+            colonnes, page, page_size, sort_by, sort_order, search, fields_search
+        )
         self.source_region = source_region
         self.data_source = data_source
         self.source = DataType(source) if source is not None else None
@@ -61,14 +61,25 @@ class FinancialLineQueryParams(SourcesQueryParams):
         search: str | None = Query(None),
         fields_search: str | None = Query(None),
     ):
-        super().__init__(source_region, data_source, source, colonnes, page, page_size, sort_by, sort_order, search, fields_search)
+        super().__init__(
+            source_region,
+            data_source,
+            source,
+            colonnes,
+            page,
+            page_size,
+            sort_by,
+            sort_order,
+            search,
+            fields_search,
+        )
         self.n_ej = self._split(n_ej)
         self.code_programme = self._split(code_programme)
         self.niveau_geo = niveau_geo
         self.code_geo = self._split(code_geo)
         self.ref_qpv = ref_qpv
         self.code_qpv = self._split(code_qpv)
-        self.theme = self._split(theme, '|')
+        self.theme = self._split(theme, "|")
         self.siret_beneficiaire = self._split(siret_beneficiaire)
         self.types_beneficiaire = self._split(types_beneficiaire)
         self.annee = self._split(annee)
@@ -80,10 +91,14 @@ class FinancialLineQueryParams(SourcesQueryParams):
         self.grouped = self._split(grouped)
 
         if bool(self.niveau_geo) ^ bool(self.code_geo):
-            raise ValueError("Les paramètres 'niveau_geo' et 'code_geo' doivent être fournis ensemble.")
+            raise ValueError(
+                "Les paramètres 'niveau_geo' et 'code_geo' doivent être fournis ensemble."
+            )
         if bool(self.ref_qpv) ^ bool(self.code_qpv):
-            raise ValueError("Les paramètres 'ref_qpv' et 'code_qpv' doivent être fournis ensemble.")
-        
+            raise ValueError(
+                "Les paramètres 'ref_qpv' et 'code_qpv' doivent être fournis ensemble."
+            )
+
     def map_colonnes(self, list_colonnes: list[Colonne]):
         casted = []
         for colonne in self.grouping:

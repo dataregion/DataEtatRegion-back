@@ -2,10 +2,14 @@ import functools
 import logging
 
 from gristcli.gristservices.grist_api import GrisApiService
-from gristcli.gristservices.users_grist_service import UserGristDatabaseService, UserScimService
+from gristcli.gristservices.users_grist_service import (
+    UserGristDatabaseService,
+    UserScimService,
+)
 
 from apis.config import config
 from apis.shared.exceptions import ConfigurationException
+
 
 class GristConfiguationException(ConfigurationException):
     """Exception raised when there is an error building the Grist client.
@@ -45,7 +49,9 @@ def make_grist_scim_client() -> UserScimService:
     token = config_grist.get("TOKEN_SCIM", None)
 
     if url is None or token is None:
-        logging.error("[GRIST] Missing SERVEUR_URL or TOKEN_SCIM in GRIST configuration")
+        logging.error(
+            "[GRIST] Missing SERVEUR_URL or TOKEN_SCIM in GRIST configuration"
+        )
         raise GristConfiguationException()
 
     return UserScimService(url, token)

@@ -22,9 +22,15 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator(config)
 
-@router.post("", summary="Création d'une nouvelle préférence pour l'utilisateur connecté")
+
+@router.post(
+    "", summary="Création d'une nouvelle préférence pour l'utilisateur connecté"
+)
 @handle_exceptions
-def create_preference(user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
+def create_preference(
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    db: Session = Depends(get_db),
+):
     clientId = user.azp
 
     logger.debug("[PREFERENCE][CTRL] Post users prefs")
@@ -40,7 +46,12 @@ def create_preference(user: ConnectedUser = Depends(keycloak_validator.get_conne
         return {"message": "Invalid", "details": err.messages}, HTTPStatus.BAD_REQUEST
 
     # on retire les shares pour soit même.
-    shares = list(filter(lambda d: d["shared_username_email"] != json_data["username"], data["shares"]))
+    shares = list(
+        filter(
+            lambda d: d["shared_username_email"] != json_data["username"],
+            data["shares"],
+        )
+    )
 
     share_list = [Share(**share) for share in shares]
     # application = get_origin_referrer(request)
@@ -55,19 +66,27 @@ def create_preference(user: ConnectedUser = Depends(keycloak_validator.get_conne
 
     try:
         db.session.add(pref)
-        logging.info(f'[PREFERENCE][CTRL] Adding preference for user {json_data["username"]}')
+        logging.info(
+            f'[PREFERENCE][CTRL] Adding preference for user {json_data["username"]}'
+        )
         db.session.commit()
         # if len(pref.shares) > 0:
         #     share_filter_user.delay(str(pref.uuid), application)
     except Exception as e:
         logging.error("[PREFERENCE][CTRL] Error when saving preference", e)
-        raise ValueError(message="Error when saving preference", code=HTTPStatus.BAD_REQUEST)
+        raise ValueError(
+            message="Error when saving preference", code=HTTPStatus.BAD_REQUEST
+        )
 
     return PreferenceSchema().dump(pref)
 
+
 @router.get("", summary="Retourne la liste des préférences de l'utilisateur connecté")
 @handle_exceptions
-def get_preferences(user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
+def get_preferences(
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    db: Session = Depends(get_db),
+):
     clientId = user.azp
     logging.debug(f"get users prefs {clientId}")
 
@@ -79,7 +98,10 @@ def get_preferences(user: ConnectedUser = Depends(keycloak_validator.get_connect
     )
     list_pref_shared = (
         Preference.query.join(Share)
-        .filter(Share.shared_username_email == user.username, Preference.application_clientid == clientId)
+        .filter(
+            Share.shared_username_email == user.username,
+            Preference.application_clientid == clientId,
+        )
         .distinct(Preference.id)
         .all()
     )
@@ -87,16 +109,25 @@ def get_preferences(user: ConnectedUser = Depends(keycloak_validator.get_connect
     schema = PreferenceSchema(many=True)
     create_by_user = schema.dump(list_pref)
     shared_with_user = schema.dump(list_pref_shared)
-    return {"create_by_user": create_by_user, "shared_with_user": shared_with_user}, HTTPStatus.OK
+    return {
+        "create_by_user": create_by_user,
+        "shared_with_user": shared_with_user,
+    }, HTTPStatus.OK
+
 
 @router.get("/{uuid}", summary="Récupère une préférence de l'utilisateur connecté")
 @handle_exceptions
-def get_preferences(uuid: str, user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
+def get_preferences(
+    uuid: str,
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    db: Session = Depends(get_db),
+):
     logger.debug(f"Get users prefs {uuid}")
     clientId = user.azp
 
     preference = Preference.query.filter(
-        cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_clientid == clientId
+        cast(Preference.uuid, sqlalchemy.String) == uuid,
+        Preference.application_clientid == clientId,
     ).one()
 
     schema = PreferenceSchema()
@@ -106,18 +137,26 @@ def get_preferences(uuid: str, user: ConnectedUser = Depends(keycloak_validator.
         preference.dernier_acces = datetime.datetime.utcnow()
         db.session.commit()
     except Exception as e:
-        logging.warning(f"[PREFERENCE][CTRL] Error when update count usage preference {uuid}", e)
+        logging.warning(
+            f"[PREFERENCE][CTRL] Error when update count usage preference {uuid}", e
+        )
 
     return result, HTTPStatus.OK
 
+
 @router.put("/{uuid}", summary="Met à jour la préférence de l'utilisateur connecté")
 @handle_exceptions
-def update_preference(uuid: str, user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
+def update_preference(
+    uuid: str,
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    db: Session = Depends(get_db),
+):
     clientId = user.azp
 
     # application = get_origin_referrer(request)
     preference_to_save = Preference.query.filter(
-        cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_clientid == clientId
+        cast(Preference.uuid, sqlalchemy.String) == uuid,
+        Preference.application_clientid == clientId,
     ).one()
 
     if preference_to_save.username != user.username:
@@ -127,7 +166,11 @@ def update_preference(uuid: str, user: ConnectedUser = Depends(keycloak_validato
     json_data = {}
 
     # filter the shares list to exclude the current user
-    shares = list(filter(lambda d: d["shared_username_email"] != user.username, json_data["shares"]))
+    shares = list(
+        filter(
+            lambda d: d["shared_username_email"] != user.username, json_data["shares"]
+        )
+    )
     # create a list of Share objects from the filtered shares
     new_share_list = [Share(**share) for share in shares]
     # initialize a list to store the final shares to save
@@ -166,24 +209,34 @@ def update_preference(uuid: str, user: ConnectedUser = Depends(keycloak_validato
         logging.error(f"[PREFERENCE][CTRL] Error when delete preference {uuid}", e)
         raise ValueError("Error when delete preference")
 
+
 @router.delete("/{uuid}", summary="Supprime la préférence de l'utilisateur connecté")
 @handle_exceptions
-def delete_preference(uuid: str, user: ConnectedUser = Depends(keycloak_validator.get_connected_user()), db: Session = Depends(get_db)):
+def delete_preference(
+    uuid: str,
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    db: Session = Depends(get_db),
+):
     logging.debug(f"Delete users prefs {uuid}")
     user = ConnectedUser.from_current_token_identity()
     clientId = user.azp
 
     preference = Preference.query.filter(
-        cast(Preference.uuid, sqlalchemy.String) == uuid, Preference.application_clientid == clientId
+        cast(Preference.uuid, sqlalchemy.String) == uuid,
+        Preference.application_clientid == clientId,
     ).one()
 
     if preference.username != user.username:
-        raise PermissionError("Vous n'avez pas les droits de supprimer cette préférence")
+        raise PermissionError(
+            "Vous n'avez pas les droits de supprimer cette préférence"
+        )
 
     try:
         db.session.delete(preference)
         db.session.commit()
         return "Success", HTTPStatus.OK
     except Exception as e:
-        logging.error(f"[PREFERENCE][CTRL] Error when delete preference {uuid} {clientId}", e)
+        logging.error(
+            f"[PREFERENCE][CTRL] Error when delete preference {uuid} {clientId}", e
+        )
         raise ValueError(f"Error when delete preference on application {clientId}")

@@ -3,7 +3,10 @@ import logging
 
 from fastapi import APIRouter, Depends
 
-from apis.clients.keycloack.factory import KeycloakConfigurationException, make_or_get_keycloack_admin
+from apis.clients.keycloack.factory import (
+    KeycloakConfigurationException,
+    make_or_get_keycloack_admin,
+)
 from apis.database import get_db
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
@@ -11,6 +14,7 @@ from apis.shared.models import APISuccess
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
 
 @router.get("/{username:str}", summary="Retourne un utilisateur grâce au username")
 @handle_exceptions

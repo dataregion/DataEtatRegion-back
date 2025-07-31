@@ -9,12 +9,14 @@ TestingSessionLocal = sessionmaker(bind=engine)
 
 Base.metadata.create_all(bind=engine)
 
+
 def get_test_db():
     db = TestingSessionLocal()
     try:
         yield db
     finally:
         db.close()
+
 
 # Optional: expose original dependency to override it in app
 get_test_db.original_dep = "your.path.to.get_db"
