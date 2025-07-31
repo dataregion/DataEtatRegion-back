@@ -2,7 +2,9 @@ from http.client import HTTPException
 from urllib.request import Request
 from fastapi import Depends, FastAPI
 from sqlalchemy import create_engine
+from models import init as init_persistence_module
 
+init_persistence_module()
 
 from models.entities import *  # type: ignore # noqa: F403
 from models.schemas import *  # type: ignore  # noqa: F403
