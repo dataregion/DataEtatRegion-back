@@ -25,6 +25,8 @@ Sur le fichier des AE :
 
 - 	🆕	🆕 	🆕 	🆕   NOUVELLE REGLE : 
    - Si on a plusieurs AE en doublon (même poste et même EJ), alors on fait la somme des montants et on ne conserve que les données de la dernière lignes de la liste AE
+      - Si chronologique : conserver la dernière ligne de la liste AE
+      - Si pas chronologique, ou que c'est la même date : prioriser la dernière ligne qui a un montant positif
 
 
 #### Fichier **CP** :
