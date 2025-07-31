@@ -17,28 +17,30 @@ async function initGrist() {
 
     const docId = await getDocId();
     const tableId = await getTableId();
+    const tableName = window.tableNameFromServer;
+    console.log("tableName from server:", tableName);
 
-    form.addEventListener("submit", async function (event) {
-      event.preventDefault();
-      button.disabled = true
-      button.replaceChildren("Synchronisation")
-      try {
-        const response = await fetch(`/launch-sync?docId=${docId}&tableId=${tableId}`, {
-          method: 'POST'
-        });
-        if (!response.ok) {
-          const errorText = await response.text();
-        } else {
-          button.replaceChildren("Synchroniser")
-          button.disabled = false
-        }
-      } catch (err) {
-        console.error("Erreur :", err);
-        resultArea.textContent = `Erreur : ${err.message}`;
-      } finally {
-        resultBloc.style.display = "block";
-      }
-    });
+    // form.addEventListener("submit", async function (event) {
+    //   event.preventDefault();
+    //   button.disabled = true
+    //   button.replaceChildren("Synchronisation")
+    //   try {
+    //     const response = await fetch(`/launch-sync?docId=${docId}&tableId=${tableId}&tableName=${tableName}`, {
+    //       method: 'POST'
+    //     });
+    //     if (!response.ok) {
+    //       const errorText = await response.text();
+    //     } else {
+    //       button.replaceChildren("Synchroniser")
+    //       button.disabled = false
+    //     }
+    //   } catch (err) {
+    //     console.error("Erreur :", err);
+    //     resultArea.textContent = `Erreur : ${err.message}`;
+    //   } finally {
+    //     resultBloc.style.display = "block";
+    //   }
+    // });
 }
 
 document.addEventListener('DOMContentLoaded', initGrist);
