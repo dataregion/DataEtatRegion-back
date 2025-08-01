@@ -1,4 +1,4 @@
-from services.financial_data import HasNext
+from app.servicesapp.financial_data import HasNext
 from flask import current_app
 from app.controller.financial_data.schema_model import register_flatten_financial_lines_schemamodel
 from app.controller.utils.ControllerUtils import get_pagination_parser
