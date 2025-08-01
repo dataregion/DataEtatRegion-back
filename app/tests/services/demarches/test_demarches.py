@@ -2,7 +2,6 @@ from datetime import datetime
 import json
 import os
 from pathlib import Path
-from models.entities.demarches.Token import Token
 import pytest
 
 from models.entities.demarches.Demarche import Demarche
@@ -14,6 +13,7 @@ from models.entities.demarches.Type import Type
 
 from app.services.demarches.demarches import DemarcheService, DemarcheExistsException
 
+from .fixtures import init_tokens, fernet_key
 
 _data = Path(os.path.dirname(__file__)) / "data"
 
@@ -77,22 +77,6 @@ def init_demarche(database):
     database.session.execute(database.delete(Demarche))
     database.session.execute(database.delete(Section))
     database.session.execute(database.delete(Type))
-    database.session.commit()
-
-
-@pytest.fixture(scope="function")
-def init_tokens(database):
-    tokens = []
-    with open(_data / "tokens.json") as file:
-        for token in json.load(file):
-            token = Token(**token)
-            tokens.append(token)
-            database.session.add(token)
-
-    database.session.commit()
-    yield tokens
-
-    database.session.execute(database.delete(Token))
     database.session.commit()
 
 
