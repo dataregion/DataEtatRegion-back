@@ -1,7 +1,6 @@
 from typing import Iterable
 from services.utils import wrap_all_ex_to
 
-from apis.config import config
 from apis.shared.exceptions import InvalidTokenError, NoCurrentRegion
 
 

@@ -12,6 +12,4 @@ router = APIRouter()
 @router.get("")
 @handle_exceptions
 def healthcheck():
-    return APISuccess(
-        status_code=HTTPStatus.OK, message="Healthcheck OK", data=None
-    ).to_json_response()
+    return APISuccess(status_code=HTTPStatus.OK, message="Healthcheck OK", data=None)

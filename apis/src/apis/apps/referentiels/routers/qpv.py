@@ -18,6 +18,7 @@ from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
+from apis.shared.openapi_config import build_api_success_response
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,12 @@ keycloak_validator = KeycloakTokenValidator(config)
 router = create_referentiel_router(Qpv, QpvSchema, keycloak_validator, logger, "qpv")
 
 
-@router.get("/{annee}", summary="Find all QPV by annee", response_class=JSONResponse)
+@router.get(
+    "/{annee}",
+    summary="Find all QPV by annee",
+    response_class=JSONResponse,
+    responses=build_api_success_response(is_list=True),
+)
 @handle_exceptions
 def find_all_by_annee_decoupage(
     annee: str,
@@ -43,7 +49,7 @@ def find_all_by_annee_decoupage(
             code=HTTPStatus.NO_CONTENT,
             message="Aucun résultat ne correspond à vos critères de recherche",
             data=[],
-        ).to_json_response()
+        )
 
     return APISuccess(
         code=HTTPStatus.OK,
@@ -51,4 +57,4 @@ def find_all_by_annee_decoupage(
         data=QpvSchema(many=True).dump(data),
         current_page=params.page,
         has_next=has_next,
-    ).to_json_response()
+    )

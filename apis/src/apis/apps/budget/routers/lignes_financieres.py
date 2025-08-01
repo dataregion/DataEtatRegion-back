@@ -1,12 +1,11 @@
 from http import HTTPStatus
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
-from models.value_objects.common import DataType
 
 from apis.apps.budget.models.grouped_data import GroupedData
 from apis.apps.budget.models.budget_query_params import (
@@ -21,6 +20,7 @@ from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APIError, APISuccess
+from apis.shared.openapi_config import build_api_success_response
 
 
 router = APIRouter()
@@ -42,6 +42,7 @@ def handle_national(
     "",
     summary="Récupére les lignes financières, mécanisme de grouping pour récupérer les montants agrégés",
     response_class=JSONResponse,
+    responses=build_api_success_response(is_list=True),
 )
 @handle_exceptions
 def get_lignes_financieres(
@@ -66,7 +67,7 @@ def get_lignes_financieres(
             code=HTTPStatus.NO_CONTENT,
             message="Aucun résultat ne correspond à vos critères de recherche",
             data=[],
-        ).to_json_response()
+        )
 
     return APISuccess(
         code=HTTPStatus.OK,
@@ -74,13 +75,14 @@ def get_lignes_financieres(
         data=data,
         has_next=has_next,
         current_page=params.page,
-    ).to_json_response()
+    )
 
 
 @router.get(
     "/{id:int}",
     summary="Récupére les infos budgetaires en fonction de son identifiant technique",
     response_class=JSONResponse,
+    responses=build_api_success_response(),
 )
 @handle_exceptions
 def get_lignes_financieres_by_source(
@@ -94,7 +96,7 @@ def get_lignes_financieres_by_source(
         return APIError(
             code=HTTPStatus.UNPROCESSABLE_ENTITY,
             error="La paramètre `source` est requis.",
-        ).to_json_response()
+        )
 
     params = handle_national(params, user)
 
@@ -104,19 +106,20 @@ def get_lignes_financieres_by_source(
             code=HTTPStatus.NO_CONTENT,
             message="Aucun résultat ne correspond à vos critères de recherche",
             data=[],
-        ).to_json_response()
+        )
 
     return APISuccess(
         code=HTTPStatus.OK,
         message="Ligne financière",
         data=EnrichedFlattenFinancialLinesSchema().dump(ligne),
-    ).to_json_response()
+    )
 
 
 @router.get(
     "/annees",
     summary="Recupère la plage des années pour lesquelles les données budgetaires courent.",
     response_class=JSONResponse,
+    responses=build_api_success_response(is_list=True),
 )
 @handle_exceptions
 def get_annees(
@@ -129,4 +132,4 @@ def get_annees(
         code=HTTPStatus.OK,
         message="Liste des années présentes dans les lignes financières",
         data=get_annees_budget(db, params),
-    ).to_json_response()
+    )

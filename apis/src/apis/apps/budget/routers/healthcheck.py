@@ -2,6 +2,7 @@ from http import HTTPStatus
 import logging
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
@@ -12,6 +13,7 @@ from apis.apps.budget.services.get_data import get_lignes
 from apis.database import get_db
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
+from apis.shared.openapi_config import build_api_success_response
 
 
 router = APIRouter()
@@ -19,7 +21,10 @@ logger = logging.getLogger(__name__)
 
 
 @router.get(
-    "", summary="Vérification de la disponibilité de l'API des lignes budgetaires"
+    "",
+    summary="Vérification de la disponibilité de l'API des lignes budgetaires",
+    response_class=JSONResponse,
+    responses=build_api_success_response(),
 )
 @handle_exceptions
 def healthcheck(
@@ -42,4 +47,4 @@ def healthcheck(
         code=HTTPStatus.OK,
         message="API /v3/budget is running !",
         data=None,
-    ).to_json_response()
+    )
