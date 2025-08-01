@@ -4,10 +4,13 @@ from typing import TypedDict
 from app.servicesapp.exceptions.authentication import NoCurrentRegion
 import pandas
 
-from services.helper import TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver, TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver
+from services.helper import (
+    TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver,
+    TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver,
+)
 from services.regions import sanitize_source_region_for_bdd_request
 from services.regions import get_request_regions
-from sqlalchemy import Column, desc, distinct, or_, select
+from sqlalchemy import Column, ColumnExpressionArgument, desc, distinct, or_, select
 from sqlalchemy.orm import contains_eager, selectinload
 
 from app import db
@@ -307,9 +310,11 @@ def import_qpv_lieu_action(file_qpv, username=""):
     task = import_file_qpv_lieu_action.delay(str(save_path))
     return task
 
+
 #################################################################
 # Builder
 #
+
 
 class BenefOrLoc(Enum):
     BENEFICIAIRE = "beneficiaire"
@@ -347,9 +352,7 @@ class BuilderStatementFinancialLine:
         self._code_geo_column_locinterministerielle_resolver = (
             TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver()
         )
-        self._code_geo_column_benef_resolver = (
-            TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver()
-        )
+        self._code_geo_column_benef_resolver = TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver()
 
     def n_ej_in(self, n_ej: list[str] | None = None):
         self._stmt_where_field_in(FinancialLines.n_ej, n_ej)
@@ -385,17 +388,13 @@ class BuilderStatementFinancialLine:
         return self
 
     def referentiel_programmation_in(self, ref_prog: list[str] | None):
-        self._stmt_where_field_in(
-            FinancialLines.referentielProgrammation_code, ref_prog
-        )
+        self._stmt_where_field_in(FinancialLines.referentielProgrammation_code, ref_prog)
         return self
 
     def source_region_in(self, source_region: list[str] | None):
         """Filtre sur la source region. Notons que ce filtre est passant sur les lignes sans source regions"""
 
-        self._stmt_where_field_in(
-            FinancialLines.source_region, source_region, can_be_null=True
-        )
+        self._stmt_where_field_in(FinancialLines.source_region, source_region, can_be_null=True)
         return self
 
     def type_categorie_juridique_du_beneficiaire_in(
@@ -405,16 +404,11 @@ class BuilderStatementFinancialLine:
     ):
         conds = []
         if types_beneficiaires is not None and includes_none:
-            _cond = (
-                FinancialLines.beneficiaire_categorieJuridique_type
-                == None  # noqa: E711
-            )
+            _cond = FinancialLines.beneficiaire_categorieJuridique_type == None  # noqa: E711
             conds.append(_cond)
 
         if types_beneficiaires is not None:
-            _cond = FinancialLines.beneficiaire_categorieJuridique_type.in_(
-                types_beneficiaires
-            )
+            _cond = FinancialLines.beneficiaire_categorieJuridique_type.in_(types_beneficiaires)
             conds.append(_cond)
 
         cond = or_(*conds)
@@ -430,9 +424,7 @@ class BuilderStatementFinancialLine:
         return self
 
     def ej(self, ej: str, poste_ej: int):
-        self._stmt = self._stmt.where(FinancialLines.n_ej == ej).where(
-            FinancialLines.n_poste_ej == poste_ej
-        )
+        self._stmt = self._stmt.where(FinancialLines.n_ej == ej).where(FinancialLines.n_poste_ej == poste_ej)
         return self
 
     def where_qpv_not_null(self, field: Column):
@@ -443,9 +435,7 @@ class BuilderStatementFinancialLine:
         )
         return self
 
-    def where_geo_loc_qpv(
-        self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str
-    ):
+    def where_geo_loc_qpv(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):
         if list_code_geo is None:
             return self
 
@@ -469,14 +459,10 @@ class BuilderStatementFinancialLine:
         if list_code_geo is None:
             return self
 
-        column_codegeo_commune_loc_inter = (
-            self._code_geo_column_locinterministerielle_resolver.code_geo_column(
-                type_geo
-            )
+        column_codegeo_commune_loc_inter = self._code_geo_column_locinterministerielle_resolver.code_geo_column(
+            type_geo
         )
-        column_codegeo_commune_beneficiaire = (
-            self._code_geo_column_benef_resolver.code_geo_column(type_geo)
-        )
+        column_codegeo_commune_beneficiaire = self._code_geo_column_benef_resolver.code_geo_column(type_geo)
 
         self._where_geo(
             type_geo,
@@ -503,9 +489,7 @@ class BuilderStatementFinancialLine:
         # On calcule les patterns valides pour les codes de localisations interministerielles
         #
         if benef_or_loc is None or benef_or_loc is BenefOrLoc.LOCALISATION_INTER:
-            code_locinter_pattern = self._codes_locinterministerielle(
-                type_geo, list_code_geo, source_region
-            )
+            code_locinter_pattern = self._codes_locinterministerielle(type_geo, list_code_geo, source_region)
             # fmt:off
             _conds_code_locinter = [
                 FinancialLines.localisationInterministerielle_code.ilike(f"{pattern}%")
@@ -544,14 +528,10 @@ class BuilderStatementFinancialLine:
 
     def par_identifiant_technique(self, source: DataType, id: int):
         """Filtre selon l'identifiant technique. ie couple source - id"""
-        self._stmt = self._stmt.where(
-            FinancialLines.source == str(source), FinancialLines.id == id
-        )
+        self._stmt = self._stmt.where(FinancialLines.source == str(source), FinancialLines.id == id)
         return self
 
-    def do_paginate_incremental(
-        self, limit: int, offset: int
-    ) -> IncrementalPageOfBudgetLines:
+    def do_paginate_incremental(self, limit: int, offset: int) -> IncrementalPageOfBudgetLines:
         """
         Effectue la pagination des résultats en utilisant les limites spécifiées.
         :param limit: Le nombre maximum d'éléments par page.
@@ -568,16 +548,12 @@ class BuilderStatementFinancialLine:
 
         return {"items": results, "pagination": {"hasNext": count > limit}}
 
-    def do_select_annees(
-        self, regions: list[str] | None, data_source: str | None
-    ) -> list[int]:
+    def do_select_annees(self, regions: list[str] | None, data_source: str | None) -> list[int]:
         """
         Retourne l'ensemble des années ordonnées par ordre decroissant
         concernées par la recherche
         """
-        subq = select(distinct(FinancialLines.annee)).order_by(
-            desc(FinancialLines.annee)
-        )
+        subq = select(distinct(FinancialLines.annee)).order_by(desc(FinancialLines.annee))
         if regions is not None:
             subq = subq.where(FinancialLines.source_region.in_(regions))
         if data_source is not None:
@@ -592,9 +568,7 @@ class BuilderStatementFinancialLine:
         """
         return self.__session.execute(self._stmt).unique().scalar_one_or_none()
 
-    def _stmt_where_field_in(
-        self, field: Column, set_of_values: list | None, can_be_null=False
-    ):
+    def _stmt_where_field_in(self, field: Column, set_of_values: list | None, can_be_null=False):
         if set_of_values is None:
             return
 
@@ -637,4 +611,3 @@ class BuilderStatementFinancialLine:
                 )
             )
         return self
-
