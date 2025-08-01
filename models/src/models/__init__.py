@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 
 Base = None
 
+
 def _PersistenceBaseModelInstance():
     """The base model class setup for this module"""
     global Base
