@@ -2,6 +2,7 @@ from http import HTTPStatus
 import logging
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from apis.apps.budget.services.get_colonnes import (
@@ -14,6 +15,7 @@ from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
+from apis.shared.openapi_config import build_api_success_response
 
 
 router = APIRouter()
@@ -21,7 +23,12 @@ logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator(config)
 
 
-@router.get("/tableau", summary="Liste des colonnes possibles pour le tableau")
+@router.get(
+    "/tableau",
+    summary="Liste des colonnes possibles pour le tableau",
+    response_class=JSONResponse,
+    responses=build_api_success_response(is_list=True),
+)
 @handle_exceptions
 def get_colonnes_tableau(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
@@ -32,10 +39,15 @@ def get_colonnes_tableau(
         code=HTTPStatus.OK,
         message="Liste des colonnes disponibles pour le tableau",
         data=[c.to_dict() for c in get_list_colonnes_tableau()],
-    ).to_json_response()
+    )
 
 
-@router.get("/grouping", summary="Liste des colonnes possibles pour le grouping")
+@router.get(
+    "/grouping",
+    summary="Liste des colonnes possibles pour le grouping",
+    response_class=JSONResponse,
+    responses=build_api_success_response(is_list=True),
+)
 @handle_exceptions
 def get_colonnes_grouping(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
@@ -46,4 +58,4 @@ def get_colonnes_grouping(
         code=HTTPStatus.OK,
         message="Liste des colonnes disponibles pour le grouping",
         data=[c.to_dict() for c in get_list_colonnes_grouping()],
-    ).to_json_response()
+    )

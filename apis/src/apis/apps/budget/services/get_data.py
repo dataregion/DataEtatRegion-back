@@ -1,7 +1,6 @@
 from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,
 )
-from models.value_objects.common import DataType, TypeCodeGeo
 
 from sqlalchemy import distinct
 from sqlalchemy.orm import Session

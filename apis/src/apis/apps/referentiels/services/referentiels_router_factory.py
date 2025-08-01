@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from logging import Logger
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from sqlalchemy.orm import Session, DeclarativeBase
@@ -8,13 +8,12 @@ from typing import Type
 
 from apis.apps.budget.models.budget_query_params import V3QueryParams
 from apis.apps.referentiels.services.get_data import get_all_data, get_one_data
-from apis.config import config
 from apis.database import get_db
 from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
-from apis.shared.query_builder import V3QueryBuilder
+from apis.shared.openapi_config import build_api_success_response
 
 
 def create_referentiel_router(
@@ -30,7 +29,10 @@ def create_referentiel_router(
     router = APIRouter(prefix=f"/{model_name}", tags=[f"{model_name.capitalize()}"])
 
     @router.get(
-        "", summary=f"Liste de tous les {model_name}", response_class=JSONResponse
+        "",
+        summary=f"Liste de tous les {model_name}",
+        response_class=JSONResponse,
+        responses=build_api_success_response(is_list=True),
     )
     @handle_exceptions
     def list_all(
@@ -46,7 +48,7 @@ def create_referentiel_router(
                 code=HTTPStatus.NO_CONTENT,
                 message="Aucun résultat ne correspond à vos critères de recherche",
                 data=[],
-            ).to_json_response()
+            )
 
         return APISuccess(
             code=HTTPStatus.OK,
@@ -54,10 +56,13 @@ def create_referentiel_router(
             data=schema(many=True).dump(data),
             has_next=has_next,
             current_page=params.page,
-        ).to_json_response()
+        )
 
     @router.get(
-        "/{code}", summary=f"Get {model_name} by code", response_class=JSONResponse
+        "/{code}",
+        summary=f"Get {model_name} by code",
+        response_class=JSONResponse,
+        responses=build_api_success_response(),
     )
     @handle_exceptions
     def get_by_code(
@@ -76,12 +81,12 @@ def create_referentiel_router(
                 code=HTTPStatus.NO_CONTENT,
                 message="Aucun résultat ne correspond à vos critères de recherche",
                 data=[],
-            ).to_json_response()
+            )
 
         return APISuccess(
             code=HTTPStatus.OK,
             message=f"{model_name.capitalize()}[code={code}]",
             data=schema(many=False).dump(data),
-        ).to_json_response()
+        )
 
     return router
