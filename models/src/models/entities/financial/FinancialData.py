@@ -97,7 +97,8 @@ class FinancialData(_Audit):
         value = value.replace("\u2014", "-")  # EM DASH
 
         # Supprime espaces normaux et insécables (séparateurs de milliers)
-        value = value.replace("\u202f", "")  # fine insécable
+        value = value.replace("\u202f", "")  # fin insécable
+        value = value.replace("\u00a0", "")  # insécable
         value = value.replace(" ", "")  # espace normal
 
         # Supprime le symbole euro ou autres caractères non numériques
