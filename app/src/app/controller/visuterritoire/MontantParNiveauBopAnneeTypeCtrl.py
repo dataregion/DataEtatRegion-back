@@ -37,9 +37,6 @@ class ZipExtract(Resource):
                 schema = MontantParNiveauBopAnneeTypeSchema()
                 fieldsnames = list(schema.fields.keys())
 
-        stmt = select(MontantParNiveauBopAnneeType).execution_options(yield_per=1000)
-        rows = db.session.scalars(stmt)
-
                 stmt = select(MontantParNiveauBopAnneeType).execution_options(yield_per=1000)
                 rows = db.session.scalars(stmt)
 
