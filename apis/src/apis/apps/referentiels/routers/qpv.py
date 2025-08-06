@@ -12,7 +12,7 @@ from apis.apps.referentiels.services.get_data import get_all_data
 from apis.apps.referentiels.services.referentiels_router_factory import (
     create_referentiel_router,
 )
-from apis.config import config
+from apis.config.current import config
 from apis.database import get_db
 from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator

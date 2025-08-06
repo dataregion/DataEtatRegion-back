@@ -9,7 +9,7 @@ from apis.apps.budget.services.get_colonnes import (
     get_list_colonnes_grouping,
     get_list_colonnes_tableau,
 )
-from apis.config import config
+from apis.config.current import config
 from apis.database import get_db
 from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator

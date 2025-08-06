@@ -14,7 +14,7 @@ from apis.apps.budget.models.budget_query_params import (
 )
 from apis.apps.budget.services.get_colonnes import get_list_colonnes_grouping
 from apis.apps.budget.services.get_data import get_annees_budget, get_ligne, get_lignes
-from apis.config import config
+from apis.config.current import config
 from apis.database import get_db
 from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator

@@ -13,6 +13,14 @@ pip-compile requirements.external.in \
   -o requirements.external.txt
 ```
 
+## Rafraichir les schemas pour autocompletion
+
+A utiliser avec l'extension officielle de redhat pour la lecture du yaml: https://github.com/redhat-developer/vscode-yaml
+
+```bash
+cli refresh-dev-schemas
+```
+
 ## Pre commit hooks
 
 Il est possible d'installer des pre-commit hook prédéfinis (grâce à [https://pre-commit.com/](https://pre-commit.com/)).

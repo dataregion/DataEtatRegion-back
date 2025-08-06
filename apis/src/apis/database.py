@@ -1,14 +1,14 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker
 
-from apis.config import config
+from apis.config.current import config
 
 
-db_url = config["SQLALCHEMY_DATABASE_URI"]
+db_url = config.sqlalchemy_database_uri
 engine = create_engine(
-    db_url, pool_pre_ping=True, pool_recycle=30, echo=config["PRINT_SQL"]
+    db_url, pool_pre_ping=True, pool_recycle=30, echo=config.print_sql
 )
-SessionLocal: Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def get_db():
