@@ -2,9 +2,8 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 import requests
-import yaml
 
-from apis.config import config
+from apis.config import _ConfigFile
 from apis.main import app
 
 from tests.fixtures.db import get_test_db
@@ -12,8 +11,7 @@ from tests.fixtures.db import get_test_db
 
 def load_test_config():
     config_path = os.path.join(os.path.dirname(__file__), "config.yml")
-    with open(config_path, "r") as file:
-        return yaml.safe_load(file)
+    return _ConfigFile(config_path).config
 
 
 test_config = load_test_config()
@@ -31,12 +29,12 @@ def db_session():
 
 @pytest.fixture(scope="session")
 def token():
-    keycloak_url = config["KEYCLOAK_OPENID"]["URL"]
-    realm = config["KEYCLOAK_OPENID"]["REALM"]
+    keycloak_url = test_config.keycloak_openid.url
+    realm = test_config.keycloak_openid.realm
     client_id = "bretagne.budget"
 
-    username = test_config["TEST_USER"]
-    password = test_config["TEST_PASSWORD"]
+    username = test_config.keycloak_openid.test_user
+    password = test_config.keycloak_openid.test_password
 
     token_url = f"{keycloak_url}/realms/{realm}/protocol/openid-connect/token"
 

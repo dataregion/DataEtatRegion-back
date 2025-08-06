@@ -6,7 +6,7 @@ from models.schemas.refs import CodeProgrammeSchema
 from apis.apps.referentiels.services.referentiels_router_factory import (
     create_referentiel_router,
 )
-from apis.config import config
+from apis.config.current import config
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 
 

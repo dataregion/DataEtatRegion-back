@@ -5,12 +5,15 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
 from apis.security.connected_user import ConnectedUser
+from apis.config.Config import Config
 
 
 class KeycloakTokenValidator:
 
-    def __init__(self, config: dict):
-        self.issuer = f"{config['KEYCLOAK_OPENID']['URL']}/realms/{config['KEYCLOAK_OPENID']['REALM']}"
+    def __init__(self, config: Config):
+        self.issuer = (
+            f"{config.keycloak_openid.url}/realms/{config.keycloak_openid.realm}"
+        )
         self.jwks_url = f"{self.issuer}/protocol/openid-connect/certs"
         self.oauth2_scheme = OAuth2PasswordBearer(
             tokenUrl=f"{self.issuer}/protocol/openid-connect/token"

@@ -1,6 +1,8 @@
 fastapi[standard] ~= 0.115.12
 sqlalchemy ~= 2.0.41
 
+authlib ~= 1.6.1
+
 psycopg ~= 3.1
 psycopg-binary ~= 3.1
 psycopg[pool] ~= 3.1

@@ -1,43 +1,12 @@
-DEBUG: info|debug|False
-PRINT_SQL: True
+# yaml-language-server: $schema=./apis-config.schema.json
+print_sql: true
 
-SQLALCHEMY_DATABASE_URI: "postgresql+psycopg://postgres:password@localhost:5432/<DBNAME>"
+sqlalchemy_database_uri: "postgresql+psycopg://postgres:password@localhost:5432/<DBNAME>"
 
-KEYCLOAK_OPENID:
-  URL: http://localhost:8080
-  REALM: <REALM>
-  CLIENT_ID: <CLIENT_ID>
-  SECRET_KEY: <SECRET_KEY>
-  TEST_USER: <TEST_USER>
-  TEST_PASSWORD: <TEST_PASSWORD>
-
-KEYCLOAK_ADMIN:
-  URL: http://localhost:8080/
-  REALM: <REALM>
-  SECRET_KEY: <SECRET_KEY>
-
-API_ENTREPRISE:
-  URL: https://staging.entreprise.api.gouv.fr
-  TOKEN: <TOKEN>
-  CONTEXT: <CONTEXT>
-  RECIPIENT: <RECIPIENT>
-  OBJECT: <OBJECT>
-
-  # CONFIGURATION POUR LIMITER les appels à l'api Entreprise
-  RATELIMITER:
-    # Exemple 50 appel toutes les 70 secondes
-    LIMIT: 50
-    DURATION: 70
-    # Stockage du lock
-    REDIS:
-      HOST: localhost
-      PORT: 6379
-      DB: 0
-
-API_DATA_SUBVENTIONS:
-  URL: https://api.datasubvention.beta.gouv.fr
-  TOKEN: <TOKEN>
-
-API_DEMARCHE_SIMPLIFIE:
-  URL: https://www.demarches-simplifiees.fr/api/v2/graphql
-  TOKEN: <TOKEN>
+keycloak_openid:
+  url: http://localhost:8080
+  realm: <REALM>
+  client_id: <CLIENT_ID>
+  secret_key: <SECRET_KEY>
+  test_user: <TEST_USER>
+  test_password: <TEST_PASSWORD>

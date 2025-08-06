@@ -9,6 +9,9 @@ description = "Application qui détient les nouvelles APIs Data Etat (v3+)"
 dependencies = [
 ]
 
+[project.scripts]
+cli = "apis.cli:cli"
+
 [tool.poetry]
 version = "0.1.0"
 
