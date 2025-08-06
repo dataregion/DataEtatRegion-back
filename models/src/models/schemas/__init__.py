@@ -32,6 +32,7 @@ from .refs import (
     CommuneSchema,
     MinistereSchema,
     CentreCoutsSchema,
+    ThemeSchema,
     CodeProgrammeSchema,
     ArrondissementSchema,
     GroupeMarchandiseSchema,

@@ -64,9 +64,14 @@ def build_ref_controller(cls, schema_cls: type[Schema], namespace: Namespace, co
             args = parser_get.parse_args()
             where_clause = _build_where_clause(cls, args, cond_opt)
             if where_clause is not None:
-                stmt = db.select(cls).where(where_clause).order_by(cls.code)
+                stmt = db.select(cls).where(where_clause)
             else:
-                stmt = db.select(cls).order_by(cls.code)
+                stmt = db.select(cls)
+
+            if hasattr(cls, "is_deleted"):
+                stmt = stmt.where(cls.is_deleted == False)  # noqa: E712
+
+            stmt = stmt.order_by(cls.code)
 
             page_result = db.paginate(stmt, per_page=args.get("limit"), page=args.get("page_number"), error_out=False)
             if page_result.items == []:

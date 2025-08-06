@@ -14,6 +14,7 @@ from models.entities.refs.Qpv import Qpv
 from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
 from models.entities.refs.Siret import Siret
 from geoalchemy2.shape import to_shape
+from models.entities.refs.Theme import Theme
 
 
 class GeometryField(fields.Field):
@@ -36,6 +37,15 @@ class CentreCoutsSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = CentreCouts
         exclude = ("id",) + CentreCouts.exclude_schema()
+
+
+class ThemeSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Theme
+        exclude = ("id",)
+
+    code = fields.String()
+    label = fields.String()
 
 
 class CodeProgrammeSchema(SQLAlchemyAutoSchema):

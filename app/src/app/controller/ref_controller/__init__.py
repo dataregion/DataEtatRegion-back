@@ -20,6 +20,7 @@ from models.entities.refs.Ministere import Ministere
 from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
 from app.controller.utils.LoginController import api as api_auth
 from models.entities.refs.Siret import Siret
+from models.entities.refs.Theme import Theme
 from models.schemas.refs import (
     ArrondissementSchema,
     CentreCoutsSchema,
@@ -29,6 +30,7 @@ from models.schemas.refs import (
     MinistereSchema,
     ReferentielProgrammationSchema,
     SiretSchema,
+    ThemeSchema,
 )
 
 api_ref = Blueprint("api_ref", __name__)
@@ -42,6 +44,12 @@ api = ApiDataEtat(
     description="API de récupérations des référentiels de Budget",
     title="Référentiel Budget",
     authorizations=authorizations,
+)
+
+api_themes = build_ref_controller(
+    Theme,
+    ThemeSchema,
+    Namespace(name="Thèmes", path="/themes", description="API referentiels des Themes"),
 )
 
 api_domaine = build_ref_controller(
@@ -119,6 +127,7 @@ api_ref_beneficiaire = build_ref_controller(
 api.add_namespace(api_auth)
 
 api.add_namespace(api_ref_ministere)
+api.add_namespace(api_themes)
 api.add_namespace(api_bop)
 api.add_namespace(api_loc_interministerielle)
 api.add_namespace(api_ref_programmation)
