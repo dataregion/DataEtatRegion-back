@@ -25,9 +25,8 @@ async function initGrist() {
       button.disabled = true
       button.replaceChildren("Synchronisation")
       try {
-        console.log('put')
-        const response = await fetch(`/launch-sync?docId=${docId}&tableId=${tableId}&tableName=${tableName}`, {
-          method: 'PUT'
+        const response = await fetch(`/init-sync?docId=${docId}&tableId=${tableId}&tableName=${tableName}`, {
+          method: 'POST'
         });
         if (!response.ok) {
           const errorText = await response.text();

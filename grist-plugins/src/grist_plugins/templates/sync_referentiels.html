@@ -8,14 +8,12 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <script>
         const postUrl = "{{ actions }}";  // injecte l'URL côté Jinja
-        const tableNameFromServer = "{{ tableName }}";
-        console.log("tableName from server:", tableNameFromServer);
     </script>
     <script type="module" src="/static/js/sync-referentiels.js"></script>
 
 </head>
 
-<body>
+<body data-table-name="{{ tableName }}">
     <h1>Synchroniser la base de données</h1>
 
     <div class="flash">

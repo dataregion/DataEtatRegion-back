@@ -1,12 +1,13 @@
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
+from models.entities.common.SyncedWithGrist import _SyncedWithGrist
 from models.entities.refs.Theme import Theme
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship, Mapped
 
 
-class CodeProgramme(_Audit, _PersistenceBaseModelInstance()):
+class CodeProgramme(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     __tablename__ = "ref_code_programme"
     id = Column(Integer, primary_key=True)
     code: Column[str] = Column(String, unique=True, nullable=False)
@@ -22,10 +23,6 @@ class CodeProgramme(_Audit, _PersistenceBaseModelInstance()):
     theme_r: Mapped[Theme] = relationship("Theme", uselist=False, lazy="select")
     # permet de remonter uniquement le label
     label_theme = association_proxy("theme_r", "label")
-
-    grist_row_id: Column[int] = Column(Integer, unique=True)
-    is_deleted: Column[bool] = Column(Boolean, default=False, server_default="FALSE")
-    synchro_grist_id = Column(Integer, ForeignKey("synchro_grist.id"), nullable=True)
 
     def __setattr__(self, key, value):
         """

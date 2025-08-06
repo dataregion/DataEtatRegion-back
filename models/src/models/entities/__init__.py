@@ -2,6 +2,7 @@
 # XXX: Import de toutes les entitées de la couche persistence
 # Ces imports ainsi que leur ordre sont importants
 from .common.Audit import _Audit
+from .common.SyncedWithGrist import _SyncedWithGrist
 from .common.Tags import Tags, TagAssociation
 
 from .refs import *  # noqa: F403

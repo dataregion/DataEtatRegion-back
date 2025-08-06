@@ -20,6 +20,9 @@ depends_on = None
 
 
 def upgrade_():
+    with op.batch_alter_table('ref_theme', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('code', sa.String(), nullable=True))
+
     with op.batch_alter_table('ref_code_programme', schema=None) as batch_op:
         batch_op.add_column(sa.Column('grist_row_id', sa.Integer(), nullable=True))
         batch_op.add_column(sa.Column('is_deleted', sa.Boolean(), server_default='FALSE', nullable=True))
@@ -35,6 +38,9 @@ def downgrade_():
         batch_op.drop_column('synchro_grist_id')
         batch_op.drop_column('is_deleted')
         batch_op.drop_column('grist_row_id')
+
+    with op.batch_alter_table('ref_theme', schema=None) as batch_op:
+        batch_op.drop_column('code')
 
 
 def upgrade_audit():

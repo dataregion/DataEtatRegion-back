@@ -3,6 +3,7 @@ import logging
 from typing import List
 from zoneinfo import ZoneInfo
 
+from models.entities.common.SyncedWithGrist import _SyncedWithGrist
 from sqlalchemy import insert, select, update
 
 from gristcli.models import Record
@@ -18,11 +19,28 @@ logger = logging.getLogger()
 celery = celeryapp.celery
 
 
-def get_model_by_tablename(tablename):
+def _get_model_by_tablename(tablename):
     for cls in Base.registry._class_registry.values():
         if hasattr(cls, "__tablename__") and cls.__tablename__ == tablename:
             return cls
     return None
+
+def _get_sync_config(doc_id: str, table_id: str, table_name: str):
+    stmt = select(SynchroGrist).where(
+        SynchroGrist.grist_doc_id == doc_id,
+        SynchroGrist.grist_table_id == table_id,
+        SynchroGrist.dataetat_table_name == table_name,
+    )
+    sg: SynchroGrist = db.session.execute(stmt).scalar_one_or_none()
+    if sg is None:
+        raise Exception("No synchro for Grist defined.")
+
+    model = _get_model_by_tablename(table_name)
+    if model is None:
+        raise Exception("Can't find model to synchronize.")
+    if not issubclass(model, _SyncedWithGrist):
+        raise Exception("Can't apply Grist synchronization.")
+    return model, sg
 
 
 @celery.task(name="init_referentiels_with_grist", bind=True)
@@ -31,18 +49,7 @@ def init_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
         logger.info("[GRIST][INIT] Start Call init-grist-to-db")
         grist_api = make_grist_api_client(token)
 
-        stmt = select(SynchroGrist).where(
-            SynchroGrist.grist_doc_id == doc_id,
-            SynchroGrist.grist_table_id == table_id,
-            SynchroGrist.dataetat_table_name == table_name,
-        )
-        sg: SynchroGrist = db.session.execute(stmt).scalar_one_or_none()
-        if sg is None:
-            raise Exception("No synchro for Grist defined.")
-
-        model = get_model_by_tablename(table_name)
-        if model is None:
-            raise Exception("Can't find model to synchronize.")
+        model, sg = _get_sync_config(doc_id, table_id, table_name)
         
         referentiels = list(db.session.execute(select(model)).scalars().all())
         records: List[Record] = grist_api.get_records_of_table(sg.grist_doc_id, sg.grist_table_id)
@@ -82,20 +89,9 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
         logger.info("[GRIST][SYNC] Start Call sync-grist-to-db")
         grist_api = make_grist_api_client(token)
 
-        stmt = select(SynchroGrist).where(
-            SynchroGrist.grist_doc_id == doc_id,
-            SynchroGrist.grist_table_id == table_id,
-            SynchroGrist.dataetat_table_name == table_name,
-        )
-        sg: SynchroGrist = db.session.execute(stmt).scalar_one_or_none()
-        if sg is None:
-            raise Exception("No synchro for Grist defined.")
-
-        model = get_model_by_tablename(table_name)
-        if model is None:
-            raise Exception("Can't find model to synchronize.")
+        model, sg = _get_sync_config(doc_id, table_id, table_name)
         
-        referentiels = list(db.session.execute(select(model)).scalars().all())
+        referentiels: list[_SyncedWithGrist] = list(db.session.execute(select(model)).scalars().all())
         records: List[Record] = grist_api.get_records_of_table(sg.grist_doc_id, sg.grist_table_id)
 
         # Check correspondance colonnes grist et DB
