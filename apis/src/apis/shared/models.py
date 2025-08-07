@@ -21,7 +21,9 @@ class PaginationMeta(BaseModel):
 class APIResponse(BaseModel):
     code: int
     success: bool
-    timestamp: datetime = Field(default_factory=lambda _: datetime.now(ZoneInfo("Europe/Paris")))
+    timestamp: datetime = Field(
+        default_factory=lambda _: datetime.now(ZoneInfo("Europe/Paris"))
+    )
     message: Optional[str] = None
 
     def __init__(self, **data):
@@ -35,7 +37,7 @@ class APIResponse(BaseModel):
 
 class APIError(APIResponse):
     detail: Optional[str] = None
-    
+
     def __init__(self, **data):
         super().__init__(**data)
         data["success"] = False
