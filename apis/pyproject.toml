@@ -1,13 +1,11 @@
 [build-system]
-requires = ["setuptools>=42", "setuptools_scm[toml]>=6.2", "wheel"]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=6.2,<9", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "apis"
-dynamic = ["version"]
+dynamic = ["version", "dependencies"]
 description = "Application qui détient les nouvelles APIs Data Etat (v3+)"
-dependencies = [
-]
 
 [project.scripts]
 cli = "apis.cli:cli"
