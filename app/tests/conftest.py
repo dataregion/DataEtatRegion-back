@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import text
 
 from app import create_app_base, db
-from tests.DataEtatPostgresContainer import DataEtatPostgresContainer
+from services.tests.DataEtatPostgresContainer import DataEtatPostgresContainer
 
 # Initialisation du conteneur PostgreSQL et récupération de l'URL de connexion
 postgres_container = DataEtatPostgresContainer()
