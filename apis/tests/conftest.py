@@ -1,42 +1,32 @@
+from fastapi import FastAPI
 import pytest
 from fastapi.testclient import TestClient
 import requests
 
-from services.tests.DataEtatPostgresContainer import DataEtatPostgresContainer
-from apis.config.current import get_config, override_config
+from apis.config.Config import Config
+from .fixtures.app import *  # noqa: F403
 
-################################################
-# XXX: il est important de faire cela avant l'initialisation de l'application
-# Initialisation du conteneur PostgreSQL et récupération de l'URL de connexion
-postgres_container = DataEtatPostgresContainer()
-postgres_container.start()
-base_url = postgres_container.get_connection_url()
-
-override_config("sqlalchemy_database_uri", base_url)
-################################################
-
-from apis.main import app  # noqa: E402
 from apis.database import get_db  # noqa: E402
 
 
 @pytest.fixture(scope="session")
-def client():
+def client(app: FastAPI):
     return TestClient(app)
 
 
-@pytest.fixture
-def db_session():
+@pytest.fixture()
+def db_session(config):
     return get_db()
 
 
 @pytest.fixture(scope="session")
-def token():
-    keycloak_url = get_config().keycloak_openid.url
-    realm = get_config().keycloak_openid.realm
+def token(config: Config):  # noqa: F811
+    keycloak_url = config.keycloak_openid.url
+    realm = config.keycloak_openid.realm
     client_id = "bretagne.budget"
 
-    username = get_config().keycloak_openid.test_user
-    password = get_config().keycloak_openid.test_password
+    username = config.keycloak_openid.test_user
+    password = config.keycloak_openid.test_password
 
     token_url = f"{keycloak_url}/realms/{realm}/protocol/openid-connect/token"
 
