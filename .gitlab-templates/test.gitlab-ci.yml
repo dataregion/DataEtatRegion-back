@@ -28,3 +28,10 @@ run_app_tests:
     - cd app/
     - env
     - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
+
+run_apis_tests:
+  <<: *default-tests
+  before_script:
+    - cd apis/
+    - env
+    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
