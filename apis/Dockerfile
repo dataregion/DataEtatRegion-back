@@ -18,12 +18,13 @@ RUN mkdir -p /workdir
 WORKDIR /build
 
 # Copie des fichiers
-COPY requirements.external.txt .
-COPY src /build/src
+COPY apis/requirements.external.txt .
+COPY apis /build/apis
 COPY models /build/models
 COPY gristcli /build/gristcli
 COPY services /build/services
 
+WORKDIR /build/apis
 # Install des dépendances Python dans un venv temporaire
 RUN python -m venv /venv
 RUN /venv/bin/pip install --upgrade pip
@@ -53,6 +54,8 @@ COPY apis /appli/apis
 COPY models /appli/models
 COPY gristcli /appli/gristcli
 COPY services /appli/services
+
+RUN rm /appli/apis/config/** || true
 
 EXPOSE 80
 CMD ["uvicorn", "src.apis.main:app", "--host", "0.0.0.0", "--port", "80"]

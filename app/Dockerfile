@@ -55,7 +55,7 @@ COPY models /appli/models
 COPY gristcli /appli/gristcli
 COPY services /appli/services
 
-RUN rm /appli/app/config/**
+RUN rm /appli/app/config/** || true
 # ## Ces deux liens symboliques sont pour que la nouvelle structure soit 
 # ## retro compatible avec les anciennes stack
 RUN ln -s /appli/config/config.yml /appli/app/config/config.yml
