@@ -16,7 +16,7 @@ override_config("sqlalchemy_database_uri", base_url)
 ################################################
 
 from apis.main import app  # noqa: E402
-from tests.fixtures.db import get_test_db  # noqa: E402
+from apis.database import get_db  # noqa: E402
 
 
 @pytest.fixture(scope="session")
@@ -26,7 +26,7 @@ def client():
 
 @pytest.fixture
 def db_session():
-    return get_test_db()
+    return get_db()
 
 
 @pytest.fixture(scope="session")
