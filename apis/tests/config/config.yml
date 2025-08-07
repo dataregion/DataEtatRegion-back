@@ -2,10 +2,11 @@ print_sql: true
 
 sqlalchemy_database_uri: "postgresql+psycopg://postgres:password@localhost:5432/<DBNAME>"
 
+
 keycloak_openid:
-  url: http://localhost:8080
-  realm: <REALM>
-  client_id: <CLIENT_ID>
-  secret_key: <SECRET_KEY>
-  test_user: <TEST_USER>
-  test_password: <TEST_PASSWORD>
+  url: https://auth.nocode.csm.ovh
+  realm: Regions
+  client_id: back-api
+  secret_key: hNFljZDqcKehP0qJiB82VP6wxKRuu1RC
+  test_user: csm@sib.fr
+  test_password: Q@67x5j5djGeB

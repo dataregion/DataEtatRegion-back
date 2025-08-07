@@ -1,18 +1,17 @@
 import pytest
 
-from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
 
 @pytest.mark.integration
 def test_get_colonnes_tableau(client: TestClient, token):
-    response: JSONResponse = client.get(
+    response = client.get(
         "/v3/budget/lignes?page=1&page_size=5",
         headers={"Authorization": f"Bearer {token}"},
     )
     print(response)
     assert response.status_code == 200
-    assert "data" in response.body
+    assert "data" in response.json()
 
 
 @pytest.mark.integration
