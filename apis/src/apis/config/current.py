@@ -2,7 +2,8 @@ import os
 from functools import lru_cache
 from . import _ConfigFile
 
-OVERRIDES = { }
+OVERRIDES = {}
+
 
 @lru_cache
 def get_config():
@@ -12,6 +13,7 @@ def get_config():
     for key, val in OVERRIDES.items():
         setattr(config, key, val)
     return config
+
 
 def override_config(key: str, value):
     """Override a configuration on runtime"""
