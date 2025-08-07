@@ -9,7 +9,7 @@ from apis.apps.budget.services.get_colonnes import (
     get_list_colonnes_grouping,
     get_list_colonnes_tableau,
 )
-from apis.config.current import config
+from apis.config.current import get_config
 from apis.database import get_db
 from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
@@ -20,7 +20,7 @@ from apis.shared.openapi_config import build_api_success_response
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-keycloak_validator = KeycloakTokenValidator(config)
+keycloak_validator = KeycloakTokenValidator(get_config())
 
 
 @router.get(
