@@ -67,11 +67,11 @@ def init_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
                 update(model)
                 .where(model.id == r.id)
                 .values(
-                    synchro_grist = sg.id,
+                    synchro_grist_id = sg.id,
                     grist_row_id = match.id if match is not None else None,
                     is_deleted = (match is None),
                     updated_at = now
-                ),
+                )
             )
             db.session.execute(stmt)
             logging.info(f"[GRIST][INIT] UPDATE {table_name} : {r.id}")
@@ -127,7 +127,7 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
             stmt = (
                 update(model)
                 .where(model.synchro_grist_id == sg.id, model.grist_row_id == r.id)
-                .values(**r.fields)
+                .values(**fields)
             )
             logging.info(f"[GRIST][SYNC] UPDATE {table_name} : {r.id}")
             db.session.execute(stmt)

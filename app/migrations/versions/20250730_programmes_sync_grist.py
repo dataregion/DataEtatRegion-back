@@ -24,11 +24,23 @@ def upgrade_():
         batch_op.add_column(sa.Column('code', sa.String(), nullable=True))
 
     with op.batch_alter_table('ref_code_programme', schema=None) as batch_op:
+        batch_op.add_column(sa.Column('code_theme', sa.String(), nullable=True))
         batch_op.add_column(sa.Column('grist_row_id', sa.Integer(), nullable=True))
         batch_op.add_column(sa.Column('is_deleted', sa.Boolean(), server_default='FALSE', nullable=True))
         batch_op.add_column(sa.Column('synchro_grist_id', sa.Integer(), nullable=True))
         batch_op.create_foreign_key('synchro_grist_id_fkey', 'synchro_grist', ['synchro_grist_id'], ['id'])
         batch_op.create_unique_constraint('ref_code_programme_grist_row_id_key', ['grist_row_id'])
+
+        conn = op.get_bind()
+        res = conn.execute(sa.text("SELECT id, theme FROM public.ref_code_programme;"))
+        rows = res.fetchall()
+        for row_bop in rows:
+            if row_bop.theme is not None:
+                id_theme = int(row_bop.theme)
+                q = conn.execute(sa.text(f"SELECT code FROM public.ref_theme WHERE id = :id;"), {"id": id_theme})
+                theme = res.fetchone()
+                if theme is not None:
+                    conn.execute(sa.text(f"UPDATE public.ref_code_programme SET code_theme=:code_theme WHERE id = :id;"), { "code_theme": theme.code, "id": id_theme })
 
 
 def downgrade_():
@@ -38,6 +50,7 @@ def downgrade_():
         batch_op.drop_column('synchro_grist_id')
         batch_op.drop_column('is_deleted')
         batch_op.drop_column('grist_row_id')
+        batch_op.drop_column('code_theme')
 
     with op.batch_alter_table('ref_theme', schema=None) as batch_op:
         batch_op.drop_column('code')
