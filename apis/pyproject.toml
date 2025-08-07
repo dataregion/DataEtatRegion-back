@@ -37,3 +37,12 @@ dev = [
   "ruff ~= 0.6",
   "testcontainers ~=4.9",
 ]
+
+[tool.pytest.ini_options]
+markers = [
+  "integration: mark test as integration test"
+]
+addopts = [
+    "-ra", "--import-mode=importlib",
+    "-m not integration"
+]
