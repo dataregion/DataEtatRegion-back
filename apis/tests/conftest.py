@@ -2,10 +2,21 @@ import pytest
 from fastapi.testclient import TestClient
 import requests
 
-from apis.config.current import get_config
-from apis.main import app
+from services.tests.DataEtatPostgresContainer import DataEtatPostgresContainer
+from apis.config.current import get_config, override_config
 
-from tests.fixtures.db import get_test_db
+################################################
+# XXX: il est important de faire cela avant l'initialisation de l'application
+# Initialisation du conteneur PostgreSQL et récupération de l'URL de connexion
+postgres_container = DataEtatPostgresContainer()
+postgres_container.start()
+base_url = postgres_container.get_connection_url()
+
+override_config("sqlalchemy_database_uri", base_url)
+################################################
+
+from apis.main import app  # noqa: E402
+from tests.fixtures.db import get_test_db  # noqa: E402
 
 
 @pytest.fixture(scope="session")
