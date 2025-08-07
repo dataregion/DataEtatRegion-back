@@ -14,7 +14,7 @@ from apis.apps.budget.models.budget_query_params import (
 )
 from apis.apps.budget.services.get_colonnes import get_list_colonnes_grouping
 from apis.apps.budget.services.get_data import get_annees_budget, get_ligne, get_lignes
-from apis.config.current import config
+from apis.config.current import get_config
 from apis.database import get_db
 from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
@@ -25,7 +25,7 @@ from apis.shared.openapi_config import build_api_success_response
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-keycloak_validator = KeycloakTokenValidator(config)
+keycloak_validator = KeycloakTokenValidator(get_config())
 
 
 def handle_national(

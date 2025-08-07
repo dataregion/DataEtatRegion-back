@@ -4,8 +4,8 @@
 .vscode
 /.idea
 **/__pycache__
-apis/src/apis/config/config.yml
-apis/src/apis/config/*.schema.json
+apis/config/config.yml
+apis/config/*schema.json
 apis/tests/config.yml
 apis/tests/test.db
 app/config/config.yml

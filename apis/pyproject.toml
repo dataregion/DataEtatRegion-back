@@ -28,6 +28,7 @@ where = ["src"]
 dev = [
   "import-linter ~= 2.3",
   "pytest ~= 8.3",
+  "pytest-env ~= 1.1.5",
   "pytest-cov ~=6.0",
   "mypy ~= 1.11",
   "black ~=25.1",
@@ -39,6 +40,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
+env = [ "APIS_CONFIG_PATH=./tests/config/config.yml" ]
 markers = [
   "integration: mark test as integration test"
 ]

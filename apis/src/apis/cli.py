@@ -14,7 +14,7 @@ def _config_schema_str():
 
 @cli.command()
 def refresh_dev_schemas():
-    target = "./src/apis/config/apis-config.schema.json"
+    target = "./config/apis-config.schema.json"
     model_str = _config_schema_str()
 
     with open(target, "+w") as f:

@@ -1,3 +1,9 @@
+# APIs
+
+| Variable d'environnement | Description                        |
+| ------------------------ | ---------------------------------- |
+| APIS_CONFIG_PATH         | Chemin du fichier de configuration |
+
 # Pour le développement
 
 ## [Concepts de base](./../.markdowns/installation_venv_for_application.md)
