@@ -7,9 +7,11 @@ from apis.main import app
 
 from tests.fixtures.db import get_test_db
 
+
 @pytest.fixture(scope="session")
 def client():
     return TestClient(app)
+
 
 @pytest.fixture
 def db_session():

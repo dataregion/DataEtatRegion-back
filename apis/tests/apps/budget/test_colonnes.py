@@ -3,6 +3,7 @@ import pytest
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 
+
 @pytest.mark.integration
 def test_get_colonnes_tableau(client: TestClient, token):
     response: JSONResponse = client.get(
@@ -12,6 +13,7 @@ def test_get_colonnes_tableau(client: TestClient, token):
     print(response)
     assert response.status_code == 200
     assert "data" in response.body
+
 
 @pytest.mark.integration
 def test_get_colonnes_grouping(client: TestClient):
