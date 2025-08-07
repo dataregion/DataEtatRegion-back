@@ -10,7 +10,7 @@ from tests.fixtures.db import get_test_db
 
 
 def load_test_config():
-    config_path = os.path.join(os.path.dirname(__file__), "config.yml")
+    config_path = os.path.join(os.path.dirname(__file__), "config", "config.yml")
     return _ConfigFile(config_path).config
 
 

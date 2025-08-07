@@ -2,6 +2,13 @@
 
 ## [Concepts de base](./../.markdowns/installation_venv_for_application.md)
 
+## Executer les tests
+
+```bash
+pytest # execute les tests unitaires
+pytest -m integration # execute les tests d'intégration
+```
+
 ## Mettre à jour les dépendances
 
 ```bash
