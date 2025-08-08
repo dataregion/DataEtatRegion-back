@@ -14,11 +14,16 @@ settings = Settings()
 
 @router.get("/init-referentiels", response_class=HTMLResponse)
 async def init_referentiels(request: Request, tableName: str):
-    return templates.TemplateResponse("init_referentiels.html", {"request": request, "tableName": tableName})
+    return templates.TemplateResponse(
+        "init_referentiels.html", {"request": request, "tableName": tableName}
+    )
+
 
 @router.get("/sync-referentiels", response_class=HTMLResponse)
 async def sync_referentiels(request: Request, tableName: str):
-    return templates.TemplateResponse("sync_referentiels.html", {"request": request, "tableName": tableName})
+    return templates.TemplateResponse(
+        "sync_referentiels.html", {"request": request, "tableName": tableName}
+    )
 
 
 @router.post("/init-sync")
@@ -29,8 +34,11 @@ def init_sync(docId: str, tableId: str, tableName: str):
         ) as response:
             return JSONResponse(
                 status_code=response.status_code,
-                content={"message": "Demande d'initilisation de synchronisation envoyée"},
+                content={
+                    "message": "Demande d'initilisation de synchronisation envoyée"
+                },
             )
+
 
 @router.put("/launch-sync")
 def launch_sync(docId: str, tableId: str, tableName: str):

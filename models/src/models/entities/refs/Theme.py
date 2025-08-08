@@ -1,7 +1,7 @@
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
 from models.entities.common.SyncedWithGrist import _SyncedWithGrist
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text
 
 
 class Theme(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):

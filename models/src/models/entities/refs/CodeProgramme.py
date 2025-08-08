@@ -2,7 +2,7 @@ from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
 from models.entities.common.SyncedWithGrist import _SyncedWithGrist
 from models.entities.refs.Theme import Theme
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
+from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship, Mapped
 
