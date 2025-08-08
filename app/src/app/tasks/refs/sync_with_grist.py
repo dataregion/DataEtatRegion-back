@@ -32,18 +32,18 @@ def _get_sync_config(doc_id: str, table_id: str, table_name: str):
         SynchroGrist.grist_table_id == table_id,
         SynchroGrist.dataetat_table_name == table_name,
     )
-    sg: SynchroGrist = db.session.execute(stmt).scalar_one_or_none()
-    if sg is None:
-        raise Exception("No synchro for Grist defined.")
+    synchro_grist: SynchroGrist = db.session.execute(stmt).scalar_one_or_none()
+    if synchro_grist is None:
+        raise RuntimeError("No synchro for Grist defined.")
 
     model = _get_model_by_tablename(table_name)
     if model is None:
         logger.error("[GRIST][VALIDATION] Can't find model to synchronize")
-        raise Exception("Can't find model to synchronize.")
+        raise RuntimeError("Can't find model to synchronize.")
     if not issubclass(model, _SyncedWithGrist):
         logger.error("[GRIST][VALIDATION] Can't apply Grist synchronization")
-        raise Exception("Can't apply Grist synchronization.")
-    return model, sg
+        raise RuntimeError("Can't apply Grist synchronization.")
+    return model, synchro_grist
 
 
 @celery.task(name="init_referentiels_with_grist", bind=True)
@@ -52,10 +52,10 @@ def init_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
         logger.info("[GRIST][INIT] Start Call init-grist-to-db")
         grist_api = make_grist_api_client(token)
 
-        model, sg = _get_sync_config(doc_id, table_id, table_name)
+        model, synchro_grist = _get_sync_config(doc_id, table_id, table_name)
 
         referentiels = list(db.session.execute(select(model)).scalars().all())
-        records: List[Record] = grist_api.get_records_of_table(sg.grist_doc_id, sg.grist_table_id)
+        records: List[Record] = grist_api.get_records_of_table(synchro_grist.grist_doc_id, synchro_grist.grist_table_id)
 
         # Vérification de la présence de la colonne code dans la table Grist
         first = records[0] if len(records) > 0 else None
@@ -70,7 +70,7 @@ def init_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
                 update(model)
                 .where(model.id == r.id)
                 .values(
-                    synchro_grist_id=sg.id,
+                    synchro_grist_id=synchro_grist.id,
                     grist_row_id=match.id if match is not None else None,
                     is_deleted=(match is None),
                     updated_at=now,
@@ -92,10 +92,10 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
         logger.info("[GRIST][SYNC] Start Call sync-grist-to-db")
         grist_api = make_grist_api_client(token)
 
-        model, sg = _get_sync_config(doc_id, table_id, table_name)
+        model, synchro_grist = _get_sync_config(doc_id, table_id, table_name)
 
         referentiels: list[_SyncedWithGrist] = list(db.session.execute(select(model)).scalars().all())
-        records: List[Record] = grist_api.get_records_of_table(sg.grist_doc_id, sg.grist_table_id)
+        records: List[Record] = grist_api.get_records_of_table(synchro_grist.grist_doc_id, synchro_grist.grist_table_id)
 
         # Check correspondance colonnes grist et DB
         first = records[0] if len(records) > 0 else None
@@ -114,7 +114,7 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
 
             fields = r.fields
             if match is None:
-                fields["synchro_grist_id"] = sg.id
+                fields["synchro_grist_id"] = synchro_grist.id
                 fields["grist_row_id"] = r.id
                 fields["created_at"] = now
                 fields["updated_at"] = now
@@ -125,7 +125,11 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
 
             fields["updated_at"] = now
             referentiels.remove(match)
-            stmt = update(model).where(model.synchro_grist_id == sg.id, model.grist_row_id == r.id).values(**fields)
+            stmt = (
+                update(model)
+                .where(model.synchro_grist_id == synchro_grist.id, model.grist_row_id == r.id)
+                .values(**fields)
+            )
             logging.info(f"[GRIST][SYNC] UPDATE {table_name} : {r.id}")
             db.session.execute(stmt)
 
