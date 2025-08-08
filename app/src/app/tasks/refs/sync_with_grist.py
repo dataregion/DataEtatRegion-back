@@ -37,8 +37,10 @@ def _get_sync_config(doc_id: str, table_id: str, table_name: str):
 
     model = _get_model_by_tablename(table_name)
     if model is None:
+        logger.error("[GRIST][VALIDATION] Can't find model to synchronize")
         raise Exception("Can't find model to synchronize.")
     if not issubclass(model, _SyncedWithGrist):
+        logger.error("[GRIST][VALIDATION] Can't apply Grist synchronization")
         raise Exception("Can't apply Grist synchronization.")
     return model, sg
 
