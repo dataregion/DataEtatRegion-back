@@ -12,8 +12,8 @@ from models.entities.refs.Theme import Theme
 ministere01 = {"code": "MIN01", "label": "label MIN01groscccccccc"}
 ministere02 = {"code": "MIN02", "label": "label MIN02"}
 
-theme01 = {"id": 1, "label": "theme 01"}
-theme02 = {"id": 2, "label": "theme 02"}
+theme01 = {"id": 1, "code": "TH1", "label": "theme 01"}
+theme02 = {"id": 2, "code": "TH2", "label": "theme 02"}
 
 
 @pytest.fixture(scope="function")
@@ -29,6 +29,7 @@ def init_ref_ministeres_themes(session):
             "code": f"BOP{i + 1}",
             "code_ministere": "MIN01" if i % 5 == 0 else "MIN02",
             "theme": 1 if i % 2 == 0 else 2,
+            "code_theme": "TH1" if i % 2 == 0 else "TH2",
             "label": f"label programme {i + 1}",
             "description": f"description du bop {i + 1}",
         }
