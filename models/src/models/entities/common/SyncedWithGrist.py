@@ -8,7 +8,7 @@ class _SyncedWithGrist(_PersistenceBaseModelInstance()):
     synchro_grist_id: Mapped[int] = mapped_column(
         ForeignKey("synchro_grist.id"), nullable=True
     )
-    grist_row_id: Mapped[int] = mapped_column(Integer, unique=True)
+    grist_row_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=True)
     is_deleted: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default="FALSE"
     )

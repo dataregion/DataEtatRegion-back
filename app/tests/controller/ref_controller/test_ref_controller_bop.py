@@ -10,9 +10,13 @@ def test_bop_by_code(test_client, init_ref_ministeres_themes):
     assert bop_return == {
         "code": "BOP2",
         "code_ministere": "MIN02",
+        "code_theme": "TH2",
         "label_theme": "theme 02",
         "description": "description du bop 2",
         "label": "label programme 2",
+        'grist_row_id': None,
+        'is_deleted': False,
+        'synchro_grist_id': None
     }
 
 

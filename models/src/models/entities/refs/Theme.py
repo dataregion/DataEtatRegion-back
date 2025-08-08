@@ -8,6 +8,6 @@ class Theme(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     __tablename__ = "ref_theme"
 
     id = Column(Integer, primary_key=True)
-    code: Column[str] = Column(String, nullable=True)
+    code: Column[str] = Column(String, nullable=True, unique=True)
     label: Column[str] = Column(String)
     description: Column[str] = Column(Text)
