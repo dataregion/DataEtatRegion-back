@@ -1,18 +1,19 @@
 from datetime import datetime
 from http import HTTPStatus
-from typing import Any
+from typing import Any, Dict, Optional, TypeAlias, Union
 from zoneinfo import ZoneInfo
 
 from apis.shared.models import APIError, APISuccess
 
+ResponsesType: TypeAlias = Optional[Dict[Union[int, str], Dict[str, Any]]]
 
 def build_api_success_response(
     is_list: bool = False,
     message: str = "Opération réussie",
-) -> dict[str, Any]:
+) -> ResponsesType:
     now = datetime.now(ZoneInfo("Europe/Paris")).isoformat()
     data_example = [] if is_list else {}
-    response = {
+    response: ResponsesType = {
         200: {
             "model": APISuccess,
             "description": message,

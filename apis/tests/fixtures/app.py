@@ -10,16 +10,17 @@ from services.tests.DataEtatPostgresContainer import DataEtatPostgresContainer
 def test_db():
     postgres_container = DataEtatPostgresContainer()
     postgres_container.start()
-    return postgres_container
+    override_config("sqlalchemy_database_uri", postgres_container.get_connection_url())
+    yield postgres_container
+    postgres_container.stop(force=True, delete_volume=True)
 
 
 @pytest.fixture(scope="session")
 def config(test_db):
-    override_config("sqlalchemy_database_uri", test_db.get_connection_url())
     return get_config()
 
 
 @pytest.fixture(scope="session")
-def app(config):
+def app(test_db, config):
     app = create_app()
     return app
