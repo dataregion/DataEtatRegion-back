@@ -10,7 +10,7 @@ from services.utilities.observability import SummaryOfTimePerfCounter
 
 from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams
 from apis.apps.budget.services.get_data import get_lignes
-from apis.database import get_db
+from apis.database import get_session
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
 from apis.shared.openapi_config import build_api_success_response
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 )
 @handle_exceptions
 def healthcheck(
-    db: Session = Depends(get_db), params: FinancialLineQueryParams = Depends()
+    db: Session = Depends(get_session), params: FinancialLineQueryParams = Depends()
 ):
     params.colonnes = "source"
     params.source_region = "053"

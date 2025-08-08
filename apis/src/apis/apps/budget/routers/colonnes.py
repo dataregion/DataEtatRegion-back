@@ -10,7 +10,7 @@ from apis.apps.budget.services.get_colonnes import (
     get_list_colonnes_tableau,
 )
 from apis.config.current import get_config
-from apis.database import get_db
+from apis.database import get_session
 from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
@@ -32,7 +32,7 @@ keycloak_validator = KeycloakTokenValidator(get_config())
 @handle_exceptions
 def get_colonnes_tableau(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_session),
 ):
     logger.debug("[COLONNES] Récupération des colonnes pour le tableau")
     return APISuccess(
@@ -51,7 +51,7 @@ def get_colonnes_tableau(
 @handle_exceptions
 def get_colonnes_grouping(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
-    db: Session = Depends(get_db),
+    session: Session = Depends(get_session),
 ):
     logger.debug("[COLONNES] Récupération des colonnes pour le grouping")
     return APISuccess(

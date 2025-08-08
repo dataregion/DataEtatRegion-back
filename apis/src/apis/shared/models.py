@@ -60,6 +60,10 @@ class APISuccess(APIResponse, Generic[T]):
     current_page: Optional[int] = Field(default=None, exclude=True)
     has_next: Optional[bool] = Field(default=None, exclude=True)
 
+    def __init__(self, **data):
+        super().__init__(**data)
+        data["success"] = True
+
     @model_validator(mode="before")
     @classmethod
     def build_pagination(cls, values):

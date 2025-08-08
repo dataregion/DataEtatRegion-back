@@ -8,7 +8,7 @@ from typing import Type
 
 from apis.apps.budget.models.budget_query_params import V3QueryParams
 from apis.apps.referentiels.services.get_data import get_all_data, get_one_data
-from apis.database import get_db
+from apis.database import get_session
 from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
@@ -37,7 +37,7 @@ def create_referentiel_router(
     @handle_exceptions
     def list_all(
         params: V3QueryParams = Depends(),
-        db: Session = Depends(get_db),
+        db: Session = Depends(get_session),
         user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
     ):
         logger.debug(f"[{model_name.upper()}] Récupération des {model_name}")
@@ -68,7 +68,7 @@ def create_referentiel_router(
     def get_by_code(
         code: str,
         params: V3QueryParams = Depends(),
-        db: Session = Depends(get_db),
+        db: Session = Depends(get_session),
         user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
     ):
         logger.debug(

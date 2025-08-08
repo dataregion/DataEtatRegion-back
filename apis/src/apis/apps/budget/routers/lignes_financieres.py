@@ -15,7 +15,7 @@ from apis.apps.budget.models.budget_query_params import (
 from apis.apps.budget.services.get_colonnes import get_list_colonnes_grouping
 from apis.apps.budget.services.get_data import get_annees_budget, get_ligne, get_lignes
 from apis.config.current import get_config
-from apis.database import get_db
+from apis.database import get_session
 from apis.security.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
@@ -46,7 +46,7 @@ def handle_national(
 )
 @handle_exceptions
 def get_lignes_financieres(
-    params: FinancialLineQueryParams = Depends(), db: Session = Depends(get_db)
+    params: FinancialLineQueryParams = Depends(), db: Session = Depends(get_session)
 ):
     user = ConnectedUser({"region": "053"})
     print(user.current_region)
@@ -88,7 +88,7 @@ def get_lignes_financieres(
 def get_lignes_financieres_by_source(
     id: int,
     params: SourcesQueryParams = Depends(),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
 
@@ -124,7 +124,7 @@ def get_lignes_financieres_by_source(
 @handle_exceptions
 def get_annees(
     params: SourcesQueryParams = Depends(),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
     params = handle_national(params, user)

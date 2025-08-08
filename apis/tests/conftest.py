@@ -6,7 +6,7 @@ import requests
 from apis.config.Config import Config
 from .fixtures.app import *  # noqa: F403
 
-from apis.database import get_db  # noqa: E402
+from apis.database import get_session
 
 
 @pytest.fixture(scope="session")
@@ -16,7 +16,7 @@ def client(app: FastAPI):
 
 @pytest.fixture()
 def db_session(config):
-    return get_db()
+    return get_session()
 
 
 @pytest.fixture(scope="session")
