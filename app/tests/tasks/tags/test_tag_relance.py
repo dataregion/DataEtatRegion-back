@@ -32,7 +32,7 @@ def insert_financial_ae_for_tag_relance(database, session):
     programme_t_relance_1 = CodeProgramme(**{"code": "155"})
     programme_t_relance_2 = CodeProgramme(**{"code": "255"})
     programme_t_autre = CodeProgramme(**{"code": "xxx"})
-    theme_relance = Theme(**{"label": "Plan de relance"})
+    theme_relance = Theme(**{"code": "MPR", "label": "Plan de relance"})
 
     programme_t_relance_1.theme_r = theme_relance
     programme_t_relance_2.theme_r = theme_relance
