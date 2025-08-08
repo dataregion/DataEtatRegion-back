@@ -22,16 +22,18 @@ run_services_tests:
     - env
     - pip install .[dev]
 
-run_app_tests:
-  <<: *default-tests
-  before_script:
-    - cd app/
-    - env
-    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
-
 run_apis_tests:
   <<: *default-tests
   before_script:
     - cd apis/
+    - env
+    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
+
+run_app_tests:
+  <<: *default-tests
+  needs:
+    - run_apis_tests
+  before_script:
+    - cd app/
     - env
     - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
