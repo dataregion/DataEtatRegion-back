@@ -62,7 +62,7 @@ def init_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
         # Synchro des colonnes faisant le lien avec la table Grist
         now = datetime.now(ZoneInfo("Europe/Paris"))
         for r in referentiels:
-            match = next((t for t in records if r.code == t.fields["code"]), None)
+            match = next((t for t in records if str(r.code) == str(t.fields.get("code"))), None)
             stmt = (
                 update(model)
                 .where(model.id == r.id)
@@ -110,8 +110,8 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
             stmt = None
             match = next((t for t in referentiels if t.grist_row_id == r.id), None)
 
+            fields = r.fields
             if match is None:
-                fields = r.fields
                 fields["synchro_grist_id"] = sg.id
                 fields["grist_row_id"] = r.id
                 fields["created_at"] = now
@@ -121,7 +121,6 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
                 db.session.execute(stmt)
                 continue
 
-            fields = r.fields
             fields["updated_at"] = now
             referentiels.remove(match)
             stmt = (

@@ -15,7 +15,7 @@ class CodeProgramme(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     code_ministere: Column[str] = Column(
         String, ForeignKey("ref_ministere.code"), nullable=True
     )
-    code_theme: Column[int] = Column(Integer, ForeignKey("ref_theme.code"), nullable=True)
+    code_theme: Column[str] = Column(String, ForeignKey("ref_theme.code"), nullable=True)
     theme: Column[int] = Column(Integer, ForeignKey("ref_theme.id"), nullable=True)
 
     label: Column[str] = Column(String)
