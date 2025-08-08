@@ -25,6 +25,7 @@ def _get_model_by_tablename(tablename):
             return cls
     return None
 
+
 def _get_sync_config(doc_id: str, table_id: str, table_name: str):
     stmt = select(SynchroGrist).where(
         SynchroGrist.grist_doc_id == doc_id,
@@ -52,14 +53,14 @@ def init_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
         grist_api = make_grist_api_client(token)
 
         model, sg = _get_sync_config(doc_id, table_id, table_name)
-        
+
         referentiels = list(db.session.execute(select(model)).scalars().all())
         records: List[Record] = grist_api.get_records_of_table(sg.grist_doc_id, sg.grist_table_id)
 
         # Vérification de la présence de la colonne code dans la table Grist
         first = records[0] if len(records) > 0 else None
         if first is not None and "code" not in first.fields.keys():
-            raise Exception(f"Colonne `code` non présente dans la table Grist")
+            raise Exception("Colonne `code` non présente dans la table Grist")
 
         # Synchro des colonnes faisant le lien avec la table Grist
         now = datetime.now(ZoneInfo("Europe/Paris"))
@@ -69,15 +70,15 @@ def init_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
                 update(model)
                 .where(model.id == r.id)
                 .values(
-                    synchro_grist_id = sg.id,
-                    grist_row_id = match.id if match is not None else None,
-                    is_deleted = (match is None),
-                    updated_at = now
+                    synchro_grist_id=sg.id,
+                    grist_row_id=match.id if match is not None else None,
+                    is_deleted=(match is None),
+                    updated_at=now,
                 )
             )
             db.session.execute(stmt)
             logging.info(f"[GRIST][INIT] UPDATE {table_name} : {r.id}")
-                
+
         db.session.commit()
         logger.info("[GRIST][INIT] End Call init-grist-to-db")
     except Exception as e:
@@ -92,7 +93,7 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
         grist_api = make_grist_api_client(token)
 
         model, sg = _get_sync_config(doc_id, table_id, table_name)
-        
+
         referentiels: list[_SyncedWithGrist] = list(db.session.execute(select(model)).scalars().all())
         records: List[Record] = grist_api.get_records_of_table(sg.grist_doc_id, sg.grist_table_id)
 
@@ -100,11 +101,10 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
         first = records[0] if len(records) > 0 else None
         if first is not None:
             for col in first.fields.keys():
-                if col == 'id' and col == 'created_at':
+                if col == "id" and col == "created_at":
                     raise Exception(f"Nom de colonne interdit : `{col}`")
                 if not hasattr(model, col):
                     raise Exception(f"La colonne Grist `{col}` n'existe pas dans la table `{table_name}`")
-
 
         # Traitement de chaque ligne de la table grist
         now = datetime.now(ZoneInfo("Europe/Paris"))
@@ -125,11 +125,7 @@ def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
 
             fields["updated_at"] = now
             referentiels.remove(match)
-            stmt = (
-                update(model)
-                .where(model.synchro_grist_id == sg.id, model.grist_row_id == r.id)
-                .values(**fields)
-            )
+            stmt = update(model).where(model.synchro_grist_id == sg.id, model.grist_row_id == r.id).values(**fields)
             logging.info(f"[GRIST][SYNC] UPDATE {table_name} : {r.id}")
             db.session.execute(stmt)
 
