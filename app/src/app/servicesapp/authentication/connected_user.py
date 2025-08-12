@@ -11,6 +11,10 @@ def connected_user_from_current_token_identity():
     Raises:
        InvalidTokenError
     """
+    return _current_connected_user()
+
+
+def _current_connected_user():
     token = _current_token_identity()
     return ConnectedUser(token)  # pyright: ignore[reportArgumentType]
 
