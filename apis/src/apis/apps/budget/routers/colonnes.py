@@ -11,7 +11,7 @@ from apis.apps.budget.services.get_colonnes import (
 )
 from apis.config.current import get_config
 from apis.database import get_session
-from apis.security.connected_user import ConnectedUser
+from models.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess

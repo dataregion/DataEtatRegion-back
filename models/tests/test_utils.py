@@ -1,5 +1,5 @@
 import pytest
-from services.utils import convert_exception, wrap_all_ex_to
+from models.utils import convert_exception, wrap_all_ex_to
 
 
 @pytest.mark.parametrize(

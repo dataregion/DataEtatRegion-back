@@ -10,7 +10,7 @@ from app.controller.financial_data import check_file_import
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
-from app.servicesapp.authentication import ConnectedUser
+from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 from app.servicesapp.france2030 import (
     SousAxePlanRelancePayload,
     StructurePayload,
@@ -59,7 +59,7 @@ class France2030Import(Resource):
         Les lignes sont insérés de manière asynchrone
         """
         data = request.form
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         annee = int(data["annee"])
 
         file_france2030 = request.files["fichier"]

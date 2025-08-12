@@ -25,7 +25,7 @@ def patching_roles(roles=None):
             return "bretagne.budget"
 
     with patch(
-        "app.servicesapp.authentication.connected_user.ConnectedUser.from_current_token_identity",
+        "app.servicesapp.authentication.connected_user.connected_user_from_current_token_identity",
         return_value=_Mocked(),
     ):
         yield

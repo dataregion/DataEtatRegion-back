@@ -7,7 +7,7 @@ from werkzeug.datastructures import FileStorage
 from app import celeryapp
 from app.models.enums.AccountRole import AccountRole
 from app.controller.Decorators import check_permission
-from app.servicesapp.authentication import ConnectedUser
+from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 
 from ...exceptions.exceptions import FileNotAllowedException
 from ...services.import_refs import ReferentielNotFound, import_refs
@@ -31,7 +31,7 @@ class TaskRunImportRef(Resource):
     @api.doc(security="Bearer")
     @api.expect(parser)
     def post(self):
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
 
         data = request.form
         file_ref = request.files["file"]

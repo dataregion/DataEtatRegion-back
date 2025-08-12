@@ -5,7 +5,7 @@ from requests import RequestException
 
 from app.controller import ErrorController
 from app.models.enums.AccountRole import AccountRole
-from app.servicesapp.authentication import ConnectedUser
+from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 
 
 def check_permission(permissions):
@@ -23,7 +23,7 @@ def check_permission(permissions):
     def wrapper(func):
         @wraps(func)
         def inner_wrapper(*args, **kwargs):
-            user = ConnectedUser.from_current_token_identity()
+            user = connected_user_from_current_token_identity()
 
             if isinstance(permissions, AccountRole):
                 permissions_to_check = [permissions]

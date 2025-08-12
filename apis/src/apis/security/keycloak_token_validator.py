@@ -4,7 +4,7 @@ import requests
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
-from apis.security.connected_user import ConnectedUser
+from models.connected_user import ConnectedUser
 from apis.config.Config import Config
 
 

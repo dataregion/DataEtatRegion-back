@@ -1,7 +1,7 @@
 from enum import Enum
 import logging
 from typing import TypedDict
-from app.servicesapp.exceptions.authentication import NoCurrentRegion
+from models.exceptions import NoCurrentRegion
 import pandas
 
 from services.helper import (
@@ -35,7 +35,7 @@ from app.servicesapp.exceptions.code_geo import NiveauCodeGeoException
 from app.services.file_service import check_file_and_save
 
 from app.utilities.observability import gauge_of_currently_executing, summary_of_time
-from services.utils import convert_exception
+from models.utils import convert_exception
 from sqlalchemy.orm.session import Session
 
 app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanitize_source_region_for_bdd_request)

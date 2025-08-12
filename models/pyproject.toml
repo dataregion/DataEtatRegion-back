@@ -28,3 +28,9 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
+
+[project.optional-dependencies]
+dev = [
+  "pytest ~= 8.3",
+  "pytest-cov ~=6.0",
+]

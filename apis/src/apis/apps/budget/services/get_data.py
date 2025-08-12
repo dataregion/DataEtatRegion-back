@@ -10,7 +10,7 @@ from services.utilities.observability import (
     gauge_of_currently_executing,
     summary_of_time,
 )
-from services.utils import convert_exception
+from models.utils import convert_exception
 
 from apis.apps.budget.models.budget_query_params import (
     FinancialLineQueryParams,
