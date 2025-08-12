@@ -63,9 +63,11 @@ class ValidTokenException(DataRegatException):
         self.message = "Forbidden"
         super().__init__(self.message)
 
+
 #######################################################################
 # Exceptions d'authentification
 #
+
 
 class AuthenticationError(Exception):
     """Exception en cas de problème lié à l'authentification"""

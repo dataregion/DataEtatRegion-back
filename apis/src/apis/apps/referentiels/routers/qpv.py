@@ -43,7 +43,9 @@ def find_all_by_annee_decoupage(
         raise ValueError("L'année de découpage renseignée est erronée.")
 
     logger.debug(f"[QPV] Récupération des qpv de l'année de découpage {annee}")
-    data, has_next = get_all_data(Qpv, session, params, [Qpv.annee_decoupage == int(annee)])
+    data, has_next = get_all_data(
+        Qpv, session, params, [Qpv.annee_decoupage == int(annee)]
+    )
     if len(data) == 0:
         return APISuccess(
             code=HTTPStatus.NO_CONTENT,

@@ -75,7 +75,9 @@ def create_referentiel_router(
             f"[{model_name.upper()}] Récupération de {model_name} par {code_column} : {code}"
         )
 
-        data = get_one_data(model, session, params, [getattr(model, code_column) == code])
+        data = get_one_data(
+            model, session, params, [getattr(model, code_column) == code]
+        )
         if data is None:
             return APISuccess(
                 code=HTTPStatus.NO_CONTENT,

@@ -28,7 +28,8 @@ logger = logging.getLogger(__name__)
 )
 @handle_exceptions
 def healthcheck(
-    session: Session = Depends(get_session), params: FinancialLineQueryParams = Depends()
+    session: Session = Depends(get_session),
+    params: FinancialLineQueryParams = Depends(),
 ):
     params.colonnes = "source"
     params.source_region = "053"

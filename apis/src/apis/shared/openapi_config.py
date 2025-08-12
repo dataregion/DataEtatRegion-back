@@ -7,6 +7,7 @@ from apis.shared.models import APIError, APISuccess
 
 ResponsesType: TypeAlias = Optional[Dict[Union[int, str], Dict[str, Any]]]
 
+
 def build_api_success_response(
     is_list: bool = False,
     message: str = "Opération réussie",

@@ -40,7 +40,7 @@ class V3QueryBuilder:
         self._params = params
         self._query = select(self._model)
         self._select_model = True
-        
+
         self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
         if self._params.colonnes is not None:
