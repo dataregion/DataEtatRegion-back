@@ -16,6 +16,9 @@ layers = [
   "models",
 ]
 
+####################
+# Règles pour les modules en dessous de app
+
 [[tool.importlinter.contracts]]
 name = "gristcli ne tire pas module projet"
 type = "forbidden"
