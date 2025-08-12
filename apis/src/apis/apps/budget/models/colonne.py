@@ -4,7 +4,7 @@ class Colonne:
         self,
         code: str | None = None,
         label: str | None = None,
-        type: str | None = str,
+        type: str | None = None,
         default: bool = True,
     ):
         self.code = code
