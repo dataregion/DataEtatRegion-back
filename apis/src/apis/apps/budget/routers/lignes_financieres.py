@@ -46,10 +46,10 @@ def handle_national(
 )
 @handle_exceptions
 def get_lignes_financieres(
-    params: FinancialLineQueryParams = Depends(), session: Session = Depends(get_session)
+    params: FinancialLineQueryParams = Depends(),
+    session: Session = Depends(get_session),
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-    user = ConnectedUser({"region": "053"})
-    print(user.current_region)
     params = handle_national(params, user)
     if params.grouping is not None:
         params.map_colonnes(get_list_colonnes_grouping())
