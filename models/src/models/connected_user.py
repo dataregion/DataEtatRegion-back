@@ -1,6 +1,6 @@
 from typing import Iterable
-from src.models.exceptions import InvalidTokenError, NoCurrentRegion
-from src.models.utils import wrap_all_ex_to
+from models.exceptions import InvalidTokenError, NoCurrentRegion
+from models.utils import wrap_all_ex_to
 
 
 class ConnectedUser:
