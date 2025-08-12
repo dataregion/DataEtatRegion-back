@@ -6,6 +6,8 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
+import logging
+
 
 class V3QueryParams:
     def __init__(
@@ -38,6 +40,8 @@ class V3QueryBuilder:
         self._params = params
         self._query = select(self._model)
         self._select_model = True
+        
+        self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
         if self._params.colonnes is not None:
             selected_colonnes = [
@@ -114,7 +118,7 @@ class V3QueryBuilder:
         return self
 
     def paginate(self):
-        print("paginate")
+        self._logger.debug("paginate")
         offset = (self._params.page - 1) * self._params.page_size
         self._query = self._query.offset(offset).limit(self._params.page_size + 1)
         return self
