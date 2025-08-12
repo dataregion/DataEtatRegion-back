@@ -38,8 +38,6 @@ run_apis_tests:
 
 run_app_tests:
   <<: *default-tests
-  needs:
-    - run_apis_tests
   before_script:
     - cd app/
     - env
