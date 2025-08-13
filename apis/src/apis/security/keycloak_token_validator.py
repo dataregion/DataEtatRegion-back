@@ -1,4 +1,5 @@
-from authlib.jose import jwt, JsonWebKey, JoseError
+from authlib.jose import jwt, JsonWebKey
+import logging
 import requests
 
 from fastapi import Depends, HTTPException
@@ -20,6 +21,8 @@ class KeycloakTokenValidator:
         )
         self.algorithms = ["RS256"]
         self._jwk_set = None
+        
+        self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def _get_jwk_set(self):
         if self._jwk_set is None:
@@ -40,10 +43,12 @@ class KeycloakTokenValidator:
                 },
             )
             claims.validate()
-        except JoseError as e:
-            raise HTTPException(
+        except Exception as e:
+            http_ex = HTTPException(
                 status_code=401, detail=f"Token validation failed: {str(e)}"
             )
+            self._logger.exception("Exception occured during token validation.", exc_info=e)
+            raise http_ex
 
         return ConnectedUser(dict(claims))
 

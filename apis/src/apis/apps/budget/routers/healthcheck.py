@@ -31,7 +31,7 @@ def healthcheck(
     session: Session = Depends(get_session),
     params: FinancialLineQueryParams = Depends(),
 ):
-    params.colonnes = "source"
+    params.colonnes = [ "source" ]
     params.source_region = "053"
     params.page = 1
     params.page_size = 10
@@ -46,6 +46,6 @@ def healthcheck(
 
     return APISuccess(
         code=HTTPStatus.OK,
-        message="API /v3/budget is running !",
+        message="API is running !",
         data=None,
     )

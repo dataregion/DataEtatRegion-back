@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.get(
     "",
-    summary="Find all QPV by annee",
+    summary="Healthcheck",
     response_class=JSONResponse,
     responses=build_api_success_response(),
 )
