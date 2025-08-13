@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class KeycloakOpenIdConfig(BaseModel):
@@ -6,8 +6,14 @@ class KeycloakOpenIdConfig(BaseModel):
     realm: str
     client_id: str
     secret_key: str
-    test_user: str
-    test_password: str
+    test_user: str | None = Field(
+        default=None,
+        description="For tests only - give a test user to authenticate with",
+    )
+    test_password: str | None = Field(
+        default=None,
+        description="For tests only - give a test user to authenticate with",
+    )
 
 
 class Config(BaseModel):
