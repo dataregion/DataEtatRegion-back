@@ -46,23 +46,24 @@ def test_api_error_has_success_to_false():
 
     assert api_error.success is False
 
+
 def test_api_success_pagination():
-    model = APISuccess(code = 200, current_page=0, has_next=True)
+    model = APISuccess(code=200, current_page=0, has_next=True)
 
     assert model.pagination is not None
     assert model.pagination.current_page == 0
-    
+
     with pytest.raises(ValueError):
-        _ = APISuccess(code = 200, current_page=200)
+        _ = APISuccess(code=200, current_page=200)
     with pytest.raises(ValueError):
-        _ = APISuccess(code = 200, has_next=False)
-    
+        _ = APISuccess(code=200, has_next=False)
+
     #
     with pytest.raises(Exception):
-        model.current_page=1
+        model.current_page = 1
     with pytest.raises(Exception):
-        model.has_next=False
-    
+        model.has_next = False
+
     #
     serialized = model.model_dump()
-    assert serialized['pagination'] == { "current_page": 0, "has_next": True }
+    assert serialized["pagination"] == {"current_page": 0, "has_next": True}

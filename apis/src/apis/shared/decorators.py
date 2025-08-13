@@ -7,6 +7,7 @@ import traceback
 
 from apis.shared.models import APIError
 
+
 def _to_json_response(content: APIError):
     status_code = content.code
     serialized = content.model_dump(mode="json")
