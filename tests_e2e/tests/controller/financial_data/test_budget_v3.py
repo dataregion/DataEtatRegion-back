@@ -16,3 +16,9 @@ def test_budget_with_bad_token(api_budget_v3, fake_token):
 
     response = call_request(f"{api_budget_v3}/lignes", token=fake_token)
     assert response.status_code == 401
+
+
+def test_budget_with_good_token(api_budget_v3, real_token):
+
+    response = call_request(f"{api_budget_v3}/lignes", token=real_token)
+    assert response.status_code == 200

@@ -16,6 +16,7 @@ def api_budget_v1(api_base_url):
 def api_budget_v2(api_base_url):
     return f"{api_base_url}/financial-data/api/v2"
 
+
 @pytest.fixture(scope="function")
 def api_budget_v3(api_base_url):
     return f"{api_base_url}/financial-data/api/v3"
