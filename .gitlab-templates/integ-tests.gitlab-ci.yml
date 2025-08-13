@@ -1,6 +1,13 @@
 run-tests-e2e:
   stage: 🧪 post-deploy tests
   image: ${PYTHON_IMAGE}
+  variables:
+    API_BASE_URL: "${E2E_API_BASE_URL}"
+    KEYCLOAK_URL: "${E2E_KEYCLOAK_URL}"
+    KEYCLOAK_REALM: "${E2E_KEYCLOAK_REALM}"
+    CLIENT_ID: "${E2E_CLIENT_ID}"
+    USERNAME: "${E2E_USERNAME}"
+    PASSWORD: "${E2E_PASSWORD}"
   before_script:
     - cd tests_e2e/
     - env
@@ -8,7 +15,7 @@ run-tests-e2e:
     - mkdir -p tests_e2e_results
   script:
     - ls -la 
-    - pytest  --api-url=${API_BASE_URL}  --html=tests_e2e_results/tests.html --json-report --json-report-file=tests_e2e_results/tests.json .
+    - pytest --html=tests_e2e_results/tests.html --json-report --json-report-file=tests_e2e_results/tests.json .
   artifacts:
     expire_in: 3 days
     when: always

@@ -23,8 +23,6 @@ variables:
   _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
   DO_DOCKERIZE: "❌"
   DO_INTEG_TESTS: "❌"
-  # VARIABLE POUR tests 2E2
-  API_BASE_URL: "https://api.nocode.csm.ovh"
 
 
 workflow:
