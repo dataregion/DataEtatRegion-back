@@ -1,4 +1,0 @@
-requests
-pytest-html 
-pytest 
-pytest-json-report

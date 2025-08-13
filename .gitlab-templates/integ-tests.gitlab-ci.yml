@@ -4,7 +4,7 @@ run-tests-e2e:
   before_script:
     - cd tests_e2e/
     - env
-    - pip install -r requirement.txt
+    - pip install .
     - mkdir -p tests_e2e_results
   script:
     - ls -la 

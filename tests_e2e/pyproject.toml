@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=6.2,<9", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tests_e2e"
+dynamic = ["version"]
+description = "Tests e2e pour data transform"
+dependencies = [
+    "requests",
+    "pytest-html",
+    "pytest",
+    "pytest-json-report",
+]
+
+[tool.poetry]
+version = "0.1.0"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.*"]
