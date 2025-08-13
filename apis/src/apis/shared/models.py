@@ -1,49 +1,51 @@
 from datetime import datetime
 from http import HTTPStatus
-from pydantic import BaseModel, Field, model_validator
-from typing import Generic, Optional, TypeVar
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
+from typing import Any, Generic, Optional, TypeVar
 from zoneinfo import ZoneInfo
 
 
 T = TypeVar("T")
 
+_model_config: ConfigDict = {
+    "json_encoders": {datetime: lambda dt: str(int(dt.timestamp()))}
+}
+
+
+def _ts_default_factory():
+    dt = datetime.now(ZoneInfo("Europe/Paris"))
+    dt = dt.replace(microsecond=0)
+    return dt
+
 
 class PaginationMeta(BaseModel):
 
-    def __init__(self, current_page: int, has_next: bool):
-        self.current_page = current_page
-        self.has_next = has_next
-
-    def to_dict(self):
-        return {"current_page": self.current_page, "has_next": self.has_next}
+    current_page: int
+    has_next: bool
 
 
 class APIResponse(BaseModel):
     code: int
-    success: bool
-    timestamp: datetime = Field(
-        default_factory=lambda _: datetime.now(ZoneInfo("Europe/Paris"))
-    )
+    success: Optional[bool] = None
+    timestamp: datetime = Field(default_factory=_ts_default_factory)
     message: Optional[str] = None
 
-    def __init__(self, **data):
-        code = data.get("code")
-        if "success" not in data:
-            data["success"] = True
-        if isinstance(code, HTTPStatus):
-            data["code"] = code.value
-        super().__init__(**data)
+    model_config = _model_config
+
+    def model_post_init(self, _: Any) -> None:
+        if isinstance(self.code, HTTPStatus):
+            self.code = self.code.value
 
 
 class APIError(APIResponse):
     detail: Optional[str] = None
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        data["success"] = False
+    def model_post_init(self, ctx: Any) -> None:
+        super().model_post_init(ctx)
+        self.success = False
 
-    class Config:
-        json_schema_extra = {
+    model_config = _model_config | {
+        "json_schema_extra": {
             "example": {
                 "code": 422,
                 "success": False,
@@ -52,25 +54,36 @@ class APIError(APIResponse):
                 "detail": "",
             }
         }
+    }
 
 
 class APISuccess(APIResponse, Generic[T]):
     data: Optional[T] = None
     message: Optional[str] = None
-    current_page: Optional[int] = Field(default=None, exclude=True)
-    has_next: Optional[bool] = Field(default=None, exclude=True)
+    current_page: Optional[int] = Field(default=None, exclude=True, frozen=True)
+    has_next: Optional[bool] = Field(default=None, exclude=True, frozen=True)
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        data["success"] = True
+    model_config = _model_config
 
-    @model_validator(mode="before")
-    @classmethod
-    def build_pagination(cls, values):
-        current_page = values.get("current_page")
-        has_next = values.get("has_next")
-        if current_page is not None and has_next is not None:
-            values["pagination"] = PaginationMeta(
-                current_page=current_page, has_next=has_next
+    @computed_field
+    @property
+    def pagination(self) -> Optional[PaginationMeta]:
+        pm = None
+        if self.current_page is not None and self.has_next is not None:
+            pm = PaginationMeta(current_page=self.current_page, has_next=self.has_next)
+        return pm
+
+    def model_post_init(self, ctx: Any) -> None:
+        super().model_post_init(ctx)
+        self.success = True
+
+    @model_validator(mode="after")
+    def check_pagination_is_consistent(self):
+        a = self.current_page is not None
+        b = self.has_next is not None
+        valid = (a and b) or (not a and not b)
+        if not valid:
+            raise ValueError(
+                "Les champs current_page et has_next doivent être renseignés"
             )
-        return values
+        return self
