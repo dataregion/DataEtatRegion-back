@@ -41,8 +41,8 @@ def create_app():
         separate_input_output_schemas=False,
     )
 
-    app.mount("/v3/budget", app_budget)
-    app.mount("/v3/referentiels", app_referentiels)
+    app.mount("/financial-data/api/v3", app_budget)
+    app.mount("/referentiels/api/v3", app_referentiels)
 
     app.add_exception_handler(
         RequestValidationError, custom_validation_exception_handler
