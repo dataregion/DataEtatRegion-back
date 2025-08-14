@@ -146,7 +146,7 @@ def get_list_colonnes_tableau() -> list[Colonne]:
         Colonne(
             code=EnrichedFlattenFinancialLines.annee.description,
             label="Année Exercice comptable",
-            type="int",
+            type="number",
         ),
         Colonne(
             code=EnrichedFlattenFinancialLines.centreCouts_code.description,
@@ -163,7 +163,7 @@ def get_list_colonnes_tableau() -> list[Colonne]:
             label="Centre coûts",
             default=False,
         ),
-        Colonne(code=EnrichedFlattenFinancialLines.tags.key, label="Tags"),
+        Colonne(code=EnrichedFlattenFinancialLines.tags.key, label="Tags", type="array"),
         Colonne(
             code=EnrichedFlattenFinancialLines.data_source.description,
             label="Source Chorus",
@@ -182,7 +182,7 @@ def get_list_colonnes_grouping() -> list[Colonne]:
         Colonne(
             code=EnrichedFlattenFinancialLines.annee.description,
             label="Année exercie comptable",
-            type="int",
+            type="number",
         ),
         Colonne(
             code=EnrichedFlattenFinancialLines.beneficiaire_commune_labelRegion.description,
@@ -248,5 +248,5 @@ def get_list_colonnes_grouping() -> list[Colonne]:
             code=EnrichedFlattenFinancialLines.groupeMarchandise_label.description,
             label="Groupe marchandise",
         ),
-        Colonne(code=EnrichedFlattenFinancialLines.tags.key, label="Tags"),
+        Colonne(code=EnrichedFlattenFinancialLines.tags.key, label="Tags", type="array"),
     ]

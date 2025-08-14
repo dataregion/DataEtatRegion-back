@@ -1,8 +1,13 @@
 from datetime import datetime
 from http import HTTPStatus
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, List, Literal, Optional, TypeVar, Union
 from zoneinfo import ZoneInfo
+
+_JSONSchemaType = Literal[
+    "string", "number", "integer", "boolean", "object", "array", "null"
+]
+JSONSchemaType = Union[_JSONSchemaType, List[_JSONSchemaType]]
 
 
 T = TypeVar("T")
