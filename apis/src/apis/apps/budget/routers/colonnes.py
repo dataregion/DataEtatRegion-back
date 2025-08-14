@@ -35,11 +35,12 @@ def get_colonnes_tableau(
     session: Session = Depends(get_session),
 ):
     logger.debug("[COLONNES] Récupération des colonnes pour le tableau")
-    return APISuccess(
+    response = APISuccess(
         code=HTTPStatus.OK,
         message="Liste des colonnes disponibles pour le tableau",
-        data=[c.to_dict() for c in get_list_colonnes_tableau()],
+        data=get_list_colonnes_tableau(),
     )
+    return response
 
 
 @router.get(
@@ -57,5 +58,5 @@ def get_colonnes_grouping(
     return APISuccess(
         code=HTTPStatus.OK,
         message="Liste des colonnes disponibles pour le grouping",
-        data=[c.to_dict() for c in get_list_colonnes_grouping()],
+        data=get_list_colonnes_grouping(),
     )

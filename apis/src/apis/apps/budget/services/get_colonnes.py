@@ -53,7 +53,7 @@ def get_list_colonnes_tableau() -> list[Colonne]:
             label="Ref Programmation",
         ),
         Colonne(
-            code=EnrichedFlattenFinancialLines.beneficiaire_commune_label,
+            code=EnrichedFlattenFinancialLines.beneficiaire_commune_label.description,
             label="Commune du SIRET",
         ),
         Colonne(
@@ -146,7 +146,7 @@ def get_list_colonnes_tableau() -> list[Colonne]:
         Colonne(
             code=EnrichedFlattenFinancialLines.annee.description,
             label="Année Exercice comptable",
-            type=int,
+            type="int",
         ),
         Colonne(
             code=EnrichedFlattenFinancialLines.centreCouts_code.description,
@@ -182,7 +182,7 @@ def get_list_colonnes_grouping() -> list[Colonne]:
         Colonne(
             code=EnrichedFlattenFinancialLines.annee.description,
             label="Année exercie comptable",
-            type=int,
+            type="int",
         ),
         Colonne(
             code=EnrichedFlattenFinancialLines.beneficiaire_commune_labelRegion.description,
