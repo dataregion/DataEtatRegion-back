@@ -1,8 +1,8 @@
 from http import HTTPStatus
 import logging
+from typing import TypeVar
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
@@ -17,10 +17,9 @@ from apis.apps.budget.services.get_data import get_annees_budget, get_ligne, get
 from apis.config.current import get_config
 from apis.database import get_session
 from models.connected_user import ConnectedUser
+from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
-from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APIError, APISuccess
-from apis.shared.openapi_config import build_api_success_response
 
 
 router = APIRouter()
@@ -28,9 +27,10 @@ logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator(get_config())
 
 
-def handle_national(
-    params: FinancialLineQueryParams, user: ConnectedUser
-) -> FinancialLineQueryParams:
+_params_T = TypeVar("_params_T", bound=SourcesQueryParams)
+
+
+def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
     if user.current_region != "NAT":
         params.source_region = user.current_region
     else:
@@ -41,10 +41,9 @@ def handle_national(
 @router.get(
     "",
     summary="Récupére les lignes financières, mécanisme de grouping pour récupérer les montants agrégés",
-    response_class=JSONResponse,
-    responses=build_api_success_response(is_list=True),
+    response_model=APISuccess[list],  # TODO recupérer le type
+    responses=error_responses(),
 )
-@handle_exceptions
 def get_lignes_financieres(
     params: FinancialLineQueryParams = Depends(),
     session: Session = Depends(get_session),
@@ -81,10 +80,9 @@ def get_lignes_financieres(
 @router.get(
     "/{id:int}",
     summary="Récupére les infos budgetaires en fonction de son identifiant technique",
-    response_class=JSONResponse,
-    responses=build_api_success_response(),
+    response_model=APISuccess[list],  # TODO recupérer le type
+    responses=error_responses(),
 )
-@handle_exceptions
 def get_lignes_financieres_by_source(
     id: int,
     params: SourcesQueryParams = Depends(),
@@ -95,7 +93,7 @@ def get_lignes_financieres_by_source(
     if not params.source:
         return APIError(
             code=HTTPStatus.UNPROCESSABLE_ENTITY,
-            error="La paramètre `source` est requis.",
+            detail="La paramètre `source` est requis.",
         )
 
     params = handle_national(params, user)
@@ -118,10 +116,9 @@ def get_lignes_financieres_by_source(
 @router.get(
     "/annees",
     summary="Recupère la plage des années pour lesquelles les données budgetaires courent.",
-    response_class=JSONResponse,
-    responses=build_api_success_response(is_list=True),
+    response_model=APISuccess[list],  # TODO recupérer le type
+    responses=error_responses(),
 )
-@handle_exceptions
 def get_annees(
     params: SourcesQueryParams = Depends(),
     session: Session = Depends(get_session),

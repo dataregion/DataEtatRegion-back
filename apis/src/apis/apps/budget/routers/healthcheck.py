@@ -11,9 +11,8 @@ from services.utilities.observability import SummaryOfTimePerfCounter
 from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams
 from apis.apps.budget.services.get_data import get_lignes
 from apis.database import get_session
-from apis.shared.decorators import handle_exceptions
+from apis.exception_handlers import error_responses
 from apis.shared.models import APISuccess
-from apis.shared.openapi_config import build_api_success_response
 
 
 router = APIRouter()
@@ -24,9 +23,8 @@ logger = logging.getLogger(__name__)
     "",
     summary="Vérification de la disponibilité de l'API des lignes budgetaires",
     response_class=JSONResponse,
-    responses=build_api_success_response(),
+    responses=error_responses(),
 )
-@handle_exceptions
 def healthcheck(
     session: Session = Depends(get_session),
     params: FinancialLineQueryParams = Depends(),

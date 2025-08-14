@@ -15,10 +15,9 @@ from apis.apps.referentiels.services.referentiels_router_factory import (
 from apis.config.current import get_config
 from apis.database import get_session
 from models.connected_user import ConnectedUser
+from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
-from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
-from apis.shared.openapi_config import build_api_success_response
 
 
 logger = logging.getLogger(__name__)
@@ -30,9 +29,8 @@ router = create_referentiel_router(Qpv, QpvSchema, keycloak_validator, logger, "
     "/{annee}",
     summary="Find all QPV by annee",
     response_class=JSONResponse,
-    responses=build_api_success_response(is_list=True),
+    responses=error_responses(),
 )
-@handle_exceptions
 def find_all_by_annee_decoupage(
     annee: str,
     params: V3QueryParams = Depends(),

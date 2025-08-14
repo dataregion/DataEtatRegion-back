@@ -10,10 +10,9 @@ from apis.apps.budget.models.budget_query_params import V3QueryParams
 from apis.apps.referentiels.services.get_data import get_all_data, get_one_data
 from apis.database import get_session
 from models.connected_user import ConnectedUser
+from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
-from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
-from apis.shared.openapi_config import build_api_success_response
 
 
 def create_referentiel_router(
@@ -32,9 +31,8 @@ def create_referentiel_router(
         "",
         summary=f"Liste de tous les {model_name}",
         response_class=JSONResponse,
-        responses=build_api_success_response(is_list=True),
+        responses=error_responses(),
     )
-    @handle_exceptions
     def list_all(
         params: V3QueryParams = Depends(),
         session: Session = Depends(get_session),
@@ -62,9 +60,8 @@ def create_referentiel_router(
         "/{code}",
         summary=f"Get {model_name} by code",
         response_class=JSONResponse,
-        responses=build_api_success_response(),
+        responses=error_responses(),
     )
-    @handle_exceptions
     def get_by_code(
         code: str,
         params: V3QueryParams = Depends(),

@@ -2,9 +2,9 @@ from http import HTTPStatus
 import logging
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
+from apis.apps.budget.models.colonne import Colonnes
 from apis.apps.budget.services.get_colonnes import (
     get_list_colonnes_grouping,
     get_list_colonnes_tableau,
@@ -13,9 +13,9 @@ from apis.config.current import get_config
 from apis.database import get_session
 from models.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
-from apis.shared.decorators import handle_exceptions
 from apis.shared.models import APISuccess
-from apis.shared.openapi_config import build_api_success_response
+
+from apis.exception_handlers import error_responses
 
 
 router = APIRouter()
@@ -26,16 +26,15 @@ keycloak_validator = KeycloakTokenValidator(get_config())
 @router.get(
     "/tableau",
     summary="Liste des colonnes possibles pour le tableau",
-    response_class=JSONResponse,
-    responses=build_api_success_response(is_list=True),
+    response_model=APISuccess[Colonnes],
+    responses=error_responses(),
 )
-@handle_exceptions
 def get_colonnes_tableau(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
     session: Session = Depends(get_session),
 ):
     logger.debug("[COLONNES] Récupération des colonnes pour le tableau")
-    response = APISuccess(
+    response = APISuccess[Colonnes](
         code=HTTPStatus.OK,
         message="Liste des colonnes disponibles pour le tableau",
         data=get_list_colonnes_tableau(),
@@ -46,10 +45,9 @@ def get_colonnes_tableau(
 @router.get(
     "/grouping",
     summary="Liste des colonnes possibles pour le grouping",
-    response_class=JSONResponse,
-    responses=build_api_success_response(is_list=True),
+    response_model=APISuccess[Colonnes],
+    responses=error_responses(),
 )
-@handle_exceptions
 def get_colonnes_grouping(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
     session: Session = Depends(get_session),

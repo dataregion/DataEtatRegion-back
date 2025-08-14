@@ -9,3 +9,6 @@ class Colonne(BaseModel):
     label: str | None = None
     type: JSONSchemaType = "string"
     default: bool = True
+
+
+Colonnes = list[Colonne]

@@ -1,12 +1,13 @@
 from authlib.jose import jwt, JsonWebKey
 import logging
+from fastapi import Depends
 import requests
 
-from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
 from models.connected_user import ConnectedUser
 from apis.config.Config import Config
+from apis.shared.exceptions import InvalidTokenError
 
 
 class KeycloakTokenValidator:
@@ -44,13 +45,8 @@ class KeycloakTokenValidator:
             )
             claims.validate()
         except Exception as e:
-            http_ex = HTTPException(
-                status_code=401, detail=f"Token validation failed: {str(e)}"
-            )
-            self._logger.exception(
-                "Exception occured during token validation.", exc_info=e
-            )
-            raise http_ex
+            _ex = InvalidTokenError(api_message="Token validation failed")
+            raise _ex from e
 
         return ConnectedUser(dict(claims))
 

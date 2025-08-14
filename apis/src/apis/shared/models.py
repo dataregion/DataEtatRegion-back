@@ -42,6 +42,16 @@ class APIResponse(BaseModel):
             self.code = self.code.value
 
 
+def _api_error_example():
+    return {
+        "code": 422,
+        "success": False,
+        "timestamp": datetime.now(ZoneInfo("Europe/Paris")),
+        "message": "Erreur de validation",
+        "detail": "",
+    }
+
+
 class APIError(APIResponse):
     detail: Optional[str] = None
 
@@ -49,16 +59,12 @@ class APIError(APIResponse):
         super().model_post_init(ctx)
         self.success = False
 
+    @classmethod
+    def example(cls):
+        return _api_error_example()
+
     model_config = _model_config | {
-        "json_schema_extra": {
-            "example": {
-                "code": 422,
-                "success": False,
-                "timestamp": datetime.now(ZoneInfo("Europe/Paris")),
-                "message": "Erreur de validation",
-                "detail": "",
-            }
-        }
+        "json_schema_extra": {"example": _api_error_example()}
     }
 
 
