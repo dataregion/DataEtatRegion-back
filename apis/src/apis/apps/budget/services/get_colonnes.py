@@ -163,7 +163,9 @@ def get_list_colonnes_tableau() -> list[Colonne]:
             label="Centre coûts",
             default=False,
         ),
-        Colonne(code=EnrichedFlattenFinancialLines.tags.key, label="Tags", type="array"),
+        Colonne(
+            code=EnrichedFlattenFinancialLines.tags.key, label="Tags", type="array"
+        ),
         Colonne(
             code=EnrichedFlattenFinancialLines.data_source.description,
             label="Source Chorus",
@@ -248,5 +250,7 @@ def get_list_colonnes_grouping() -> list[Colonne]:
             code=EnrichedFlattenFinancialLines.groupeMarchandise_label.description,
             label="Groupe marchandise",
         ),
-        Colonne(code=EnrichedFlattenFinancialLines.tags.key, label="Tags", type="array"),
+        Colonne(
+            code=EnrichedFlattenFinancialLines.tags.key, label="Tags", type="array"
+        ),
     ]

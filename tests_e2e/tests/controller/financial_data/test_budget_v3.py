@@ -26,7 +26,7 @@ def test_financial_data_colonnes_grouping(api_budget_v3, real_token):
 #
 @pytest.fixture(scope="function")
 def lignes_first_id(api_budget_v3, real_token):
-    params = { 'colonnes': 'id', 'page_size': 1 }
+    params = {"colonnes": "id", "page_size": 1}
     response = call_request(f"{api_budget_v3}/lignes", token=real_token, params=params)
     id = response.json()["data"][0]["id"]
     return id
