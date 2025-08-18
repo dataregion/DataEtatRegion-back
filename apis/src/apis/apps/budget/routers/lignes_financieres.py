@@ -19,6 +19,8 @@ from apis.database import get_session
 from models.connected_user import ConnectedUser
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
+from apis.services.model.pydantic_annotation import PydanticFromMarshmallowSchemaAnnotationFactory
+from apis.services.model.enriched_financial_lines_mappers import enriched_ffl_mappers
 from apis.shared.models import APIError, APISuccess
 
 
@@ -26,6 +28,11 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator(get_config())
 
+PydanticEnrichedFlattenFinancialLinesModel = (
+    PydanticFromMarshmallowSchemaAnnotationFactory[
+        EnrichedFlattenFinancialLinesSchema
+    ].create(EnrichedFlattenFinancialLinesSchema, custom_fields_mappers=enriched_ffl_mappers)
+)
 
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 
@@ -41,7 +48,7 @@ def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
 @router.get(
     "",
     summary="Récupére les lignes financières, mécanisme de grouping pour récupérer les montants agrégés",
-    response_model=APISuccess[list],  # TODO recupérer le type
+    response_model=APISuccess[list[PydanticEnrichedFlattenFinancialLinesModel]],
     responses=error_responses(),
 )
 def get_lignes_financieres(
@@ -57,9 +64,9 @@ def get_lignes_financieres(
     data, grouped, has_next = get_lignes(session, params)
     if grouped:
         message = "Liste des montants agrégés"
-        data = [GroupedData(**d).to_dict() for d in data]
-    else:
-        data = EnrichedFlattenFinancialLinesSchema(many=True).dump(data)
+        data = [
+            GroupedData(**d).to_dict() for d in data
+        ]  # TODO: exposer ce type également
 
     if len(data) == 0:
         return APISuccess(
@@ -80,7 +87,7 @@ def get_lignes_financieres(
 @router.get(
     "/{id:int}",
     summary="Récupére les infos budgetaires en fonction de son identifiant technique",
-    response_model=APISuccess[list],  # TODO recupérer le type
+    response_model=APISuccess[PydanticEnrichedFlattenFinancialLinesModel],
     responses=error_responses(),
 )
 def get_lignes_financieres_by_source(
@@ -109,7 +116,7 @@ def get_lignes_financieres_by_source(
     return APISuccess(
         code=HTTPStatus.OK,
         message="Ligne financière",
-        data=EnrichedFlattenFinancialLinesSchema().dump(ligne),
+        data=ligne,
     )
 
 

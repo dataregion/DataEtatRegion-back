@@ -1,0 +1,126 @@
+import logging
+from marshmallow import Schema
+from pydantic_core import SchemaValidator, core_schema
+from apis.services.model.schema_adapter import FieldMapper, SchemaAdapter
+
+
+from typing import Any, Generic, Type, TypeVar
+
+###
+TSchema = TypeVar("TSchema", bound=Schema)
+
+class PydanticFromMarshmallowSchemaAnnotation(Generic[TSchema]):
+    """Annotation qui ajoute les routines pydantic à partir d'un schema marshmallow"""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    @classmethod
+    def from_marshmallow_schema(cls, schema_cls):
+        sa = SchemaAdapter(schema_cls)
+
+        for mapper in cls._custom_field_mapper:
+            sa.add_custom_mapper(mapper)
+
+        pydantic_schema = sa.pydantic_schema(cls=cls._model_cls)
+        return pydantic_schema
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler):
+
+        cls._schema = cls.from_marshmallow_schema(cls._marshmallow_schema_cls)
+
+        fn = core_schema.no_info_wrap_validator_function(
+            function=cls._validate,
+            schema=cls._schema,
+            ref=cls._model_cls.model_config["title"],
+        )
+        return fn
+
+    @classmethod
+    def __get_pydantic_json_schema__(cls, core_schema, handler):
+        json_schema = handler(cls._schema)
+        json_schema = handler.resolve_ref_schema(json_schema)
+        return json_schema
+
+    @classmethod
+    def _validate(cls, input_val, _):
+        marshmallow_model_cls = cls._get_inner_marshmallow_model_or_none()
+        if marshmallow_model_cls is not None and isinstance(
+            input_val, marshmallow_model_cls
+        ):
+            input_val = cls._marshmallow_schema.dump(input_val)
+
+        v = SchemaValidator(cls._schema)
+        v.validate_python(input_val)
+        return input_val
+
+    @classmethod
+    def _get_inner_marshmallow_model_or_none(cls):
+        try:
+            marshmallow_model_cls = cls._marshmallow_schema_cls.Meta.model
+            return marshmallow_model_cls
+        except Exception:
+            cls._logger.debug(
+                "Impossible de déterminer le modèle marshmallow `Schema.Meta.model`. It could be a good idea to add one."
+            )
+        return None
+
+    @classmethod
+    def _init_class(
+        cls,
+        marshmallow_schema: Type[TSchema],
+        custom_field_mappers: list[FieldMapper] | None = None,
+    ):
+
+        #
+        # Initialize avec le marshmallow schema
+        #
+        cls._marshmallow_schema_cls = marshmallow_schema
+        cls._marshmallow_schema = cls._marshmallow_schema_cls()
+
+        #
+        cls._logger = logging.getLogger(
+            f"{cls.__name__}[{cls._marshmallow_schema_cls.__name__}]"
+        )
+
+        #
+        _cls_to_use = cls._get_inner_marshmallow_model_or_none()
+        if _cls_to_use is None:
+            _cls_to_use = cls._marshmallow_schema_cls
+
+        class _ModelClass(dict):
+            model_config = {"title": _cls_to_use.__name__}
+
+        #
+        cls._model_cls = _ModelClass
+
+        #
+        cls._custom_field_mapper = []
+        if custom_field_mappers is not None:
+            cls._custom_field_mapper = custom_field_mappers
+
+    def __class_getitem__(cls, item):
+        # Return a new subclass for each concrete type
+        name = f"{cls.__name__}[{item.__name__}]"
+        t = type(name, (cls,), {"__type_param__": item})
+        return t
+
+
+class PydanticFromMarshmallowSchemaAnnotationFactory(Generic[TSchema]):
+    def __init__(self) -> None:
+        super().__init__()
+
+    @classmethod
+    def create(
+        cls,
+        marshmallow_schema_cls: Type[TSchema],
+        custom_fields_mappers: list[FieldMapper] | None = None,
+    ):
+        if custom_fields_mappers is None:
+            custom_fields_mappers = []
+        _class = PydanticFromMarshmallowSchemaAnnotation[TSchema]
+        _class._init_class(
+            marshmallow_schema_cls, custom_field_mappers=custom_fields_mappers
+        )
+        return _class
