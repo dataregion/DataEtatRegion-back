@@ -80,7 +80,7 @@ class SchemaAdapter:
         les kwargs sont utilisés pour surcharger le constructeur de schema
         """
 
-        model_fields = {}
+        field_schemas = {}
 
         for field_name, field_obj in self._schema_cls._declared_fields.items():
             if not isinstance(field_obj, fields.Field):
@@ -89,17 +89,17 @@ class SchemaAdapter:
                 )
                 continue
 
-            model_fields[field_name] = core_schema.model_field(
-                self.make_pydantic_field_schema(field_name, field_obj)
+            required = field_obj.required
+            field_schemas[field_name] = core_schema.typed_dict_field(
+                self.make_pydantic_field_schema(field_name, field_obj),
+                required=required,
             )
-
-        model_fields_schema = core_schema.model_fields_schema(model_fields)
 
         opts = {
             "cls": self.__class__,
-            "schema": model_fields_schema,
+            "fields": field_schemas,
         } | kwargs
 
-        model_schema = core_schema.model_schema(**opts)
+        typed_dict_schema = core_schema.typed_dict_schema(**opts)
 
-        return model_schema
+        return typed_dict_schema

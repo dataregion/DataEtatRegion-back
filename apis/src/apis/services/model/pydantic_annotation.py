@@ -31,10 +31,15 @@ class PydanticFromMarshmallowSchemaAnnotation(Generic[TSchema]):
 
         cls._schema = cls.from_marshmallow_schema(cls._marshmallow_schema_cls)
 
+        serialization = core_schema.wrap_serializer_function_ser_schema(
+            function=cls._serialize,
+            return_schema=cls._schema,
+        )
         fn = core_schema.no_info_wrap_validator_function(
+            serialization=serialization,
             function=cls._validate,
             schema=cls._schema,
-            ref=cls._model_cls.model_config["title"],
+            ref=cls._model_cls.__name__,
         )
         return fn
 
@@ -55,6 +60,13 @@ class PydanticFromMarshmallowSchemaAnnotation(Generic[TSchema]):
         v = SchemaValidator(cls._schema)
         v.validate_python(input_val)
         return input_val
+
+    @classmethod
+    def _serialize(cls, obj, handler):
+        marshmallow_model_cls = cls._get_inner_marshmallow_model_or_none()
+        if marshmallow_model_cls is not None and isinstance(obj, marshmallow_model_cls):
+            obj = cls._marshmallow_schema.dump(obj)
+        return obj
 
     @classmethod
     def _get_inner_marshmallow_model_or_none(cls):
@@ -90,11 +102,8 @@ class PydanticFromMarshmallowSchemaAnnotation(Generic[TSchema]):
         if _cls_to_use is None:
             _cls_to_use = cls._marshmallow_schema_cls
 
-        class _ModelClass(dict):
-            model_config = {"title": _cls_to_use.__name__}
-
         #
-        cls._model_cls = _ModelClass
+        cls._model_cls = type(_cls_to_use.__name__, (dict,), dict(dict.__dict__))
 
         #
         cls._custom_field_mapper = []

@@ -28,7 +28,7 @@ def test_financial_data_colonnes_grouping(api_budget_v3, real_token):
 def lignes_first_id(api_budget_v3, real_token):
     params = {"colonnes": "id", "page_size": 1}
     response = call_request(f"{api_budget_v3}/lignes", token=real_token, params=params)
-    id = response.json()["data"][0]["id"]
+    id = response.json()["data"]["lignes"][0]["id"]
     return id
 
 
@@ -39,12 +39,13 @@ def test_financial_data_lignes(api_budget_v3, real_token):
 
 def test_financial_data_ligne_id(api_budget_v3, lignes_first_id, real_token):
     response = call_request(
-        f"{api_budget_v3}/lignes/{lignes_first_id}", token=real_token
+        f"{api_budget_v3}/lignes/{lignes_first_id}?source=FINANCIAL_DATA_AE",
+        token=real_token,
     )
     assert response.status_code == 200
 
 
-def test_financial_data_ligns_annees(api_budget_v3, lignes_first_id, real_token):
+def test_financial_data_lignes_annees(api_budget_v3, lignes_first_id, real_token):
     response = call_request(f"{api_budget_v3}/lignes/annees", token=real_token)
     assert response.status_code == 200
 
