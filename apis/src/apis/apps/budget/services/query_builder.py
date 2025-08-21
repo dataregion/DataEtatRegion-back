@@ -30,7 +30,7 @@ class SourcesQueryBuilder(V3QueryBuilder[FinancialLines]):
     def __init__(self, session: Session, params: SourcesQueryParams) -> None:
         super().__init__(FinancialLines, session, params)
 
-    def source_is(self, source: str | None = None):
+    def source_is(self, source: DataType | str | None = None):
         if source is not None:
             self._query = self._query.where(FinancialLines.source == source)
         return self
@@ -83,8 +83,9 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
                 self._rec_grouping_mechanisme(params.grouping, params.grouped, {})
             )
             if params.grouped is None or len(params.grouped) < len(params.grouping):
+                assert isinstance(self.groupby_colonne.code, str) # type: ignore
                 colonnes = [
-                    getattr(FinancialLines, self.groupby_colonne.code).label("colonne"),
+                    getattr(FinancialLines, self.groupby_colonne.code).label("colonne"), # type: ignore
                     func.count(FinancialLines.id).label("total"),
                     func.sum(FinancialLines.montant_ae).label("total_montant_engage"),
                     func.sum(FinancialLines.montant_cp).label("total_montant_paye"),
@@ -126,14 +127,14 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
         return self
 
     def niveau_code_geo_in(
-        self, niveau_geo: str | None, code_geo: list | None, source_region: str | None
+        self, niveau_geo: str | None, code_geo: list | None, source_region: str
     ):
         if niveau_geo is not None and code_geo is not None:
             self.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
         return self
 
     def niveau_code_qpv_in(
-        self, ref_qpv: str | None, code_qpv: list | None, source_region: str | None
+        self, ref_qpv: str | None, code_qpv: list | None, source_region: str
     ):
         if ref_qpv is not None:
             if code_qpv is not None:

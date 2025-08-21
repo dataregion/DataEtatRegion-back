@@ -101,6 +101,7 @@ class FinancialLineQueryParams(SourcesQueryParams):
 
     def map_colonnes(self, list_colonnes: list[Colonne]):
         casted = []
-        for colonne in self.grouping:
+        grouping = self.grouping or []
+        for colonne in grouping:
             casted.append([x for x in list_colonnes if x.code == colonne][0])
         self.grouping = casted

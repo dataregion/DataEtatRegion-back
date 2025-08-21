@@ -35,6 +35,10 @@ def get_ligne(db: Session, params: SourcesQueryParams, id: int):
     Recherche la ligne budgetaire selon son ID et sa source region
     """
     source_region = app_layer_sanitize_region(params.source_region, params.data_source)
+
+    assert source_region is not None
+    assert params.source is not None
+
     _regions = get_request_regions(source_region)
 
     builder = (
@@ -63,6 +67,7 @@ def get_lignes(db: Session, params: FinancialLineQueryParams):
     Recherche la ligne budgetaire selon son ID et sa source region
     """
     source_region = app_layer_sanitize_region(params.source_region, params.data_source)
+    assert source_region is not None
     _regions = get_request_regions(source_region)
 
     # Aucune colonne précisée ? On ne requête que les colonnes par défaut
@@ -79,7 +84,7 @@ def get_lignes(db: Session, params: FinancialLineQueryParams):
         .themes_in(params.theme)
         .annee_in(params.annee)
         .niveau_code_geo_in(params.niveau_geo, params.code_geo, source_region)
-        .niveau_code_qpv_in(params.ref_qpv, params.code_qpv, source_region)
+        .niveau_code_qpv_in(str(params.ref_qpv), params.code_qpv, source_region)
         .annee_in(params.annee)
         .centres_couts_in(params.centres_couts)
         .domaine_fonctionnel_in(params.domaine_fonctionnel)
@@ -119,6 +124,7 @@ def get_annees_budget(db: Session, params: SourcesQueryParams):
     params.source_region = app_layer_sanitize_region(
         params.source_region, params.data_source
     )
+    assert params.source_region is not None
     _regions = get_request_regions(params.source_region)
 
     builder = (
