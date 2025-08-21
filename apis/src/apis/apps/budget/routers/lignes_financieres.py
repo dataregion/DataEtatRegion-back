@@ -1,12 +1,14 @@
 from http import HTTPStatus
 import logging
 from types import NoneType
-from typing import TypeVar, Union
+from typing import Annotated, Literal, TypeVar
 
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
+from models.entities.financial.query import EnrichedFlattenFinancialLines
 
 from apis.apps.budget.models.grouped_data import GroupedData
 from apis.apps.budget.models.budget_query_params import (
@@ -50,15 +52,30 @@ def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
     return params
 
 
-LignesFinancieresOrGroupings = Union[
-    list[PydanticEnrichedFlattenFinancialLinesModel], list[GroupedData]
+LigneFinanciere = Annotated[
+    EnrichedFlattenFinancialLines, PydanticEnrichedFlattenFinancialLinesModel
 ]
+
+
+class LignesFinancieres(BaseModel):
+    type: Literal["lignes_financieres"] = "lignes_financieres"
+
+    lignes: list[LigneFinanciere]
+
+
+class Groupings(BaseModel):
+    type: Literal["groupings"] = "groupings"
+
+    groupings: list[GroupedData]
+
+
+LignesResponse = APISuccess[LignesFinancieres | Groupings | NoneType]
 
 
 @router.get(
     "",
     summary="Récupére les lignes financières, mécanisme de grouping pour récupérer les montants agrégés",
-    response_model=APISuccess[LignesFinancieresOrGroupings],
+    response_model=LignesResponse,
     responses=error_responses(),
 )
 def get_lignes_financieres(
@@ -72,11 +89,15 @@ def get_lignes_financieres(
 
     message = "Liste des données financières"
     data, grouped, has_next = get_lignes(session, params)
+    size = len(data)
     if grouped:
         message = "Liste des montants agrégés"
         data = [GroupedData(**d) for d in data]
+        data = Groupings(groupings=data)
+    else:
+        data = LignesFinancieres(lignes=data)
 
-    if len(data) == 0:
+    if size == 0:
         return APISuccess[NoneType](
             code=HTTPStatus.NO_CONTENT,
             message="Aucun résultat ne correspond à vos critères de recherche",
@@ -95,7 +116,7 @@ def get_lignes_financieres(
 @router.get(
     "/{id:int}",
     summary="Récupére les infos budgetaires en fonction de son identifiant technique",
-    response_model=APISuccess[PydanticEnrichedFlattenFinancialLinesModel],
+    response_model=APISuccess[LigneFinanciere],
     responses=error_responses(),
 )
 def get_lignes_financieres_by_source(
@@ -131,7 +152,7 @@ def get_lignes_financieres_by_source(
 @router.get(
     "/annees",
     summary="Recupère la plage des années pour lesquelles les données budgetaires courent.",
-    response_model=APISuccess[list],  # TODO recupérer le type
+    response_model=APISuccess[list[int]],
     responses=error_responses(),
 )
 def get_annees(

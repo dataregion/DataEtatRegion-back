@@ -31,7 +31,9 @@ class V3QueryParams:
     def _split(self, val: str | None, separator: str = ",") -> list | None:
         return val.split(separator) if val else None
 
-T = TypeVar('T', bound=DeclarativeBase)
+
+T = TypeVar("T", bound=DeclarativeBase)
+
 
 class V3QueryBuilder(Generic[T]):
 
