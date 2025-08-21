@@ -7,6 +7,10 @@ from apis.apps.referentiels.routers import all_referentiel_routers
 app = FastAPI(
     title="API V3 - Data Etat - Référentiels",
     openapi_url="/admin/openapi.json",
+    description="""
+API de consultation des référentiels DataEtat
+<b>C'est une API dediée à l'outil interne. N'utilisez pas cette API pour intégrer nos données à votre système.</b>
+    """,
     docs_url="/docs",
     version="3.0",
     swagger_ui_parameters={"syntaxHighlight.theme": "obsidian", "docExpansion": "none"},

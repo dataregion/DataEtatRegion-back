@@ -9,6 +9,10 @@ from apis.apps.budget.routers.colonnes import router as router_colonnes
 
 app = FastAPI(
     title="API V3 - Data Etat - Budget",
+    description="""
+Api de d'accès aux données financières de l'état
+<b>C'est une API dediée à l'outil interne de consultation budget. N'utilisez pas cette API pour intégrer nos données à votre système.</b>
+    """,
     openapi_url="/admin/openapi.json",
     docs_url="/docs",
     version="3.0",
