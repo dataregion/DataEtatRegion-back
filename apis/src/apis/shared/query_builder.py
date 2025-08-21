@@ -1,9 +1,9 @@
-from typing import Literal
+from typing import Generic, Literal, TypeVar
 
 from fastapi import Query
-from sqlalchemy import Column, ColumnExpressionArgument, select, or_
+from sqlalchemy import Column, ColumnExpressionArgument, RowMapping, select, or_
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, DeclarativeBase
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 import logging
@@ -31,10 +31,11 @@ class V3QueryParams:
     def _split(self, val: str | None, separator: str = ",") -> list | None:
         return val.split(separator) if val else None
 
+T = TypeVar('T', bound=DeclarativeBase)
 
-class V3QueryBuilder:
+class V3QueryBuilder(Generic[T]):
 
-    def __init__(self, model, session: Session, params: V3QueryParams):
+    def __init__(self, model: type[T], session: Session, params: V3QueryParams):
         self._model = model
         self._session = session
         self._params = params
@@ -124,7 +125,7 @@ class V3QueryBuilder:
         return self
 
     def select_all(self):
-        data = []
+        data: list[T | RowMapping] = []
         if self._select_model:
             data = list(self._session.execute(self._query).unique().scalars().all())
         else:

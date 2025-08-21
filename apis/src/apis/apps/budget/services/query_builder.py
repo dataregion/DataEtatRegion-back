@@ -24,8 +24,7 @@ from apis.apps.budget.models.colonne import Colonne
 from apis.shared.enums import BenefOrLoc
 from apis.shared.query_builder import V3QueryBuilder
 
-
-class SourcesQueryBuilder(V3QueryBuilder):
+class SourcesQueryBuilder(V3QueryBuilder[FinancialLines]):
 
     def __init__(self, session: Session, params: SourcesQueryParams) -> None:
         super().__init__(FinancialLines, session, params)

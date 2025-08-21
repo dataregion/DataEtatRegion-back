@@ -1,6 +1,7 @@
 from http import HTTPStatus
 import logging
-from typing import TypeVar
+from types import NoneType
+from typing import TypeVar, Union
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -49,10 +50,15 @@ def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
     return params
 
 
+LignesFinancieresOrGroupings = Union[
+    list[PydanticEnrichedFlattenFinancialLinesModel], list[GroupedData]
+]
+
+
 @router.get(
     "",
     summary="Récupére les lignes financières, mécanisme de grouping pour récupérer les montants agrégés",
-    response_model=APISuccess[list[PydanticEnrichedFlattenFinancialLinesModel]],
+    response_model=APISuccess[LignesFinancieresOrGroupings],
     responses=error_responses(),
 )
 def get_lignes_financieres(
@@ -68,15 +74,13 @@ def get_lignes_financieres(
     data, grouped, has_next = get_lignes(session, params)
     if grouped:
         message = "Liste des montants agrégés"
-        data = [
-            GroupedData(**d).to_dict() for d in data
-        ]  # TODO: exposer ce type également
+        data = [GroupedData(**d) for d in data]
 
     if len(data) == 0:
-        return APISuccess(
+        return APISuccess[NoneType](
             code=HTTPStatus.NO_CONTENT,
             message="Aucun résultat ne correspond à vos critères de recherche",
-            data=[],
+            data=None,
         )
 
     return APISuccess(
