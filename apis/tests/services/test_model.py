@@ -35,7 +35,7 @@ def test_schema_adapter():
     py_schema = adapter.pydantic_schema(cls=_CustomSchema)
     assert py_schema is not None
 
-    assert len(_CustomSchema._declared_fields) == len(py_schema["schema"]["fields"])  # type: ignore
+    assert len(_CustomSchema._declared_fields) == len(py_schema["fields"])  # type: ignore
 
 
 #############
@@ -140,7 +140,8 @@ def test_model_flatten_financial_lines():
     data.n_poste_ej = 0
 
     def _assert_validate(input):
-        instance = prune_none_and_empty(ta.validate_python(data))
+        validated = ta.validate_python(data)
+        instance = prune_none_and_empty(validated)
         assert instance == {
             "id": 1337,
             "n_ej": "test",

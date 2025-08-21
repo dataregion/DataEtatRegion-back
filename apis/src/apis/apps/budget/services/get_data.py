@@ -1,6 +1,7 @@
 from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,
 )
+from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 
 from sqlalchemy import distinct
 from sqlalchemy.orm import Session
@@ -45,6 +46,16 @@ def get_ligne(db: Session, params: SourcesQueryParams, id: int):
     return builder.select_one()
 
 
+def _to_enriched_ffl(data):
+    _loaded = data
+    if isinstance(data, EnrichedFlattenFinancialLines):
+        return data
+    _loaded: EnrichedFlattenFinancialLines = EnrichedFlattenFinancialLinesSchema().load(
+        data
+    )
+    return _loaded
+
+
 @gauge_of_currently_executing()
 @summary_of_time()
 def get_lignes(db: Session, params: FinancialLineQueryParams):
@@ -57,6 +68,8 @@ def get_lignes(db: Session, params: FinancialLineQueryParams):
     # Aucune colonne précisée ? On ne requête que les colonnes par défaut
     if not params.colonnes:
         params.colonnes = [c.code for c in get_list_colonnes_tableau() if c.default]
+
+    params.colonnes.append("id")
 
     builder = (
         FinancialLineQueryBuilder(db, params)
@@ -94,8 +107,11 @@ def get_lignes(db: Session, params: FinancialLineQueryParams):
     # Pagination et récupération des données
     builder = builder.paginate()
     data, has_next = builder.select_all()
+    grouped = builder.groupby_colonne is not None
+    if not grouped:  # Alors ce sont des lignes financieres
+        data = [_to_enriched_ffl(x) for x in data]
 
-    return data, builder.groupby_colonne is not None, has_next
+    return data, grouped, has_next
 
 
 def get_annees_budget(db: Session, params: SourcesQueryParams):
