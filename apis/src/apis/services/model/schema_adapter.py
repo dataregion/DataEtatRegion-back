@@ -84,8 +84,8 @@ class SchemaAdapter:
 
         for field_name, field_obj in self._schema_cls._declared_fields.items():
             if not isinstance(field_obj, fields.Field):
-                self._logger.warning(
-                    f"Le champ {field_name} du schema {self._schema_cls.__name__} n'est pas un champ marshmallow."
+                self._logger.debug(
+                    f"Le champ {field_name} du schema {self._schema_cls.__name__} n'est pas un champ marshmallow. On ignore."
                 )
                 continue
 
