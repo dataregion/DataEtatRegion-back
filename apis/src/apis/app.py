@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from models import init as init_persistence_module
 
 from apis.exception_handlers import setup_exception_handlers
@@ -13,6 +14,7 @@ from apis.apps.budget.api import app as app_budget  # type: ignore  # noqa: E402
 from apis.apps.referentiels.api import app as app_referentiels  # type: ignore  # noqa: E402
 
 
+
 def create_app():
     app = FastAPI(
         title="API V3 - Data Etat",
@@ -24,6 +26,8 @@ def create_app():
         },
         separate_input_output_schemas=False,
     )
+    
+    _ = Instrumentator().instrument(app).expose(app)
 
     setup_exception_handlers(app_budget)
     setup_exception_handlers(app_referentiels)
