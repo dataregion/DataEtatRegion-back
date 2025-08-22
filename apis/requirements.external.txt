@@ -29,7 +29,7 @@ certifi==2025.8.3
     #   sentry-sdk
 cffi==1.17.1
     # via cryptography
-charset-normalizer==3.4.2
+charset-normalizer==3.4.3
     # via requests
 click==8.2.1
     # via
@@ -49,7 +49,7 @@ email-validator==2.2.0
     # via
     #   fastapi
     #   pydantic
-fastapi[standard]==0.115.14
+fastapi[standard]==0.116.1
     # via -r requirements.external.in
 fastapi-cli[standard]==0.0.8
     # via fastapi
@@ -59,7 +59,7 @@ geoalchemy2==0.17.1
     # via models (../models/pyproject.toml)
 geopandas==1.1.1
     # via models (../models/pyproject.toml)
-greenlet==3.2.3
+greenlet==3.2.4
     # via sqlalchemy
 h11==0.16.0
     # via
@@ -84,7 +84,7 @@ jinja2==3.1.6
     # via fastapi
 jwcrypto==1.5.6
     # via python-keycloak
-markdown-it-py==3.0.0
+markdown-it-py==4.0.0
     # via rich
 markupsafe==3.0.2
     # via jinja2
@@ -124,12 +124,14 @@ packaging==25.0
     #   geopandas
     #   marshmallow
     #   pyogrio
-pandas==2.3.1
+pandas==2.3.2
     # via
     #   geopandas
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
 prometheus-client==0.22.1
+    # via prometheus-fastapi-instrumentator
+prometheus-fastapi-instrumentator==7.1.0
     # via -r requirements.external.in
 psycopg[pool]==3.2.9
     # via -r requirements.external.in
@@ -149,7 +151,7 @@ pygments==2.19.2
     # via rich
 pyogrio==0.11.1
     # via geopandas
-pyproj==3.7.1
+pyproj==3.7.2
     # via geopandas
 pyrate-limiter==2.10.0
     # via api-entreprise
@@ -157,7 +159,7 @@ python-dateutil==2.9.0.post0
     # via pandas
 python-dotenv==1.1.1
     # via uvicorn
-python-keycloak==5.7.0
+python-keycloak==5.8.1
     # via -r requirements.external.in
 python-multipart==0.0.20
     # via fastapi
@@ -167,7 +169,7 @@ pyyaml==6.0.2
     # via uvicorn
 redis==4.6.0
     # via api-entreprise
-requests==2.32.4
+requests==2.32.5
     # via
     #   -r requirements.external.in
     #   api-entreprise
@@ -179,13 +181,13 @@ rich==14.1.0
     # via
     #   rich-toolkit
     #   typer
-rich-toolkit==0.14.9
+rich-toolkit==0.15.0
     # via
     #   fastapi-cli
     #   fastapi-cloud-cli
 rignore==0.6.4
     # via fastapi-cloud-cli
-sentry-sdk==2.34.1
+sentry-sdk==2.35.0
     # via fastapi-cloud-cli
 shapely==2.1.1
     # via geopandas
@@ -195,18 +197,20 @@ six==1.17.0
     # via python-dateutil
 sniffio==1.3.1
     # via anyio
-sqlalchemy==2.0.42
+sqlalchemy==2.0.43
     # via
     #   -r requirements.external.in
     #   geoalchemy2
     #   gristcli (../gristcli/pyproject.toml)
     #   marshmallow-sqlalchemy
     #   models (../models/pyproject.toml)
-starlette==0.46.2
-    # via fastapi
+starlette==0.47.2
+    # via
+    #   fastapi
+    #   prometheus-fastapi-instrumentator
 typeguard==4.4.4
     # via marshmallow-dataclass
-typer==0.16.0
+typer==0.16.1
     # via
     #   fastapi-cli
     #   fastapi-cloud-cli
