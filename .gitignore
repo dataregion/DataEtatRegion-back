@@ -8,6 +8,7 @@ apis/config/config.yml
 apis/config/*schema.json
 apis/tests/config.yml
 apis/tests/test.db
+**/node_modules
 app/config/config.yml
 app/migrations/data/ref_*.csv
 app/config/oidc.yml

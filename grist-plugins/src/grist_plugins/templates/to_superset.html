@@ -5,25 +5,59 @@
     <meta charset="UTF-8">
     <title>Vers Superset</title>
     <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+    <link href="/static/dsfr/dsfr.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
     <script>
         const postUrl = "{{ actions }}";  // injecte l'URL côté Jinja
     </script>
     <script type="module" src="/static/js/to-superset.js"></script>
-
 </head>
 
 <body>
-    <h1>Envoyer vers Superset</h1>
+    <header role="banner" class="fr-header">
+        <div class="fr-header__body">
+            <div class="fr-container">
+                <div class="fr-header__body-row">
+                    <div class="fr-header__brand fr-link">
+                        <div class="fr-header__brand-top">
+                            <div class="header__logo">
+                                <img src="static/img/logo.svg">
+                            </div>
+                            <div class="fr-header__service">
+                                <p class="fr-header__service-title">
+                                    Grist DataEtat vers Superset
+                                </p>
+                            </div>
+                        </div>
 
-    <form action="{{actions}}" method="post" id="supersetForm">
-        <button type="submit">Envoyer vers Superset</button>
-    </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="fr-container fr-my-4w">
+        <h2 class="fr-h4">Sélection d’une colonne à indexer</h2>
 
-    <div id="resultBloc" style="display: none;">
-        <h2>Liste des colonnes</h2>
-        <div id="resultArea"></div>
-    </div>
+        <form id="columns-form" class="fr-my-2w">
+            <div class="fr-select-group" id="col-select-group">
+                <select class="fr-select" id="column-select" name="column-select"
+                    aria-describedby="column-select-messages">
+                    <option value="" disabled selected>-- Sélectionner une colonne --</option>
+                    <!-- Options injectées en JS -->
+                </select>
 
+                <!-- Messages (erreur / succès) -->
+                <div class="fr-messages-group" id="column-select-messages" aria-live="polite"></div>
+            </div>
+
+            <div class="fr-my-3w">
+                <button type="submit" class="fr-btn" id="submit-btn" disabled>Envoyer les données</button>
+            </div>
+        </form>
+
+        <!-- Feedback global -->
+        <div id="feedback" class="fr-alert fr-hidden"></div>
+    </main>
 </body>
+
 </html>

@@ -1,90 +1,74 @@
 import { getGristAuthInfo, gristApiRequest } from './grist-client.js';
 
 
+const TYPE_INDEX_AUTHORIZE = ['Numeric','Text']
 
+/**
+ * Récupère les colonnes de la table.
+ * @returns 
+ */
 async function getTableInfo() {
   const tableId = await grist.getTable().getTableId();
   return await gristApiRequest(`tables/${tableId}/columns?hidden=false`)
 }
 
 
-function createTableFromColumns(columns) {
-  const table = document.createElement('table');
-  table.style.borderCollapse = 'collapse';
-  table.style.width = '100%';
-
-  // Header
-  const thead = table.createTHead();
-  const headerRow = thead.insertRow();
-  ['ID', 'Label', 'Type'].forEach(text => {
-    const th = document.createElement('th');
-    th.textContent = text;
-    th.style.border = '1px solid #ccc';
-    th.style.padding = '6px';
-    th.style.backgroundColor = '#eee';
-    headerRow.appendChild(th);
-  });
-
-  // Body
-  const tbody = table.createTBody();
+function completeColumnIndex(columns) {
+  const select = document.getElementById("column-select");
+  let count = 0;
   columns.forEach(col => {
-    const row = tbody.insertRow();
-    const idCell = row.insertCell();
-    idCell.textContent = col.id || '';
-    idCell.style.border = '1px solid #ccc';
-    idCell.style.padding = '6px';
-
-    const labelCell = row.insertCell();
-    labelCell.textContent = (col.fields && col.fields.label) || '';
-    labelCell.style.border = '1px solid #ccc';
-    labelCell.style.padding = '6px';
-
-    const typeCell = row.insertCell();
-    typeCell.textContent = (col.fields && col.fields.type) || '';
-    typeCell.style.border = '1px solid #ccc';
-    typeCell.style.padding = '6px';
+    const type = col.fields.type;
+    if (TYPE_INDEX_AUTHORIZE.includes(type) ) {
+      const opt = document.createElement("option");
+      opt.value = col.id;
+      opt.textContent = col.fields.label;
+      select.append(opt);
+      count++;
+    }
   });
 
-  return table;
+  if (count === 0) {
+      const messageGroup = document.getElementById("column-select-messages");
+      messageGroup.innerHTML = `<p class="fr-message fr-message--error">
+      Aucune colonne disponible pour créer un index. Il faut une colonne de type Numeric ou Text.
+      </p>`;
+      // Désactive le bouton de validation
+      const submitBtn = document.getElementById("submit-btn");
+      if (submitBtn) submitBtn.setAttribute("disabled", "true");
+  }
 }
 
 async function initGrist() {
     grist.ready({
         requiredAccess: 'full'
     });
-
-    let dataRecord = {}
-
-    grist.onRecords( function(records) {      
-      dataRecord = records;
-    });
+    const select = document.getElementById("column-select");
+    const submitBtn = document.getElementById("submit-btn");
 
 
-    const form = document.getElementById("supersetForm");
-    const resultBloc = document.getElementById("resultBloc");
-    const resultArea = document.getElementById("resultArea"); 
-
-
-
-    form.addEventListener("submit", async function (event) {
-      console.log("click bouton go to grist")
-      event.preventDefault();
-
-      try {
-        const tableInfo = await getTableInfo();
-        // Vide l'ancien contenu
-        resultArea.innerHTML = '';
-        // Génère le tableau HTML
-        const table = createTableFromColumns(tableInfo.columns);
-        resultArea.appendChild(table);
-       
-      } catch (err) {
-        console.error("Erreur :", err);
-        resultArea.textContent = `Erreur : ${err.message}`;
-      } finally {
-        resultBloc.style.display = "block";
+    // 🔹 Activer le bouton uniquement si une colonne est choisie
+    select.addEventListener("change", () => {
+      if (select.value) {
+        submitBtn.removeAttribute("disabled");
+        clearMessages();
+      } else {
+        submitBtn.setAttribute("disabled", "true");
       }
     });
+
+     try {
+        const tableInfo = await getTableInfo();
+        completeColumnIndex(tableInfo.columns); 
+      } catch (err) {
+        console.error("Erreur :", err);
+      } finally {
+      }
+
+
+    // grist.onRecords( function(records) {      
+    //   dataRecord = records;
+    // });
+
 }
 
 

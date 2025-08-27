@@ -1,0 +1,11 @@
+{
+  "name": "grist_plugins",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "mkdir -p static/dsfr && cp node_modules/@gouvfr/dsfr/dist/dsfr.min.css static/dsfr"
+  },
+  "dependencies": {
+    "@gouvfr/dsfr": "^1.13.2"
+  }
+}
