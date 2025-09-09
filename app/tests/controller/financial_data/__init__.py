@@ -24,8 +24,7 @@ def patching_roles(roles=None):
         def azp(self):
             return "bretagne.budget"
 
-    with patch(
-        "app.servicesapp.authentication.connected_user.ConnectedUser.from_current_token_identity",
-        return_value=_Mocked(),
-    ):
+    patch_loc1 = "app.servicesapp.authentication.connected_user._current_connected_user"
+
+    with patch(patch_loc1, return_value=_Mocked()):
         yield

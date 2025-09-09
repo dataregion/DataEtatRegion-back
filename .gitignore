@@ -4,6 +4,10 @@
 .vscode
 /.idea
 **/__pycache__
+apis/config/config.yml
+apis/config/*schema.json
+apis/tests/config.yml
+apis/tests/test.db
 app/config/config.yml
 app/migrations/data/ref_*.csv
 app/config/oidc.yml
@@ -28,10 +32,13 @@ app/migrations.old/data/ref_*.csv
 *.egg-info/
 app/requirements.txt
 app/build/
+apis/build/
 grist-plugins/build
 services/build
+services/dist
 models/build
 gristcli/build
+tests_e2e/build
 
 .import_linter_cache
 

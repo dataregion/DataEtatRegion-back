@@ -23,8 +23,6 @@ variables:
   _ENABLE_DEPLOY_FOR_PP_AND_P: "❌"
   DO_DOCKERIZE: "❌"
   DO_INTEG_TESTS: "❌"
-  # VARIABLE POUR tests 2E2
-  API_BASE_URL: "https://api.nocode.csm.ovh"
 
 
 workflow:
@@ -37,7 +35,7 @@ workflow:
         DO_DOCKERIZE: "✅"
         _ENABLE_DEPLOY_FOR_INTEG: "✅"
         _ENABLE_DEPLOY_FOR_PP_AND_P: "⚙️"
-        DO_INTEG_TESTS: "⚙️"
+        DO_INTEG_TESTS: "✅"
         DATA_TRANSFORM_VER: $_TAG_VER
         DO_DEPLOY_extra_vars: DATA_TRANSFORM_VER=$DATA_TRANSFORM_VER
         DO_UPDATE_DATA_TRANSFORM_VER: "$DATA_TRANSFORM_VER"

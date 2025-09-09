@@ -5,6 +5,8 @@ from sqlalchemy import and_
 from app import db
 from models.entities.demarches.Token import Token
 
+from flask import current_app
+
 logger = logging.getLogger(__name__)
 
 
@@ -26,7 +28,7 @@ class TokenService:
         tokens = [
             t
             for t in (db.session.query(Token).filter(and_(Token.uuid_utilisateur == uuid_utilisateur)).all())
-            if t.token == token_value
+            if t.get_token(current_app.config["FERNET_SECRET_KEY"]) == token_value
         ]
         return tokens[0] if len(tokens) == 1 else None
 
@@ -42,7 +44,8 @@ class TokenService:
             return token
 
         # Sinon, création du token
-        token = Token(nom=nom, token=token_value, uuid_utilisateur=uuid_user)
+        token = Token(nom=nom, uuid_utilisateur=uuid_user)
+        token.set_token(current_app.config["FERNET_SECRET_KEY"], token_value)
         db.session.add(token)
         db.session.commit()
         return token
@@ -53,7 +56,7 @@ class TokenService:
             db.session.query(Token).filter(and_(Token.id == token_id, Token.uuid_utilisateur == uuid_utilisateur)).one()
         )
         token.nom = nom
-        token.token = token_value
+        token.set_token(current_app.config["FERNET_SECRET_KEY"], token_value)
         db.session.commit()
         return token
 

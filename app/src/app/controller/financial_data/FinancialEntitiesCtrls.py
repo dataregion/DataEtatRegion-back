@@ -15,8 +15,8 @@ from app.controller.financial_data.schema_model import register_financial_cp_sch
 from app.models.enums.AccountRole import AccountRole
 from models.schemas.financial import FinancialCpSchema
 from app.servicesapp import WerkzeugFileStorage
-from app.servicesapp.authentication import ConnectedUser
-from app.servicesapp.exceptions.authentication import InvalidTokenError, NoCurrentRegion
+from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
+from models.exceptions import InvalidTokenError, NoCurrentRegion
 from app.servicesapp.financial_data import (
     get_financial_cp_of_ae,
     import_financial_data,
@@ -56,7 +56,7 @@ class LoadFinancialDataRegion(Resource):
 
         La region est récupérer depuis les attributs de l'utilisateur connecté
         """
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         client_id = user.azp
         source_region = user.current_region
 
@@ -88,7 +88,7 @@ class LoadFinancialDataNation(Resource):
         Charge les fichiers issus de Chorus pour enregistrer les autorisations d'engagement (AE) et les crédits de paiement (CP) au niveau National.
         Les lignes sont insérées de façon asynchrone
         """
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         client_id = user.azp
 
         file_ae: WerkzeugFileStorage = WerkzeugFileStorage(request.files["fichierAe"])
@@ -139,7 +139,7 @@ class QpvLieuActionCtrl(Resource):
         Charge un fichier faisant le lien entre QPV et AE
         Les lignes sont insérés de manière asynchrone
         """
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         file_qpv_lieu_action = request.files["fichier"]
         task = import_qpv_lieu_action(file_qpv_lieu_action, user.username)
         return jsonify(

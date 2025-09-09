@@ -15,12 +15,26 @@
     paths:
       - tests/coverage.xml
 
+run_models_tests:
+  <<: *default-tests
+  before_script:
+    - cd models/
+    - env
+    - pip install .[dev]
+
 run_services_tests:
   <<: *default-tests
   before_script:
     - cd services/
     - env
     - pip install .[dev]
+
+run_apis_tests:
+  <<: *default-tests
+  before_script:
+    - cd apis/
+    - env
+    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
 
 run_app_tests:
   <<: *default-tests

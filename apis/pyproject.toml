@@ -1,13 +1,14 @@
 [build-system]
-requires = ["setuptools>=42", "setuptools_scm[toml]>=6.2", "wheel"]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=6.2,<9", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "apis"
-dynamic = ["version"]
+dynamic = ["version", "dependencies"]
 description = "Application qui détient les nouvelles APIs Data Etat (v3+)"
-dependencies = [
-]
+
+[project.scripts]
+cli = "apis.cli:cli"
 
 [tool.poetry]
 version = "0.1.0"
@@ -20,3 +21,28 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
+
+[project.optional-dependencies]
+dev = [
+  "import-linter ~= 2.3",
+  "pytest ~= 8.3",
+  "pytest-env ~= 1.1.5",
+  "pytest-cov ~=6.0",
+  "mypy ~= 1.11",
+  "black ~=25.1",
+  "pip-tools ~= 7.4",
+  "pre-commit ~=4.1",
+  "faker ~=37.4",
+  "ruff ~= 0.6",
+  "testcontainers ~=4.9",
+]
+
+[tool.pytest.ini_options]
+env = [ "APIS_CONFIG_PATH=./tests/config/config.yml" ]
+markers = [
+  "integration: mark test as integration test"
+]
+addopts = [
+    "-ra", "--import-mode=importlib",
+    "-m not integration"
+]

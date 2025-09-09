@@ -1,5 +1,6 @@
 def sanitize_source_region_for_bdd_request(
-    source_region: str | None, data_source: str | None
+    source_region: str | None,
+    data_source: str | None = None,
 ) -> str | None:
     """Normalise la source region pour requête en bdd, supprime le leading '0' si besoin."""
     sanitized = source_region.lstrip("0") if source_region else None

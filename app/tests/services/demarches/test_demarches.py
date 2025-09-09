@@ -2,7 +2,6 @@ from datetime import datetime
 import json
 import os
 from pathlib import Path
-from models.entities.demarches.Token import Token
 import pytest
 
 from models.entities.demarches.Demarche import Demarche
@@ -14,6 +13,7 @@ from models.entities.demarches.Type import Type
 
 from app.services.demarches.demarches import DemarcheService, DemarcheExistsException
 
+from .fixtures import init_tokens, fernet_key  # noqa: F401
 
 _data = Path(os.path.dirname(__file__)) / "data"
 
@@ -80,22 +80,6 @@ def init_demarche(database):
     database.session.commit()
 
 
-@pytest.fixture(scope="function")
-def init_tokens(database):
-    tokens = []
-    with open(_data / "tokens.json") as file:
-        for token in json.load(file):
-            token = Token(**token)
-            tokens.append(token)
-            database.session.add(token)
-
-    database.session.commit()
-    yield tokens
-
-    database.session.execute(database.delete(Token))
-    database.session.commit()
-
-
 def test_demarche_exists_success(init_demarche):
     assert DemarcheService.exists(49721) is True
 
@@ -112,7 +96,7 @@ def test_demarche_find_fail(init_demarche):
     assert DemarcheService.find(99999) is None
 
 
-def test_demarche_save_success(init_tokens, init_demarche):
+def test_demarche_save_success(init_tokens, init_demarche):  # noqa: F811
     new_dict = {
         "data": {
             "demarche": {
@@ -134,7 +118,7 @@ def test_demarche_save_success(init_tokens, init_demarche):
     assert DemarcheService.exists(99999) is True
 
 
-def test_demarche_save_already_exists(init_tokens, init_demarche):
+def test_demarche_save_already_exists(init_tokens, init_demarche):  # noqa: F811
     new_dict = {
         "data": {
             "demarche": {

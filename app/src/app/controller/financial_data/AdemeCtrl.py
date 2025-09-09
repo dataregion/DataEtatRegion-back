@@ -10,7 +10,7 @@ from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from app.models.enums.AccountRole import AccountRole
 from models.schemas.financial import AdemeSchema
-from app.servicesapp.authentication import ConnectedUser
+from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 from app.servicesapp.financial_data import import_ademe, search_ademe, get_ademe
 
 
@@ -53,7 +53,7 @@ class AdemeImport(Resource):
         Charge un fichier issue de l'ADEME
         Les lignes sont insérés de manière asynchrone
         """
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
 
         file_ademe = request.files["fichier"]
 

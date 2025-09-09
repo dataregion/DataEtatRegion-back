@@ -16,16 +16,23 @@
       echo "DO_DEPLOY_FOR_INTEG     : $_ENABLE_DEPLOY_FOR_INTEG"
       echo "DO_DEPLOY_FOR_PP_AND_P  : $_ENABLE_DEPLOY_FOR_PP_AND_P"
 
-"Analyse d'architecture pour app":
+"Analyse d'architecture":
   stage: ☢️ analyze
   image: ${PYTHON_IMAGE}
-  before_script:
-    - python --version
-    - cd app/
-    - env
-    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
+  before_script: |
+    python --version
+
+    cd app/
+    pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
+    cd ../
+
+    cd apis
+    pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
+    cd ../
+
   script:
-    - lint-imports --config .importlinter.toml --no-cache --show-timings
+    - cd app/  && lint-imports --config .importlinter.toml --no-cache --show-timings && cd ..
+    - cd apis/ && lint-imports --config .importlinter.toml --no-cache --show-timings && cd ..
 
 "Analyse syntaxique":
   stage: ☢️ analyze

@@ -13,6 +13,18 @@ include:
 
   - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
     inputs:
+      image-name: ${REGISTRY}nocode/apis
+      image-tag: ${DATA_TRANSFORM_VER}
+      build-context: ./
+      dockerfile-name: ./apis/Dockerfile
+      do-login: true
+      registry: ${REGISTRY}
+      registry-login: ${REGISTRY_USER}
+      do-push: true
+      enable-debug: true
+
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
+    inputs:
       image-name: ${REGISTRY}nocode/grist-plugins
       image-tag: ${DATA_TRANSFORM_VER}
       build-context: ./
@@ -42,6 +54,14 @@ include:
 "🐳 dockerizing data-transform":
   <<: *default-dockerize
   extends: ".dockerize-${REGISTRY}nocode/data-transform"
+  stage: 🐳 dockerize
+  needs: 
+    - job: "🐳 dockerizing base image"
+      optional: true
+
+"🐳 dockerizing apis":
+  <<: *default-dockerize
+  extends: ".dockerize-${REGISTRY}nocode/apis"
   stage: 🐳 dockerize
   needs: 
     - job: "🐳 dockerizing base image"

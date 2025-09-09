@@ -13,12 +13,11 @@ def read_requirements(filename):
         return f.read().splitlines()
 
 
-setup(
-    install_requires=[
-        read_requirements("requirements.external.in"),
-        # Dépendances locales
-        f"models @ {models_path}",
-        f"services @ {services_path}",
-        f"gristcli @ {gristcli_path}",
-    ]
-)
+requirements = read_requirements("requirements.external.in")
+requirements += [
+    f"models @ {models_path}",
+    f"services @ {services_path}",
+    f"gristcli @ {gristcli_path}",
+]
+
+setup(install_requires=requirements)

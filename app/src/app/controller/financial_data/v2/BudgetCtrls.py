@@ -1,10 +1,10 @@
-from services.financial_data import HasNext
+from app.servicesapp.financial_data import HasNext
 from flask import current_app
 from app.controller.financial_data.schema_model import register_flatten_financial_lines_schemamodel
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
 from models.value_objects.common import DataType
-from app.servicesapp.authentication.connected_user import ConnectedUser
+from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 from app.servicesapp.financial_data import (
     get_annees_budget,
     get_ligne_budgetaire,
@@ -81,7 +81,7 @@ class BudgetCtrl(Resource):
     @api_ns.response(HTTPStatus.OK, description="Lignes correspondante", model=paginated_budget)
     def get(self):
         """Recupère les lignes de données budgetaires génériques"""
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         params = parser_get.parse_args()
         if user.current_region != "NAT":
             params["source_region"] = user.current_region
@@ -110,7 +110,7 @@ class GetBudgetCtrl(Resource):
     @api_ns.response(HTTPStatus.NO_CONTENT, "Aucune ligne correspondante")
     @api_ns.response(HTTPStatus.OK, description="Ligne correspondante", model=model_flatten_budget_schemamodel)
     def get(self, source: DataType, id: str):
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         source_region = None
         data_source = None
         if user.current_region != "NAT":
@@ -138,7 +138,7 @@ class GetPlageAnnees(Resource):
     @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
     @api_ns.response(HTTPStatus.OK, description="Liste des années", model=fields.List(fields.Integer))
     def get(self):
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         source_region = None
         data_source = None
         if user.current_region != "NAT":

@@ -1,4 +1,4 @@
-from app.servicesapp.authentication.connected_user import ConnectedUser
+from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 from models.schemas.audit import AuditUpdateDataSchema
 import sqlalchemy
 from flask import current_app
@@ -51,7 +51,7 @@ class Audit(Resource):
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     def get(self, type: DataType):
 
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         clientId = user.azp
 
         args = parser_get.parse_args()
@@ -84,7 +84,7 @@ class AuditLastImport(Resource):
     def get(self, type: DataType):
         enum_type = DataType[type]
 
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         clientId = user.azp
 
         stmt = db.select(sqlalchemy.sql.functions.max(AuditUpdateData.date)).where(

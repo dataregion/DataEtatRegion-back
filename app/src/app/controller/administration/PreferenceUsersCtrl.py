@@ -22,7 +22,7 @@ from app import db
 from app.clients.keycloack.factory import make_or_get_keycloack_admin, KeycloakConfigurationException
 from app.controller.utils.ControllerUtils import get_origin_referrer
 from models.entities.preferences.Preference import Preference, Share
-from app.servicesapp.authentication import ConnectedUser
+from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 
 api = Namespace(
     name="preferences", path="/users/preferences", description="API de gestion des préférences utilisateurs"
@@ -95,7 +95,7 @@ class PreferenceUsers(Resource):
         """
         Create a new preference for the current user
         """
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         clientId = user.azp
 
         from app.tasks.management_tasks import share_filter_user
@@ -145,7 +145,7 @@ class PreferenceUsers(Resource):
         """
         Retrieve the list
         """
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         clientId = user.azp
 
         logging.debug(f"get users prefs {clientId}")
@@ -179,7 +179,7 @@ class CrudPreferenceUsers(Resource):
         Delete uuid preference
         """
         logging.debug(f"Delete users prefs {uuid}")
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         clientId = user.azp
 
         preference = Preference.query.filter(
@@ -207,7 +207,7 @@ class CrudPreferenceUsers(Resource):
         """
         from app.tasks.management_tasks import share_filter_user
 
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         clientId = user.azp
 
         application = get_origin_referrer(request)
@@ -219,6 +219,11 @@ class CrudPreferenceUsers(Resource):
             return abort(message="Vous n'avez pas les droits de modifier cette préférence", code=HTTPStatus.FORBIDDEN)
 
         json_data = request.get_json()
+
+        # Update des critères de recherche
+        preference_to_save.filters = json_data["filters"]
+        # Update des paramètres de colonnes et grouping
+        preference_to_save.options = json_data["options"]
 
         # filter the shares list to exclude the current user
         shares = list(filter(lambda d: d["shared_username_email"] != user.username, json_data["shares"]))
@@ -268,7 +273,7 @@ class CrudPreferenceUsers(Resource):
         Get by uuid preference
         """
         logging.debug(f"Get users prefs {uuid}")
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         clientId = user.azp
 
         preference = Preference.query.filter(

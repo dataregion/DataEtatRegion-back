@@ -8,7 +8,7 @@ from app.clients.grist.factory import (
     make_or_get_grist_scim_client,
 )
 from app.servicesapp.grist import ParsingColumnsError
-from app.servicesapp.authentication.connected_user import ConnectedUser
+from models.connected_user import ConnectedUser
 
 from gristcli.gristservices.users_grist_service import UserGristDatabaseService, UserScimService
 from gristcli.models import UserGrist

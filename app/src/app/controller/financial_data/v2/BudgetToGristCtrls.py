@@ -1,7 +1,7 @@
 from app.controller.utils.Error import ErrorController
 from app.exceptions.exceptions import BadRequestDataRegateNum
 from app.servicesapp.grist import ParsingColumnsError
-from app.servicesapp.authentication.connected_user import ConnectedUser
+from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 from app.servicesapp.grist.go_to_grist import GristCliService
 from flask import current_app, request
 from flask_restx import Namespace, Resource, fields
@@ -62,7 +62,7 @@ class BugdetToGrist(Resource):
         if not isinstance(payload, dict) or "data" not in payload:
             raise BadRequestDataRegateNum("La clé 'data' doit contenir une liste non vide.")
 
-        user = ConnectedUser.from_current_token_identity()
+        user = connected_user_from_current_token_identity()
         GristCliService.send_request_to_grist(user, data_list)
 
         return HTTPStatus.CREATED

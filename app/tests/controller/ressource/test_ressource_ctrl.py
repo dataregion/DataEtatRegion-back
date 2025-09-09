@@ -1,7 +1,7 @@
 from unittest.mock import patch, MagicMock
 
 
-@patch("app.servicesapp.authentication.connected_user.ConnectedUser.from_current_token_identity")
+@patch("app.servicesapp.authentication.connected_user._current_connected_user")
 @patch("authlib.integrations.flask_oauth2.ResourceProtector")
 def test_get_ressources(auth_mock, user_mock, test_client):
     mock_user = MagicMock()
@@ -23,7 +23,7 @@ def test_get_ressources(auth_mock, user_mock, test_client):
     assert response.get_json() == expected_data
 
 
-@patch("app.servicesapp.authentication.connected_user.ConnectedUser.from_current_token_identity")
+@patch("app.servicesapp.authentication.connected_user._current_connected_user")
 @patch("authlib.integrations.flask_oauth2.ResourceProtector")
 def test_get_default_ressources(auth_mock, user_mock, test_client):
     mock_user = MagicMock()
