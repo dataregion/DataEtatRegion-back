@@ -1,4 +1,4 @@
-fastapi[standard]~=0.115.12
+fastapi[standard]~=0.116.1
 Jinja2~=3.1.6
 pydantic-settings~=2.10.1
 requests~=2.32.3
