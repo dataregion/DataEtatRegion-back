@@ -42,6 +42,8 @@ tests_e2e/build
 
 .import_linter_cache
 
+**/node_modules/**
+
 tests_e2e/assets/*
 tests_e2e/tests.log
 tests_e2e/tests.xml
@@ -50,3 +52,5 @@ tests_e2e/tests.html
 tests_e2e/resultats_tests.html
 tests_e2e/resultats_tests.json
 tests_e2e/resultats_tests.xml
+
+grist-plugins/src/grist_plugins/static/dsfr
