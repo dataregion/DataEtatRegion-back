@@ -36,7 +36,7 @@ click==8.2.1
     #   rich-toolkit
     #   typer
     #   uvicorn
-cryptography==45.0.5
+cryptography==45.0.7
     # via
     #   authlib
     #   jwcrypto
@@ -55,7 +55,7 @@ fastapi-cli[standard]==0.0.8
     # via fastapi
 fastapi-cloud-cli==0.1.5
     # via fastapi-cli
-geoalchemy2==0.17.1
+geoalchemy2==0.18.0
     # via models (../models/pyproject.toml)
 geopandas==1.1.1
     # via models (../models/pyproject.toml)

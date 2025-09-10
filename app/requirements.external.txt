@@ -60,7 +60,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==45.0.5
+cryptography==45.0.7
     # via
     #   -r requirements.external.in
     #   authlib
@@ -102,7 +102,7 @@ flask-sqlalchemy==3.1.1
     #   flask-migrate
 flower==2.0.1
     # via -r requirements.external.in
-geoalchemy2==0.17.1
+geoalchemy2==0.18.0
     # via
     #   -r requirements.external.in
     #   models (../models/pyproject.toml)
