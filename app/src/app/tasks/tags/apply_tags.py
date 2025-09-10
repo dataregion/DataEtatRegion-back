@@ -47,7 +47,6 @@ class _ContextOps:
 
     @property
     def conditions(self) -> ColumnElement[bool] | None:
-
         if self.context is None:
             return None
 

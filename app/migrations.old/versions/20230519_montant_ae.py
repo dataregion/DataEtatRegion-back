@@ -5,6 +5,7 @@ Revises: 20230517_loc_interminis
 Create Date: 2023-05-19 17:44:05.969502
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 

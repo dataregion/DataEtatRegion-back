@@ -36,7 +36,6 @@ config_grist = current_app.config.get("GRIST", {})
 
 @api_ns.route("")
 class SyncThemesWithGrist(Resource):
-
     @authM2M(config_grist.get("TOKEN_SYNC_DB", None))
     @api_ns.doc(security="Bearer")
     @api_ns.response(201, "Success")

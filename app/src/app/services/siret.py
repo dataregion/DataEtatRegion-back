@@ -104,7 +104,7 @@ def update_siret_from_api_entreprise(code: str, insert_only=False):
     Raises:
         LimitHitError: si le ratelimiter de l'API est plein.
     """
-    logger.info(f"[SERVICE][SIRET] Mise à jour du siret {code} " "avec les informations de l'API entreprise")
+    logger.info(f"[SERVICE][SIRET] Mise à jour du siret {code} avec les informations de l'API entreprise")
     siret = db.session.query(Siret).filter_by(code=str(code)).one_or_none()
     if siret is not None and insert_only:
         logger.debug(f"Le siret {code} existe déjà. On ne met pas à jour les données")

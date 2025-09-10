@@ -29,7 +29,6 @@ class Token(_PersistenceBaseModelInstance()):
 
     @staticmethod
     def make_from_kwargs(fernet_key: str, **kwargs):
-
         _token = kwargs.pop("token", None)
         _fernet_key = kwargs.pop("fernet_key", fernet_key)
 

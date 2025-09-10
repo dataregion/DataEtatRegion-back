@@ -34,7 +34,9 @@ def test_smoke_financial_data_lignes(api_budget_v3, real_token):
 
 
 def test_smoke_financial_data_ligne_id(
-    api_budget_v3, lignes_first_id, real_token  # noqa F811
+    api_budget_v3,
+    lignes_first_id,  # noqa F811
+    real_token,  # noqa F811
 ):
     response = call_request(
         f"{api_budget_v3}/lignes/{lignes_first_id}?source=FINANCIAL_DATA_CP",

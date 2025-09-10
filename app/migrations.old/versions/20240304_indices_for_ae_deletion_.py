@@ -5,6 +5,7 @@ Revises: 20240304_hf_vues_visuterritoires
 Create Date: 2024-03-05 15:11:13.784986
 
 """
+
 from alembic import op
 
 

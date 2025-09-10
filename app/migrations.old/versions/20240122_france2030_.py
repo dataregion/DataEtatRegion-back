@@ -5,6 +5,7 @@ Revises: 20231220_hf_vues_materialisees
 Create Date: 2024-01-15 16:34:15.465752
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 

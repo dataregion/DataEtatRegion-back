@@ -24,7 +24,6 @@ def create_referentiel_router(
     code_column: str = "code",
     label_column: str = "label",
 ) -> APIRouter:
-
     router = APIRouter(prefix=f"/{model_name}", tags=[f"{model_name.capitalize()}"])
 
     @router.get(
@@ -68,13 +67,9 @@ def create_referentiel_router(
         session: Session = Depends(get_session),
         user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
     ):
-        logger.debug(
-            f"[{model_name.upper()}] Récupération de {model_name} par {code_column} : {code}"
-        )
+        logger.debug(f"[{model_name.upper()}] Récupération de {model_name} par {code_column} : {code}")
 
-        data = get_one_data(
-            model, session, params, [getattr(model, code_column) == code]
-        )
+        data = get_one_data(model, session, params, [getattr(model, code_column) == code])
         if data is None:
             return APISuccess(
                 code=HTTPStatus.NO_CONTENT,

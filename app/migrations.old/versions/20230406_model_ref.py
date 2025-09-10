@@ -5,6 +5,7 @@ Revises: 20230316_annee_chorus
 Create Date: 2023-03-17 17:00:22.038372
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 

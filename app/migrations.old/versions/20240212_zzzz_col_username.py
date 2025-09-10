@@ -5,6 +5,7 @@ Revises: 20240212_zzz_delayed_ins_tasks
 Create Date: 2024-02-13 09:29:39.538706
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 

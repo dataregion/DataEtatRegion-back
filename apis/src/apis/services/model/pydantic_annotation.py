@@ -28,7 +28,6 @@ class PydanticFromMarshmallowSchemaAnnotation(Generic[TSchema]):
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler):
-
         cls._schema = cls.from_marshmallow_schema(cls._marshmallow_schema_cls)
 
         serialization = core_schema.wrap_serializer_function_ser_schema(
@@ -52,9 +51,7 @@ class PydanticFromMarshmallowSchemaAnnotation(Generic[TSchema]):
     @classmethod
     def _validate(cls, input_val, _):
         marshmallow_model_cls = cls._get_inner_marshmallow_model_or_none()
-        if marshmallow_model_cls is not None and isinstance(
-            input_val, marshmallow_model_cls
-        ):
+        if marshmallow_model_cls is not None and isinstance(input_val, marshmallow_model_cls):
             input_val = cls._marshmallow_schema.dump(input_val)
 
         v = SchemaValidator(cls._schema)
@@ -85,7 +82,6 @@ class PydanticFromMarshmallowSchemaAnnotation(Generic[TSchema]):
         marshmallow_schema: Type[TSchema],
         custom_field_mappers: list[FieldMapper] | None = None,
     ):
-
         #
         # Initialize avec le marshmallow schema
         #
@@ -93,9 +89,7 @@ class PydanticFromMarshmallowSchemaAnnotation(Generic[TSchema]):
         cls._marshmallow_schema = cls._marshmallow_schema_cls()
 
         #
-        cls._logger = logging.getLogger(
-            f"{cls.__name__}[{cls._marshmallow_schema_cls.__name__}]"
-        )
+        cls._logger = logging.getLogger(f"{cls.__name__}[{cls._marshmallow_schema_cls.__name__}]")
 
         #
         _cls_to_use = cls._get_inner_marshmallow_model_or_none()
@@ -130,7 +124,5 @@ class PydanticFromMarshmallowSchemaAnnotationFactory(Generic[TSchema]):
         if custom_fields_mappers is None:
             custom_fields_mappers = []
         _class = PydanticFromMarshmallowSchemaAnnotation[TSchema]
-        _class._init_class(
-            marshmallow_schema_cls, custom_field_mappers=custom_fields_mappers
-        )
+        _class._init_class(marshmallow_schema_cls, custom_field_mappers=custom_fields_mappers)
         return _class

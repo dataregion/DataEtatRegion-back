@@ -10,7 +10,6 @@ from apis.shared.query_builder import V3QueryParams
 
 
 class SourcesQueryParams(V3QueryParams):
-
     def __init__(
         self,
         source_region: str | None = Query(None),
@@ -24,16 +23,13 @@ class SourcesQueryParams(V3QueryParams):
         search: str | None = Query(None),
         fields_search: str | None = Query(None),
     ):
-        super().__init__(
-            colonnes, page, page_size, sort_by, sort_order, search, fields_search
-        )
+        super().__init__(colonnes, page, page_size, sort_by, sort_order, search, fields_search)
         self.source_region = source_region
         self.data_source = data_source
         self.source = DataType(source) if source is not None else None
 
 
 class FinancialLineQueryParams(SourcesQueryParams):
-
     def __init__(
         self,
         source_region: str | None = Query(None),
@@ -46,9 +42,7 @@ class FinancialLineQueryParams(SourcesQueryParams):
         ref_qpv: Literal[2015, 2024] | None = Query(None),
         code_qpv: str | None = Query(None),
         theme: str | None = Query(None),
-        beneficiaire_code: str | None = Query(
-            None, description="Siret du bénéficiaire"
-        ),
+        beneficiaire_code: str | None = Query(None, description="Siret du bénéficiaire"),
         beneficiaire_categorieJuridique_type: str | None = Query(
             None, description="Type de la catégorie juridique du bénéficiaire"
         ),
@@ -87,9 +81,7 @@ class FinancialLineQueryParams(SourcesQueryParams):
         self.code_qpv = self._split(code_qpv)
         self.theme = self._split(theme, "|")
         self.beneficiaire_code = self._split(beneficiaire_code)
-        self.beneficiaire_categorieJuridique_type = self._split(
-            beneficiaire_categorieJuridique_type
-        )
+        self.beneficiaire_categorieJuridique_type = self._split(beneficiaire_categorieJuridique_type)
         self.annee = [int(a) for a in self._split(annee)] if annee is not None else []
         self.centres_couts = self._split(centres_couts)
         self.domaine_fonctionnel = self._split(domaine_fonctionnel)

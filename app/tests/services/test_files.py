@@ -80,7 +80,6 @@ def test_delayed_insert_national(insert_audit_national, database, session):
         patch("app.tasks.files.file_task.delete_ae_no_cp_annee_region") as mock_delete_ae,
         patch("app.tasks.files.file_task.read_csv_and_import_fichier_nat_ae_cp.delay") as mock_import_nationals,
     ):
-
         # Exécution de la fonction testée
         delayed_inserts()
 

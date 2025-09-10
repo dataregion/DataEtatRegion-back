@@ -21,6 +21,4 @@ Api de d'accès aux données financières de l'état
 
 app.include_router(router_healthcheck, prefix="/healthcheck", tags=["Healthcheck"])
 app.include_router(router_colonnes, prefix="/colonnes", tags=["Liste des colonnes"])
-app.include_router(
-    router_lignes_financieres, prefix="/lignes", tags=["Lignes financieres"]
-)
+app.include_router(router_lignes_financieres, prefix="/lignes", tags=["Lignes financieres"])

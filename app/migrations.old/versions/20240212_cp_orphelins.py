@@ -5,6 +5,7 @@ Revises: 20240122_france2030
 Create Date: 2024-02-01 16:46:01.020809
 
 """
+
 from pathlib import Path
 from alembic import op
 import sqlalchemy as sa

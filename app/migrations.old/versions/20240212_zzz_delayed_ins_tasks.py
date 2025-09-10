@@ -5,6 +5,7 @@ Revises: 20240212_zz_ae_montant_cascade
 Create Date: 2024-02-09 16:22:38.951571
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 

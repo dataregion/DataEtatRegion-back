@@ -24,7 +24,7 @@ from ...clients.demarche_simplifie.errors import InvalidTokenError, Unauthorized
 def handle_api_subvention_call_error(error: ApiSubventionCallError):
     """Lorsqu'une erreur lors d'un appel à l'API subvention est survenue"""
 
-    logger.error("[API EXTERNES][CTRL] " "Une erreur lors de l'appel à l'API subvention est survenue")
+    logger.error("[API EXTERNES][CTRL] Une erreur lors de l'appel à l'API subvention est survenue")
 
     desc = error.call_error_description
     message = (

@@ -16,7 +16,6 @@ def test_budget_with_no_token(api_budget_v3):
 
 
 def test_budget_with_bad_token(api_budget_v3, fake_token):
-
     response = call_request(f"{api_budget_v3}/lignes", token=fake_token)
     assert response.status_code == 401
 
@@ -132,9 +131,7 @@ def test_budget_get_ligne_not_found(api_budget_v3, real_token):  # noqa: F811
 
 #########
 # Test colonnes
-def test_budget_get_lignes_check_param_grouping(
-    api_budget_v3, real_token
-):  # noqa: F811
+def test_budget_get_lignes_check_param_grouping(api_budget_v3, real_token):  # noqa: F811
     response = call_request(
         f"{api_budget_v3}/lignes?grouping=id",
         token=real_token,
@@ -142,9 +139,7 @@ def test_budget_get_lignes_check_param_grouping(
     assert_api_response_status(response, 400)
 
 
-def test_budget_get_lignes_check_param_colonnes(
-    api_budget_v3, real_token
-):  # noqa: F811
+def test_budget_get_lignes_check_param_colonnes(api_budget_v3, real_token):  # noqa: F811
     response = call_request(
         f"{api_budget_v3}/lignes?colonnes=source_region,type_pokemon",
         token=real_token,
@@ -160,9 +155,7 @@ def test_budget_get_lignes_check_param_sort_by(api_budget_v3, real_token):  # no
     assert_api_response_status(response, 400)
 
 
-def test_budget_get_lignes_check_param_fields_search(
-    api_budget_v3, real_token
-):  # noqa: F811
+def test_budget_get_lignes_check_param_fields_search(api_budget_v3, real_token):  # noqa: F811
     response = call_request(
         f"{api_budget_v3}/lignes?search=rennes&fields_search=pokemon",
         token=real_token,
@@ -209,9 +202,7 @@ def test_budget_get_lignes_check_pairs(api_budget_v3, real_token):  # noqa: F811
 
 #########
 # Test paramètres grouping et grouped
-def test_budget_get_lignes_check_grouping_and_grouped(
-    api_budget_v3, real_token
-):  # noqa: F811
+def test_budget_get_lignes_check_grouping_and_grouped(api_budget_v3, real_token):  # noqa: F811
     response = call_request(
         f"{api_budget_v3}/lignes?grouping=programme_theme,beneficiaire_commune_code",
         token=real_token,

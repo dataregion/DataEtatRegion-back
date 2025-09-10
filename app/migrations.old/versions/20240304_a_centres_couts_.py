@@ -5,6 +5,7 @@ Revises: 20240212_zzzz_col_username
 Create Date: 2024-02-22 15:20:10.087210
 
 """
+
 from pathlib import Path
 from alembic import op
 import sqlalchemy as sa

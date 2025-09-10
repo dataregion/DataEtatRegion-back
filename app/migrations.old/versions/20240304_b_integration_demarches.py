@@ -5,6 +5,7 @@ Revises: 20240304_a_centres_couts
 Create Date: 2024-02-23 17:37:04.977511
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 

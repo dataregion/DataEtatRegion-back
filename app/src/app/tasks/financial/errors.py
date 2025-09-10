@@ -96,7 +96,6 @@ def _map_exceptions(func):
             raise Reessayer.fromLimitHitError(e)
 
         except sqlalchemy.exc.IntegrityError as e:
-
             msg = "IntegrityError. Cela peut être dû à un soucis de concourrence. On retente."
             logger.exception(f"[IMPORT] {msg}")
             raise Reessayer.fromIntegrityError(e)

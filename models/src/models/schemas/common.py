@@ -4,7 +4,6 @@ from models.value_objects.common import DataType
 
 
 class DataTypeField(fields.Field):
-
     @classmethod
     def _member_values(cls):
         return [member.value for member in DataType]

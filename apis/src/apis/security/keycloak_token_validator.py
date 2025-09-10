@@ -14,7 +14,6 @@ _instance = None
 
 
 class KeycloakTokenValidator:
-
     @staticmethod
     def get_application_instance():
         global _instance
@@ -25,13 +24,9 @@ class KeycloakTokenValidator:
         return _instance
 
     def __init__(self, config: Config):
-        self.issuer = (
-            f"{config.keycloak_openid.url}/realms/{config.keycloak_openid.realm}"
-        )
+        self.issuer = f"{config.keycloak_openid.url}/realms/{config.keycloak_openid.realm}"
         self.jwks_url = f"{self.issuer}/protocol/openid-connect/certs"
-        self.oauth2_scheme = OAuth2PasswordBearer(
-            tokenUrl=f"{self.issuer}/protocol/openid-connect/token"
-        )
+        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{self.issuer}/protocol/openid-connect/token")
         self.algorithms = ["RS256"]
         self._jwk_set = None
 

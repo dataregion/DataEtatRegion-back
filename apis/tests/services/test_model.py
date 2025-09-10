@@ -54,7 +54,6 @@ def test_pydanticed_validation(
     validate_pydantic_ex,
     marsh_fields_with_validation_err,
 ):
-
     ## Test validating through marshmallow schema
     v = _CustomSchema().validate(input)
     assert set(v.keys()) == marsh_fields_with_validation_err
@@ -86,7 +85,6 @@ def test_pydanticed_json_schema(
     input,
     json_schema,
 ):
-
     produced_schema = pydanticed_custom_type_adapter.json_schema()
     assert produced_schema["properties"] == json_schema
 
@@ -100,7 +98,6 @@ def test_pydanticed_reserialized(
     input,
     reserialized,
 ):  # noqa: F811
-
     reser_produced = pydanticed_custom_type_adapter.dump_python(input)
     assert reser_produced == reserialized
 
@@ -118,20 +115,13 @@ def test_pydanticed_factory():
 
 ##############
 # Test with a more concrete case
-EnrichedFlattenFinancialLinesModelAnnotation = (
-    PydanticFromMarshmallowSchemaAnnotationFactory[
-        EnrichedFlattenFinancialLinesSchema
-    ].create(
-        EnrichedFlattenFinancialLinesSchema, custom_fields_mappers=enriched_ffl_mappers
-    )
-)
-EnrichedFlattenFinancialLinesModel = Annotated[
-    dict, EnrichedFlattenFinancialLinesModelAnnotation
-]
+EnrichedFlattenFinancialLinesModelAnnotation = PydanticFromMarshmallowSchemaAnnotationFactory[
+    EnrichedFlattenFinancialLinesSchema
+].create(EnrichedFlattenFinancialLinesSchema, custom_fields_mappers=enriched_ffl_mappers)
+EnrichedFlattenFinancialLinesModel = Annotated[dict, EnrichedFlattenFinancialLinesModelAnnotation]
 
 
 def test_model_flatten_financial_lines():
-
     ta = TypeAdapter(EnrichedFlattenFinancialLinesModel)
 
     data = EnrichedFlattenFinancialLines()
@@ -166,7 +156,6 @@ def test_model_flatten_financial_lines():
 
 
 def test_jsonschema_flatten_financial_lines():
-
     ts = TypeAdapter(EnrichedFlattenFinancialLinesModel)
 
     json_schema = ts.json_schema()

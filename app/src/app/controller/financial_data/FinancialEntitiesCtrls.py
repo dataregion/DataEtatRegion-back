@@ -128,7 +128,6 @@ parser_import_file.add_argument("fichier", type=FileStorage, help="fichier à im
 
 @api.route("/qpv-lieu-action")
 class QpvLieuActionCtrl(Resource):
-
     @api.expect(parser_import_file)
     @auth("openid")
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])

@@ -22,7 +22,6 @@ def _build_audit(
         "flatten_financial_lines",
     },
 ):
-
     for view in views:
         session.add(AuditRefreshMaterializedViewsEvents.create(RefreshMaterializedViewsEvent.BEGIN, view))
 

@@ -4,7 +4,6 @@ Type = type
 
 
 class Colonne(BaseModel):
-
     code: str | None = None
     label: str | None = None
     default: bool = True

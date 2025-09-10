@@ -55,7 +55,6 @@ pagination_with_model = api.model(
 @api.route("/")
 @api.doc(model=pagination_with_model)
 class RefQpv(Resource):
-
     @api.route("")
     @api.doc(model=pagination_with_model)
     class RefQpvList(Resource):
@@ -78,7 +77,7 @@ class RefQpv(Resource):
             if args.get("code_commune"):
                 conditions.append(Qpv.communes.any(code_commune=args.get("code_commune")))
             if args.get("label_commune"):
-                conditions.append(Qpv.label_commune.ilike(f"%{args.get("label_commune")}%"))
+                conditions.append(Qpv.label_commune.ilike(f"%{args.get('label_commune')}%"))
             if args.get("annee_decoupage"):
                 conditions.append(Qpv.annee_decoupage == args.get("annee_decoupage"))
 

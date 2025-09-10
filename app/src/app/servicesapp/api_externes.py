@@ -29,7 +29,6 @@ class ApisExternesService:
         return InfoApiSubvention(subventions=subventions, contacts=contacts)
 
     def entreprise(self, siret: str, use_batch=False) -> InfoApiEntreprise:
-
         _api = self.api_entreprise_batch if use_batch else self.api_entreprise
         donnees_etab = _api.donnees_etablissement(siret)
 

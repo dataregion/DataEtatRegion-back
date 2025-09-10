@@ -37,7 +37,6 @@ if not os.path.exists(path_a_importer):
 
 
 class FileCreatedHandler(FileSystemEventHandler):
-
     def on_created(self, event):
         if not event.is_directory:
             file_path = event.src_path

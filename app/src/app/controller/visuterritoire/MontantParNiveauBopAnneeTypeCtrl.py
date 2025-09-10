@@ -33,7 +33,6 @@ class ZipExtract(Resource):
                 try_advisory_lock(session, "montant_par_niveau_bop_annee_type"),
                 tempfile.NamedTemporaryFile(mode="w+", newline="", delete=True) as file,
             ):
-
                 schema = MontantParNiveauBopAnneeTypeSchema()
                 fieldsnames = list(schema.fields.keys())
 

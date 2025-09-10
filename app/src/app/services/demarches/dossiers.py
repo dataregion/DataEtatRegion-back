@@ -7,7 +7,6 @@ from models.entities.demarches.Reconciliation import Reconciliation
 
 
 class DossierService:
-
     @staticmethod
     def find_by_number(number: int) -> Dossier:
         stmt = db.select(Dossier).where(Dossier.number == number)

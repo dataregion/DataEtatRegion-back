@@ -96,7 +96,6 @@ def _get_last_refresh_materialized_view_event(view: str) -> datetime | None:
 
 
 def _do_maj_materialized_views(views: List[str]):
-
     result = {}
 
     for view in views:

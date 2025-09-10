@@ -34,9 +34,7 @@ def _regular_field_pyschema(field: fields.Field):
 class FieldMapper(Protocol):
     """Mapper qui donne (ou non) une correspondance entre un field marshmallow et un schema pydantic"""
 
-    def __call__(
-        self, field_name: str, field: fields.Field, adapter: "SchemaAdapter"
-    ) -> Any | None: ...
+    def __call__(self, field_name: str, field: fields.Field, adapter: "SchemaAdapter") -> Any | None: ...
 
 
 class SchemaAdapter:

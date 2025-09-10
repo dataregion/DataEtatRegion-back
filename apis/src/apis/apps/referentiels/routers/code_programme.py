@@ -11,6 +11,4 @@ from apis.security.keycloak_token_validator import KeycloakTokenValidator
 
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
-router = create_referentiel_router(
-    CodeProgramme, CodeProgrammeSchema, keycloak_validator, logger, "programmes"
-)
+router = create_referentiel_router(CodeProgramme, CodeProgrammeSchema, keycloak_validator, logger, "programmes")

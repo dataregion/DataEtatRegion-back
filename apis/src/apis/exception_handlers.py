@@ -46,7 +46,6 @@ def error_responses() -> dict:
 
 
 def setup_exception_handlers(app: fastapi.applications.FastAPI):
-
     async def _api_exc_handler(request: fastapi.Request, exc: _APIException):
         code = exc.code
         message = exc.api_message
@@ -70,9 +69,7 @@ def setup_exception_handlers(app: fastapi.applications.FastAPI):
         return await _api_exc_handler(request, exc)
 
     @app.exception_handler(RequestValidationError)
-    async def custom_validation_exception_handler(
-        _: fastapi.Request, exc: RequestValidationError
-    ):
+    async def custom_validation_exception_handler(_: fastapi.Request, exc: RequestValidationError):
         error = APIError(
             code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
             success=False,

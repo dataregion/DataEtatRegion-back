@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class GristCliService:
-
     @staticmethod
     def send_request_to_grist(
         userConnected: ConnectedUser,

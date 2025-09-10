@@ -2,7 +2,6 @@ from pydantic import BaseModel
 
 
 class GroupedData(BaseModel):
-
     colonne: str = ""
     label: str | int | float | None
     value: str | int | float | None

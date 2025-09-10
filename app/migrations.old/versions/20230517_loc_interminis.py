@@ -5,6 +5,7 @@ Revises: 20230417_financial_cp
 Create Date: 2023-05-17 09:28:37.050565
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 

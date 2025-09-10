@@ -127,7 +127,7 @@ class PreferenceUsers(Resource):
 
         try:
             db.session.add(pref)
-            logging.info(f'[PREFERENCE][CTRL] Adding preference for user {json_data["username"]}')
+            logging.info(f"[PREFERENCE][CTRL] Adding preference for user {json_data['username']}")
             db.session.commit()
 
             if len(pref.shares) > 0:

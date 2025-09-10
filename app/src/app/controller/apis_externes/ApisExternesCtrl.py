@@ -98,7 +98,6 @@ class InfoEntrepriseCtrl(Resource):
 
 @api.route("/api-entreprise-batch/healthcheck")
 class GetHealthcheckSiren(Resource):
-
     def get(self):
         """
         Effectue un GET pour vérifier la disponibilité de l'API Siren Batch

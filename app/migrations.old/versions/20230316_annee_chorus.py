@@ -5,6 +5,7 @@ Revises: 20230208_pref_and_region
 Create Date: 2023-03-15 10:07:41.229139
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import text

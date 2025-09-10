@@ -39,7 +39,6 @@ def delayed_inserts(self):
     regions = [row[0] for row in result.fetchall()]
 
     for region in regions:
-
         stmt = (
             select(AuditInsertFinancialTasks)
             .where(AuditInsertFinancialTasks.source_region == region)
@@ -268,7 +267,7 @@ def _parse_fichier_nat_ae(output_file: str, annee: int, ae_list: dict) -> list[d
             line[columns_names[0]] = line[columns_names[0]].replace('"', "")
             line[columns_names[index_last_col]] = line[columns_names[index_last_col]].replace('"', "")
             line["source_region"] = get_code_region_by_code_comp(line["societe"])
-            key = f"national_{line["source_region"]}_{annee}_{line[FinancialAe.n_ej.key]}_{line[FinancialAe.n_poste_ej.key]}"
+            key = f"national_{line['source_region']}_{annee}_{line[FinancialAe.n_ej.key]}_{line[FinancialAe.n_poste_ej.key]}"
             ae = pandas.concat([line, series]).to_json()
             if key not in ae_list:
                 ae_list[key] = {"ae": [], "cp": []}
@@ -291,7 +290,7 @@ def _parse_fichier_nat_cp(
             line[columns_names[0]] = line[columns_names[0]].replace('"', "")
             line[columns_names[index_last_col]] = line[columns_names[index_last_col]].replace('"', "")
             line["source_region"] = get_code_region_by_code_comp(line["societe"])
-            key = f"national_{line["source_region"]}_{annee}_{line[FinancialAe.n_ej.key]}_{line[FinancialAe.n_poste_ej.key]}"
+            key = f"national_{line['source_region']}_{annee}_{line[FinancialAe.n_ej.key]}_{line[FinancialAe.n_poste_ej.key]}"
             if key in ae_list.keys():
                 ae_list[key]["cp"] += [
                     {

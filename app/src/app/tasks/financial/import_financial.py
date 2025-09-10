@@ -398,7 +398,6 @@ def import_file_qpv_lieu_action(self, fichier: str):
             ejs = []
             qpv_lieu_action = []
             for _, line in chunk.iterrows():
-
                 tech_info = LineImportTechInfo(current_taskid, i)
 
                 # si code qpv 0224, on le garde

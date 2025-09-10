@@ -41,7 +41,7 @@ class NocoDb(Resource):
         try:
             table_rows = client.table_row_list(NocoDBProject("noco", project), f"{table}/views/{views}", params=params)
             if "msg" in table_rows:
-                logging.error(f'[NOCODB] Erreur sur la réponse {table_rows["msg"]}')
+                logging.error(f"[NOCODB] Erreur sur la réponse {table_rows['msg']}")
                 return table_rows, 400
             else:
                 logging.debug("[NOCODB] return response")
@@ -65,7 +65,7 @@ class ExportCsv(Resource):
 
         table_rows = client.table_row_list(NocoDBProject("noco", project), f"{table}/views/{views}", params=params)
         if "msg" in table_rows:
-            logging.error(f'[NOCODB] Erreur sur la réponse {table_rows["msg"]}')
+            logging.error(f"[NOCODB] Erreur sur la réponse {table_rows['msg']}")
             return table_rows, 400
         else:
             logging.debug("[NOCODB] return response")

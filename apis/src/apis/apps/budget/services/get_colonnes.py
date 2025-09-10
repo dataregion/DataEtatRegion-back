@@ -340,17 +340,14 @@ def validation_colonnes(params: FinancialLineQueryParams):
                 api_message="Mauvaise utilisation des paramètres de grouping",
             )
 
-    if params.sort_by is not None and params.sort_by not in [
-        x.code for x in get_list_colonnes_tableau()
-    ]:
+    if params.sort_by is not None and params.sort_by not in [x.code for x in get_list_colonnes_tableau()]:
         raise BadRequestError(
             code=HTTPStatus.BAD_REQUEST,
             api_message=f"La colonne demandée '{params.sort_by}' n'existe pas pour le tableau.",
         )
 
     if params.fields_search is not None and not all(
-        field in [x.code for x in get_list_colonnes_tableau()]
-        for field in params.fields_search
+        field in [x.code for x in get_list_colonnes_tableau()] for field in params.fields_search
     ):
         raise BadRequestError(
             code=HTTPStatus.BAD_REQUEST,

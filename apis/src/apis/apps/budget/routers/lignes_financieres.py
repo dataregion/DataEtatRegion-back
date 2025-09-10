@@ -33,13 +33,9 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
-PydanticEnrichedFlattenFinancialLinesModel = (
-    PydanticFromMarshmallowSchemaAnnotationFactory[
-        EnrichedFlattenFinancialLinesSchema
-    ].create(
-        EnrichedFlattenFinancialLinesSchema, custom_fields_mappers=enriched_ffl_mappers
-    )
-)
+PydanticEnrichedFlattenFinancialLinesModel = PydanticFromMarshmallowSchemaAnnotationFactory[
+    EnrichedFlattenFinancialLinesSchema
+].create(EnrichedFlattenFinancialLinesSchema, custom_fields_mappers=enriched_ffl_mappers)
 
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 
@@ -53,9 +49,7 @@ def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
     return params
 
 
-LigneFinanciere = Annotated[
-    EnrichedFlattenFinancialLines, PydanticEnrichedFlattenFinancialLinesModel
-]
+LigneFinanciere = Annotated[EnrichedFlattenFinancialLines, PydanticEnrichedFlattenFinancialLinesModel]
 
 
 class LignesFinancieres(BaseModel):
@@ -139,7 +133,6 @@ def get_lignes_financieres_by_source(
     session: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-
     if not params.source:
         return APIError(
             code=HTTPStatus.UNPROCESSABLE_ENTITY,

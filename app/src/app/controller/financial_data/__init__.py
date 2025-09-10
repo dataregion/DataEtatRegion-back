@@ -92,9 +92,9 @@ authorizations_oauth2 = {
     "OAuth2AuthorizationCodeBearer": {
         "type": "oauth2",
         "flow": "accessCode",
-        "authorizationUrl": f"{keycloak_config.get("URL","")}/realms/{keycloak_config.get("REALM","")}/protocol/openid-connect/auth",
-        "tokenUrl": f"{keycloak_config.get("URL","")}/realms/{keycloak_config.get("REALM","")}/protocol/openid-connect/token",
-        "refreshUrl": f"{keycloak_config.get("URL","")}/realms/{keycloak_config.get("REALM","")}/protocol/openid-connect/token",
+        "authorizationUrl": f"{keycloak_config.get('URL', '')}/realms/{keycloak_config.get('REALM', '')}/protocol/openid-connect/auth",
+        "tokenUrl": f"{keycloak_config.get('URL', '')}/realms/{keycloak_config.get('REALM', '')}/protocol/openid-connect/token",
+        "refreshUrl": f"{keycloak_config.get('URL', '')}/realms/{keycloak_config.get('REALM', '')}/protocol/openid-connect/token",
         "scopes": {
             "openid": "openid profile email",
         },

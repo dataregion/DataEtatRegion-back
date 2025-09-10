@@ -22,7 +22,6 @@ def test_missing_arguments(test_client):
 
 
 def test_missing_files(test_client):
-
     with patching_roles(["COMPTABLE_NATIONAL"]):
         response = test_client.post(
             "/financial-data/api/v1/national",

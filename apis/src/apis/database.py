@@ -10,14 +10,10 @@ from apis.utils import sqlalchemy_pretty_printer
 
 @lru_cache
 def get_sesion_maker(db_url: str):
-    engine = create_engine(
-        db_url, pool_pre_ping=True, pool_recycle=30, echo=get_config().print_sql
-    )
+    engine = create_engine(db_url, pool_pre_ping=True, pool_recycle=30, echo=get_config().print_sql)
     if get_config().print_sql:
         _format = "%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s"
-        logging.basicConfig(
-            format=_format, datefmt="%Y-%m-%d %H:%M:%S", level=logging.INFO, force=True
-        )
+        logging.basicConfig(format=_format, datefmt="%Y-%m-%d %H:%M:%S", level=logging.INFO, force=True)
         sqlalchemy_pretty_printer.setup(format=_format)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     return SessionLocal

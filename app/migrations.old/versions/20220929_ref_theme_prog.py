@@ -5,6 +5,7 @@ Revises: 0af544930fc5
 Create Date: 2022-09-29 12:04:32.664941
 
 """
+
 import logging
 import pandas
 from alembic import op

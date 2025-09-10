@@ -65,8 +65,7 @@ def update_siret_task(self, index: int, code: str):
     except LimitHitError as e:
         delay = (e.delay) + 5
         logger.info(
-            f"[UPDATE][SIRET][{code}] Limite d'appel à l'API atteinte "
-            f"Ré essai de la tâche dans {str(delay)} secondes"
+            f"[UPDATE][SIRET][{code}] Limite d'appel à l'API atteinte Ré essai de la tâche dans {str(delay)} secondes"
         )
         # XXX: max_retries=None ne désactive pas le mécanisme
         # de retry max contrairement à ce que stipule la doc !

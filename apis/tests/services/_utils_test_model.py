@@ -36,12 +36,8 @@ class _SecondCustomSchema(Schema):
     id = fields.Int(required=True)
 
 
-PydanticedCustom = PydanticFromMarshmallowSchemaAnnotationFactory[_CustomSchema].create(
-    _CustomSchema
-)
-PydanticedSecondCustom = PydanticFromMarshmallowSchemaAnnotationFactory[
-    _SecondCustomSchema
-].create(_SecondCustomSchema)
+PydanticedCustom = PydanticFromMarshmallowSchemaAnnotationFactory[_CustomSchema].create(_CustomSchema)
+PydanticedSecondCustom = PydanticFromMarshmallowSchemaAnnotationFactory[_SecondCustomSchema].create(_SecondCustomSchema)
 
 PydanticedModel = Annotated[dict, PydanticedCustom]
 

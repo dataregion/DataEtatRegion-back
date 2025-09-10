@@ -14,7 +14,6 @@ def test_budget_with_no_token(api_budget_v2):
 
 
 def test_budget_with_bad_token(api_budget_v2, fake_token):
-
     response = call_request(f"{api_budget_v2}/budget", token=fake_token)
     assert response.status_code == 403
     assert response.json() == {"message": "Forbidden", "type": "error"}

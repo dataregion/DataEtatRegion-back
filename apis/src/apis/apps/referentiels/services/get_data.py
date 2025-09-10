@@ -22,7 +22,6 @@ def get_one_data(
     params: V3QueryParams,
     conditions: list[ColumnExpressionArgument[bool]] = [],
 ):
-
     builder = V3QueryBuilder(model, db, params)
     for c in conditions:
         builder = builder.where_custom(c)

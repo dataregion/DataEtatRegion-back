@@ -25,7 +25,7 @@ class RefCrte(Resource):
     @api.response(200, "Success", fields.List(fields.Nested(crte_model)))
     def get(self):
         p_args = parser_crte.parse_args()
-        name = f'%{p_args.get("nom")}%' if p_args.get("nom") is not None else None
+        name = f"%{p_args.get('nom')}%" if p_args.get("nom") is not None else None
         dept = p_args.get("departement") if p_args.get("departement") is not None else None
         limit = p_args.get("limit")
         sql_select = "SELECT DISTINCT label_crte, code_crte FROM ref_commune"

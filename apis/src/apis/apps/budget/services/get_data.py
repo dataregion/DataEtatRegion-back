@@ -25,9 +25,7 @@ from apis.apps.budget.services.query_builder import (
 from apis.shared.exceptions import NoCurrentRegion
 
 
-app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(
-    sanitize_source_region_for_bdd_request
-)
+app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanitize_source_region_for_bdd_request)
 
 
 def get_ligne(db: Session, params: SourcesQueryParams, id: int):
@@ -54,9 +52,7 @@ def _to_enriched_ffl(data):
     _loaded = data
     if isinstance(data, EnrichedFlattenFinancialLines):
         return data
-    _loaded: EnrichedFlattenFinancialLines = EnrichedFlattenFinancialLinesSchema().load(
-        data
-    )
+    _loaded: EnrichedFlattenFinancialLines = EnrichedFlattenFinancialLinesSchema().load(data)
     return _loaded
 
 
@@ -136,17 +132,13 @@ def get_lignes(
 
 
 def get_annees_budget(db: Session, params: SourcesQueryParams):
-    params.source_region = app_layer_sanitize_region(
-        params.source_region, params.data_source
-    )
+    params.source_region = app_layer_sanitize_region(params.source_region, params.data_source)
     assert params.source_region is not None
     _regions = get_request_regions(params.source_region)
 
     builder = (
         SourcesQueryBuilder(db, params)
-        .select_custom_colonnes(
-            [distinct(EnrichedFlattenFinancialLines.annee).label("annee")]
-        )
+        .select_custom_colonnes([distinct(EnrichedFlattenFinancialLines.annee).label("annee")])
         .source_region_in(_regions)
         .data_source_is(params.data_source)
     )

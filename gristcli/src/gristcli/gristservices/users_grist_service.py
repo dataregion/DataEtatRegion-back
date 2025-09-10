@@ -45,7 +45,6 @@ class UserGristDatabaseService:
 
 
 class UserScimService(GrisApiService):
-
     @_handle_error_grist_api
     def _call(self, uri, method="GET", prefix="/api/scim/v2", json_data=None):
         """

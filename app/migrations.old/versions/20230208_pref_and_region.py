@@ -5,6 +5,7 @@ Revises: 20230201_audit_preference
 Create Date: 2023-02-08 13:01:22.259010
 
 """
+
 import logging
 import pandas
 from alembic import op
@@ -129,7 +130,7 @@ def _insert_ref():
                 session.add(region)
                 session.commit()
             else:
-                logger.info(f"Ignore ligne {index}" ", code insee: {region['REG']}, label: {region['LIBELLE']}")
+                logger.info(f"Ignore ligne {index}, code insee: {{region['REG']}}, label: {{region['LIBELLE']}}")
     except Exception as e:
         logger.exception(e)
         raise

@@ -50,7 +50,6 @@ class Audit(Resource):
     @api.response(204, "No Result")
     @check_permission([AccountRole.ADMIN, AccountRole.COMPTABLE])
     def get(self, type: DataType):
-
         user = connected_user_from_current_token_identity()
         clientId = user.azp
 
