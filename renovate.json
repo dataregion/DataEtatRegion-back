@@ -11,5 +11,14 @@
   },
    "pip-compile": {
     "fileMatch": ["(^|/)requirements\\.external\\.txt$"]
-  }
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["pip-compile"],
+      "groupName": "Mises à jour Python requirements",
+      "groupSlug": "python-requirements",
+      "matchUpdateTypes": ["minor", "patch"],
+      "recreateWhen": "always"
+    }
+  ]
 }
