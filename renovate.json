@@ -12,9 +12,6 @@
    "pip-compile": {
     "fileMatch": ["(^|/)requirements\\.external\\.txt$"]
   },
-  "poetry": {
-    "enabled": false
-  },
   "packageRules": [
     {
       "matchManagers": ["pip-compile"],
