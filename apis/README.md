@@ -6,7 +6,25 @@
 
 # Pour le développement
 
-## [Concepts de base](./../.markdowns/installation_venv_for_application.md)
+## Lancer les APIs en mode développement
+
+Pour démarrer les APIs en mode développement (hot reload, logs détaillés), assurez-vous d'abord d'avoir installé les dépendances :
+
+
+## [Installation du venv](./../.markdowns/installation_venv_for_application.md)
+
+
+Puis lancez le serveur avec :
+
+
+```bash
+source .venv/bin/activate && uvicorn src.apis.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Vous pouvez ensuite accéder à la documentation interactive sur http://localhost:8000/docs
+
+> **Note** : Adaptez le chemin du module (`src.apis.main:app`) si la structure change.
+
 
 ## Executer les tests
 

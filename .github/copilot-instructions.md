@@ -15,6 +15,21 @@
 
 ## 🛠️ Workflows critiques
 
+- **Lancer les APIs en local (`apis/`)** :
+  1. Se placer dans le dossier `apis` :
+    ```bash
+    cd data-transform/apis
+    ```
+  2. Activer le venv Python :
+    ```bash
+    source .venv/bin/activate
+    ```
+  3. Lancer le serveur de développement :
+    ```bash
+    uvicorn src.apis.main:app --reload --host 0.0.0.0 --port 8000
+    ```
+  4. Accéder à la doc interactive : http://localhost:8000/docs
+
 - **Construire les images Docker** : Voir [stack/ansible/templates/data-transform/docker-compose.yml](../stack/ansible/templates/data-transform/docker-compose.yml) et [data-transform/.gitlab-templates/build.gitlab-ci.yml](../data-transform/.gitlab-templates/build.gitlab-ci.yml).
 - **Lancer les migrations** : Les migrations Alembic dans `app/migrations/versions/` utilisent un pattern multi-engine (`upgrade_`, `upgrade_audit`, `upgrade_settings`, etc.). Utiliser le bon nom d’engine lors de l’exécution.
 - **Workers Celery** : Plusieurs files (`line`, `file`, `celery`, etc.) définies dans docker-compose et démarrées avec des paramètres de concurrence/pool différents.
