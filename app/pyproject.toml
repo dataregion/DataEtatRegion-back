@@ -23,7 +23,6 @@ dev = [
   "pytest ~= 8.3",
   "pytest-cov ~=6.0",
   "mypy ~= 1.11",
-  "black ~=25.1",
   "pip-tools ~= 7.4",
   "pre-commit ~=4.1",
   "faker ~=37.4",
@@ -36,24 +35,27 @@ addopts = [
     "--import-mode=importlib",
 ]
 
-[tool.black]
+[tool.ruff]
 line-length = 120
-target-version = ['py311']
-include = '\.py$'
-exclude = '''
-^/(
-      \.eggs         # exclude a few common directories in the
-    | \.git          # root of the project
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-    | venv11
-    | migrations
-    | config
-)
-'''
+target-version = "py311"
+extend-exclude = [
+    ".eggs",
+    ".git", 
+    ".hg",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "venv11",
+    "migrations",
+    "config",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
