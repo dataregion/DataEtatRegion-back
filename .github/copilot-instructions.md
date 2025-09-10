@@ -15,6 +15,21 @@
 
 ## 🛠️ Workflows critiques
 
+- **Lancer l'API Flask en local (`app/`) [DÉPRÉCIÉ]** :
+  1. Se placer dans le dossier `app` :
+    ```bash
+    cd data-transform/app
+    ```
+  2. Activer le venv Python :
+    ```bash
+    source .venv/bin/activate
+    ```
+  3. Lancer le serveur de développement :
+    ```bash
+    flask --app app:create_app_api run -h 0.0.0.0
+    ```
+  4. L'API sera accessible sur http://localhost:5000
+
 - **Lancer les APIs en local (`apis/`)** :
   1. Se placer dans le dossier `apis` :
     ```bash

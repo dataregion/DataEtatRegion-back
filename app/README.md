@@ -30,6 +30,26 @@ Copier le fichier [oidc_template.yml](./config/oidc_template.yml) en config.yml.
 cp config/oidc_template.yml config/oidc.yml
 ```
 
+## Lancer l'API en mode développement
+
+Pour lancer le projet Flask en mode développement :
+
+1. Placez-vous dans le dossier `app` :
+    ```bash
+    cd data-transform/app
+    ```
+2. Activez le venv Python si besoin :
+    ```bash
+    source .venv/bin/activate
+    ```
+3. Lancez le serveur de développement :
+    ```bash
+    flask --app app:create_app_api run -h 0.0.0.0
+    ```
+
+L'API sera alors accessible sur http://localhost:5000
+
+
 ## Mettre à jour les dépendances
 
 ```bash
