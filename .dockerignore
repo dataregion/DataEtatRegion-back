@@ -1,0 +1,90 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+docs/
+.markdowns/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.gitlab-templates/
+
+# Configuration de développement
+.pre-commit-config.yaml
+renovate.json
+.tool-versions
+.python-version
+
+# Cache et fichiers temporaires
+.cache
+.ruff_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache
+.coverage
+htmlcov
+.tox
+.nox
+.mypy_cache
+.dmypy.json
+dmypy.json
+
+# Environnements virtuels Python
+.env
+.venv
+env
+venv
+ENV
+env.bak
+venv.bak
+
+# IDEs et éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Builds et distributions
+build
+dist
+*.egg-info
+.eggs
+
+# Logs
+*.log
+logs/
+
+# Bases de données locales et fichiers de test
+*.db
+*.sqlite
+*.sqlite3
+test.db
+
+# Fichiers de configuration locaux
+config/local.*
+*.local.*
+.env.local
+.env.*.local
+
+# Tests
+tests_e2e/build/
+**/test-results/
+**/playwright-report/
+
+# Dossiers spécifiques au projet qui ne doivent pas être copiés
+docker/
+
+# Fichiers temporaires système
+.tmp/
+tmp/

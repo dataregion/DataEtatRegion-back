@@ -3,8 +3,8 @@
 *Initialisez un venv python*. Puis:
 
 ```bash
-pip install .[dev] -r requirements.external.txt && \
-pip install -r requirements.editable.txt --no-deps # Utile pour les phase de développement
+uv pip install .[dev] -r requirements.external.txt && \
+  uv pip install -r requirements.editable.txt --no-deps # Utile pour les phase de développement
 ```
 
 # Mettre à jour les dépendances
@@ -18,7 +18,7 @@ Voici un exemple sur comment regénérer une version plus à jour:
 # éditer requirements.external.in au besoin
 # L'idée est de freeze toutes les dépendances *externes* dont aurait besoin le projet.
 rm requirements.external.txt
-pip-compile requirements.external.in \
+uv pip compile requirements.external.in \
   ../models/pyproject.toml \  # Module des models
   ../gristcli/pyproject.toml \  # Module du gristcli
   -o requirements.external.txt

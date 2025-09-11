@@ -24,6 +24,7 @@ app/migrations.old/data/ref_*.csv
 /tests/.coverage
 
 .tool-versions
+.python-version
 
 .mypy_cache
 .pytest_cache

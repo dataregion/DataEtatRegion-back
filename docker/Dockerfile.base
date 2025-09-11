@@ -1,7 +1,8 @@
-FROM python:3.13.7-alpine@sha256:9ba6d8cbebf0fb6546ae71f2a1c14f6ffd2fdab83af7fa5669734ef30ad48844
+FROM debian:trixie-20250908-slim
 
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:0.8.16 /uv /uvx /bin/
 
-# Installer pip-tools (common Python deps)
-RUN pip install pip-tools
+RUN uv python install 3.13.7
 
 WORKDIR /appli
