@@ -1,4 +1,4 @@
-FROM nocode/data-etat-python-base:latest  AS builder
+FROM ghcr.io/astral-sh/uv:0.8.17-python3.13-trixie-slim AS builder
 
 WORKDIR /build
 # Copie du projet
@@ -15,7 +15,7 @@ RUN uv pip install \
   --python /venv/bin/python
 
 
-FROM nocode/data-etat-python-base:latest
+FROM ghcr.io/astral-sh/uv:0.8.17-python3.13-trixie-slim
 
 # Création du dossier de travail
 RUN mkdir -p /appli/workdir
@@ -26,4 +26,4 @@ COPY --from=builder /venv /venv
 ENV PATH="/venv/bin:$PATH"
 
 EXPOSE 80
-CMD ["uvicorn", "src.apis.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "apis.main:app", "--host", "0.0.0.0", "--port", "80"]

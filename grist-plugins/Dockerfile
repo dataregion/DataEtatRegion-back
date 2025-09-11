@@ -1,4 +1,4 @@
-FROM nocode/data-etat-python-base:latest  AS builder
+FROM ghcr.io/astral-sh/uv:0.8.17-python3.13-trixie-slim  AS builder
 
 WORKDIR /build
 # Copie du projet
@@ -15,7 +15,7 @@ RUN uv pip install \
   -r requirements.external.txt \
   --python /venv/bin/python
 
-FROM nocode/data-etat-python-base:latest
+FROM ghcr.io/astral-sh/uv:0.8.17-python3.13-trixie-slim
 
 EXPOSE 8000
 

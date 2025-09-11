@@ -1,8 +1,0 @@
-FROM debian:trixie-20250908-slim
-
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:0.8.16 /uv /uvx /bin/
-
-RUN uv python install 3.13.7
-
-WORKDIR /appli

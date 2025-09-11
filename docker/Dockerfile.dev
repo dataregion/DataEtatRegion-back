@@ -1,0 +1,35 @@
+FROM ghcr.io/astral-sh/uv:0.8.17-python3.13-trixie-slim AS builder
+
+WORKDIR /build
+# Copie du projet
+COPY . .
+
+# Prépare les venv de dev des différentes applications
+RUN cd app/ && \
+    uv venv && \
+    uv pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps && \
+    cd ..
+
+RUN cd apis/ && \
+    uv venv && \
+    uv pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps && \
+    cd ..
+
+RUN cd services/ && \
+    uv venv && \
+    uv pip install .[dev] && \
+    cd ..
+
+RUN cd models/ && \
+    uv venv && \
+    uv pip install .[dev] && \
+    cd ..
+
+FROM ghcr.io/astral-sh/uv:0.8.17-python3.13-trixie-slim
+
+WORKDIR /build
+
+COPY --from=builder /build/app/.venv /build/app/.venv
+COPY --from=builder /build/apis/.venv /build/apis/.venv
+COPY --from=builder /build/services/.venv /build/services/.venv
+COPY --from=builder /build/models/.venv /build/models/.venv

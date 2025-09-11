@@ -1,6 +1,6 @@
 .default-tests: &default-tests
   stage: 🧪 test
-  image: ${PYTHON_IMAGE}
+  image: "${REGISTRY}nocode/dev:latest-snapshot"
   rules:
     - if: '$DO_TEST == "✅"'
     - if: '$DO_TEST == "⚙️"'
@@ -14,31 +14,33 @@
   artifacts:
     paths:
       - tests/coverage.xml
+  needs:
+    - "🐳 dockerizing nocode/dev image"
 
 run_models_tests:
   <<: *default-tests
   before_script:
     - cd models/
     - env
-    - pip install .[dev]
+    - source /build/models/.venv/bin/activate
 
 run_services_tests:
   <<: *default-tests
   before_script:
     - cd services/
     - env
-    - pip install .[dev]
+    - source /build/services/.venv/bin/activate
 
 run_apis_tests:
   <<: *default-tests
   before_script:
     - cd apis/
     - env
-    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
+    - source /build/apis/.venv/bin/activate
 
 run_app_tests:
   <<: *default-tests
   before_script:
     - cd app/
     - env
-    - pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
+    - source /build/app/.venv/bin/activate

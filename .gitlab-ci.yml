@@ -9,7 +9,7 @@ include:
   - .gitlab-templates/integ-tests.gitlab-ci.yml
 
 variables:
-  PYTHON_IMAGE: python:3.12.6-slim
+  PYTHON_IMAGE: ghcr.io/astral-sh/uv:0.8.17-python3.13-trixie-slim
   # XXX: Important to reference internal variables into custom ones here
   # to support variable passing to downward pipeline
   _TAG_VER: $CI_COMMIT_TAG

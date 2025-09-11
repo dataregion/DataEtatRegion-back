@@ -35,15 +35,6 @@ include:
       do-push: true
       enable-debug: true
 
-  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
-    inputs:
-      image-name: nocode/data-etat-python-base
-      build-context: ./
-      dockerfile-name: ./docker/Dockerfile.base
-      do-login: false
-      do-push: false
-      enable-debug: true
-
 .default-dockerize: &default-dockerize
   rules:
     - if: '$DO_DOCKERIZE == "✅"'
@@ -74,9 +65,3 @@ include:
   needs: 
     - job: "🐳 dockerizing base image"
       optional: true
-
-"🐳 dockerizing base image":
-  <<: *default-dockerize
-  extends: ".dockerize-nocode/data-etat-python-base"
-  stage: 🐳 dockerize
-  needs: [] # la Dockerization ne dépend de rien. On peut faire tourner le job en //

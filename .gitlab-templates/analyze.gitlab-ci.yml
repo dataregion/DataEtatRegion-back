@@ -1,3 +1,16 @@
+include:
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
+    inputs:
+      image-name: ${REGISTRY}nocode/dev
+      image-tag: latest-snapshot
+      build-context: ./
+      dockerfile-name: ./docker/Dockerfile.dev
+      do-login: true
+      registry: ${REGISTRY}
+      registry-login: ${REGISTRY_USER}
+      do-push: true
+      enable-debug: true
+
 "Print pipeline variables for debug":
   stage: ☢️ analyze
   rules:
@@ -16,29 +29,33 @@
       echo "DO_DEPLOY_FOR_INTEG     : $_ENABLE_DEPLOY_FOR_INTEG"
       echo "DO_DEPLOY_FOR_PP_AND_P  : $_ENABLE_DEPLOY_FOR_PP_AND_P"
 
+# Construit une image avec les venv de devs installés
+"🐳 dockerizing nocode/dev image":
+  stage: ☢️ analyze
+  extends: ".dockerize-${REGISTRY}nocode/dev"
+  when: always
+
 "Analyse d'architecture":
   stage: ☢️ analyze
-  image: ${PYTHON_IMAGE}
-  before_script: |
-    python --version
+  image: "${REGISTRY}nocode/dev:latest-snapshot"
+  script: |
+    cd app/ && \
+      source /build/app/.venv/bin/activate && \
+      lint-imports --config .importlinter.toml --no-cache --show-timings && \
+      cd ..
 
-    cd app/
-    pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
-    cd ../
-
-    cd apis
-    pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps
-    cd ../
-
-  script:
-    - cd app/  && lint-imports --config .importlinter.toml --no-cache --show-timings && cd ..
-    - cd apis/ && lint-imports --config .importlinter.toml --no-cache --show-timings && cd ..
+    cd apis/ && \
+      source /build/apis/.venv/bin/activate && \
+      lint-imports --config .importlinter.toml --no-cache --show-timings && \
+      cd ..
+  needs:
+    - "🐳 dockerizing nocode/dev image"
 
 "Analyse syntaxique":
   stage: ☢️ analyze
-  image: ${PYTHON_IMAGE}
+  image: "${REGISTRY}nocode/dev:latest-snapshot"
   before_script:
-    - pip install ruff
+    - uv pip install ruff --system
   script:
     - ruff format --check app/
     - ruff format --check grist-plugins/
@@ -46,12 +63,14 @@
     - ruff format --check models/
     - ruff format --check gristcli/
     - ruff format --check tests_e2e/
+  needs:
+    - "🐳 dockerizing nocode/dev image"
 
 "Analyse ruff":
   stage: ☢️ analyze
-  image: ${PYTHON_IMAGE}
+  image: "${REGISTRY}nocode/dev:latest-snapshot"
   before_script:
-    - pip install ruff
+    - uv pip install ruff --system
   script:
     - ruff check app/
     - ruff check grist-plugins/
@@ -59,3 +78,5 @@
     - ruff check models/
     - ruff check gristcli/
     - ruff check tests_e2e/
+  needs:
+    - "🐳 dockerizing nocode/dev image"
