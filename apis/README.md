@@ -37,7 +37,7 @@ pytest -m integration # execute les tests d'intégration
 
 ```bash
 rm requirements.external.txt
-pip-compile requirements.external.in \
+uv pip compile requirements.external.in \
   ../models/pyproject.toml \
   ../services/pyproject.toml \
   ../gristcli/pyproject.toml \
