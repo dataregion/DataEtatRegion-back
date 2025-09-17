@@ -1,5 +1,6 @@
 from datetime import datetime
 from http import HTTPStatus
+from fastapi import Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 from typing import Any, Generic, List, Literal, Optional, TypeVar, Union
@@ -39,7 +40,13 @@ class APIResponse(BaseModel):
 
     def to_json_response(self):
         json_content = self.model_dump(mode="json")
-        return JSONResponse(status_code=self.code, content=json_content)
+
+        if self.code == 204:
+            response = Response(status_code=self.code)
+        else:
+            response = JSONResponse(status_code=self.code, content=json_content)
+
+        return response
 
 
 def _api_error_example():
