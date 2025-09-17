@@ -11,15 +11,17 @@ from models.entities.refs.Siret import Siret
 from models.schemas.common import DateTimePassthrough
 from models.schemas.tags import TagsSchema
 from sqlalchemy import String
+from .utils import MarshmallowSafeGetAttrMixin
 
 
-class EnrichedFlattenFinancialLinesSchema(SQLAlchemyAutoSchema):
+class EnrichedFlattenFinancialLinesSchema(
+    MarshmallowSafeGetAttrMixin, SQLAlchemyAutoSchema
+):
     class Meta:
         model = EnrichedFlattenFinancialLines
 
     source = DataTypeField()
 
-    # TODO : No tag
     tags = fields.List(fields.Nested(TagsSchema))
     dateDeDernierPaiement = DateTimePassthrough(allow_none=True)
     dateDeCreation = DateTimePassthrough(allow_none=True)

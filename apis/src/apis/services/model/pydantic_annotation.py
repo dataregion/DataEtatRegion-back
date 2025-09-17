@@ -2,6 +2,7 @@ import logging
 from marshmallow import Schema
 from pydantic_core import SchemaValidator, core_schema
 from apis.services.model.schema_adapter import FieldMapper, SchemaAdapter
+from models.schemas.utils import MarshmallowSafeGetAttrMixin
 
 
 from typing import Any, Generic, Type, TypeVar
@@ -87,9 +88,12 @@ class PydanticFromMarshmallowSchemaAnnotation(Generic[TSchema]):
         #
         cls._marshmallow_schema_cls = marshmallow_schema
         cls._marshmallow_schema = cls._marshmallow_schema_cls()
-
-        #
         cls._logger = logging.getLogger(f"{cls.__name__}[{cls._marshmallow_schema_cls.__name__}]")
+        if isinstance(cls._marshmallow_schema, MarshmallowSafeGetAttrMixin):
+            cls._logger.info(
+                f"Activation du mode safe_getattr pour {cls._marshmallow_schema_cls.__name__}. Les erreurs d'accès au modèle seront ignorées."
+            )
+            cls._marshmallow_schema.enable_safe_getattr()
 
         #
         _cls_to_use = cls._get_inner_marshmallow_model_or_none()
