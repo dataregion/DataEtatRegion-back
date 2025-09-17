@@ -2,9 +2,9 @@ from http import HTTPStatus
 from typing import Generic, Literal, TypeVar
 
 from fastapi import Query
-from sqlalchemy import Column, ColumnExpressionArgument, RowMapping, func, select, or_
+from sqlalchemy import Column, ColumnExpressionArgument, func, select, or_
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import Session, DeclarativeBase
+from sqlalchemy.orm import Session, DeclarativeBase, load_only
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 import logging
@@ -52,23 +52,24 @@ T = TypeVar("T", bound=DeclarativeBase)
 
 class V3QueryBuilder(Generic[T]):
     def __init__(self, model: type[T], session: Session, params: V3QueryParams):
+        self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._model = model
         self._session = session
         self._params = params
         self._query = select(self._model)
-        self._select_model = True
-
-        self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
         if self._params.colonnes is not None:
             selected_colonnes = [
                 getattr(self._model, c) for c in self._params.colonnes if c in inspect(self._model).columns.keys()
             ]
-            self.select_custom_colonnes(selected_colonnes)
+            self.select_custom_model_properties(selected_colonnes)
 
-    def select_custom_colonnes(self, colonnes: list):
-        self._query = select(*colonnes)
-        self._select_model = False
+    def select_custom_model_properties(self, colonnes: list):
+        # XXX: On ne charge que les colonnes demandées
+        # le raiseload empêche le lazy load des colonnes non demandées
+        self._query = select(self._model).options(
+            load_only(*colonnes, raiseload=True),
+        )
         return self
 
     def where_custom(self, where: ColumnExpressionArgument[bool]):
@@ -171,11 +172,8 @@ class V3QueryBuilder(Generic[T]):
         )
 
     def select_all(self):
-        data: list[T | RowMapping] = []
-        if self._select_model:
-            data = list(self._session.execute(self._query).unique().scalars().all())
-        else:
-            data = list(self._session.execute(self._query).mappings().all())
+        all = self._session.execute(self._query).unique().scalars().all()
+        data = list(all)
 
         count_plus_one = len(data)
         data = data[: self._params.page_size]

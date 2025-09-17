@@ -1,7 +1,6 @@
 from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,
 )
-from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 
 from sqlalchemy import distinct
 from sqlalchemy.orm import Session
@@ -46,14 +45,6 @@ def get_ligne(db: Session, params: SourcesQueryParams, id: int):
         .source_region_in(_regions)
     )
     return builder.select_one()
-
-
-def _to_enriched_ffl(data):
-    _loaded = data
-    if isinstance(data, EnrichedFlattenFinancialLines):
-        return data
-    _loaded: EnrichedFlattenFinancialLines = EnrichedFlattenFinancialLinesSchema().load(data)
-    return _loaded
 
 
 @gauge_of_currently_executing()
@@ -125,8 +116,6 @@ def get_lignes(
     # TODO : Perfs
     total = builder.get_total("groupings" if builder.groupby_colonne else "lignes")
     grouped = builder.groupby_colonne is not None
-    if not grouped:  # Alors ce sont des lignes financieres
-        data = [_to_enriched_ffl(x) for x in data]
 
     return data, total, grouped, has_next
 
@@ -138,7 +127,7 @@ def get_annees_budget(db: Session, params: SourcesQueryParams):
 
     builder = (
         SourcesQueryBuilder(db, params)
-        .select_custom_colonnes([distinct(EnrichedFlattenFinancialLines.annee).label("annee")])
+        .select_custom_model_properties([distinct(EnrichedFlattenFinancialLines.annee).label("annee")])
         .source_region_in(_regions)
         .data_source_is(params.data_source)
     )

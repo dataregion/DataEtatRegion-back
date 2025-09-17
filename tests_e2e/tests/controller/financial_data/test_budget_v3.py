@@ -215,4 +215,14 @@ def test_budget_get_lignes_check_grouping_and_grouped(api_budget_v3, real_token)
     assert_api_response_status(response, 400)
 
 
+def test_budget_get_lignes_avec_tags(api_budget_v3, real_token):  # noqa: F811
+    response = call_request(
+        f"{api_budget_v3}/lignes?tags=detr",
+        token=real_token,
+    )
+    assert_api_response_status(response, 200)
+    first_line_tags = response.json()["data"]["lignes"][0]["tags"]
+    assert len(first_line_tags) > 0
+
+
 # TODO: ici, continuer à qualifier l'api v3

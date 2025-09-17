@@ -93,7 +93,7 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
                     )
                 else:
                     colonnes.append(getattr(FinancialLines, self.groupby_colonne.code).label("label"))
-                self.select_custom_colonnes(colonnes)
+                self.select_custom_model_properties(colonnes)
 
     def _rec_grouping_mechanisme(self, grouping: list[Colonne], grouped: list[str] | None, conditions: dict):
         if grouped is None or len(grouped) == 0:
