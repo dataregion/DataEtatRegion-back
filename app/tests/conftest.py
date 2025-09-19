@@ -113,6 +113,7 @@ def test_client(app):
 @pytest.fixture(scope="session")
 def database(app, connections, request):
     views_sql = {
+        "superset_lignes_financieres_52": "SELECT 1 AS dummy",
         "flatten_financial_lines": "SELECT 1 AS dummy",
         "vt_flatten_summarized_ademe": "SELECT 1 AS dummy",
         "vt_flatten_summarized_ae": "SELECT 1 AS dummy",

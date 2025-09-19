@@ -27,6 +27,12 @@ class LastRefreshMaterializedViewTooRecent(Exception):
 
 @celery.task(bind=True, name="maj_materialized_view")
 def maj_materialized_views(self):
+    ffl_deps = [
+        ("Ademe", Ademe.Ademe.updated_at),
+        ("FinancialAe", FinancialAe.FinancialAe.updated_at),
+        ("FinancialCp", FinancialCp.FinancialCp.updated_at),
+        ("Siret", Siret.updated_at),
+    ]
     view_dependencies = {
         "vt_flatten_summarized_ademe": [("Ademe", Ademe.Ademe.updated_at)],
         "vt_budget_summary": [("Ademe", Ademe.Ademe.updated_at), ("FinancialAe", FinancialAe.FinancialAe.updated_at)],
@@ -39,12 +45,8 @@ def maj_materialized_views(self):
             ("FinancialAe", FinancialAe.FinancialAe.updated_at),
         ],
         "vt_flatten_summarized_ae": [("FinancialAe", FinancialAe.FinancialAe.updated_at)],
-        "flatten_financial_lines": [
-            ("Ademe", Ademe.Ademe.updated_at),
-            ("FinancialAe", FinancialAe.FinancialAe.updated_at),
-            ("FinancialCp", FinancialCp.FinancialCp.updated_at),
-            ("Siret", Siret.updated_at),
-        ],
+        "flatten_financial_lines": ffl_deps,
+        "superset_lignes_financieres_52": ffl_deps,
     }
 
     _logger.debug("Get Last date updated views")
