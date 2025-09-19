@@ -28,7 +28,7 @@
     ```bash
     flask --app app:create_app_api run -h 0.0.0.0
     ```
-  4. L'API sera accessible sur http://localhost:5000
+  4. L'API sera accessible sur http://localhost:8000
 
 - **Lancer les APIs en local (`apis/`)** :
   1. Se placer dans le dossier `apis` :
@@ -41,7 +41,7 @@
     ```
   3. Lancer le serveur de développement :
     ```bash
-    uvicorn src.apis.main:app --reload --host 0.0.0.0 --port 8000
+    uvicorn src.apis.main:app --reload --host 0.0.0.0 --port 8050
     ```
   4. Accéder à la doc interactive : http://localhost:8000/docs
 
