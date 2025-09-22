@@ -5,14 +5,18 @@ from requests import Response
 
 import pytest
 import jwt
+from collections import namedtuple
+
+
+PremiereLigneInfo = namedtuple("PremiereLigneInfo", ["id", "source"])
 
 
 @pytest.fixture(scope="function")
-def lignes_first_id(api_budget_v3, real_token):
+def premiere_ligne_info(api_budget_v3, real_token) -> PremiereLigneInfo:
     params = {"page_size": 1}
     response = call_request(f"{api_budget_v3}/lignes", token=real_token, params=params)
-    id = response.json()["data"]["lignes"][0]["id"]
-    return id
+    ligne_data = response.json()["data"]["lignes"][0]
+    return PremiereLigneInfo(id=ligne_data["id"], source=ligne_data["source"])
 
 
 def unsafe_jwt_decode(token):

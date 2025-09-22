@@ -57,6 +57,8 @@ class V3QueryBuilder(Generic[T]):
         self._session = session
         self._params = params
         self._query = select(self._model)
+        self._is_grouping = False
+        """Représente si le builder qui est en train de build est une aggregation"""
 
         if self._params.colonnes is not None:
             selected_colonnes = [
@@ -64,12 +66,14 @@ class V3QueryBuilder(Generic[T]):
             ]
             self.select_custom_model_properties(selected_colonnes)
 
-    def select_custom_model_properties(self, colonnes: list):
-        # XXX: On ne charge que les colonnes demandées
-        # le raiseload empêche le lazy load des colonnes non demandées
-        self._query = select(self._model).options(
-            load_only(*colonnes, raiseload=True),
-        )
+    def select_custom_model_properties(self, colonnes: list, is_grouping: bool = False):
+        if is_grouping:
+            self._query = select(*colonnes).select_from(self._model)
+            self._is_grouping = True
+        else:
+            # XXX: On ne charge que les colonnes demandées
+            # le raiseload empêche le lazy load des colonnes non demandées
+            self._query = select(self._model).options(load_only(*colonnes, raiseload=True))
         return self
 
     def where_custom(self, where: ColumnExpressionArgument[bool]):
@@ -172,7 +176,10 @@ class V3QueryBuilder(Generic[T]):
         )
 
     def select_all(self):
-        all = self._session.execute(self._query).unique().scalars().all()
+        if self._is_grouping:
+            all = self._session.execute(self._query).mappings().all()
+        else:
+            all = self._session.execute(self._query).unique().scalars().all()
         data = list(all)
 
         count_plus_one = len(data)

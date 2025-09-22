@@ -109,8 +109,11 @@ def test_pydanticed_factory():
 
     assert id(PydanticedCustom) != id(PydanticedSecondCustom)
 
-    assert PydanticedCustom._marshmallow_schema_cls == _CustomSchema
-    assert PydanticedSecondCustom._marshmallow_schema_cls == _SecondCustomSchema
+    assert isinstance(PydanticedCustom._marshmallow_schema_cls(), _CustomSchema)
+    assert isinstance(PydanticedSecondCustom._marshmallow_schema_cls(), _SecondCustomSchema)
+
+    assert not isinstance(PydanticedCustom._marshmallow_schema_cls(), _SecondCustomSchema)
+    assert not isinstance(PydanticedSecondCustom._marshmallow_schema_cls(), _CustomSchema)
 
 
 ##############

@@ -1,7 +1,8 @@
 from tests.controller.financial_data.utils_test_budget_v3 import (
+    PremiereLigneInfo,
     sanitize_region,
     unsafe_jwt_decode,
-    lignes_first_id,  # noqa: F401
+    premiere_ligne_info,  # noqa: F401
     assert_api_response_status,
 )
 from . import *  # noqa: F403
@@ -113,9 +114,13 @@ def test_budget_retourne_lignes_sur_grouping_and_grouped(
 
 #########
 # Test ligne
-def test_budget_get_ligne_ok(api_budget_v3, real_token, lignes_first_id):  # noqa: F811
+def test_budget_get_ligne_ok(
+    api_budget_v3,
+    real_token,
+    premiere_ligne_info: PremiereLigneInfo,  # noqa: F811
+):  # noqa: F811
     response = call_request(
-        f"{api_budget_v3}/lignes/{int(lignes_first_id)}?source=FINANCIAL_DATA_CP",
+        f"{api_budget_v3}/lignes/{int(premiere_ligne_info.id)}?source={premiere_ligne_info.source}",
         token=real_token,
     )
     assert_api_response_status(response, 200)
@@ -224,6 +229,7 @@ def test_budget_get_lignes_avec_tags(api_budget_v3, real_token):  # noqa: F811
     first_line_tags = response.json()["data"]["lignes"][0]["tags"]
     assert len(first_line_tags) > 0
 
+
 def test_budget_get_lignes_avec_date_modification(api_budget_v3, real_token):  # noqa: F811
     response = call_request(
         f"{api_budget_v3}/lignes?colonnes=date_modification",
@@ -232,5 +238,3 @@ def test_budget_get_lignes_avec_date_modification(api_budget_v3, real_token):  #
     assert_api_response_status(response, 200)
     date_modif = response.json()["data"]["lignes"][0]["date_modification"]
     assert isinstance(date_modif, str)
-
-

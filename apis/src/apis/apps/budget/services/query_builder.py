@@ -75,6 +75,9 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
             self.groupby_colonne, self.dynamic_conditions = self._rec_grouping_mechanisme(
                 params.grouping, params.grouped, {}
             )
+            if self.groupby_colonne is None:
+                return
+
             if params.grouped is None or len(params.grouped) < len(params.grouping):
                 assert isinstance(self.groupby_colonne.code, str)  # type: ignore
                 colonnes = [
@@ -93,14 +96,22 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
                     )
                 else:
                     colonnes.append(getattr(FinancialLines, self.groupby_colonne.code).label("label"))
-                self.select_custom_model_properties(colonnes)
+                self.select_custom_model_properties(colonnes, is_grouping=True)
 
-    def _rec_grouping_mechanisme(self, grouping: list[Colonne], grouped: list[str] | None, conditions: dict):
+    def _rec_grouping_mechanisme(
+        self,
+        grouping: list[Colonne],
+        grouped: list[str] | None,
+        conditions: dict,
+    ) -> tuple[Colonne | None, dict]:
         if grouped is None or len(grouped) == 0:
-            return grouping[0] if len(grouping) > 0 else None, conditions
+            colonne = grouping[0] if len(grouping) > 0 else None
+            return colonne, conditions
+
         conditions[grouping[0].code] = {"value": grouped[0] if grouped[0] != "None" else None}
         if grouping[0].type is not None:
             conditions[grouping[0].code]["type"] = grouping[0].type
+
         return self._rec_grouping_mechanisme(grouping[1:], grouped[1:], conditions)
 
     """
