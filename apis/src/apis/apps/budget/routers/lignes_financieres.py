@@ -25,7 +25,10 @@ from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.services.model.pydantic_annotation import (
     PydanticFromMarshmallowSchemaAnnotationFactory,
 )
-from apis.services.model.enriched_financial_lines_mappers import enriched_ffl_mappers
+from apis.services.model.enriched_financial_lines_mappers import (
+    enriched_ffl_mappers,
+    enriched_ffl_pre_validation_transformer,
+)
 from apis.shared.models import APIError, APISuccess
 
 
@@ -35,7 +38,11 @@ keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
 PydanticEnrichedFlattenFinancialLinesModel = PydanticFromMarshmallowSchemaAnnotationFactory[
     EnrichedFlattenFinancialLinesSchema
-].create(EnrichedFlattenFinancialLinesSchema, custom_fields_mappers=enriched_ffl_mappers)
+].create(
+    EnrichedFlattenFinancialLinesSchema,
+    custom_fields_mappers=enriched_ffl_mappers,
+    pre_validation_transformer=enriched_ffl_pre_validation_transformer,
+)
 
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 

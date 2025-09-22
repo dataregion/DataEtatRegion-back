@@ -1,4 +1,3 @@
-from datetime import datetime
 from marshmallow import fields
 from models.value_objects.common import DataType
 
@@ -10,12 +9,3 @@ class DataTypeField(fields.Field):
 
     def _jsonschema_type_mapping(self):
         return {"type": "string", "enum": self.__class__._member_values()}
-
-
-class DateTimePassthrough(fields.DateTime):
-    """Type de champ DateTime qui accepte de déserialisé les datetime python (utile lorsque la donnée vient de RowMapping)"""
-
-    def _deserialize(self, value, attr, data, **kwargs):
-        if isinstance(value, datetime):
-            return value
-        return super()._deserialize(value, attr, data, **kwargs)

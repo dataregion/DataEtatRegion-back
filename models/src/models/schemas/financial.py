@@ -8,7 +8,6 @@ from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,
 )
 from models.entities.refs.Siret import Siret
-from models.schemas.common import DateTimePassthrough
 from models.schemas.tags import TagsSchema
 from sqlalchemy import String
 from .utils import MarshmallowSafeGetAttrMixin
@@ -23,13 +22,6 @@ class EnrichedFlattenFinancialLinesSchema(
     source = DataTypeField()
 
     tags = fields.List(fields.Nested(TagsSchema))
-    dateDeDernierPaiement = DateTimePassthrough(allow_none=True)
-    dateDeCreation = DateTimePassthrough(allow_none=True)
-
-    updated_at = DateTimePassthrough(allow_none=True)
-    created_at = DateTimePassthrough(allow_none=True)
-
-    date_modification = DateTimePassthrough(allow_none=True)
 
 
 class SiretField(fields.Field):

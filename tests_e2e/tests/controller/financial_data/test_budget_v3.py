@@ -224,5 +224,13 @@ def test_budget_get_lignes_avec_tags(api_budget_v3, real_token):  # noqa: F811
     first_line_tags = response.json()["data"]["lignes"][0]["tags"]
     assert len(first_line_tags) > 0
 
+def test_budget_get_lignes_avec_date_modification(api_budget_v3, real_token):  # noqa: F811
+    response = call_request(
+        f"{api_budget_v3}/lignes?colonnes=date_modification",
+        token=real_token,
+    )
+    assert_api_response_status(response, 200)
+    date_modif = response.json()["data"]["lignes"][0]["date_modification"]
+    assert isinstance(date_modif, str)
 
-# TODO: ici, continuer à qualifier l'api v3
+
