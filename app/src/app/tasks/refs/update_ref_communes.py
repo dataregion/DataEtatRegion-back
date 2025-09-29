@@ -79,7 +79,7 @@ def import_file_pvd(self, fichier: str):
             communes = select_communes_id(dates_by_code.keys())
             for commune in communes:
                 date_signature = dates_by_code[commune[1]]
-                date_signature = datetime.strptime(date_signature, "%Y-%m-%d") if date_signature is not None else None
+                date_signature = datetime.strptime(date_signature, "%d/%m/%Y") if date_signature is not None else None
                 updates_to_commit.append({"id": commune[0], "is_pvd": True, "date_pvd": date_signature})
 
             # Bulk update
@@ -152,7 +152,7 @@ def import_file_acv(self, fichier: str):
             communes = select_communes_id(dates_by_code.keys())
             for commune in communes:
                 date_signature = dates_by_code[commune[1]]
-                date_signature = datetime.strptime(date_signature, "%Y-%m-%d") if date_signature is not None else None
+                date_signature = datetime.strptime(date_signature, "%d-%m-%Y") if date_signature is not None else None
                 updates_to_commit.append({"id": commune[0], "is_acv": True, "date_acv": date_signature})
 
             # Bulk update
