@@ -38,4 +38,4 @@ def test_import_file_acv(mock_subtask: MagicMock, add_commune_la_gacilly):
 
     commune = select_commune("35288")
     assert commune.is_acv is True
-    assert commune.date_acv.strftime("%Y-%m-%d") == "2018-09-21"
+    assert commune.date_acv.strftime("%d-%m-%Y") == "21-09-2018"

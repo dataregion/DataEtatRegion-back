@@ -36,4 +36,4 @@ def test_import_file_pvd(mock_subtask: MagicMock, add_commune_la_gacilly):
 
     commune = select_commune("56061")
     assert commune.is_pvd is True
-    assert commune.date_pvd.strftime("%Y-%m-%d") == "2021-07-09"
+    assert commune.date_pvd.strftime("%d/%m/%Y") == "09/07/2021"
