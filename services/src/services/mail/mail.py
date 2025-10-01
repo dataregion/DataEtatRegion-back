@@ -7,7 +7,15 @@ from email.mime.text import MIMEText
 
 
 class Mail:
-    def __init__(self, server=None, port=None, from_email=None, use_ssl=None, pwd=None, login=None):
+    def __init__(
+        self,
+        server=None,
+        port=None,
+        from_email=None,
+        use_ssl=None,
+        pwd=None,
+        login=None,
+    ):
         self.server = server
         self.port = port
         self.from_email = from_email
@@ -26,7 +34,9 @@ class Mail:
             smtp = smtplib.SMTP(self.server, self.port)
 
         try:
-            mail = self._prepare_message(subject, recipients, template_html, template_text)
+            mail = self._prepare_message(
+                subject, recipients, template_html, template_text
+            )
 
             if self.pwd is not None:
                 smtp.login(self.login, self.pwd)
