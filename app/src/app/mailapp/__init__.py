@@ -1,6 +1,6 @@
 import logging
 
-from app.mailapp.Mail import Mail
+from services.mail.mail import Mail
 
 mail = None
 
