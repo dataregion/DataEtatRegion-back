@@ -15,7 +15,7 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-"grist_plugins" = ["*"]
+"grist_plugins" = ["*", "static/*", "static/**/*"]
 
 [project.optional-dependencies]
 dev = [
