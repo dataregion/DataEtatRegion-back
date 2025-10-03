@@ -40,7 +40,7 @@ def delete_cp_annee_region(annee: int, source_region: str):
     logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour l'année {annee} et la région {source_region}")
     stmt = (
         delete(FinancialCp)
-        .where(FinancialCp.annee == annee)
+        .where(FinancialCp.annee == annee)  # type: ignore
         .where(FinancialCp.source_region == source_region, FinancialCp.data_source == "REGION")
     )
     db.session.execute(stmt)

@@ -1,3 +1,4 @@
+import csv
 import logging
 import os
 import json
@@ -53,8 +54,8 @@ def delayed_inserts(self):
         if region != "NATIONAL":
             logging.info(f"[DELAYED] Delayed Insert sur region {region}")
             # Nettoyage de la BDD
-            delete_cp_annee_region(task.annee, task.source_region)
-            delete_ae_no_cp_annee_region(task.annee, task.source_region)
+            delete_cp_annee_region(task.annee, task.source_region)  # type: ignore
+            delete_ae_no_cp_annee_region(task.annee, task.source_region)  # type: ignore
             # Tâche d'import des AE et des CP
             read_csv_and_import_ae_cp.delay(
                 task.fichier_ae,
@@ -67,15 +68,15 @@ def delayed_inserts(self):
             logging.info("[DELAYED] Delayed Insert sur NATIONAL")
             csv_options = json.dumps({"sep": '";"', "skiprows": 0, "dtype": "str"})
             # Nettoyage de la BDD
-            delete_cp_annee_national(task.annee)
-            delete_ae_no_cp_annee_national(task.annee)
+            delete_cp_annee_national(task.annee)  # type: ignore
+            delete_ae_no_cp_annee_national(task.annee)  # type: ignore
             read_csv_and_import_fichier_nat_ae_cp.delay(task.fichier_ae, task.fichier_cp, csv_options, task.annee)
 
         # Historique de chargement des données
         db.session.add(
             AuditUpdateData(
                 username=task.username,
-                filename=os.path.basename(task.fichier_ae),
+                filename=os.path.basename(str(task.fichier_ae)),
                 data_type=DataType.FINANCIAL_DATA_AE,
                 application_clientid=app_clientid,
                 source_region=region,
@@ -84,7 +85,7 @@ def delayed_inserts(self):
         db.session.add(
             AuditUpdateData(
                 username=task.username,
-                filename=os.path.basename(task.fichier_cp),
+                filename=os.path.basename(str(task.fichier_cp)),
                 data_type=DataType.FINANCIAL_DATA_CP,
                 application_clientid=app_clientid,
                 source_region=region,
@@ -96,15 +97,64 @@ def delayed_inserts(self):
     db.session.commit()
 
 
+def _clean_up_ae_files(fichierAe: str, csv_options: str, pos_col_montant, pos_col_ej, pos_col_n_ej) -> str:
+    df = pandas.read_csv(fichierAe, **json.loads(csv_options))
+
+    # Récupération des noms de colonnes via les positions (0-based)
+    col_name_montant = df.columns[pos_col_montant] if len(df.columns) > pos_col_montant else None
+    col_name_ej = df.columns[pos_col_ej] if len(df.columns) > pos_col_ej else None
+    col_name_n_ej = df.columns[pos_col_n_ej] if len(df.columns) > pos_col_n_ej else None
+
+    if not all([col_name_montant, col_name_ej, col_name_n_ej]):
+        raise ValueError(
+            f"Colonnes manquantes: positions {pos_col_montant}, {pos_col_ej}, {pos_col_n_ej} non trouvées dans le CSV"
+        )
+
+    # 1. Clean de la colonne montant
+    df[col_name_montant] = df[col_name_montant].str.replace(",", ".", regex=False).str.replace(r"\s+", "", regex=True)
+    df[col_name_montant] = pandas.to_numeric(df[col_name_montant], errors="coerce")
+
+    # 2 . fusionner : faire la somme uniquement sur la colonne montant et conserver une des lignes
+    # (par exemple la première) pour les autres colonnes afin d'éviter la concaténation des strings
+    original_cols = df.columns.tolist()
+    keys = [col_name_ej, col_name_n_ej]
+    # construire le dictionnaire d'agrégation : sum pour la colonne montant, first pour les autres
+    agg_dict = {c: ("sum" if c == col_name_montant else "first") for c in df.columns if c not in keys}
+
+    df_ej_fusion = df.groupby(keys, as_index=False).agg(agg_dict)
+    # rétablir l'ordre original des colonnes quand c'est possible
+    ordered = [c for c in original_cols if c in df_ej_fusion.columns]
+    extras = [c for c in df_ej_fusion.columns if c not in ordered]
+    df_ej_fusion = df_ej_fusion[ordered + extras]
+
+    # 3. Filtrage des lignes avec montant != 0
+    df_montant_non_zero = df_ej_fusion[df_ej_fusion[col_name_montant] != 0]
+
+    name_file = current_app.config["UPLOAD_FOLDER"] + "/fusion_" + os.path.basename(fichierAe)
+    df_montant_non_zero.to_csv(name_file, index=False, sep=";", quoting=csv.QUOTE_ALL, encoding="utf-8")
+    return name_file
+
+
 @celery.task(bind=True, name="read_csv_and_import_fichier_nat_ae_cp")
 def read_csv_and_import_fichier_nat_ae_cp(self, fichierAe: str, fichierCp: str, csv_options: str, annee: int):
     move_folder = os.path.join(current_app.config["UPLOAD_FOLDER"], "save", datetime.datetime.now().strftime("%Y%m%d"))
     if not os.path.exists(move_folder):
         os.makedirs(move_folder)
 
+    # Calcul dynamique des positions des colonnes basé sur get_columns_fichier_nat_ae
+    columns_nat_ae = FinancialAe.get_columns_fichier_nat_ae()
+    try:
+        pos_col_montant = columns_nat_ae.index("montant")
+        pos_col_ej = columns_nat_ae.index("n_ej")
+        pos_col_n_ej = columns_nat_ae.index("n_poste_ej")
+    except ValueError as e:
+        raise ValueError(f"Colonne manquante dans get_columns_fichier_nat_ae: {e}")
+
+    fileCleanAe = _clean_up_ae_files(fichierAe, csv_options, pos_col_montant, pos_col_ej, pos_col_n_ej)
+
     # Parsing des fichiers
     ae_list, cp_list = _parse_generic(
-        DataType.FINANCIAL_DATA_AE, fichierAe, None, annee, csv_options, move_folder, {}, {}, is_national=True
+        DataType.FINANCIAL_DATA_AE, fileCleanAe, None, annee, csv_options, move_folder, {}, {}, is_national=True
     )
     ae_list, cp_list = _parse_generic(
         DataType.FINANCIAL_DATA_CP, fichierCp, None, annee, csv_options, move_folder, ae_list, cp_list, is_national=True
@@ -112,6 +162,7 @@ def read_csv_and_import_fichier_nat_ae_cp(self, fichierAe: str, fichierCp: str, 
 
     # Sauvegarde des fichiers complets
     _move_file(fichierAe, current_app.config["UPLOAD_FOLDER"] + "/save/")
+    _move_file(fileCleanAe, current_app.config["UPLOAD_FOLDER"] + "/save/")
     _move_file(fichierCp, current_app.config["UPLOAD_FOLDER"] + "/save/")
 
     _process_batches(ae_list, cp_list, annee=annee)
@@ -191,7 +242,7 @@ def _parse_generic(
     ae_list: dict,
     cp_list: dict,
     is_national: bool = False,
-) -> list[dict]:
+) -> tuple[dict, dict]:
     """
     Split un fichier en plusieurs fichiers et autant de tâches qu'il y a de fichier.
     Gère à la fois les fichiers régionaux et nationaux.
@@ -230,7 +281,7 @@ def _parse_generic(
     return ae_list, cp_list
 
 
-def _parse_ae(output_file: str, ae_list: dict, source_region: str | None, annee: int | None, is_national: bool):
+def _parse_ae(output_file: str, ae_list: dict, source_region: str | None, annee: int, is_national: bool) -> dict:
     if is_national:
         return _parse_fichier_nat_ae(output_file, annee, ae_list)
     else:
@@ -246,14 +297,14 @@ def _parse_cp(
     source_region: str | None,
     annee: int | None,
     is_national: bool,
-):
+) -> tuple[dict, dict]:
     if is_national:
         return _parse_fichier_nat_cp(output_file, annee, chunk_index, max_lines, ae_list, cp_list)
     else:
         return _parse_file_cp(output_file, source_region, annee, chunk_index, max_lines, ae_list, cp_list)
 
 
-def _parse_fichier_nat_ae(output_file: str, annee: int, ae_list: dict) -> list[dict]:
+def _parse_fichier_nat_ae(output_file: str, annee: int, ae_list: dict) -> dict:
     series = pandas.Series({f"{FinancialAe.annee.key}": annee})
     columns_names = FinancialAe.get_columns_fichier_nat_ae()
     index_last_col = len(columns_names) - 1
@@ -277,10 +328,13 @@ def _parse_fichier_nat_ae(output_file: str, annee: int, ae_list: dict) -> list[d
 
 def _parse_fichier_nat_cp(
     output_file: str, annee: int, chunk_index: int, max_lines: int, ae_list: dict, cp_list: dict
-) -> list[dict]:
+) -> tuple[dict, dict]:
     columns_names = FinancialCp.get_columns_fichier_nat_cp()
     index_last_col = len(columns_names) - 1
     columns_types = FinancialCp.get_columns_types_fichier_nat_cp()
+
+    request_obj = getattr(current_task, "request", None) if current_task is not None else None
+    task_id = getattr(request_obj, "id", None)
 
     data_chunk = get_data_chunk(output_file, columns_names, columns_types)
     for chunk in data_chunk:
@@ -295,18 +349,18 @@ def _parse_fichier_nat_cp(
                 ae_list[key]["cp"] += [
                     {
                         "data": line.to_json(),
-                        "task": LineImportTechInfo(current_task.request.id, (chunk_index - 1) * max_lines + i),
+                        "task": LineImportTechInfo(task_id, (chunk_index - 1) * max_lines + i),
                     },
                 ]
             else:
                 cp_list[f"{(chunk_index - 1) * max_lines + i}"] = {
                     "data": line.to_json(),
-                    "task": LineImportTechInfo(current_task.request.id, (chunk_index - 1) * max_lines + i),
+                    "task": LineImportTechInfo(task_id, (chunk_index - 1) * max_lines + i),
                 }
     return ae_list, cp_list
 
 
-def _parse_file_ae(output_file: str, source_region: str, annee: int, ae_list: dict) -> list[dict]:
+def _parse_file_ae(output_file: str, source_region: str | None, annee: int, ae_list: dict) -> dict:
     series = pandas.Series({f"{FinancialAe.annee.key}": annee, f"{FinancialAe.source_region.key}": source_region})
     columns_names = FinancialAe.get_columns_files_ae()
     columns_types = {"programme": str, "n_ej": str, "n_poste_ej": int, "fournisseur_titulaire": str, "siret": str}
@@ -325,7 +379,7 @@ def _parse_file_ae(output_file: str, source_region: str, annee: int, ae_list: di
 
 def _parse_file_cp(
     output_file: str, source_region: str, annee: int, chunk_index: int, max_lines: int, ae_list: dict, cp_list: dict
-) -> list[dict]:
+) -> tuple[dict, dict]:
     columns_names = FinancialCp.get_columns_files_cp()
     columns_types = str
 

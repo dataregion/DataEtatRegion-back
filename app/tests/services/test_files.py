@@ -47,7 +47,7 @@ def test_delayed_insert_region(insert_audit_region, database, session):
         patch("app.tasks.files.file_task.delete_cp_annee_region") as mock_delete_cp,
         patch("app.tasks.files.file_task.delete_ae_no_cp_annee_region") as mock_delete_ae,
     ):
-        delayed_inserts()
+        delayed_inserts.run()
 
         # Vérification que les fonctions de suppression ont bien été appelées avec les bons arguments
         mock_delete_cp.assert_called_once_with(2024, "53")
@@ -81,7 +81,7 @@ def test_delayed_insert_national(insert_audit_national, database, session):
         patch("app.tasks.files.file_task.read_csv_and_import_fichier_nat_ae_cp.delay") as mock_import_nationals,
     ):
         # Exécution de la fonction testée
-        delayed_inserts()
+        delayed_inserts.run()
 
         # Vérification que la tâche Celery a été appelée une fois avec les bons arguments
         mock_import_nationals.assert_called_once_with(
