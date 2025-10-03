@@ -174,9 +174,28 @@ def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options:
     if not os.path.exists(move_folder):
         os.makedirs(move_folder)
 
+    # Calcul dynamique des positions des colonnes basé sur get_columns_fichier_nat_ae
+    columns_nat_ae = FinancialAe.get_columns_files_ae()
+    try:
+        pos_col_montant = columns_nat_ae.index("montant")
+        pos_col_ej = columns_nat_ae.index("n_ej")
+        pos_col_n_ej = columns_nat_ae.index("n_poste_ej")
+    except ValueError as e:
+        raise ValueError(f"Colonne manquante dans get_columns_fichier_nat_ae: {e}")
+
+    fileCleanAe = _clean_up_ae_files(fichierAe, csv_options, pos_col_montant, pos_col_ej, pos_col_n_ej)
+
     # Parsing des fichiers
     ae_list, cp_list = _parse_generic(
-        DataType.FINANCIAL_DATA_AE, fichierAe, source_region, annee, csv_options, move_folder, {}, {}, is_national=False
+        DataType.FINANCIAL_DATA_AE,
+        fileCleanAe,
+        source_region,
+        annee,
+        json.dumps({"sep": ";", "quotechar": '"'}),
+        move_folder,
+        {},
+        {},
+        is_national=False,
     )
     ae_list, cp_list = _parse_generic(
         DataType.FINANCIAL_DATA_CP,
@@ -193,6 +212,7 @@ def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options:
     # Sauvegarde des fichiers complets
     _move_file(fichierAe, current_app.config["UPLOAD_FOLDER"] + "/save/")
     _move_file(fichierCp, current_app.config["UPLOAD_FOLDER"] + "/save/")
+    _move_file(fileCleanAe, current_app.config["UPLOAD_FOLDER"] + "/save/")
 
     _process_batches(ae_list, cp_list, source_region, annee)
 
@@ -384,6 +404,9 @@ def _parse_file_cp(
     columns_types = str
 
     data_chunk = get_data_chunk(output_file, columns_names, columns_types)
+
+    request_obj = getattr(current_task, "request", None) if current_task is not None else None
+    task_id = getattr(request_obj, "id", None)
     for chunk in data_chunk:
         for i, line in chunk.iterrows():
             line["data_source"] = "REGION"
@@ -392,13 +415,13 @@ def _parse_file_cp(
                 ae_list[key]["cp"] += [
                     {
                         "data": line.to_json(),
-                        "task": LineImportTechInfo(current_task.request.id, (chunk_index - 1) * max_lines + i),
+                        "task": LineImportTechInfo(task_id, (chunk_index - 1) * max_lines + i),
                     },
                 ]
             else:
                 cp_list[f"{(chunk_index - 1) * max_lines + i}"] = {
                     "data": line.to_json(),
-                    "task": LineImportTechInfo(current_task.request.id, (chunk_index - 1) * max_lines + i),
+                    "task": LineImportTechInfo(task_id, (chunk_index - 1) * max_lines + i),
                 }
     return ae_list, cp_list
 
