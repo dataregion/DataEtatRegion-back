@@ -23,11 +23,12 @@ WORKDIR /appli/app
 
 # Copie de l'env virtuel depuis le builder
 COPY --from=builder /venv /venv
+COPY --from=builder /build/app/migrations /appli/app/migrations
 ENV PATH="/venv/bin:$PATH"
 
 # ## Ces deux liens symboliques sont pour que la nouvelle structure soit 
 # ## retro compatible avec les anciennes stack
-RUN mkdir -p /appli/config && mkdir -p mkdir -p /appli/app/config && \
+RUN mkdir -p /appli/config && mkdir -p /appli/app/config && \
   touch /appli/config/config.yml && \
   ln -s /appli/config/config.yml /appli/app/config/config.yml && \
   touch /appli/config/oidc.yml  && \
