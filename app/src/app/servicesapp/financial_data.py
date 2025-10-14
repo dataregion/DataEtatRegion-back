@@ -1,4 +1,5 @@
 from enum import Enum
+import functools
 import logging
 from typing import TypedDict
 from models.exceptions import NoCurrentRegion
@@ -290,6 +291,7 @@ def search_lignes_budgetaires(
     return page_incremental_result
 
 
+@functools.lru_cache(maxsize=128)
 def get_annees_budget(source_region: str | None = None, data_source: str | None = None):
     source_region = app_layer_sanitize_region(source_region, data_source)
     _regions = get_request_regions(source_region)
