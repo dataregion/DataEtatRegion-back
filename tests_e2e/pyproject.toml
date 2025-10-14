@@ -12,6 +12,7 @@ dependencies = [
     "pytest",
     "pytest-json-report",
     "pyjwt",
+    "locust",
 ]
 
 [tool.setuptools]
@@ -22,3 +23,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
+
+[project.scripts]
+perf-tests = "tests_e2e.load_tests.run_performance_tests:main"
