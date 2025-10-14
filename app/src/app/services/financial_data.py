@@ -55,7 +55,7 @@ def delete_ae_no_cp_annee_national(annee: int):
     """
     logging.info(f"[IMPORT FINANCIAL] Suppression des AE n'ayant aucun CP en BDD pour l'année {annee} du national")
     subquery = (select(FinancialCp).where(FinancialCp.id_ae == FinancialAe.id)).exists()
-    stmt = delete(FinancialAe).where(~subquery).where(FinancialAe.annee == annee, FinancialAe.data_source == "NATIONAL")
+    stmt = delete(FinancialAe).where(~subquery).where(FinancialAe.annee == annee, FinancialAe.data_source == "NATION")
     db.session.execute(stmt)
     db.session.commit()
 
@@ -67,6 +67,6 @@ def delete_cp_annee_national(annee: int):
     :return:
     """
     logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour l'année {annee} du national")
-    stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.data_source == "NATIONAL")
+    stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.data_source == "NATION")
     db.session.execute(stmt)
     db.session.commit()
