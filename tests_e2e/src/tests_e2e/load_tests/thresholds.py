@@ -1,3 +1,3 @@
 GLOBAL_PERFORMANCE_THRESHOLDS = {
-    "GET /lignes": {"avg": 5000, "max": 1000},
+    "GET /lignes": {"avg": 500, "max": 1000},
 }

@@ -11,6 +11,9 @@ include:
       do-push: true
       enable-debug: true
 
+#####################
+# Taches "fourre tout"
+
 "Print pipeline variables for debug":
   stage: ☢️ analyze
   rules:
@@ -25,6 +28,7 @@ include:
       echo "DO_BUILD                : $DO_BUILD"
       echo "DO_DOCKERIZE            : $DO_DOCKERIZE"
       echo "DO_INTEG_TESTS          : $DO_INTEG_TESTS"
+      echo "DO_LOAD_TESTS:          : $DO_LOAD_TESTS"
       echo "DO_DEPLOY               : $DO_DEPLOY"
       echo "DO_DEPLOY_FOR_INTEG     : $_ENABLE_DEPLOY_FOR_INTEG"
       echo "DO_DEPLOY_FOR_PP_AND_P  : $_ENABLE_DEPLOY_FOR_PP_AND_P"
@@ -35,9 +39,45 @@ include:
   extends: ".dockerize-${REGISTRY}nocode/dev"
   when: always
 
-"Analyse d'architecture":
+run-loadtests:
   stage: ☢️ analyze
   image: "${REGISTRY}nocode/dev:latest-snapshot"
+  before_script:
+    - |
+      export KEYCLOAK_URL="${E2E_LT_KEYCLOAK_URL}"
+      export KEYCLOAK_REALM="${E2E_LT_KEYCLOAK_REALM}"
+      export CLIENT_ID="${E2E_LT_CLIENT_ID}"
+      export USERNAME="${E2E_LT_USERNAME}"
+      export PASSWORD="${E2E_LT_PASSWORD}"
+      export API_BASE_URL="${E2E_LT_API_BASE_URL}"
+  script:
+    - env
+    - | 
+      cd tests_e2e/ && \
+      source /build/tests_e2e/.venv/bin/activate && \
+      perf-tests --run-time 60 --users 10 --spawn-rate 5
+  rules:
+    - if: '$DO_LOAD_TESTS == "✅"'
+    - if: '$DO_LOAD_TESTS == "⚙️"'
+      when: manual
+    - when: never
+  needs:
+    - "🐳 dockerizing nocode/dev image"
+
+#####################
+# Taches d'analyse
+
+.default-analyze: &default-analyze
+  stage: ☢️ analyze
+  image: "${REGISTRY}nocode/dev:latest-snapshot"
+  rules:
+    - if: '$DO_ANALYZE == "✅"'
+    - if: '$DO_ANALYZE == "⚙️"'
+      when: manual
+    - when: never
+
+"Analyse d'architecture":
+  <<: *default-analyze
   script: |
     cd app/ && \
       source /build/app/.venv/bin/activate && \
@@ -48,12 +88,9 @@ include:
       source /build/apis/.venv/bin/activate && \
       lint-imports --config .importlinter.toml --no-cache --show-timings && \
       cd ..
-  needs:
-    - "🐳 dockerizing nocode/dev image"
 
 "Analyse syntaxique":
-  stage: ☢️ analyze
-  image: "${REGISTRY}nocode/dev:latest-snapshot"
+  <<: *default-analyze
   before_script:
     - uv pip install ruff --system
   script:
@@ -63,12 +100,9 @@ include:
     - ruff format --check models/
     - ruff format --check gristcli/
     - ruff format --check tests_e2e/
-  needs:
-    - "🐳 dockerizing nocode/dev image"
 
 "Analyse ruff":
-  stage: ☢️ analyze
-  image: "${REGISTRY}nocode/dev:latest-snapshot"
+  <<: *default-analyze
   before_script:
     - uv pip install ruff --system
   script:
@@ -78,5 +112,3 @@ include:
     - ruff check models/
     - ruff check gristcli/
     - ruff check tests_e2e/
-  needs:
-    - "🐳 dockerizing nocode/dev image"

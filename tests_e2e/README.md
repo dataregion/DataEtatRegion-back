@@ -38,3 +38,26 @@ Pour lancer les tests :
 ```
 pytest -v . --api-url="https://<URL_API>"
 ```
+
+# Tests de charge
+
+En complément des tests d'intégration, ce module inclut des tests de charge pour évaluer les performances et la stabilité des APIs de data-transform sous différentes conditions de stress.
+
+## Structure des tests de charge
+
+Les tests de charge sont organisés dans le répertoire `load_tests/` et utilisent locust.
+
+## Lancement des tests de charge
+
+### Commandes
+
+Via la commande enregistrée nommée `perf-tests`
+
+```bash
+perf-tests
+```
+
+### Paramètres configurables
+
+Les variables d'environnement sont les mêmes que pour les tests e2e plus haut
+
