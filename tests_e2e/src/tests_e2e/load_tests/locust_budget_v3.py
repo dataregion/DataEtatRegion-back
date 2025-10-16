@@ -4,10 +4,18 @@ Test de charge Locust pour l'API Budget v3 avec assertions de performance
 Usage: locust -f locust_budget_v3.py
 """
 
-import os
 import requests
 from locust import HttpUser, task, between, events
 from tests_e2e.load_tests.thresholds import GLOBAL_PERFORMANCE_THRESHOLDS
+from tests_e2e.load_tests.configuration import (
+    api_base_url,
+    client_id,
+    client_secret,
+    keycloak_realm,
+    keycloak_url,
+    password,
+    username,
+)
 import sys
 
 
@@ -15,9 +23,7 @@ class BudgetV3LoadTest(HttpUser):
     wait_time = between(1, 3)
 
     def __init__(self, *args, **kwargs):
-        api_base = os.getenv("API_BASE_URL", "http://localhost:5000")
-        self.host = api_base
-        print(f"Execute le test de charge sur l'hôte: {self.host}")
+        self.host = api_base_url()
         super().__init__(*args, **kwargs)
 
     def on_start(self):
@@ -32,25 +38,18 @@ class BudgetV3LoadTest(HttpUser):
 
     def _get_real_token(self):
         """Récupère un token réel depuis Keycloak"""
-        keycloak_url = os.getenv("KEYCLOAK_URL", "http://localhost:8080")
-        keycloak_realm = os.getenv("KEYCLOAK_REALM", "test_realm")
-        client_id = os.getenv("CLIENT_ID", "test_client_id")
-        client_secret = os.getenv("CLIENT_SECRET", "test_client_secret")
-        username = os.getenv("USERNAME", "test_username")
-        password = os.getenv("PASSWORD", "test_password")
-
         token_url = (
-            f"{keycloak_url}/realms/{keycloak_realm}/protocol/openid-connect/token"
+            f"{keycloak_url()}/realms/{keycloak_realm()}/protocol/openid-connect/token"
         )
 
         data = {
             "grant_type": "password",
-            "client_id": client_id,
-            "username": username,
-            "password": password,
+            "client_id": client_id(),
+            "username": username(),
+            "password": password(),
         }
-        if client_secret:
-            data["client_secret"] = client_secret
+        if client_secret():
+            data["client_secret"] = client_secret()
 
         response = requests.post(token_url, data=data)
 
