@@ -27,6 +27,8 @@ from apis.shared.exceptions import NoCurrentRegion
 app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanitize_source_region_for_bdd_request)
 
 
+@gauge_of_currently_executing()
+@summary_of_time()
 def get_ligne(db: Session, params: SourcesQueryParams, id: int):
     """
     Recherche la ligne budgetaire selon son ID et sa source region
