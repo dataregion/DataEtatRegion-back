@@ -11,9 +11,22 @@ import logging
 
 from apis.apps.budget.models.total import Total
 from apis.shared.exceptions import BadRequestError
+from abc import ABC, abstractmethod
 
+class CacheableTotalQuery(ABC):
+    """Classe abstraite pour les requêtes qui peuvent être mises en cache"""
 
-class V3QueryParams:
+    @abstractmethod
+    def get_total_cache_key(self) -> dict | None:
+        """
+        Retourne une clé de cache sous forme de dictionnaire ou None si la requête de totaux ne doit pas être mise en cache.
+        
+        Returns:
+            dict | None: Dictionnaire représentant la clé de cache ou None
+        """
+        pass
+
+class V3QueryParams(CacheableTotalQuery):
     def __init__(
         self,
         colonnes: str | None = Query(None),
@@ -45,6 +58,12 @@ class V3QueryParams:
 
     def _split(self, val: str | None, separator: str = ",") -> list | None:
         return val.split(separator) if val else None
+
+    def get_total_cache_key(self) -> dict | None:
+        return {
+            "search": self.search,
+            "fields_search": self.fields_search,
+        }
 
 
 T = TypeVar("T", bound=DeclarativeBase)

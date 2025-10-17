@@ -28,6 +28,21 @@ class SourcesQueryParams(V3QueryParams):
         self.data_source = data_source
         self.source = DataType(source) if source is not None else None
 
+    def get_total_cache_key(self) -> dict | None:
+        key = super().get_total_cache_key()
+        if key is None:
+            return None
+        
+        key.update(
+            {
+                "source_region": self.source_region,
+                "data_source": self.data_source,
+                "source": self.source
+            }
+        )
+
+        return key
+
 
 class FinancialLineQueryParams(SourcesQueryParams):
     def __init__(
@@ -101,6 +116,13 @@ class FinancialLineQueryParams(SourcesQueryParams):
                 api_message="Les paramètres 'ref_qpv' et 'code_qpv' doivent être fournis ensemble.",
             )
 
+    def is_group_request(self):
+        """Indique si la requête est une requête de grouping."""
+        len_grouping = len(self.grouping) if self.grouping is not None else 0
+        len_grouped = len(self.grouped) if self.grouped is not None else 0
+        
+        return len_grouping != len_grouped
+
     def map_colonnes_grouping(self, list_colonnes: list[Colonne]):
         casted = []
         grouping = self.grouping or []
@@ -126,3 +148,36 @@ class FinancialLineQueryParams(SourcesQueryParams):
                 )
             casted.append(found[0])
         self.colonnes = casted
+
+    def get_total_cache_key(self) -> dict | None:
+        key = super().get_total_cache_key()
+        if key is None:
+            return None
+        
+        if (
+            self.n_ej is not None or \
+            self.code_programme is not None or\
+            self.code_geo is not None or \
+            self.niveau_geo is not None or \
+            self.ref_qpv is not None or \
+            self.code_qpv is not None or \
+            self.beneficiaire_code is not None or \
+            self.centres_couts is not None or \
+            self.domaine_fonctionnel is not None or \
+            self.is_group_request()
+        ):
+            # La requête ne doit pas être mise en cache
+            return None
+
+        key.update(
+            {
+                "theme": self.theme,
+                "beneficiaire_categorieJuridique_type": self.beneficiaire_categorieJuridique_type,
+                "annee": self.annee,
+                "referentiel_programmation": self.referentiel_programmation,
+                "tags": self.tags,
+                "grouping": self.grouping,
+                "grouped": self.grouped,
+            }
+        )
+        return key
