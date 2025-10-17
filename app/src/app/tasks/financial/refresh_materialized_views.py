@@ -27,6 +27,9 @@ class LastRefreshMaterializedViewTooRecent(Exception):
 
 @celery.task(bind=True, name="maj_materialized_view")
 def maj_materialized_views(self):
+    """
+    TODO : désactivation du refresh des vues de Visu Territoire par manque de perf pour le moment
+    """
     ffl_deps = [
         ("Ademe", Ademe.Ademe.updated_at),
         ("FinancialAe", FinancialAe.FinancialAe.updated_at),
@@ -34,17 +37,17 @@ def maj_materialized_views(self):
         ("Siret", Siret.updated_at),
     ]
     view_dependencies = {
-        "vt_flatten_summarized_ademe": [("Ademe", Ademe.Ademe.updated_at)],
-        "vt_budget_summary": [("Ademe", Ademe.Ademe.updated_at), ("FinancialAe", FinancialAe.FinancialAe.updated_at)],
-        "vt_m_summary_annee_geo_type_bop": [
-            ("Ademe", Ademe.Ademe.updated_at),
-            ("FinancialAe", FinancialAe.FinancialAe.updated_at),
-        ],
-        "vt_m_montant_par_niveau_bop_annee_type": [
-            ("Ademe", Ademe.Ademe.updated_at),
-            ("FinancialAe", FinancialAe.FinancialAe.updated_at),
-        ],
-        "vt_flatten_summarized_ae": [("FinancialAe", FinancialAe.FinancialAe.updated_at)],
+        # "vt_flatten_summarized_ademe": [("Ademe", Ademe.Ademe.updated_at)],
+        # "vt_budget_summary": [("Ademe", Ademe.Ademe.updated_at), ("FinancialAe", FinancialAe.FinancialAe.updated_at)],
+        # "vt_m_summary_annee_geo_type_bop": [
+        #     ("Ademe", Ademe.Ademe.updated_at),
+        #     ("FinancialAe", FinancialAe.FinancialAe.updated_at),
+        # ],
+        # "vt_m_montant_par_niveau_bop_annee_type": [
+        #     ("Ademe", Ademe.Ademe.updated_at),
+        #     ("FinancialAe", FinancialAe.FinancialAe.updated_at),
+        # ],
+        # "vt_flatten_summarized_ae": [("FinancialAe", FinancialAe.FinancialAe.updated_at)],
         "flatten_financial_lines": ffl_deps,
         "superset_lignes_financieres_52": ffl_deps,
     }
