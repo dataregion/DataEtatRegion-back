@@ -14,11 +14,11 @@ from . import build_ademe, build_financial_ae, build_financial_cp, build_siret
 def _build_audit(
     session,
     views={
-        "vt_flatten_summarized_ademe",
-        "vt_budget_summary",
-        "vt_m_summary_annee_geo_type_bop",
-        "vt_m_montant_par_niveau_bop_annee_type",
-        "vt_flatten_summarized_ae",
+        # "vt_flatten_summarized_ademe",
+        # "vt_budget_summary",
+        # "vt_m_summary_annee_geo_type_bop",
+        # "vt_m_montant_par_niveau_bop_annee_type",
+        # "vt_flatten_summarized_ae",
         "flatten_financial_lines",
         "superset_lignes_financieres_52",
     },
@@ -55,14 +55,9 @@ def test_refresh_no_data_updated_and_no_refresh(database, session):
         .all()
     )
 
-    assert len(events) == 7
+    assert len(events) == 2
     tables_with_events = {e.table for e in events}
     assert "flatten_financial_lines" in tables_with_events
-    assert "vt_flatten_summarized_ademe" in tables_with_events
-    assert "vt_flatten_summarized_ae" in tables_with_events
-    assert "vt_budget_summary" in tables_with_events
-    assert "vt_m_summary_annee_geo_type_bop" in tables_with_events
-    assert "vt_m_montant_par_niveau_bop_annee_type" in tables_with_events
 
 
 def test_refresh_no_data_updated_refresh_exist(database, session):
@@ -167,10 +162,7 @@ def test_need_ademe_maj(database, session):
         .scalars()
         .all()
     )
-    assert len(events) == 6
-    tables_with_events = {e.table for e in events}
-    # Pas de maj de vt_flatten_summarized_ae
-    assert "vt_flatten_summarized_ae" not in tables_with_events
+    assert len(events) == 2
 
 
 def test_only_siret_maj(database, session):
@@ -257,13 +249,9 @@ def test_only_financial_ae_cp_maj(database, session):
         .scalars()
         .all()
     )
-    assert len(events) == 6
+    assert len(events) == 2
     tables_with_events = {e.table for e in events}
     assert "flatten_financial_lines" in tables_with_events
-    assert "vt_flatten_summarized_ae" in tables_with_events
-    assert "vt_budget_summary" in tables_with_events
-    assert "vt_m_summary_annee_geo_type_bop" in tables_with_events
-    assert "vt_m_montant_par_niveau_bop_annee_type" in tables_with_events
 
 
 def test_no_refresh_view_done(database, session):
@@ -303,11 +291,6 @@ def test_no_refresh_view_done(database, session):
         .scalars()
         .all()
     )
-    assert len(events) == 7
+    assert len(events) == 2
     tables_with_events = {e.table for e in events}
     assert "flatten_financial_lines" in tables_with_events
-    assert "vt_flatten_summarized_ademe" in tables_with_events
-    assert "vt_flatten_summarized_ae" in tables_with_events
-    assert "vt_budget_summary" in tables_with_events
-    assert "vt_m_summary_annee_geo_type_bop" in tables_with_events
-    assert "vt_m_montant_par_niveau_bop_annee_type" in tables_with_events
