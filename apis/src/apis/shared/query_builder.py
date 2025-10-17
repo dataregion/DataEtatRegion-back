@@ -2,6 +2,7 @@ from http import HTTPStatus
 from typing import Generic, Literal, TypeVar
 
 from fastapi import Query
+from fastapi.params import Query as QueryCls
 from sqlalchemy import Column, ColumnExpressionArgument, func, select, or_
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session, DeclarativeBase, load_only
@@ -17,7 +18,7 @@ class CacheableTotalQuery(ABC):
     """Classe abstraite pour les requêtes qui peuvent être mises en cache"""
 
     @abstractmethod
-    def get_total_cache_key(self) -> dict | None:
+    def _get_total_cache_dict(self) -> dict | None:
         """
         Retourne une clé de cache sous forme de dictionnaire ou None si la requête de totaux ne doit pas être mise en cache.
         
@@ -25,6 +26,21 @@ class CacheableTotalQuery(ABC):
             dict | None: Dictionnaire représentant la clé de cache ou None
         """
         pass
+    
+    def get_total_cache_key(self) -> frozenset | None:
+        cache_dict = self._get_total_cache_dict()
+        if cache_dict is None:
+            return None
+        
+        # Convertir les valeurs non-hashables en tuples
+        hashable_items = []
+        for key, value in cache_dict.items():
+            if isinstance(value, list):
+                hashable_items.append((key, tuple(value) if value is not None else None))
+            else:
+                hashable_items.append((key, value))
+        
+        return frozenset(hashable_items)
 
 class V3QueryParams(CacheableTotalQuery):
     def __init__(
@@ -38,11 +54,11 @@ class V3QueryParams(CacheableTotalQuery):
         fields_search: str | None = Query(None),
     ):
         self.colonnes = self._split(colonnes)
-        self.page = page
-        self.page_size = page_size
-        self.sort_by = sort_by
-        self.sort_order = sort_order
-        self.search = search
+        self.page = self._handle_default(page)
+        self.page_size = self._handle_default(page_size)
+        self.sort_by = self._handle_default(sort_by)
+        self.sort_order = self._handle_default(sort_order)
+        self.search = self._handle_default(search)
         self.fields_search = self._split(fields_search)
 
         if bool(self.sort_by) ^ bool(self.sort_order):
@@ -57,13 +73,19 @@ class V3QueryParams(CacheableTotalQuery):
             )
 
     def _split(self, val: str | None, separator: str = ",") -> list | None:
+        val = self._handle_default(val)
         return val.split(separator) if val else None
 
-    def get_total_cache_key(self) -> dict | None:
+    def _get_total_cache_dict(self) -> dict | None:
         return {
             "search": self.search,
             "fields_search": self.fields_search,
         }
+    
+    def _handle_default(self, val):
+        if isinstance(val, QueryCls):
+            return val.default
+        return val
 
 
 T = TypeVar("T", bound=DeclarativeBase)

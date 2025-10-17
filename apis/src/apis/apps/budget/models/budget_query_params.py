@@ -1,6 +1,8 @@
 from http import HTTPStatus
+import inspect
 from typing import Literal
 from fastapi import Query
+from fastapi.params import Query as QueryCls
 
 from models.value_objects.common import DataType
 
@@ -24,12 +26,13 @@ class SourcesQueryParams(V3QueryParams):
         fields_search: str | None = Query(None),
     ):
         super().__init__(colonnes, page, page_size, sort_by, sort_order, search, fields_search)
-        self.source_region = source_region
-        self.data_source = data_source
-        self.source = DataType(source) if source is not None else None
+        self.source_region = self._handle_default(source_region)
+        self.data_source = self._handle_default(data_source)
+        self.source = self._handle_default(source)
+        self.source = DataType(self.source) if self.source is not None else None
 
-    def get_total_cache_key(self) -> dict | None:
-        key = super().get_total_cache_key()
+    def _get_total_cache_dict(self) -> dict | None:
+        key = super()._get_total_cache_dict()
         if key is None:
             return None
         
@@ -68,7 +71,7 @@ class FinancialLineQueryParams(SourcesQueryParams):
         tags: str | None = Query(None),
         grouping: str | None = Query(None),
         grouped: str | None = Query(None),
-        colonnes: str | None = Query(None),
+        colonnes: str | None = Query(None, description="Liste des codes des colonnes à récupérer, séparés par des virgules"),
         page: int = Query(1, ge=1),
         page_size: int = Query(100, ge=1, le=500),
         sort_by: str | None = Query(None),
@@ -90,14 +93,18 @@ class FinancialLineQueryParams(SourcesQueryParams):
         )
         self.n_ej = self._split(n_ej)
         self.code_programme = self._split(code_programme)
-        self.niveau_geo = niveau_geo
+        self.niveau_geo = self._handle_default(niveau_geo)
         self.code_geo = self._split(code_geo)
-        self.ref_qpv = ref_qpv
+        self.ref_qpv = self._handle_default(ref_qpv)
         self.code_qpv = self._split(code_qpv)
         self.theme = self._split(theme, "|")
         self.beneficiaire_code = self._split(beneficiaire_code)
         self.beneficiaire_categorieJuridique_type = self._split(beneficiaire_categorieJuridique_type)
-        self.annee = [int(a) for a in self._split(annee)] if annee is not None else []
+
+        self.annee = self._handle_default(annee)
+        self.annee = self._split(self.annee)
+        self.annee = [int(a) for a in self.annee] if self.annee is not None else []
+
         self.centres_couts = self._split(centres_couts)
         self.domaine_fonctionnel = self._split(domaine_fonctionnel)
         self.referentiel_programmation = self._split(referentiel_programmation)
@@ -149,8 +156,8 @@ class FinancialLineQueryParams(SourcesQueryParams):
             casted.append(found[0])
         self.colonnes = casted
 
-    def get_total_cache_key(self) -> dict | None:
-        key = super().get_total_cache_key()
+    def _get_total_cache_dict(self) -> dict | None:
+        key = super()._get_total_cache_dict()
         if key is None:
             return None
         
@@ -164,6 +171,7 @@ class FinancialLineQueryParams(SourcesQueryParams):
             self.beneficiaire_code is not None or \
             self.centres_couts is not None or \
             self.domaine_fonctionnel is not None or \
+            self.search is not None or \
             self.is_group_request()
         ):
             # La requête ne doit pas être mise en cache
@@ -180,4 +188,35 @@ class FinancialLineQueryParams(SourcesQueryParams):
                 "grouped": self.grouped,
             }
         )
+
         return key
+    
+    @staticmethod
+    def make_default() -> "FinancialLineQueryParams":
+        defaults = _extract_query_defaults(FinancialLineQueryParams)
+        default_inst = FinancialLineQueryParams(**defaults)
+        return default_inst
+
+def _extract_queries(cls) -> dict[str, QueryCls]:
+    """
+    Extrait les paramètres Query() définis dans le constructeur (__init__) d'une classe FastAPI.
+    """
+    sig = inspect.signature(cls.__init__)
+    queries = {}
+    for name, param in sig.parameters.items():
+        # On ignore 'self'
+        if name == "self":
+            continue
+
+        if isinstance(param.default, QueryCls):
+            queries[name] = param.default
+    return queries
+
+def _extract_query_defaults(cls):
+    """
+    Extrait les valeurs par défaut de tous les paramètres Query()
+    définis dans le constructeur (__init__) d'une classe FastAPI.
+    """
+    params = _extract_queries(cls)
+    defaults = {name: param.default for name, param in params.items()}
+    return defaults
