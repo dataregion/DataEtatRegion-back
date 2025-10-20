@@ -15,6 +15,8 @@ async-property==0.2.2
     # via python-keycloak
 authlib==1.6.3
     # via -r requirements.external.in
+cachetools==6.2.1
+    # via -r requirements.external.in
 certifi==2025.8.3
     # via
     #   httpcore
@@ -139,6 +141,7 @@ pycparser==2.23
     # via cffi
 pydantic==2.11.7
     # via
+    #   models (../models/pyproject.toml)
     #   fastapi
     #   fastapi-cloud-cli
 pydantic-core==2.33.2

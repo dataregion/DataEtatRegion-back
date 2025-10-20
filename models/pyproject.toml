@@ -7,6 +7,7 @@ name = "models"
 dynamic = ["version"]
 description = "Modèles communs pour l'application DRN"
 dependencies = [
+    "pydantic ~= 2.11",
     "sqlalchemy ~= 2.0.36",
     "pandas ~= 2.0",
     "geopandas ~= 1.1.0", 
