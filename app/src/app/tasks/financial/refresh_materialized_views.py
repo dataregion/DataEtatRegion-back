@@ -3,6 +3,7 @@ from celery import Celery
 from app import celeryapp, db
 from models.entities.financial import Ademe, FinancialAe, FinancialCp
 from models.entities.refs import Siret
+from models.value_objects.redis_events import MAT_VIEWS_REFRESHED_EVENT_CHANNEL, MaterializedViewsRefreshed
 from models.value_objects.audit import RefreshMaterializedViewsEvent
 from sqlalchemy import desc, func, text
 
@@ -13,6 +14,7 @@ from models.entities.audit.AuditRefreshMaterializedViewsEvents import (
 import time
 import logging
 from datetime import datetime, timezone
+from app.clients.redis.factory import make_or_get_redis_client
 
 celery: Celery = celeryapp.celery
 
@@ -81,6 +83,9 @@ def maj_materialized_views(self):
 
     if views_to_refresh:
         _do_maj_materialized_views(views_to_refresh)
+
+        msg = MaterializedViewsRefreshed().model_dump_json()
+        make_or_get_redis_client().publish(MAT_VIEWS_REFRESHED_EVENT_CHANNEL, msg)
 
 
 def _get_last_refresh_materialized_view_event(view: str) -> datetime | None:
