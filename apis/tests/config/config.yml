@@ -10,3 +10,11 @@ keycloak_openid:
   secret_key: hNFljZDqcKehP0qJiB82VP6wxKRuu1RC
   test_user: csm@sib.fr
   test_password: Q@67x5j5djGeB
+
+cache_config:
+  budget_totaux_enabled: true
+
+redis_applicatif:
+  host: localhost
+  port: 16379
+  db: 10
