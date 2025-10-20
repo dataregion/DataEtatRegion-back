@@ -23,6 +23,8 @@ from apis.apps.budget.services.query_builder import (
 )
 from apis.shared.exceptions import NoCurrentRegion
 
+from .GetTotalOfLignes import GetTotalOfLignes
+
 
 app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanitize_source_region_for_bdd_request)
 
@@ -116,7 +118,8 @@ def get_lignes(
     builder = builder.paginate()
     data, has_next = builder.select_all()
     # TODO : Perfs
-    total = builder.get_total("groupings" if builder.groupby_colonne else "lignes")
+    total_retriever = GetTotalOfLignes(builder)
+    total = total_retriever.retrieve_total(params, additionnal_source_region)
     grouped = builder.groupby_colonne is not None
 
     return data, total, grouped, has_next

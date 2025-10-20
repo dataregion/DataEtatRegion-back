@@ -10,3 +10,6 @@ keycloak_openid:
   secret_key: <SECRET_KEY>
   test_user: <TEST_USER>
   test_password: <TEST_PASSWORD>
+
+cache_config:
+  budget_totaux_enabled: true

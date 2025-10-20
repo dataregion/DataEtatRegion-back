@@ -1,12 +1,35 @@
-from sqlalchemy.orm import Session
+from apis.config.current import get_config
+from services.utilities.observability import cache_stats
 
 from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams
 from apis.apps.budget.services.query_builder import FinancialLineQueryBuilder
 
+from cachetools import cached, LRUCache
+from cachetools.keys import hashkey
+
+total_cache = LRUCache(maxsize=get_config().cache_config.budget_totaux_size)
+
+def _cache_key(params: FinancialLineQueryParams, additionnal_source_region: str | None, builder: FinancialLineQueryBuilder):
+    """
+    Calcule une clé de cache unique pour les paramètres donnés.
+    Renvoie None si les paramètres ne sont pas cacheables.
+    """
+    params_cache_key = params.get_total_cache_key()
+    key = ("GetTotalOfLignes",params_cache_key,additionnal_source_region,) if params_cache_key is not None else None
+
+    return hashkey(key)
+
+@cache_stats()
+@cached(total_cache, key=_cache_key, info=True)
+def _cached_retrieve(params: FinancialLineQueryParams, additionnal_source_region: str | None, builder: FinancialLineQueryBuilder):
+    return _retrieve(params, additionnal_source_region, builder)
+
+def _retrieve(params: FinancialLineQueryParams, additionnal_source_region: str | None, builder: FinancialLineQueryBuilder):
+    return builder.get_total("groupings" if builder.groupby_colonne else "lignes")
 
 class GetTotalOfLignes:
-    def __init__(self, db: Session, builder: FinancialLineQueryBuilder) -> None:
-        self._db = db
+    """Service applicatif pour la récupération du total des lignes financières."""
+    def __init__(self, builder: FinancialLineQueryBuilder) -> None:
         self._builder = builder
 
     def retrieve_total(
@@ -14,25 +37,17 @@ class GetTotalOfLignes:
         params: FinancialLineQueryParams,
         additionnal_source_region: str | None = None,
     ):
-        pass
-    
-def _cache_key(params: FinancialLineQueryParams, additionnal_source_region: str | None = None) -> str | None:
-    """
-    Calcule une clé de cache unique pour les paramètres donnés.
-    Renvoie None si les paramètres ne sont pas cacheables.
-    """
-    cache_key = {
-        "colonnes": params.colonnes,
-        "source_region": params.source_region,
-        "data_source": params.data_source,
-        "filters": params.filters,
-        "search": params.search,
-        "fields_search": params.fields_search,
-        "groupby_colonne": params.groupby_colonne,
-        "additionnal_source_region": additionnal_source_region,
-    }
+        is_cache_enable = get_config().cache_config.budget_totaux_enabled
+        key = params.get_total_cache_key()
+        
+        do_use_cache = is_cache_enable and key is not None
+        
+        if not do_use_cache:
+            result = _retrieve(params, additionnal_source_region, self._builder)
+        else:
+            result = _cached_retrieve(params, additionnal_source_region, self._builder)
 
-    key = f"GetTotaleOfLignes-{params.cache_key()}"
-    if additionnal_source_region:
-        key += f"-{additionnal_source_region}"
-    return key
+        return result
+    
+    
+    

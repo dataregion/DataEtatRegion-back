@@ -15,6 +15,15 @@ class KeycloakOpenIdConfig(BaseModel):
         description="For tests only - give a test user to authenticate with",
     )
 
+class CacheConfig(BaseModel):
+    budget_totaux_enabled: bool = Field(
+        default = True,
+        description="Le caching pour le calcul des totaux de l'api de consultation budget"
+    )
+    budget_totaux_size: int = Field(
+        default=10_000,
+        description="Taille du cache pour les totaux des lignes budgetaires"
+    )
 
 class Config(BaseModel):
     sqlalchemy_database_uri: str
@@ -23,3 +32,5 @@ class Config(BaseModel):
     """Flag qui active le paramètre 'echo' de l'engine sqlalchemy"""
 
     keycloak_openid: KeycloakOpenIdConfig
+    
+    cache_config: CacheConfig
