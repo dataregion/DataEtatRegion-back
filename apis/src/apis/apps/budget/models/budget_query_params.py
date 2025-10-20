@@ -35,14 +35,8 @@ class SourcesQueryParams(V3QueryParams):
         key = super()._get_total_cache_dict()
         if key is None:
             return None
-        
-        key.update(
-            {
-                "source_region": self.source_region,
-                "data_source": self.data_source,
-                "source": self.source
-            }
-        )
+
+        key.update({"source_region": self.source_region, "data_source": self.data_source, "source": self.source})
 
         return key
 
@@ -71,7 +65,9 @@ class FinancialLineQueryParams(SourcesQueryParams):
         tags: str | None = Query(None),
         grouping: str | None = Query(None),
         grouped: str | None = Query(None),
-        colonnes: str | None = Query(None, description="Liste des codes des colonnes à récupérer, séparés par des virgules"),
+        colonnes: str | None = Query(
+            None, description="Liste des codes des colonnes à récupérer, séparés par des virgules"
+        ),
         page: int = Query(1, ge=1),
         page_size: int = Query(100, ge=1, le=500),
         sort_by: str | None = Query(None),
@@ -127,7 +123,7 @@ class FinancialLineQueryParams(SourcesQueryParams):
         """Indique si la requête est une requête de grouping."""
         len_grouping = len(self.grouping) if self.grouping is not None else 0
         len_grouped = len(self.grouped) if self.grouped is not None else 0
-        
+
         return len_grouping != len_grouped
 
     def map_colonnes_grouping(self, list_colonnes: list[Colonne]):
@@ -160,19 +156,19 @@ class FinancialLineQueryParams(SourcesQueryParams):
         key = super()._get_total_cache_dict()
         if key is None:
             return None
-        
+
         if (
-            self.n_ej is not None or \
-            self.code_programme is not None or\
-            self.code_geo is not None or \
-            self.niveau_geo is not None or \
-            self.ref_qpv is not None or \
-            self.code_qpv is not None or \
-            self.beneficiaire_code is not None or \
-            self.centres_couts is not None or \
-            self.domaine_fonctionnel is not None or \
-            self.search is not None or \
-            self.is_group_request()
+            self.n_ej is not None
+            or self.code_programme is not None
+            or self.code_geo is not None
+            or self.niveau_geo is not None
+            or self.ref_qpv is not None
+            or self.code_qpv is not None
+            or self.beneficiaire_code is not None
+            or self.centres_couts is not None
+            or self.domaine_fonctionnel is not None
+            or self.search is not None
+            or self.is_group_request()
         ):
             # La requête ne doit pas être mise en cache
             return None
@@ -190,12 +186,13 @@ class FinancialLineQueryParams(SourcesQueryParams):
         )
 
         return key
-    
+
     @staticmethod
     def make_default() -> "FinancialLineQueryParams":
         defaults = _extract_query_defaults(FinancialLineQueryParams)
         default_inst = FinancialLineQueryParams(**defaults)
         return default_inst
+
 
 def _extract_queries(cls) -> dict[str, QueryCls]:
     """
@@ -211,6 +208,7 @@ def _extract_queries(cls) -> dict[str, QueryCls]:
         if isinstance(param.default, QueryCls):
             queries[name] = param.default
     return queries
+
 
 def _extract_query_defaults(cls):
     """

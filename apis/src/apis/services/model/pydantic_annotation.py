@@ -11,21 +11,21 @@ from marshmallow import fields
 ###
 TSchema = TypeVar("TSchema", bound=Schema)
 
+
 ##
 def _pydantic_python_dump_marshmallow_schema(schema_cls: type[Schema]):
     """
     Fabrique un schema marshmallow spécialisé
     avec des comportements supplémentaires spécifique à la logique d'adaptation marshamallow / pydantic
     """
-    
+
     class _PydanticPythonDumpMarshmallowSchema(schema_cls):
-        
         def _serialize(self, obj: Any, *, many: bool = False):
             return super()._serialize(obj, many=many)
-        
+
         @post_dump(pass_original=True)
         def post_dump(self, data, original, many, **kwargs):
-            if not hasattr(original, '__dict__'):
+            if not hasattr(original, "__dict__"):
                 return data
 
             # XXX On garde les valeurs originales pour les DateTime

@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     app.state.keycloak_token_validator = KeycloakTokenValidator.get_application_instance()
     app.state.redis = RedisClientHolder.get_application_instance()
-    
+
     channels = [MAT_VIEWS_REFRESHED_EVENT_CHANNEL]
     app.state.listener_task = asyncio.create_task(listens(channels))
 
@@ -42,6 +42,7 @@ async def lifespan(app: FastAPI):
     except asyncio.CancelledError as e:
         logger.error("Listener task cancelled", exc_info=e)
     await app.state.redis.close()
+
 
 def create_app():
     app = FastAPI(

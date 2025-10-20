@@ -14,6 +14,7 @@ from apis.apps.budget.models.total import Total
 from apis.shared.exceptions import BadRequestError
 from abc import ABC, abstractmethod
 
+
 class CacheableTotalQuery(ABC):
     """Classe abstraite pour les requêtes qui peuvent être mises en cache"""
 
@@ -21,17 +22,17 @@ class CacheableTotalQuery(ABC):
     def _get_total_cache_dict(self) -> dict | None:
         """
         Retourne une clé de cache sous forme de dictionnaire ou None si la requête de totaux ne doit pas être mise en cache.
-        
+
         Returns:
             dict | None: Dictionnaire représentant la clé de cache ou None
         """
         pass
-    
+
     def get_total_cache_key(self) -> frozenset | None:
         cache_dict = self._get_total_cache_dict()
         if cache_dict is None:
             return None
-        
+
         # Convertir les valeurs non-hashables en tuples
         hashable_items = []
         for key, value in cache_dict.items():
@@ -39,8 +40,9 @@ class CacheableTotalQuery(ABC):
                 hashable_items.append((key, tuple(value) if value is not None else None))
             else:
                 hashable_items.append((key, value))
-        
+
         return frozenset(hashable_items)
+
 
 class V3QueryParams(CacheableTotalQuery):
     def __init__(
@@ -81,7 +83,7 @@ class V3QueryParams(CacheableTotalQuery):
             "search": self.search,
             "fields_search": self.fields_search,
         }
-    
+
     def _handle_default(self, val):
         if isinstance(val, QueryCls):
             return val.default

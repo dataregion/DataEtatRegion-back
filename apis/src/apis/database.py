@@ -8,6 +8,7 @@ from apis.config.current import get_config
 from apis.utils import sqlalchemy_pretty_printer
 from services.utilities.observability import cache_stats
 
+
 @cache_stats()
 @lru_cache
 def get_sesion_maker(db_url: str):

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class RedisConnectionInfo(BaseModel):
     host: str
     """Host du serveur redis"""
