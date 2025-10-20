@@ -8,10 +8,17 @@ from apis.apps.budget.services.query_builder import FinancialLineQueryBuilder
 from cachetools import cached, LRUCache
 from cachetools.keys import hashkey
 
+from apis.services.pubsub import on_channel
+from models.value_objects.redis_events import MAT_VIEWS_REFRESHED_EVENT_CHANNEL
+
+logger = logging.getLogger(__name__)
+
 _size = get_config().cache_config.budget_totaux_size
 total_cache = LRUCache(maxsize=_size)
 
-def clear_cache_total_of_lignes():
+@on_channel(MAT_VIEWS_REFRESHED_EVENT_CHANNEL)
+async def clear_cache_total_of_lignes(message):
+    logger.info("Réception d'un événement de rafraîchissement des vues matérialisées, vidage du cache des totaux des lignes financières.")
     total_cache.clear()
 
 def _cache_key(params: FinancialLineQueryParams, additionnal_source_region: str | None, builder: FinancialLineQueryBuilder):

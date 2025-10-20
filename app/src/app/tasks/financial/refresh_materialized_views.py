@@ -84,8 +84,11 @@ def maj_materialized_views(self):
     if views_to_refresh:
         _do_maj_materialized_views(views_to_refresh)
 
-        msg = MaterializedViewsRefreshed().model_dump_json()
-        make_or_get_redis_client().publish(MAT_VIEWS_REFRESHED_EVENT_CHANNEL, msg)
+        try:
+            msg = MaterializedViewsRefreshed(type="materialized_views_refreshed").model_dump_json()
+            make_or_get_redis_client().publish(MAT_VIEWS_REFRESHED_EVENT_CHANNEL, msg)
+        except Exception as e:
+            _logger.error("Erreur lors de la publication de l'événement de rafraîchissement des vues matérialisées", exc_info=e)
 
 
 def _get_last_refresh_materialized_view_event(view: str) -> datetime | None:

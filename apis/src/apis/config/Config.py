@@ -1,3 +1,4 @@
+from models.value_objects.redis_connection_info import RedisConnectionInfo
 from pydantic import BaseModel, Field
 
 
@@ -34,3 +35,5 @@ class Config(BaseModel):
     keycloak_openid: KeycloakOpenIdConfig
     
     cache_config: CacheConfig
+    
+    redis_applicatif: RedisConnectionInfo
