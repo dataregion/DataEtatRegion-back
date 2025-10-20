@@ -118,6 +118,7 @@ def get_lignes(
     builder = builder.paginate()
     data, has_next = builder.select_all()
     # TODO : Perfs
+    # RGA: j'ai ajouté un cache applicatif sur certains totaux, à voir si c'est suffisant
     total_retriever = GetTotalOfLignes(builder)
     total = total_retriever.retrieve_total(params, additionnal_source_region)
     grouped = builder.groupby_colonne is not None

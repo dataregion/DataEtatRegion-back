@@ -1,3 +1,4 @@
+import logging
 from apis.config.current import get_config
 from services.utilities.observability import cache_stats
 
@@ -7,7 +8,11 @@ from apis.apps.budget.services.query_builder import FinancialLineQueryBuilder
 from cachetools import cached, LRUCache
 from cachetools.keys import hashkey
 
-total_cache = LRUCache(maxsize=get_config().cache_config.budget_totaux_size)
+_size = get_config().cache_config.budget_totaux_size
+total_cache = LRUCache(maxsize=_size)
+
+def clear_cache_total_of_lignes():
+    total_cache.clear()
 
 def _cache_key(params: FinancialLineQueryParams, additionnal_source_region: str | None, builder: FinancialLineQueryBuilder):
     """
@@ -31,6 +36,7 @@ class GetTotalOfLignes:
     """Service applicatif pour la récupération du total des lignes financières."""
     def __init__(self, builder: FinancialLineQueryBuilder) -> None:
         self._builder = builder
+        self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def retrieve_total(
         self,
@@ -45,6 +51,7 @@ class GetTotalOfLignes:
         if not do_use_cache:
             result = _retrieve(params, additionnal_source_region, self._builder)
         else:
+            self._logger.info("Utilise le cache pour la récupération des totaux")
             result = _cached_retrieve(params, additionnal_source_region, self._builder)
 
         return result
