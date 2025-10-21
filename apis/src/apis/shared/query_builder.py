@@ -1,9 +1,9 @@
 from http import HTTPStatus
-from typing import Generic, Literal, TypeVar
+from typing import Generic, Literal, Optional, TypeVar, Union
 
 from fastapi import Query
 from fastapi.params import Query as QueryCls
-from sqlalchemy import Column, ColumnExpressionArgument, func, select, or_
+from sqlalchemy import Column, ColumnElement, ColumnExpressionArgument, Select, Sequence, func, select, or_
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session, DeclarativeBase, load_only
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -104,6 +104,13 @@ class V3QueryParams(CacheableTotalQuery):
 
 T = TypeVar("T", bound=DeclarativeBase)
 
+SelectionType = Optional[
+    Union[
+        InstrumentedAttribute,          # ORM column attributes
+        ColumnElement,                  # SQL expressions (func.sum, etc.)
+        Sequence[Union[InstrumentedAttribute, ColumnElement]],  # list/tuple of them
+    ]
+]
 
 class V3QueryBuilder(Generic[T]):
     def __init__(self, model: type[T], session: Session, params: V3QueryParams):
@@ -148,7 +155,7 @@ class V3QueryBuilder(Generic[T]):
         self._query = self._query.where(or_(*complete_cond))
         return self
 
-    def where_field_in(self, colonne: Column, set_of_values: list | None, can_be_null=False):
+    def where_field_in(self, colonne: Column, set_of_values: list | None, can_be_null=False, include=True):
         if set_of_values is None:
             return
 
@@ -156,7 +163,7 @@ class V3QueryBuilder(Generic[T]):
         if len(pruned) == 0:
             return
 
-        complete_cond = [colonne.in_(pruned)]
+        complete_cond = [colonne.in_(pruned)] if include else [~colonne.in_(pruned)]
         if can_be_null:
             complete_cond.append(colonne.is_(None))
 
@@ -243,3 +250,31 @@ class V3QueryBuilder(Generic[T]):
 
     def select_one(self):
         return self._session.execute(self._query).unique().scalar_one_or_none()
+    
+
+    def with_selection(self, selection: SelectionType) -> "V3QueryBuilder[T]":
+        """
+        Replace the SELECT clause while keeping WHERE, GROUP BY, ORDER BY, etc.
+        """
+        # Prepare the base select list
+        if isinstance(selection, (list, tuple)):
+            new_query = select(*selection)
+        elif isinstance(selection, Select):
+            new_query = selection
+        else:
+            new_query = select(selection)
+
+        # Re-apply FROM and all clauses from current query
+        new_query = (
+            new_query.select_from(self._query.get_final_froms()[0])
+            .where(*self._query._where_criteria)
+            .group_by(*self._query._group_by_clauses)
+            .order_by(*self._query._order_by_clauses)
+            .limit(self._query._limit)
+            .offset(self._query._offset)
+        )
+
+        self._query = new_query
+        self._select_model = False
+        return self
+

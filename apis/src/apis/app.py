@@ -21,6 +21,7 @@ from models.value_objects import *  # type: ignore  # noqa: E402 F403
 
 from apis.apps.apis_externes.api import app as app_apis_externe  # type: ignore  # noqa: E402
 from apis.apps.budget.api import app as app_budget  # type: ignore  # noqa: E402
+from apis.apps.qpv.api import app as app_qpv  # type: ignore  # noqa: E402
 from apis.apps.referentiels.api import app as app_referentiels  # type: ignore  # noqa: E402
 
 
@@ -67,6 +68,7 @@ def create_app():
 
     app.mount("/apis-externes/v3", app_apis_externe)
     app.mount("/financial-data/api/v3", app_budget)
+    app.mount("/data-qpv/api/v3", app_qpv)
     app.mount("/referentiels/api/v3", app_referentiels)
 
     app.add_middleware(
