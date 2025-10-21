@@ -13,3 +13,8 @@ keycloak_openid:
 
 cache_config:
   budget_totaux_enabled: true
+
+redis_applicatif:
+  host: <host>
+  port: 6379
+  db: <DB>

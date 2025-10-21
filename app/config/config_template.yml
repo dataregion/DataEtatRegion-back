@@ -55,6 +55,10 @@ KEYCLOAK_OPENID:
   REALM: <realm>
   CLIENT_ID: "client_id"
 
+redis_applicatif:
+  host: <host>
+  port: 6379
+  db: <DB>
 
 # CONFIGURATION pour keycloak ADMIN (gestion des utilisateurs)
 KEYCLOAK_ADMIN:
