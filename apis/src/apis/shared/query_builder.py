@@ -37,7 +37,19 @@ class CacheableTotalQuery(ABC):
         hashable_items = []
         for key, value in cache_dict.items():
             if isinstance(value, list):
-                hashable_items.append((key, tuple(value) if value is not None else None))
+                if value is not None:
+                    # Gérer les listes d'objets non-hashables
+                    hashable_list = []
+                    for item in value:
+                        if hasattr(item, 'code'): 
+                            hashable_list.append(item.code)
+                        elif hasattr(item, '__dict__'):  # Objet standard avec attributs
+                            hashable_list.append(frozenset(item.__dict__.items()))
+                        else:
+                            hashable_list.append(str(item))  # Fallback en string
+                    hashable_items.append((key, tuple(hashable_list)))
+                else:
+                    hashable_items.append((key, None))
             else:
                 hashable_items.append((key, value))
 
