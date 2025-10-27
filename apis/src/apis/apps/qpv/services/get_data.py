@@ -32,9 +32,7 @@ app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanit
 
 def _to_enriched_ffl(data):
     _loaded = data
-    print(data)
     if isinstance(data, EnrichedFlattenFinancialLinesDataQPV):
-        print('no load')
         return data
     _loaded: EnrichedFlattenFinancialLinesDataQPV = EnrichedFlattenFinancialLinesSchema().load(data)
     return _loaded
@@ -47,11 +45,7 @@ def _get_query_builder(
     """
     Recherche la ligne budgetaire selon son ID et sa source region
     """
-    print("=============") 
-    print("=============")
     source_region = app_layer_sanitize_region(params.source_region, params.data_source)
-    print("=============")
-    print(source_region)
     assert source_region is not None
     _regions = get_request_regions(source_region)
 
@@ -158,7 +152,6 @@ async def get_dashboard_data(
         _get_pie_chart_types_porteur(query_builder),
         _get_line_chart_annees(query_builder),
     )
-    print(results)
     return DashboardData(
         total_financements=results[0]["total_financements"],
         total_actions=results[0]["total_actions"],

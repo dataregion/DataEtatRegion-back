@@ -77,9 +77,6 @@ def get_lignes_financieres(
     session: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-    print(user.current_region)
-    # user_param_source_region = params.source_region
-    # print(user_param_source_region)
     params = handle_national(params, user)
 
     # Validation des paramètres faisant référence à des colonnes
@@ -91,21 +88,8 @@ def get_lignes_financieres(
         params,
         additionnal_source_region=None,
     )
-    print("========")
-    print(data)
-    print(total)
-    print(has_next)
 
-    # if len(data) == 0:
-    #     print('ok')
-    #     return APISuccess(
-    #         code=HTTPStatus.NO_CONTENT,
-    #         message="Aucun résultat ne correspond à vos critères de recherche",
-    #         data=None,
-    #     ).to_json_response()
-    
     data = LignesFinancieres(total=total, lignes=data)
-    print(data)
 
     return LignesResponse(
         code=HTTPStatus.OK,
