@@ -155,7 +155,7 @@ class V3QueryBuilder(Generic[T]):
         self._query = self._query.where(or_(*complete_cond))
         return self
 
-    def where_field_in(self, colonne: Column, set_of_values: list | None, can_be_null=False, include=True):
+    def where_field_in(self, colonne: Column, set_of_values: list | None, can_be_null=False):
         if set_of_values is None:
             return
 
@@ -163,7 +163,22 @@ class V3QueryBuilder(Generic[T]):
         if len(pruned) == 0:
             return
 
-        complete_cond = [colonne.in_(pruned)] if include else [~colonne.in_(pruned)]
+        complete_cond = [colonne.in_(pruned)]
+        if can_be_null:
+            complete_cond.append(colonne.is_(None))
+
+        self._query = self._query.where(or_(*complete_cond))
+        return self
+
+    def where_field_not_in(self, colonne: Column, set_of_values: list | None, can_be_null=False):
+        if set_of_values is None:
+            return
+
+        pruned = [x for x in set_of_values if x is not None]
+        if len(pruned) == 0:
+            return
+
+        complete_cond = [~colonne.in_(pruned)]
         if can_be_null:
             complete_cond.append(colonne.is_(None))
 

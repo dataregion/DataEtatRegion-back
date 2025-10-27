@@ -72,7 +72,7 @@ class QpvQueryBuilder(SourcesQueryBuilder):
         return self
 
     def code_programme_not_in(self, codes_programme: list[str] | None = None):
-        self.where_field_in(FinancialLinesDataQPV.programme_code, codes_programme, False, False)
+        self.where_field_not_in(FinancialLinesDataQPV.programme_code, codes_programme)
         return self
 
     def annee_in(self, annees: list[int] | None):

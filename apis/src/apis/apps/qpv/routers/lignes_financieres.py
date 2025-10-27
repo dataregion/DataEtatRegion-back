@@ -1,13 +1,14 @@
 from http import HTTPStatus
 import logging
 from types import NoneType
-from typing import Annotated, Literal, TypeVar
+from typing import Annotated, TypeVar
 
 from fastapi import APIRouter, Depends
+from models.entities.financial.query.FlattenFinancialLinesDataQpv import EnrichedFlattenFinancialLinesDataQPV
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
+from models.schemas.financial import EnrichedFlattenFinancialLinesDataQpvSchema, EnrichedFlattenFinancialLinesSchema
 from models.entities.financial.query import EnrichedFlattenFinancialLines
 
 from apis.apps.qpv.models.qpv_query_params import (
@@ -23,7 +24,10 @@ from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.services.model.pydantic_annotation import (
     PydanticFromMarshmallowSchemaAnnotationFactory,
 )
-from apis.services.model.enriched_financial_lines_mappers import enriched_ffl_mappers
+from apis.services.model.enriched_financial_lines_mappers import (
+  enriched_ffl_mappers,
+  enriched_ffl_pre_validation_transformer
+)
 from apis.shared.models import APIError, APISuccess
 
 
@@ -32,8 +36,12 @@ logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
 PydanticEnrichedFlattenFinancialLinesModel = PydanticFromMarshmallowSchemaAnnotationFactory[
-    EnrichedFlattenFinancialLinesSchema
-].create(EnrichedFlattenFinancialLinesSchema, custom_fields_mappers=enriched_ffl_mappers)
+    EnrichedFlattenFinancialLinesDataQpvSchema
+].create(
+    EnrichedFlattenFinancialLinesDataQpvSchema,
+    custom_fields_mappers=enriched_ffl_mappers,
+    pre_validation_transformer=enriched_ffl_pre_validation_transformer
+)
 
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 
@@ -47,11 +55,10 @@ def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
     return params
 
 
-LigneFinanciere = Annotated[EnrichedFlattenFinancialLines, PydanticEnrichedFlattenFinancialLinesModel]
+LigneFinanciere = Annotated[EnrichedFlattenFinancialLinesDataQPV, PydanticEnrichedFlattenFinancialLinesModel]
 
 
 class LignesFinancieres(BaseModel):
-    type: Literal["lignes_financieres"] = "lignes_financieres"
     lignes: list[LigneFinanciere]
 
 
@@ -70,26 +77,35 @@ def get_lignes_financieres(
     session: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-    user_param_source_region = params.source_region
+    print(user.current_region)
+    # user_param_source_region = params.source_region
+    # print(user_param_source_region)
     params = handle_national(params, user)
 
     # Validation des paramètres faisant référence à des colonnes
     validation_colonnes(params)
 
     message = "Liste des données QPV"
-    data, has_next = get_lignes(
+    data, total, has_next = get_lignes(
         session,
         params,
-        additionnal_source_region=user_param_source_region,
+        additionnal_source_region=None,
     )
-    data = LignesFinancieres(lignes=data)
+    print("========")
+    print(data)
+    print(total)
+    print(has_next)
 
-    if len(data) == 0:
-        return APISuccess(
-            code=HTTPStatus.NO_CONTENT,
-            message="Aucun résultat ne correspond à vos critères de recherche",
-            data=None,
-        ).to_json_response()
+    # if len(data) == 0:
+    #     print('ok')
+    #     return APISuccess(
+    #         code=HTTPStatus.NO_CONTENT,
+    #         message="Aucun résultat ne correspond à vos critères de recherche",
+    #         data=None,
+    #     ).to_json_response()
+    
+    data = LignesFinancieres(total=total, lignes=data)
+    print(data)
 
     return LignesResponse(
         code=HTTPStatus.OK,

@@ -36,6 +36,7 @@ class QpvQueryParams(SourcesQueryParams):
         data_source: str | None = Query(None),
         source: str | None = Query(None),
         code_programme: str | None = Query(None),
+        not_code_programme: str | None = Query(None),
         annee: str | None = Query(None),
         niveau_geo: str | None = Query(None),
         code_geo: str | None = Query(None),
@@ -68,6 +69,7 @@ class QpvQueryParams(SourcesQueryParams):
             fields_search,
         )
         self.code_programme = self._split(code_programme)
+        self.not_code_programme = self._split(not_code_programme)
         self.niveau_geo = niveau_geo
         self.code_geo = self._split(code_geo)
         self.ref_qpv = ref_qpv

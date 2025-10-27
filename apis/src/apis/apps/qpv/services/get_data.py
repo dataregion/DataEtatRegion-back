@@ -32,7 +32,9 @@ app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanit
 
 def _to_enriched_ffl(data):
     _loaded = data
+    print(data)
     if isinstance(data, EnrichedFlattenFinancialLinesDataQPV):
+        print('no load')
         return data
     _loaded: EnrichedFlattenFinancialLinesDataQPV = EnrichedFlattenFinancialLinesSchema().load(data)
     return _loaded
@@ -40,8 +42,6 @@ def _to_enriched_ffl(data):
 def _get_query_builder(
     db: Session,
     params: QpvQueryParams,
-    code_programme: str | None,
-    include: bool | None
 ) -> QpvQueryBuilder:
     
     """
@@ -61,6 +61,8 @@ def _get_query_builder(
 
     builder = (
         QpvQueryBuilder(db, params)
+        .code_programme_in(params.code_programme)
+        .code_programme_not_in(params.not_code_programme)
         .annee_in(params.annee)
         .niveau_code_geo_in(params.niveau_geo, params.code_geo, source_region)
         .lieu_action_code_qpv_in(params.code_qpv, source_region)
@@ -75,13 +77,6 @@ def _get_query_builder(
         .source_region_in(_regions)
     )
 
-    # Condition sur le programme
-    if code_programme is not None and include is not None:
-        if include:
-            builder.code_programme_in([code_programme])
-        else:
-            builder.code_programme_not_in([code_programme])
-    
     return builder
 
 @gauge_of_currently_executing()
@@ -89,8 +84,7 @@ def _get_query_builder(
 def get_lignes(
     db: Session,
     params: QpvQueryParams,
-    code_programme: str | None,
-    include: bool | None
+    additionnal_source_region: str | None = None,
 ):
     """
     Recherche la ligne budgetaire selon son ID et sa source region
@@ -105,6 +99,8 @@ def get_lignes(
 
     builder = (
         QpvQueryBuilder(db, params)
+        .code_programme_in(params.code_programme)
+        .code_programme_not_in(params.not_code_programme)
         .annee_in(params.annee)
         .niveau_code_geo_in(params.niveau_geo, params.code_geo, source_region)
         .lieu_action_code_qpv_in(params.code_qpv, source_region)
@@ -120,17 +116,18 @@ def get_lignes(
         .sort_by_params()
     )
 
-    # Condition sur le programme
-    if code_programme is not None and include is not None:
-        if include:
-            builder.code_programme_in(code_programme)
-        else:
-            builder.code_programme_not_in(code_programme)
+    if additionnal_source_region:
+        _sanitized = app_layer_sanitize_region(additionnal_source_region)
+        assert _sanitized is not None
+        _regions.append(_sanitized)
+        builder = builder.source_region_in([_sanitized], can_be_null=False)
 
     # Pagination et récupération des données
     builder = builder.paginate()
     data, has_next = builder.select_all()
-    return [_to_enriched_ffl(x) for x in data], has_next
+    # TODO : Perfs
+    total = builder.get_total("lignes")
+    return [_to_enriched_ffl(x) for x in data], total, has_next
 
 
 def get_annees_qpv(db: Session, params: SourcesQueryParams):
@@ -153,10 +150,8 @@ def get_annees_qpv(db: Session, params: SourcesQueryParams):
 async def get_dashboard_data(
     db: Session,
     params: QpvQueryParams,
-    code_programme: str | None,
-    include: bool | None
 ) -> DashboardData:
-    query_builder = _get_query_builder(db, params, code_programme, include)
+    query_builder = _get_query_builder(db, params)
     results = await asyncio.gather(
         _get_big_numbers(query_builder),
         _get_pie_chart_themes(query_builder),

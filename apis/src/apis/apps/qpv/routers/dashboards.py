@@ -1,15 +1,11 @@
 from http import HTTPStatus
 import logging
-from types import NoneType
-from typing import Annotated, Literal, TypeVar
+from typing import TypeVar
 
 from apis.apps.qpv.models.dashboard_data import DashboardData
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-
-from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
-from models.entities.financial.query import EnrichedFlattenFinancialLines
 
 from apis.apps.qpv.models.qpv_query_params import (
     QpvQueryParams,
@@ -21,11 +17,7 @@ from apis.database import get_session
 from models.connected_user import ConnectedUser
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
-from apis.services.model.pydantic_annotation import (
-    PydanticFromMarshmallowSchemaAnnotationFactory,
-)
-from apis.services.model.enriched_financial_lines_mappers import enriched_ffl_mappers
-from apis.shared.models import APIError, APISuccess
+from apis.shared.models import APISuccess
 
 
 router = APIRouter()
@@ -44,26 +36,27 @@ def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
     return params
 
 
+class DashboardResponse(APISuccess[DashboardData]):
+    pass
+
 @router.get(
-    "/147",
+    "",
     summary="Récupére les lignes QPV",
-    response_model=APISuccess[DashboardData],
+    response_model=DashboardResponse,
     responses=error_responses(),
 )
-async def get_dashboard_data_147(
+async def get_dashboard(
     params: QpvQueryParams = Depends(),
     session: Session = Depends(get_session),
-    # user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-    user = ConnectedUser({"region": "053"})
-    user_param_source_region = params.source_region
     params = handle_national(params, user)
 
     # Validation des paramètres faisant référence à des colonnes
     validation_colonnes(params)
 
     message = "Liste des données QPV"
-    data: DashboardData = await get_dashboard_data(session, params, "147", True)
+    data: DashboardData = await get_dashboard_data(session, params)
 
     return APISuccess(
         code=HTTPStatus.OK,
@@ -72,34 +65,3 @@ async def get_dashboard_data_147(
         has_next=False,
         current_page=params.page,
     )
-
-
-@router.get(
-    "/autres",
-    summary="Récupére les lignes QPV",
-    response_model=APISuccess[DashboardData],
-    responses=error_responses(),
-)
-async def get_dashboard_data_147(
-    params: QpvQueryParams = Depends(),
-    session: Session = Depends(get_session),
-    # user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
-):
-    user = ConnectedUser({"region": "053"})
-    user_param_source_region = params.source_region
-    params = handle_national(params, user)
-
-    # Validation des paramètres faisant référence à des colonnes
-    validation_colonnes(params)
-
-    message = "Liste des données QPV"
-    data: DashboardData = await get_dashboard_data(session, params, "147", False)
-
-    return APISuccess(
-        code=HTTPStatus.OK,
-        message=message,
-        data=data,
-        has_next=False,
-        current_page=params.page,
-    )
-

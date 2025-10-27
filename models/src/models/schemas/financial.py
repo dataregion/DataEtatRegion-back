@@ -1,3 +1,4 @@
+from models.entities.financial.query.FlattenFinancialLinesDataQpv import EnrichedFlattenFinancialLinesDataQPV
 from models.schemas.common import DataTypeField
 from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
@@ -18,6 +19,17 @@ class EnrichedFlattenFinancialLinesSchema(
 ):
     class Meta:
         model = EnrichedFlattenFinancialLines
+
+    source = DataTypeField()
+
+    tags = fields.List(fields.Nested(TagsSchema))
+
+
+class EnrichedFlattenFinancialLinesDataQpvSchema(
+    MarshmallowSafeGetAttrMixin, SQLAlchemyAutoSchema
+):
+    class Meta:
+        model = EnrichedFlattenFinancialLinesDataQPV
 
     source = DataTypeField()
 
