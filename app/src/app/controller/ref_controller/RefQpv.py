@@ -134,6 +134,7 @@ class RefQpv(Resource):
                     )
                     .join(QpvCommune, QpvCommune.qpv_id == Qpv.id)
                     .join(Commune, Commune.id == QpvCommune.commune_id)
+                    .distinct(Qpv.code)
                     .where(and_(Commune.code_region == code_region, Qpv.annee_decoupage == 2024))
                 )
                 result = db.session.execute(stmt).fetchall()
