@@ -2,7 +2,6 @@ import asyncio
 from apis.apps.qpv.models.chart_data import ChartData
 from apis.apps.qpv.models.dashboard_data import DashboardData
 from apis.apps.qpv.models.map_data import MapData, QpvData
-from apis.apps.qpv.services import GetTotalOfLignes
 from models.entities.financial.query.FlattenFinancialLinesDataQpv import (
     EnrichedFlattenFinancialLinesDataQPV,
 )
@@ -106,10 +105,8 @@ def get_lignes(
     # Pagination et récupération des données
     builder = builder.paginate()
     data, has_next = builder.select_all()
-    # TODO : Perfs
-    total_retriever = GetTotalOfLignes(builder)
-    total = total_retriever.retrieve_total(params, additionnal_source_region)
-    return [_to_enriched_ffl(x) for x in data], total, has_next
+
+    return [_to_enriched_ffl(x) for x in data], has_next
 
 
 def get_annees_qpv(db: Session, params: SourcesQueryParams):

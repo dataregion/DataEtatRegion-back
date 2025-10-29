@@ -82,13 +82,13 @@ def get_lignes_financieres(
     validation_colonnes(params)
 
     message = "Liste des données QPV"
-    data, total, has_next = get_lignes(
+    data, has_next = get_lignes(
         session,
         params,
         additionnal_source_region=None,
     )
 
-    data = LignesFinancieres(total=total, lignes=data)
+    data = LignesFinancieres(total=None, lignes=data)
 
     return LignesResponse(
         code=HTTPStatus.OK,
