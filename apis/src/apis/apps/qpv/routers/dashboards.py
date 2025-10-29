@@ -41,7 +41,7 @@ class DashboardResponse(APISuccess[DashboardData]):
 
 @router.get(
     "",
-    summary="Récupére les lignes QPV",
+    summary="Récupére les lignes QPV agrégées pour les graphiques",
     response_model=DashboardResponse,
     responses=error_responses(),
 )
@@ -55,7 +55,7 @@ async def get_dashboard(
     # Validation des paramètres faisant référence à des colonnes
     validation_colonnes(params)
 
-    message = "Liste des données QPV"
+    message = "Liste des données QPV agrégées pour les graphiques"
     data: DashboardData = await get_dashboard_data(session, params)
 
     return APISuccess(

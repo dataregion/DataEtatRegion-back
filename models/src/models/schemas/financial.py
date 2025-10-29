@@ -1,4 +1,6 @@
-from models.entities.financial.query.FlattenFinancialLinesDataQpv import EnrichedFlattenFinancialLinesDataQPV
+from models.entities.financial.query.FlattenFinancialLinesDataQpv import (
+    EnrichedFlattenFinancialLinesDataQPV,
+)
 from models.schemas.common import DataTypeField
 from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema

@@ -41,7 +41,7 @@ class MapResponse(APISuccess[MapData]):
 
 @router.get(
     "",
-    summary="Récupére les lignes QPV",
+    summary="Récupére les lignes QPV agrégées pour la cartographie",
     response_model=MapResponse,
     responses=error_responses(),
 )
