@@ -8,4 +8,5 @@ class DashboardData(BaseModel):
     total_porteurs: float = 0.0
     pie_chart_themes: ChartData = None
     pie_chart_types_porteurs: ChartData = None
+    bar_chart_financeurs: ChartData = None
     line_chart_annees: ChartData = None

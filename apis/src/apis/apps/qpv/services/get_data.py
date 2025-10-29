@@ -58,7 +58,7 @@ def _get_query_builder(
         .code_programme_in(params.code_programme)
         .code_programme_not_in(params.not_code_programme)
         .annee_in(params.annee)
-        .niveau_code_geo_in(params.niveau_geo, params.code_geo, source_region)
+        .where_geo_loc_qpv(params.niveau_geo, params.code_geo, source_region)
         .lieu_action_code_qpv_in(params.code_qpv, source_region)
         .centres_couts_in(params.centres_couts)
         .themes_in(params.theme)
@@ -91,24 +91,7 @@ def get_lignes(
     params.colonnes = [c.code for c in get_list_colonnes_tableau()]
     params.colonnes.append("id")
 
-    builder = (
-        QpvQueryBuilder(db, params)
-        .code_programme_in(params.code_programme)
-        .code_programme_not_in(params.not_code_programme)
-        .annee_in(params.annee)
-        .niveau_code_geo_in(params.niveau_geo, params.code_geo, source_region)
-        .lieu_action_code_qpv_in(params.code_qpv, source_region)
-        .centres_couts_in(params.centres_couts)
-        .themes_in(params.theme)
-        .beneficiaire_siret_in(params.beneficiaire_code)
-        .categorie_juridique_in(
-            params.beneficiaire_categorieJuridique_type,
-            includes_none=params.beneficiaire_categorieJuridique_type is not None
-            and "autres" in params.beneficiaire_categorieJuridique_type,
-        )
-        .source_region_in(_regions)
-        .sort_by_params()
-    )
+    builder = _get_query_builder(db, params)
 
     if additionnal_source_region:
         _sanitized = app_layer_sanitize_region(additionnal_source_region)
@@ -150,6 +133,7 @@ async def get_dashboard_data(
         _get_big_numbers(query_builder),
         _get_pie_chart_themes(query_builder),
         _get_pie_chart_types_porteur(query_builder),
+        _get_bar_chart_financeurs(query_builder),
         _get_line_chart_annees(query_builder),
     )
     return DashboardData(
@@ -158,7 +142,8 @@ async def get_dashboard_data(
         total_porteurs=results[0]["total_porteurs"],
         pie_chart_themes=results[1],
         pie_chart_types_porteurs=results[2],
-        line_chart_annees=results[3],
+        bar_chart_financeurs=results[3],
+        line_chart_annees=results[4],
     )
 
 async def _get_big_numbers(query_builder: QpvQueryBuilder):
@@ -196,6 +181,16 @@ async def _get_pie_chart_types_porteur(query_builder: QpvQueryBuilder):
     qb._query = qb._query.group_by(EnrichedFlattenFinancialLinesDataQPV.beneficiaire_categorieJuridique_type)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.type_porteur) for r in rows], values=[float(r.total or 0) for r in rows])
+
+
+async def _get_bar_chart_financeurs(query_builder: QpvQueryBuilder):
+    qb = query_builder.with_selection([
+        EnrichedFlattenFinancialLinesDataQPV.centreCouts_description.label("financeur"),
+        func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
+    ])
+    qb._query = qb._query.group_by(EnrichedFlattenFinancialLinesDataQPV.centreCouts_description)
+    rows = qb._session.execute(qb._query).all()
+    return ChartData(labels=[str(r.financeur) for r in rows], values=[float(r.total or 0) for r in rows])
 
 
 async def _get_line_chart_annees(query_builder: QpvQueryBuilder):

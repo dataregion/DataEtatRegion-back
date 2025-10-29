@@ -1,8 +1,11 @@
+from models.entities.refs import Commune, Qpv
+from models.entities.refs.QpvCommune import QpvCommune
 from sqlalchemy import (
     Column,
     func,
     literal,
     or_,
+    select,
 )
 from sqlalchemy.orm.session import Session
 
@@ -12,10 +15,6 @@ from models.entities.financial.query.FlattenFinancialLinesDataQpv import (
 )
 from models.value_objects.common import DataType, TypeCodeGeo
 from models.value_objects.tags import TagVO
-from services.helper import (
-    TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver,
-)
-from services.helper import TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver
 
 from apis.apps.qpv.models.qpv_query_params import QpvQueryParams, SourcesQueryParams
 from apis.shared.enums import BenefOrLoc
@@ -54,15 +53,6 @@ class QpvQueryBuilder(SourcesQueryBuilder):
     def __init__(self, session: Session, params: QpvQueryParams) -> None:
         super().__init__(session, params)
 
-        self.__init_resolvers__()
-
-    def __init_resolvers__(self):
-        self._code_geo_column_locinterministerielle_resolver = (
-            TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver()
-        )
-        self._code_geo_column_benef_resolver = TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver()
-
-
     """
     Méthodes de création de conditions
     """
@@ -79,16 +69,38 @@ class QpvQueryBuilder(SourcesQueryBuilder):
         self.where_field_in(FinancialLinesDataQPV.annee, annees)
         return self
 
-    def niveau_code_geo_in(self, niveau_geo: str | None, code_geo: list | None, source_region: str):
-        if niveau_geo is not None and code_geo is not None:
-            self.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
+    def where_geo_loc_qpv(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):
+        if list_code_geo is None:
+            return self
+        
+        # Protection contre les types géo encore non gérés
+        if not type_geo in [TypeCodeGeo.DEPARTEMENT, TypeCodeGeo.EPCI, TypeCodeGeo.COMMUNE]:
+            return self
+        
+        # Récupération des communes
+        colonne = Commune.code
+        if type_geo == TypeCodeGeo.EPCI:
+            colonne = Commune.code_epci
+        elif type_geo == TypeCodeGeo.DEPARTEMENT:
+            colonne = Commune.code_departement
+
+        # Récupération des QPV concernés
+        stmt = (
+            select(Qpv.code)
+            .join(QpvCommune, Qpv.id == QpvCommune.qpv_id)
+            .join(Commune, QpvCommune.commune_id == Commune.id)
+            .where(colonne.in_(list_code_geo))
+            .distinct()
+        )
+        codes_qpv = self._session.scalars(stmt).all()
+
+        # Condition sur les codes QPV récupérés
+        self._query = self._query.where(FinancialLinesDataQPV.lieu_action_code_qpv.in_(codes_qpv))
         return self
 
     def lieu_action_code_qpv_in(self, code_qpv: list | None, source_region: str):
         if code_qpv is not None:
-            self.where_geo_loc_qpv(2024, code_qpv, source_region)
-        else:
-            self.where_qpv_not_null(FinancialLinesDataQPV.lieu_action_code_qpv)
+            self._query = self._query.where(FinancialLinesDataQPV.lieu_action_code_qpv.in_(code_qpv))
         return self
 
     def centres_couts_in(self, centres_couts: list[str] | None):
@@ -119,102 +131,3 @@ class QpvQueryBuilder(SourcesQueryBuilder):
         self._query = self._query.where(cond)
         return self
 
-    def where_qpv_not_null(self, field: Column):
-        field = FinancialLinesDataQPV.lieu_action_code_qpv
-        self._query = self._query.where(
-            FinancialLinesDataQPV.source == DataType.FINANCIAL_DATA_AE,
-            field != None,  # noqa: E711
-        )
-        return self
-
-    def where_geo_loc_qpv(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):
-        if list_code_geo is None:
-            return self
-
-        self._where_geo(
-            type_geo,
-            list_code_geo,
-            source_region,
-            None,
-            FinancialLinesDataQPV.lieu_action_code_qpv,
-            BenefOrLoc.LOCALISATION_QPV,
-        )
-        return self
-
-    def where_geo(
-        self,
-        type_geo: TypeCodeGeo,
-        list_code_geo: list[str],
-        source_region: str,
-        benef_or_loc: BenefOrLoc | None = None,
-    ):
-        if list_code_geo is None:
-            return self
-
-        column_codegeo_commune_loc_inter = self._code_geo_column_locinterministerielle_resolver.code_geo_column(
-            type_geo
-        )
-        column_codegeo_commune_beneficiaire = self._code_geo_column_benef_resolver.code_geo_column(type_geo)
-
-        self._where_geo(
-            type_geo,
-            list_code_geo,
-            source_region,
-            column_codegeo_commune_loc_inter,
-            column_codegeo_commune_beneficiaire,
-            benef_or_loc,
-        )
-        return self
-
-    def _where_geo(
-        self,
-        type_geo: TypeCodeGeo,
-        list_code_geo: list[str],
-        source_region: str,
-        column_codegeo_commune_loc_inter: Column[str] | None,
-        column_codegeo_commune_beneficiaire: Column[str] | None,
-        benef_or_loc: BenefOrLoc | None = None,
-    ):
-        conds = []
-
-        #
-        # On calcule les patterns valides pour les codes de localisations interministerielles
-        #
-        if benef_or_loc is None or benef_or_loc is BenefOrLoc.LOCALISATION_INTER:
-            # Calcule les codes de la localisation interministerielle suivant le code geographique
-            code_locinter_pattern = []
-            if type_geo is TypeCodeGeo.REGION:
-                code_locinter_pattern = [f"N{code}" for code in list_code_geo]
-            elif type_geo is TypeCodeGeo.DEPARTEMENT:
-                code_locinter_pattern = [f"N{source_region}{code}" for code in list_code_geo]
-            # fmt:off
-            _conds_code_locinter = [
-                FinancialLinesDataQPV.localisationInterministerielle_code.ilike(f"{pattern}%")
-                for pattern
-                in code_locinter_pattern
-            ]
-            # fmt:on
-            if len(code_locinter_pattern) > 0:
-                conds.append(or_(*_conds_code_locinter))
-
-        #
-        # Ou les code geo de la commune associée à la localisation interministerielle
-        #
-        if column_codegeo_commune_loc_inter is not None and (
-            benef_or_loc is None or benef_or_loc == BenefOrLoc.LOCALISATION_INTER
-        ):
-            conds.append(column_codegeo_commune_loc_inter.in_(list_code_geo))
-
-        #
-        # Ou les code geo de la commune associée au bénéficiaire
-        #
-        if column_codegeo_commune_beneficiaire is not None and (
-            benef_or_loc is None
-            or benef_or_loc == BenefOrLoc.BENEFICIAIRE
-            or benef_or_loc == BenefOrLoc.LOCALISATION_QPV
-        ):
-            conds.append(column_codegeo_commune_beneficiaire.in_(list_code_geo))
-
-        where_clause = or_(*conds)
-        self._query = self._query.where(where_clause)
-        return self._query
