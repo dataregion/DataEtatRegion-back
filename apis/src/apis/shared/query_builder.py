@@ -106,11 +106,12 @@ T = TypeVar("T", bound=DeclarativeBase)
 
 SelectionType = Optional[
     Union[
-        InstrumentedAttribute,          # ORM column attributes
-        ColumnElement,                  # SQL expressions (func.sum, etc.)
+        InstrumentedAttribute,  # ORM column attributes
+        ColumnElement,  # SQL expressions (func.sum, etc.)
         Sequence[Union[InstrumentedAttribute, ColumnElement]],  # list/tuple of them
     ]
 ]
+
 
 class V3QueryBuilder(Generic[T]):
     def __init__(self, model: type[T], session: Session, params: V3QueryParams):
@@ -265,7 +266,6 @@ class V3QueryBuilder(Generic[T]):
 
     def select_one(self):
         return self._session.execute(self._query).unique().scalar_one_or_none()
-    
 
     def with_selection(self, selection: SelectionType) -> "V3QueryBuilder[T]":
         """
@@ -292,4 +292,3 @@ class V3QueryBuilder(Generic[T]):
         self._query = new_query
         self._select_model = False
         return self
-

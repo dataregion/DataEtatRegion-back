@@ -3,5 +3,5 @@ from pydantic import BaseModel
 
 
 class ChartData(BaseModel):
-  labels: List[str]
-  values: List[float]
+    labels: List[str]
+    values: List[float]

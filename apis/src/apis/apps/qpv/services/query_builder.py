@@ -1,23 +1,17 @@
 from models.entities.refs import Commune, Qpv
 from models.entities.refs.QpvCommune import QpvCommune
 from sqlalchemy import (
-    Column,
-    func,
-    literal,
     or_,
     select,
 )
 from sqlalchemy.orm.session import Session
 
-from models.entities.common.Tags import Tags
 from models.entities.financial.query.FlattenFinancialLinesDataQpv import (
     EnrichedFlattenFinancialLinesDataQPV as FinancialLinesDataQPV,
 )
 from models.value_objects.common import DataType, TypeCodeGeo
-from models.value_objects.tags import TagVO
 
 from apis.apps.qpv.models.qpv_query_params import QpvQueryParams, SourcesQueryParams
-from apis.shared.enums import BenefOrLoc
 from apis.shared.query_builder import V3QueryBuilder
 
 
@@ -41,7 +35,9 @@ class SourcesQueryBuilder(V3QueryBuilder[FinancialLinesDataQPV]):
 
     def par_identifiant_technique(self, source: DataType, id: int):
         """Filtre selon l'identifiant technique. ie couple source - id"""
-        self._query = self._query.where(FinancialLinesDataQPV.source == str(source.value), FinancialLinesDataQPV.id == id)
+        self._query = self._query.where(
+            FinancialLinesDataQPV.source == str(source.value), FinancialLinesDataQPV.id == id
+        )
         return self
 
 
@@ -72,11 +68,11 @@ class QpvQueryBuilder(SourcesQueryBuilder):
     def where_geo_loc_qpv(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):
         if list_code_geo is None:
             return self
-        
+
         # Protection contre les types géo encore non gérés
-        if not type_geo in [TypeCodeGeo.DEPARTEMENT, TypeCodeGeo.EPCI, TypeCodeGeo.COMMUNE]:
+        if type_geo not in [TypeCodeGeo.DEPARTEMENT, TypeCodeGeo.EPCI, TypeCodeGeo.COMMUNE]:
             return self
-        
+
         # Récupération des communes
         colonne = Commune.code
         if type_geo == TypeCodeGeo.EPCI:
@@ -130,4 +126,3 @@ class QpvQueryBuilder(SourcesQueryBuilder):
         cond = or_(*conds)
         self._query = self._query.where(cond)
         return self
-

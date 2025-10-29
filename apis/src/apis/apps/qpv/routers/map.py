@@ -2,7 +2,6 @@ from http import HTTPStatus
 import logging
 from typing import TypeVar
 
-from apis.apps.qpv.models.dashboard_data import DashboardData
 from apis.apps.qpv.models.map_data import MapData
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -38,6 +37,7 @@ def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
 
 class MapResponse(APISuccess[MapData]):
     pass
+
 
 @router.get(
     "",

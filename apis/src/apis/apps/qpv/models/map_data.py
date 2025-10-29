@@ -1,5 +1,3 @@
-from apis.apps.qpv.models.chart_data import ChartData
-from models.entities.refs import Qpv
 from pydantic import BaseModel
 
 

@@ -2,6 +2,7 @@ import asyncio
 from apis.apps.qpv.models.chart_data import ChartData
 from apis.apps.qpv.models.dashboard_data import DashboardData
 from apis.apps.qpv.models.map_data import MapData, QpvData
+from apis.apps.qpv.services import GetTotalOfLignes
 from models.entities.financial.query.FlattenFinancialLinesDataQpv import (
     EnrichedFlattenFinancialLinesDataQPV,
 )
@@ -31,6 +32,7 @@ from apis.shared.exceptions import NoCurrentRegion
 
 app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanitize_source_region_for_bdd_request)
 
+
 def _to_enriched_ffl(data):
     _loaded = data
     if isinstance(data, EnrichedFlattenFinancialLinesDataQPV):
@@ -38,11 +40,11 @@ def _to_enriched_ffl(data):
     _loaded: EnrichedFlattenFinancialLinesDataQPV = EnrichedFlattenFinancialLinesSchema().load(data)
     return _loaded
 
+
 def _get_query_builder(
     db: Session,
     params: QpvQueryParams,
 ) -> QpvQueryBuilder:
-    
     """
     Recherche la ligne budgetaire selon son ID et sa source region
     """
@@ -74,6 +76,7 @@ def _get_query_builder(
 
     return builder
 
+
 @gauge_of_currently_executing()
 @summary_of_time()
 def get_lignes(
@@ -104,7 +107,8 @@ def get_lignes(
     builder = builder.paginate()
     data, has_next = builder.select_all()
     # TODO : Perfs
-    total = builder.get_total("lignes")
+    total_retriever = GetTotalOfLignes(builder)
+    total = total_retriever.retrieve_total(params, additionnal_source_region)
     return [_to_enriched_ffl(x) for x in data], total, has_next
 
 
@@ -131,10 +135,12 @@ async def get_map_data(
 ) -> MapData:
     query_builder = _get_query_builder(db, params)
 
-    qb = query_builder.with_selection([
-        EnrichedFlattenFinancialLinesDataQPV.lieu_action_code_qpv.label("code_qpv"),
-        func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
-    ])
+    qb = query_builder.with_selection(
+        [
+            EnrichedFlattenFinancialLinesDataQPV.lieu_action_code_qpv.label("code_qpv"),
+            func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
+        ]
+    )
     qb._query = qb._query.group_by(EnrichedFlattenFinancialLinesDataQPV.lieu_action_code_qpv)
     rows = qb._session.execute(qb._query).all()
     return MapData(data=[QpvData(qpv=r.code_qpv, montant=float(r.total or 0)) for r in rows])
@@ -164,15 +170,22 @@ async def get_dashboard_data(
         line_chart_annees=results[4],
     )
 
+
 async def _get_big_numbers(query_builder: QpvQueryBuilder):
     # Total des montants
-    query_total_financements = query_builder.with_selection(select(func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0)))
+    query_total_financements = query_builder.with_selection(
+        select(func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0))
+    )
     total_financements = query_total_financements.select_one()
     # Nombres d'AE
-    query_total_actions = query_builder.with_selection(select(func.coalesce(func.count(func.distinct(EnrichedFlattenFinancialLinesDataQPV.id)), 0.0)))
+    query_total_actions = query_builder.with_selection(
+        select(func.coalesce(func.count(func.distinct(EnrichedFlattenFinancialLinesDataQPV.id)), 0.0))
+    )
     total_actions = query_total_actions.select_one()
     # Nombre de bénéficiaires
-    query_total_porteurs = query_builder.with_selection(select(func.coalesce(func.count(func.distinct(EnrichedFlattenFinancialLinesDataQPV.beneficiaire_code)), 0.0)))
+    query_total_porteurs = query_builder.with_selection(
+        select(func.coalesce(func.count(func.distinct(EnrichedFlattenFinancialLinesDataQPV.beneficiaire_code)), 0.0))
+    )
     total_porteurs = query_total_porteurs.select_one()
 
     return {
@@ -181,50 +194,62 @@ async def _get_big_numbers(query_builder: QpvQueryBuilder):
         "total_porteurs": total_porteurs,
     }
 
+
 async def _get_pie_chart_themes(query_builder: QpvQueryBuilder):
-    qb = query_builder.with_selection([
-        EnrichedFlattenFinancialLinesDataQPV.programme_theme.label("theme"),
-        func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
-    ])
+    qb = query_builder.with_selection(
+        [
+            EnrichedFlattenFinancialLinesDataQPV.programme_theme.label("theme"),
+            func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
+        ]
+    )
     qb._query = qb._query.group_by(EnrichedFlattenFinancialLinesDataQPV.programme_theme)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.theme) for r in rows], values=[float(r.total or 0) for r in rows])
 
 
 async def _get_pie_chart_types_porteur(query_builder: QpvQueryBuilder):
-    qb = query_builder.with_selection([
-        EnrichedFlattenFinancialLinesDataQPV.beneficiaire_categorieJuridique_type.label("type_porteur"),
-        func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
-    ])
+    qb = query_builder.with_selection(
+        [
+            EnrichedFlattenFinancialLinesDataQPV.beneficiaire_categorieJuridique_type.label("type_porteur"),
+            func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
+        ]
+    )
     qb._query = qb._query.group_by(EnrichedFlattenFinancialLinesDataQPV.beneficiaire_categorieJuridique_type)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.type_porteur) for r in rows], values=[float(r.total or 0) for r in rows])
 
 
 async def _get_bar_chart_financeurs(query_builder: QpvQueryBuilder):
-    qb = query_builder.with_selection([
-        EnrichedFlattenFinancialLinesDataQPV.centreCouts_description.label("financeur"),
-        func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
-    ])
+    qb = query_builder.with_selection(
+        [
+            EnrichedFlattenFinancialLinesDataQPV.centreCouts_description.label("financeur"),
+            func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
+        ]
+    )
     qb._query = qb._query.group_by(EnrichedFlattenFinancialLinesDataQPV.centreCouts_description)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.financeur) for r in rows], values=[float(r.total or 0) for r in rows])
 
 
 async def _get_line_chart_annees(query_builder: QpvQueryBuilder):
-    qb = query_builder.with_selection([
-        EnrichedFlattenFinancialLinesDataQPV.annee.label("annee"),
-        func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
-    ])
+    qb = query_builder.with_selection(
+        [
+            EnrichedFlattenFinancialLinesDataQPV.annee.label("annee"),
+            func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
+        ]
+    )
     qb._query = qb._query.group_by(EnrichedFlattenFinancialLinesDataQPV.annee)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.annee) for r in rows], values=[float(r.total or 0) for r in rows])
 
+
 async def _get_line_chart_annees(query_builder: QpvQueryBuilder):
-    qb = query_builder.with_selection([
-        EnrichedFlattenFinancialLinesDataQPV.annee.label("annee"),
-        func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
-    ])
+    qb = query_builder.with_selection(
+        [
+            EnrichedFlattenFinancialLinesDataQPV.annee.label("annee"),
+            func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
+        ]
+    )
     qb._query = qb._query.group_by(EnrichedFlattenFinancialLinesDataQPV.annee)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.annee) for r in rows], values=[float(r.total or 0) for r in rows])

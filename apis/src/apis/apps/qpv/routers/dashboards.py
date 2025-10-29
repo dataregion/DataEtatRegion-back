@@ -4,7 +4,6 @@ from typing import TypeVar
 
 from apis.apps.qpv.models.dashboard_data import DashboardData
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from apis.apps.qpv.models.qpv_query_params import (
@@ -38,6 +37,7 @@ def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
 
 class DashboardResponse(APISuccess[DashboardData]):
     pass
+
 
 @router.get(
     "",

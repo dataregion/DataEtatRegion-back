@@ -8,8 +8,7 @@ from models.entities.financial.query.FlattenFinancialLinesDataQpv import Enriche
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from models.schemas.financial import EnrichedFlattenFinancialLinesDataQpvSchema, EnrichedFlattenFinancialLinesSchema
-from models.entities.financial.query import EnrichedFlattenFinancialLines
+from models.schemas.financial import EnrichedFlattenFinancialLinesDataQpvSchema
 
 from apis.apps.qpv.models.qpv_query_params import (
     QpvQueryParams,
@@ -25,10 +24,10 @@ from apis.services.model.pydantic_annotation import (
     PydanticFromMarshmallowSchemaAnnotationFactory,
 )
 from apis.services.model.enriched_financial_lines_mappers import (
-  enriched_ffl_mappers,
-  enriched_ffl_pre_validation_transformer
+    enriched_ffl_mappers,
+    enriched_ffl_pre_validation_transformer,
 )
-from apis.shared.models import APIError, APISuccess
+from apis.shared.models import APISuccess
 
 
 router = APIRouter()
@@ -40,7 +39,7 @@ PydanticEnrichedFlattenFinancialLinesModel = PydanticFromMarshmallowSchemaAnnota
 ].create(
     EnrichedFlattenFinancialLinesDataQpvSchema,
     custom_fields_mappers=enriched_ffl_mappers,
-    pre_validation_transformer=enriched_ffl_pre_validation_transformer
+    pre_validation_transformer=enriched_ffl_pre_validation_transformer,
 )
 
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)

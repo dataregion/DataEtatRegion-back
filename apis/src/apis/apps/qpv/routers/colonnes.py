@@ -5,10 +5,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from apis.apps.budget.models.colonne import Colonnes
-from apis.apps.budget.services.get_colonnes import (
-    get_list_colonnes_grouping,
-    get_list_colonnes_tableau,
-)
+from apis.apps.budget.services.get_colonnes import get_list_colonnes_tableau
+
 from apis.database import get_session
 from models.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
