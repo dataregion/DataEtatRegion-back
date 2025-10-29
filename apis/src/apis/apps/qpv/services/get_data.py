@@ -1,6 +1,7 @@
 import asyncio
 from apis.apps.qpv.models.chart_data import ChartData
 from apis.apps.qpv.models.dashboard_data import DashboardData
+from apis.apps.qpv.models.map_data import MapData, QpvData
 from models.entities.financial.query.FlattenFinancialLinesDataQpv import (
     EnrichedFlattenFinancialLinesDataQPV,
 )
@@ -124,6 +125,23 @@ def get_annees_qpv(db: Session, params: SourcesQueryParams):
 
 @gauge_of_currently_executing()
 @summary_of_time()
+async def get_map_data(
+    db: Session,
+    params: QpvQueryParams,
+) -> MapData:
+    query_builder = _get_query_builder(db, params)
+
+    qb = query_builder.with_selection([
+        EnrichedFlattenFinancialLinesDataQPV.lieu_action_code_qpv.label("code_qpv"),
+        func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
+    ])
+    qb._query = qb._query.group_by(EnrichedFlattenFinancialLinesDataQPV.lieu_action_code_qpv)
+    rows = qb._session.execute(qb._query).all()
+    return MapData(data=[QpvData(qpv=r.code_qpv, montant=float(r.total or 0)) for r in rows])
+
+
+@gauge_of_currently_executing()
+@summary_of_time()
 async def get_dashboard_data(
     db: Session,
     params: QpvQueryParams,
@@ -192,6 +210,15 @@ async def _get_bar_chart_financeurs(query_builder: QpvQueryBuilder):
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.financeur) for r in rows], values=[float(r.total or 0) for r in rows])
 
+
+async def _get_line_chart_annees(query_builder: QpvQueryBuilder):
+    qb = query_builder.with_selection([
+        EnrichedFlattenFinancialLinesDataQPV.annee.label("annee"),
+        func.coalesce(func.sum(EnrichedFlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
+    ])
+    qb._query = qb._query.group_by(EnrichedFlattenFinancialLinesDataQPV.annee)
+    rows = qb._session.execute(qb._query).all()
+    return ChartData(labels=[str(r.annee) for r in rows], values=[float(r.total or 0) for r in rows])
 
 async def _get_line_chart_annees(query_builder: QpvQueryBuilder):
     qb = query_builder.with_selection([

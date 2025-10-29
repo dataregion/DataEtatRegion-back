@@ -8,7 +8,9 @@ from apis.apps.qpv.routers.dashboards import (
     router as router_dashboards,
 )
 from apis.apps.qpv.routers.colonnes import router as router_colonnes
-
+from apis.apps.qpv.routers.map import (
+    router as router_map,
+)
 
 app = FastAPI(
     title="API V3 - Data Etat - Data QPV",
@@ -26,3 +28,4 @@ app.include_router(router_healthcheck, prefix="/healthcheck", tags=["Healthcheck
 app.include_router(router_colonnes, prefix="/colonnes", tags=["Liste des colonnes"])
 app.include_router(router_lignes_financieres, prefix="/lignes", tags=["Lignes financieres"])
 app.include_router(router_dashboards, prefix="/dashboards", tags=["Dashboards"])
+app.include_router(router_map, prefix="/map", tags=["Map"])
