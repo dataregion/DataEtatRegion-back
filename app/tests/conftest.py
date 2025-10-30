@@ -2,11 +2,13 @@ from pathlib import Path
 import random
 
 from models.entities.financial.query import FlattenFinancialLines
+from models.entities.financial.query import FlattenFinancialLinesDataQPV
 import pytest
 from sqlalchemy import text
 
 from app import create_app_base, db
 from services.tests.DataEtatPostgresContainer import DataEtatPostgresContainer
+import logging
 
 # Initialisation du conteneur PostgreSQL et récupération de l'URL de connexion
 postgres_container = DataEtatPostgresContainer()
@@ -125,14 +127,17 @@ def database(app, connections, request):
     tablename = FlattenFinancialLines.__tablename__
     if tablename in db.metadata.tables:
         db.metadata.remove(db.metadata.tables[tablename])
+    tablename = FlattenFinancialLinesDataQPV.__tablename__
+    if tablename in db.metadata.tables:
+        db.metadata.remove(db.metadata.tables[tablename])
 
     with app.app_context():
         db.create_all()
 
-        conn = db.session.connection()
-        for view, sql in views_sql.items():
-            conn.execute(text(f"CREATE MATERIALIZED VIEW IF NOT EXISTS {view} AS {sql}"))
-        db.session.commit()
+        with db.engine.begin() as conn:
+            for view, sql in views_sql.items():
+                conn.execute(text(f"CREATE MATERIALIZED VIEW IF NOT EXISTS {view} AS {sql}"))
+            db.session.commit()
 
     return db
 

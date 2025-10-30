@@ -9,8 +9,6 @@ from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 
 from apis.services.model.schema_adapter import SchemaAdapter
 
-from apis.services.model.enriched_financial_lines_mappers import enriched_ffl_mappers
-
 from models.schemas.common import DataTypeField
 
 from ._utils_test_model import (
