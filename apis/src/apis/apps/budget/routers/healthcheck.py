@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 from services.utilities.observability import SummaryOfTimePerfCounter
 
 from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams
@@ -13,6 +12,8 @@ from apis.apps.budget.services.get_data import get_lignes
 from apis.database import get_session
 from apis.exception_handlers import error_responses
 from apis.shared.models import APISuccess
+
+from apis.apps.budget.routers.api_models import LignesFinancieres
 
 
 router = APIRouter()
@@ -35,12 +36,12 @@ def healthcheck(
     params.page_size = 10
 
     with SummaryOfTimePerfCounter.cm("hc_search_lignes_budgetaires"):
-        data, total, grouped, has_next = get_lignes(session, params)
+        raw, total, grouped, has_next = get_lignes(session, params)
 
     with SummaryOfTimePerfCounter.cm("hc_serialize_lignes_budgetaires"):
-        data = EnrichedFlattenFinancialLinesSchema(many=True).dump(data)
+        data = LignesFinancieres(total=total, lignes = raw)
 
-    assert len(data) == 10
+    assert len(data.lignes) == 10
 
     return APISuccess(
         code=HTTPStatus.OK,

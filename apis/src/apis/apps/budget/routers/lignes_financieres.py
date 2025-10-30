@@ -1,48 +1,30 @@
 from http import HTTPStatus
 import logging
 from types import NoneType
-from typing import Annotated, Literal, TypeVar
+from typing import TypeVar
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
-from models.entities.financial.query import EnrichedFlattenFinancialLines
 
 from apis.apps.budget.models.grouped_data import GroupedData
 from apis.apps.budget.models.budget_query_params import (
     FinancialLineQueryParams,
     SourcesQueryParams,
 )
-from apis.apps.budget.models.total import Total
+from apis.apps.budget.routers.api_models import Groupings, LigneFinanciere, LignesFinancieres
 from apis.apps.budget.services.get_colonnes import validation_colonnes
 from apis.apps.budget.services.get_data import get_annees_budget, get_ligne, get_lignes
 from apis.database import get_session
 from models.connected_user import ConnectedUser
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
-from apis.services.model.pydantic_annotation import (
-    PydanticFromMarshmallowSchemaAnnotationFactory,
-)
-from apis.services.model.enriched_financial_lines_mappers import (
-    enriched_ffl_mappers,
-    enriched_ffl_pre_validation_transformer,
-)
 from apis.shared.models import APIError, APISuccess
 
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
-
-PydanticEnrichedFlattenFinancialLinesModel = PydanticFromMarshmallowSchemaAnnotationFactory[
-    EnrichedFlattenFinancialLinesSchema
-].create(
-    EnrichedFlattenFinancialLinesSchema,
-    custom_fields_mappers=enriched_ffl_mappers,
-    pre_validation_transformer=enriched_ffl_pre_validation_transformer,
-)
 
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 
@@ -54,21 +36,6 @@ def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
     else:
         params.data_source = "NATION"
     return params
-
-
-LigneFinanciere = Annotated[EnrichedFlattenFinancialLines, PydanticEnrichedFlattenFinancialLinesModel]
-
-
-class LignesFinancieres(BaseModel):
-    type: Literal["lignes_financieres"] = "lignes_financieres"
-    total: Total
-    lignes: list[LigneFinanciere]
-
-
-class Groupings(BaseModel):
-    type: Literal["groupings"] = "groupings"
-    total: Total
-    groupings: list[GroupedData]
 
 
 class LignesResponse(APISuccess[LignesFinancieres | Groupings | NoneType]):

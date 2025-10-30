@@ -2,7 +2,6 @@ from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,
 )
 
-from sqlalchemy import distinct
 from sqlalchemy.orm import Session
 
 from services.regions import get_request_regions, sanitize_source_region_for_bdd_request
@@ -131,11 +130,15 @@ def get_annees_budget(db: Session, params: SourcesQueryParams):
     assert params.source_region is not None
     _regions = get_request_regions(params.source_region)
 
-    builder = (
+    # TODO Remplacer avec la mécanique de Benjamin qui arrive avec les qpv
+    baseQ = (
         SourcesQueryBuilder(db, params)
-        .select_custom_model_properties([distinct(EnrichedFlattenFinancialLines.annee).label("annee")])
+        .select_custom_model_properties([EnrichedFlattenFinancialLines.annee])
         .source_region_in(_regions)
         .data_source_is(params.data_source)
-    )
-    data, has_next = builder.select_all()
-    return [item["annee"] for item in data]
+    )._query
+    
+    q = baseQ.with_only_columns(EnrichedFlattenFinancialLines.annee).distinct()
+    annees = db.execute(q).scalars().all()
+
+    return annees
