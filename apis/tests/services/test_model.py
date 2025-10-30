@@ -6,6 +6,7 @@ from apis.services.model.pydantic_annotation import make_pydantic_regles_from_ma
 
 from models.entities.financial.query import EnrichedFlattenFinancialLines
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
+from models.value_objects.common import DataType
 
 from apis.services.model.schema_adapter import SchemaAdapter
 
@@ -125,6 +126,7 @@ def test_model_flatten_financial_lines():
 
     data = EnrichedFlattenFinancialLines()
     data.id = 1337
+    data.source = "FINANCIAL_DATA_AE"
     data.n_ej = "test"
     data.n_poste_ej = 0
 
@@ -133,6 +135,7 @@ def test_model_flatten_financial_lines():
         instance = prune_none_and_empty(validated)
         assert instance == {
             "id": 1337,
+            "source": DataType.FINANCIAL_DATA_AE,
             "n_ej": "test",
             "n_poste_ej": 0,
         }
@@ -141,6 +144,7 @@ def test_model_flatten_financial_lines():
     _assert_validate(  # XXX Et aussi du contenu déjà serialisé
         {
             "id": 1337,
+            "source": "FINANCIAL_DATA_AE",
             "n_ej": "test",
             "n_poste_ej": 0,
         }
