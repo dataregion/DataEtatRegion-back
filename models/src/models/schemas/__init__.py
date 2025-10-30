@@ -19,7 +19,7 @@ from .financial import (
     FinancialAeSchema,
     FinancialCpSchema,
     EnrichedFlattenFinancialLinesSchema,
-    FlattenFinancialLinesDataQpvSchema
+    FlattenFinancialLinesDataQpvSchema,
 )
 from .preferences import (
     PreferenceFormSchema,

@@ -6,6 +6,7 @@ class AbstractFlattenFinancialLines(_PersistenceBaseModelInstance()):
     """
     Table correspondant à la vue à plat des lignes financières.
     """
+
     __abstract__ = True
 
     source = Column(String, primary_key=True, nullable=False)
