@@ -8,7 +8,6 @@ from sqlalchemy import text
 
 from app import create_app_base, db
 from services.tests.DataEtatPostgresContainer import DataEtatPostgresContainer
-import logging
 
 # Initialisation du conteneur PostgreSQL et récupération de l'URL de connexion
 postgres_container = DataEtatPostgresContainer()
