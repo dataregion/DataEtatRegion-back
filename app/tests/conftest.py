@@ -131,7 +131,7 @@ def database(app, connections, request):
 
         conn = db.session.connection()
         for view, sql in views_sql.items():
-            conn.execute(text(f"CREATE MATERIALIZED VIEW {view} AS {sql}"))
+            conn.execute(text(f"CREATE MATERIALIZED VIEW IF NOT EXISTS {view} AS {sql}"))
         db.session.commit()
 
     return db
