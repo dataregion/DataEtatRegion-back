@@ -3,13 +3,11 @@ import logging
 from typing import TypeVar
 
 from apis.apps.qpv.models.map_data import MapData
+from apis.shared.query_builder import SourcesQueryParams
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from apis.apps.qpv.models.qpv_query_params import (
-    QpvQueryParams,
-    SourcesQueryParams,
-)
+from apis.apps.qpv.models.qpv_query_params import QpvQueryParams
 from apis.apps.qpv.services.get_colonnes import validation_colonnes
 from apis.apps.qpv.services.get_data import get_map_data
 from apis.database import get_session
@@ -26,12 +24,9 @@ keycloak_validator = KeycloakTokenValidator.get_application_instance()
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 
 
-def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
+def handle_region_user(params: _params_T, user: ConnectedUser) -> _params_T:
     """Replace les paramètres en premier argument avec la source_region / data_source de la connexion utilisateur"""
-    if user.current_region != "NAT":
-        params.source_region = user.current_region
-    else:
-        params.data_source = "NATION"
+    params.source_region = user.current_region
     return params
 
 
@@ -50,8 +45,7 @@ async def get_map(
     session: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-    params = handle_national(params, user)
-
+    handle_region_user(params, user)
     # Validation des paramètres faisant référence à des colonnes
     validation_colonnes(params)
 

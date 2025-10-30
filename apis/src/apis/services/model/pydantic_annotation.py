@@ -1,5 +1,6 @@
 import logging
 from marshmallow import Schema, post_dump
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from pydantic_core import SchemaValidator, core_schema
 from apis.services.model.schema_adapter import FieldMapper, SchemaAdapter
 from models.schemas.utils import MarshmallowSafeGetAttrMixin
@@ -7,6 +8,11 @@ from models.schemas.utils import MarshmallowSafeGetAttrMixin
 
 from typing import Any, Generic, Type, TypeVar
 from marshmallow import fields
+
+from apis.services.model.enriched_financial_lines_mappers import (
+    get_mappers,
+    enriched_ffl_pre_validation_transformer,
+)
 
 ###
 TSchema = TypeVar("TSchema", bound=Schema)
@@ -177,3 +183,11 @@ class PydanticFromMarshmallowSchemaAnnotationFactory(Generic[TSchema]):
             pre_validation_transformer=pre_validation_transformer,
         )
         return _class
+
+
+def make_pydantic_regles_from_marshmallow(schema: SQLAlchemyAutoSchema, enriched: bool = False):
+    return PydanticFromMarshmallowSchemaAnnotationFactory[schema].create(
+        schema,
+        custom_fields_mappers=get_mappers(enriched),
+        pre_validation_transformer=enriched_ffl_pre_validation_transformer,
+    )

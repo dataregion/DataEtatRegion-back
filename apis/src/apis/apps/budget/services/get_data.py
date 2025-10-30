@@ -1,3 +1,4 @@
+from apis.shared.query_builder import SourcesQueryBuilder
 from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,
 )
@@ -12,14 +13,11 @@ from services.utilities.observability import (
 from models.utils import convert_exception
 
 from apis.apps.budget.models.budget_query_params import (
-    FinancialLineQueryParams,
+    BudgetQueryParams,
     SourcesQueryParams,
 )
 from apis.apps.budget.services.get_colonnes import get_list_colonnes_tableau
-from apis.apps.budget.services.query_builder import (
-    FinancialLineQueryBuilder,
-    SourcesQueryBuilder,
-)
+from apis.apps.budget.services.budget_query_builder import BudgetQueryBuilder
 from apis.shared.exceptions import NoCurrentRegion
 
 from .GetTotalOfLignes import GetTotalOfLignes
@@ -54,7 +52,7 @@ def get_ligne(db: Session, params: SourcesQueryParams, id: int):
 @summary_of_time()
 def get_lignes(
     db: Session,
-    params: FinancialLineQueryParams,
+    params: BudgetQueryParams,
     additionnal_source_region: str | None = None,
 ):
     """
@@ -69,13 +67,12 @@ def get_lignes(
     params.colonnes.append("id")
 
     builder = (
-        FinancialLineQueryBuilder(db, params)
+        BudgetQueryBuilder(db, params)
         .beneficiaire_siret_in(params.beneficiaire_code)
         .code_programme_in(params.code_programme)
         .themes_in(params.theme)
         .annee_in(params.annee)
         .niveau_code_geo_in(params.niveau_geo, params.code_geo, source_region)
-        .niveau_code_qpv_in(params.ref_qpv, params.code_qpv, source_region)
         .annee_in(params.annee)
         .centres_couts_in(params.centres_couts)
         .domaine_fonctionnel_in(params.domaine_fonctionnel)

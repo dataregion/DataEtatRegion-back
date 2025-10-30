@@ -4,11 +4,11 @@ from types import NoneType
 from typing import Annotated, TypeVar
 
 from fastapi import APIRouter, Depends
-from models.entities.financial.query.FlattenFinancialLinesDataQpv import EnrichedFlattenFinancialLinesDataQPV
+from models.entities.financial.query.FlattenFinancialLinesDataQpv import FlattenFinancialLinesDataQPV
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from models.schemas.financial import EnrichedFlattenFinancialLinesDataQpvSchema
+from models.schemas.financial import FlattenFinancialLinesDataQpvSchema
 
 from apis.apps.qpv.models.qpv_query_params import (
     QpvQueryParams,
@@ -20,13 +20,7 @@ from apis.database import get_session
 from models.connected_user import ConnectedUser
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
-from apis.services.model.pydantic_annotation import (
-    PydanticFromMarshmallowSchemaAnnotationFactory,
-)
-from apis.services.model.enriched_financial_lines_mappers import (
-    enriched_ffl_mappers,
-    enriched_ffl_pre_validation_transformer,
-)
+from apis.services.model.pydantic_annotation import make_pydantic_regles_from_marshmallow
 from apis.shared.models import APISuccess
 
 
@@ -34,27 +28,19 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
-PydanticEnrichedFlattenFinancialLinesModel = PydanticFromMarshmallowSchemaAnnotationFactory[
-    EnrichedFlattenFinancialLinesDataQpvSchema
-].create(
-    EnrichedFlattenFinancialLinesDataQpvSchema,
-    custom_fields_mappers=enriched_ffl_mappers,
-    pre_validation_transformer=enriched_ffl_pre_validation_transformer,
-)
+PydanticFlattenFinancialLinesModel = make_pydantic_regles_from_marshmallow(FlattenFinancialLinesDataQpvSchema, False)
+
 
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 
 
-def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
+def handle_region_user(params: _params_T, user: ConnectedUser) -> _params_T:
     """Replace les paramètres en premier argument avec la source_region / data_source de la connexion utilisateur"""
-    if user.current_region != "NAT":
-        params.source_region = user.current_region
-    else:
-        params.data_source = "NATION"
+    params.source_region = user.current_region
     return params
 
 
-LigneFinanciere = Annotated[EnrichedFlattenFinancialLinesDataQPV, PydanticEnrichedFlattenFinancialLinesModel]
+LigneFinanciere = Annotated[FlattenFinancialLinesDataQPV, PydanticFlattenFinancialLinesModel]
 
 
 class LignesFinancieres(BaseModel):
@@ -76,7 +62,7 @@ def get_lignes_financieres(
     session: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-    params = handle_national(params, user)
+    params = handle_region_user(params, user)
 
     # Validation des paramètres faisant référence à des colonnes
     validation_colonnes(params)
@@ -110,7 +96,7 @@ def get_annees(
     session: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-    params = handle_national(params, user)
+    params = handle_region_user(params, user)
     return APISuccess(
         code=HTTPStatus.OK,
         message="Liste des années présentes dans les lignes QPV",

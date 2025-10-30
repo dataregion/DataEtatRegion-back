@@ -8,7 +8,7 @@ from models.value_objects.common import DataType
 
 from apis.apps.budget.models.colonne import Colonne
 from apis.shared.exceptions import BadRequestError
-from apis.shared.query_builder import V3QueryParams
+from apis.shared.query_builder import FinancialLineQueryParams, V3QueryParams
 
 
 class SourcesQueryParams(V3QueryParams):
@@ -41,7 +41,7 @@ class SourcesQueryParams(V3QueryParams):
         return key
 
 
-class FinancialLineQueryParams(SourcesQueryParams):
+class BudgetQueryParams(FinancialLineQueryParams):
     def __init__(
         self,
         source_region: str | None = Query(None),
@@ -79,6 +79,19 @@ class FinancialLineQueryParams(SourcesQueryParams):
             source_region,
             data_source,
             source,
+            n_ej,
+            code_programme,
+            niveau_geo,
+            code_geo,
+            ref_qpv,
+            code_qpv,
+            theme,
+            beneficiaire_code,
+            beneficiaire_categorieJuridique_type,
+            annee,
+            centres_couts,
+            domaine_fonctionnel,
+            referentiel_programmation,
             colonnes,
             page,
             page_size,
@@ -87,37 +100,9 @@ class FinancialLineQueryParams(SourcesQueryParams):
             search,
             fields_search,
         )
-        self.n_ej = self._split(n_ej)
-        self.code_programme = self._split(code_programme)
-        self.niveau_geo = self._handle_default(niveau_geo)
-        self.code_geo = self._split(code_geo)
-        self.ref_qpv = self._handle_default(ref_qpv)
-        self.code_qpv = self._split(code_qpv)
-        self.theme = self._split(theme, "|")
-        self.beneficiaire_code = self._split(beneficiaire_code)
-        self.beneficiaire_categorieJuridique_type = self._split(beneficiaire_categorieJuridique_type)
-
-        self.annee = self._handle_default(annee)
-        self.annee = self._split(self.annee)
-        self.annee = [int(a) for a in self.annee] if self.annee is not None else []
-
-        self.centres_couts = self._split(centres_couts)
-        self.domaine_fonctionnel = self._split(domaine_fonctionnel)
-        self.referentiel_programmation = self._split(referentiel_programmation)
         self.tags = self._split(tags)
         self.grouping = self._split(grouping)
         self.grouped = self._split(grouped)
-
-        if bool(self.niveau_geo) ^ bool(self.code_geo):
-            raise BadRequestError(
-                code=HTTPStatus.BAD_REQUEST,
-                api_message="Les paramètres 'niveau_geo' et 'code_geo' doivent être fournis ensemble.",
-            )
-        if bool(self.ref_qpv) ^ bool(self.code_qpv):
-            raise BadRequestError(
-                code=HTTPStatus.BAD_REQUEST,
-                api_message="Les paramètres 'ref_qpv' et 'code_qpv' doivent être fournis ensemble.",
-            )
 
     def is_group_request(self):
         """Indique si la requête est une requête de grouping."""
@@ -188,9 +173,9 @@ class FinancialLineQueryParams(SourcesQueryParams):
         return key
 
     @staticmethod
-    def make_default() -> "FinancialLineQueryParams":
-        defaults = _extract_query_defaults(FinancialLineQueryParams)
-        default_inst = FinancialLineQueryParams(**defaults)
+    def make_default() -> "BudgetQueryParams":
+        defaults = _extract_query_defaults(BudgetQueryParams)
+        default_inst = BudgetQueryParams(**defaults)
         return default_inst
 
 

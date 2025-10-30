@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from apis.apps.budget.models.grouped_data import GroupedData
 from apis.apps.budget.models.budget_query_params import (
-    FinancialLineQueryParams,
+    BudgetQueryParams,
     SourcesQueryParams,
 )
 from apis.apps.budget.routers.api_models import Groupings, LigneFinanciere, LignesFinancieres
@@ -19,12 +19,17 @@ from apis.database import get_session
 from models.connected_user import ConnectedUser
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
+from apis.services.model.pydantic_annotation import make_pydantic_regles_from_marshmallow
 from apis.shared.models import APIError, APISuccess
 
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
+
+PydanticEnrichedFlattenFinancialLinesModel = make_pydantic_regles_from_marshmallow(
+    EnrichedFlattenFinancialLinesSchema, True
+)
 
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 
@@ -53,7 +58,7 @@ class LigneResponse(APISuccess[LigneFinanciere]):
     responses=error_responses(),
 )
 def get_lignes_financieres(
-    params: FinancialLineQueryParams = Depends(),
+    params: BudgetQueryParams = Depends(),
     session: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
