@@ -195,7 +195,7 @@ async def _get_pie_chart_themes(query_builder: QpvQueryBuilder):
             func.coalesce(func.sum(FlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
         ]
     )
-    qb._query = qb._query.group_by(FlattenFinancialLinesDataQPV.programme_theme)
+    qb._query = qb._query.group_by(None).group_by(FlattenFinancialLinesDataQPV.programme_theme)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.theme) for r in rows], values=[float(r.total or 0) for r in rows])
 
@@ -207,7 +207,7 @@ async def _get_pie_chart_types_porteur(query_builder: QpvQueryBuilder):
             func.coalesce(func.sum(FlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
         ]
     )
-    qb._query = qb._query.group_by(FlattenFinancialLinesDataQPV.beneficiaire_categorieJuridique_type)
+    qb._query = qb._query.group_by(None).group_by(FlattenFinancialLinesDataQPV.beneficiaire_categorieJuridique_type)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.type_porteur) for r in rows], values=[float(r.total or 0) for r in rows])
 
@@ -219,7 +219,7 @@ async def _get_bar_chart_financeurs(query_builder: QpvQueryBuilder):
             func.coalesce(func.sum(FlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
         ]
     )
-    qb._query = qb._query.group_by(FlattenFinancialLinesDataQPV.centreCouts_description)
+    qb._query = qb._query.group_by(None).group_by(FlattenFinancialLinesDataQPV.centreCouts_description)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.financeur) for r in rows], values=[float(r.total or 0) for r in rows])
 
@@ -231,7 +231,7 @@ async def _get_line_chart_annees(query_builder: QpvQueryBuilder):
             func.coalesce(func.sum(FlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
         ]
     )
-    qb._query = qb._query.group_by(FlattenFinancialLinesDataQPV.annee)
+    qb._query = qb._query.group_by(None).group_by(FlattenFinancialLinesDataQPV.annee)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(r.annee) for r in rows], values=[float(r.total or 0) for r in rows])
 
@@ -243,7 +243,7 @@ async def _get_line_chart_annees(query_builder: QpvQueryBuilder):
             func.coalesce(func.sum(FlattenFinancialLinesDataQPV.montant_ae), 0.0).label("total"),
         ]
     )
-    qb._query = qb._query.group_by(FlattenFinancialLinesDataQPV.annee)
-    qb._query = qb._query.order_by(FlattenFinancialLinesDataQPV.annee)
+    qb._query = qb._query.group_by(None).group_by(FlattenFinancialLinesDataQPV.annee)
+    qb._query = qb._query.order_by(None).order_by(FlattenFinancialLinesDataQPV.annee)
     rows = qb._session.execute(qb._query).all()
     return ChartData(labels=[str(int(r.annee)) for r in rows], values=[float(r.total or 0) for r in rows])
