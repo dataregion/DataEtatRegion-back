@@ -1,10 +1,7 @@
 from dataclasses import dataclass
 
-from app.models.utils import _InstrumentForFlaskRestx
-
-
 @dataclass
-class RepresentantLegal(metaclass=_InstrumentForFlaskRestx):
+class RepresentantLegal():
     nom: str
     prenom: str
     civilite: str
@@ -14,13 +11,13 @@ class RepresentantLegal(metaclass=_InstrumentForFlaskRestx):
 
 
 @dataclass
-class ActionProposee(metaclass=_InstrumentForFlaskRestx):
+class ActionProposee():
     intitule: str
     objectifs: str
 
 
 @dataclass
-class Subvention(metaclass=_InstrumentForFlaskRestx):
+class Subvention():
     ej: str
     service_instructeur: str
     dispositif: str

@@ -10,10 +10,9 @@ def read_requirements(filename):
     with open(filename) as f:
         return f.read().splitlines()
 
+requirements = read_requirements("requirements.external.in")
+requirements += [
+    f"models @ {models_path}",
+]
 
-setup(
-    install_requires=[
-        # Dépendances locales
-        f"models @ {models_path}",
-    ]
-)
+setup(install_requires=requirements)

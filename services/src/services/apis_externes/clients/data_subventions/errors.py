@@ -3,8 +3,12 @@ from dataclasses import dataclass
 
 @dataclass
 class CallErrorDescription:
-    code: str
-    description: str | None
+    status_code: str
+    """Status code de l'appel HTTP distant"""
+    api_code: str | None
+    """Code API de l'erreur"""
+    message: str | None
+    """Message de l'erreur"""
 
 
 class ApiDataSubventionException(Exception):

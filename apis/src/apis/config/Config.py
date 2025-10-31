@@ -1,4 +1,7 @@
 from models.value_objects.redis_connection_info import RedisConnectionInfo
+from models.value_objects.api_entreprise_info import ApiEntrepriseInfo
+from models.value_objects.api_data_subvention_info import ApiDataSubventionInfo
+from models.value_objects.ratelimiter_info import RateLimiterInfo
 from pydantic import BaseModel, Field
 
 
@@ -37,3 +40,11 @@ class Config(BaseModel):
     cache_config: CacheConfig
     
     redis_applicatif: RedisConnectionInfo
+
+    api_data_subventions: ApiDataSubventionInfo
+
+    api_entreprise: ApiEntrepriseInfo
+    api_entreprise_ratelimiter: RateLimiterInfo
+
+    api_entreprise_batch: ApiEntrepriseInfo
+    api_entreprise_batch_ratelimiter: RateLimiterInfo

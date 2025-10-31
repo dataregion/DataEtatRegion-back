@@ -1,9 +1,4 @@
 from dataclasses import dataclass
-
-
-from ..utils import _InstrumentForFlaskRestx
-
-
 from api_entreprise import (
     DonneesEtablissement,
     NumeroTvaHolder,
@@ -12,9 +7,8 @@ from api_entreprise import (
     CertificationQualibat,
 )
 
-
 @dataclass
-class InfoApiEntreprise(metaclass=_InstrumentForFlaskRestx):
+class InfoApiEntreprise():
     """Informations qui proviennent de l'API entreprise"""
 
     donnees_etablissement: DonneesEtablissement

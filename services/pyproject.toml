@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "services"
-dynamic = ["version"]
+dynamic = ["version", "dependencies"]
 description = "Services communs pour l'application DRN"
-dependencies = [ ]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]

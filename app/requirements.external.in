@@ -28,7 +28,6 @@ pandas ~= 2.0
 
 more-itertools ~= 10.2
 requests ~= 2.31
-pyrate-limiter ~= 2.10
 wget ~= 3.2
 tenacity ~= 9.0
 

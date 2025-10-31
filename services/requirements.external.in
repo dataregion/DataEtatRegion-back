@@ -1,0 +1,2 @@
+redis ~= 4.6
+api-entreprise >= 3.7.2

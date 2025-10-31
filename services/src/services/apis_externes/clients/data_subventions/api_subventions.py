@@ -39,12 +39,12 @@ class ApiSubventions:
     def _json_to_representants_legaux(self, json_dict) -> list[RepresentantLegal]:
         def map(raw):
             representant = RepresentantLegal(
-                nom=_dict_get_nested(raw, "value", "nom"),
-                prenom=_dict_get_nested(raw, "value", "prenom"),
-                civilite=_dict_get_nested(raw, "value", "civilite"),
-                role=_dict_get_nested(raw, "value", "role"),
-                telephone=_dict_get_nested(raw, "value", "telephone"),
-                email=_dict_get_nested(raw, "value", "email"),
+                nom=_dict_get_nested(raw, "value", "nom"), # type: ignore
+                prenom=_dict_get_nested(raw, "value", "prenom"), # type: ignore
+                civilite=_dict_get_nested(raw, "value", "civilite"), # type: ignore
+                role=_dict_get_nested(raw, "value", "role"), # type: ignore
+                telephone=_dict_get_nested(raw, "value", "telephone"), # type: ignore
+                email=_dict_get_nested(raw, "value", "email"), # type: ignore
             )
             return representant
 
@@ -56,12 +56,12 @@ class ApiSubventions:
             raw_actions_proposee = _dict_get_nested(raw, "actions_proposee", default=[])
 
             subvention = Subvention(
-                ej=_dict_get_nested(raw, "ej", "value"),
-                service_instructeur=_dict_get_nested(raw, "service_instructeur", "value"),
-                dispositif=_dict_get_nested(raw, "dispositif", "value"),
-                sous_dispositif=_dict_get_nested(raw, "sous_dispositif", "value"),
-                montant_demande=_dict_get_nested(raw, "montants", "demande", "value"),
-                montant_accorde=_dict_get_nested(raw, "montants", "accorde", "value"),
+                ej=_dict_get_nested(raw, "ej", "value"), # type: ignore
+                service_instructeur=_dict_get_nested(raw, "service_instructeur", "value"), # type: ignore
+                dispositif=_dict_get_nested(raw, "dispositif", "value"), # type: ignore
+                sous_dispositif=_dict_get_nested(raw, "sous_dispositif", "value"), # type: ignore
+                montant_demande=_dict_get_nested(raw, "montants", "demande", "value"), # type: ignore
+                montant_accorde=_dict_get_nested(raw, "montants", "accorde", "value"), # type: ignore
                 actions_proposees=[_parse_action_proposee(x) for x in raw_actions_proposee],
             )
             return subvention
@@ -72,6 +72,7 @@ class ApiSubventions:
 
 def _parse_action_proposee(dict) -> ActionProposee:
     return ActionProposee(
-        intitule=_dict_get_nested(dict, "intitule", "value"),
-        objectifs=_dict_get_nested(dict, "objectifs", "value"),
+        intitule=_dict_get_nested(dict, "intitule", "value"), # type: ignore
+        objectifs=_dict_get_nested(dict, "objectifs", "value"), # type: ignore
     )
+
