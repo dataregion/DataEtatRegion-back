@@ -1,7 +1,6 @@
 from http import HTTPStatus
 from logging import Logger
 from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from sqlalchemy.orm import Session, DeclarativeBase
 from typing import Type
@@ -18,6 +17,7 @@ from apis.shared.models import APISuccess
 def create_referentiel_router(
     model: Type[DeclarativeBase],
     schema: SQLAlchemyAutoSchema,
+    success_response: APISuccess,
     keycloak_validator: KeycloakTokenValidator,
     logger: Logger,
     model_name: str,
@@ -29,7 +29,7 @@ def create_referentiel_router(
     @router.get(
         "",
         summary=f"Liste de tous les {model_name}",
-        response_class=JSONResponse,
+        response_model=success_response,
         responses=error_responses(),
     )
     def list_all(
@@ -50,7 +50,7 @@ def create_referentiel_router(
         return APISuccess(
             code=HTTPStatus.OK,
             message=f"Liste des {model_name}",
-            data=schema(many=True).dump(data),
+            data=schema(only=params.colonnes or schema._declared_fields.keys(), many=True).dump(data),
             has_next=has_next,
             current_page=params.page,
         )
@@ -58,7 +58,7 @@ def create_referentiel_router(
     @router.get(
         "/{code}",
         summary=f"Get {model_name} by code",
-        response_class=JSONResponse,
+        response_model=success_response,
         responses=error_responses(),
     )
     def get_by_code(
@@ -76,11 +76,12 @@ def create_referentiel_router(
                 message="Aucun résultat ne correspond à vos critères de recherche",
                 data=[],
             )
+        data = [data]
 
         return APISuccess(
             code=HTTPStatus.OK,
             message=f"{model_name.capitalize()}[code={code}]",
-            data=schema(many=False).dump(data),
+            data=schema(only=params.colonnes or schema._declared_fields.keys(), many=True).dump(data),
         )
 
     return router

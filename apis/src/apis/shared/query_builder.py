@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Generic, Literal, Optional, TypeVar, Union
+from typing import Annotated, Generic, Literal, Optional, TypeVar, Union, get_args, get_origin
 
 from fastapi import Query
 from fastapi.params import Query as QueryCls
@@ -118,6 +118,8 @@ class V3QueryBuilder(Generic[T]):
     def __init__(self, model: type[T], session: Session, params: V3QueryParams):
         self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
         self._model = model
+        if get_origin(model) is Annotated:
+            self._model = get_args(model)[0]
         self._session = session
         self._params = params
         self._query = select(self._model)
@@ -142,7 +144,7 @@ class V3QueryBuilder(Generic[T]):
 
     def where_custom(self, where: ColumnExpressionArgument[bool]):
         self._query = self._query.where(where)
-        return self._query
+        return self
 
     def where_field_is(self, colonne: Column, value: dict, can_be_null=False):
         if value is None:
