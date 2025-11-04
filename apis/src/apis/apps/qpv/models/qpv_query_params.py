@@ -2,8 +2,6 @@ from http import HTTPStatus
 from typing import Literal
 from fastapi import Query
 
-from models.value_objects.common import DataType
-
 from apis.shared.exceptions import BadRequestError
 from apis.shared.query_builder import SourcesQueryParams
 

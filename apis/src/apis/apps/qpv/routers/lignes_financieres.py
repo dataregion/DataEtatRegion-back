@@ -28,7 +28,9 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
-PydanticFlattenFinancialLinesModel = make_pydantic_annotation_from_marshmallow_lignes(FlattenFinancialLinesDataQpvSchema, False)
+PydanticFlattenFinancialLinesModel = make_pydantic_annotation_from_marshmallow_lignes(
+    FlattenFinancialLinesDataQpvSchema, False
+)
 
 
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
