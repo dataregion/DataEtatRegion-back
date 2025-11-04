@@ -18,3 +18,44 @@ redis_applicatif:
   host: localhost
   port: 16379
   db: 10
+
+api_data_subventions:
+  url: https://url-bidon
+  token: bidon
+
+##
+api_entreprise:
+  url: https://api-entreprise
+  token: bidon
+
+  context: context
+  recipient: 26350579400028
+  object: object
+
+  timeout_seconds: 30
+
+api_entreprise_ratelimiter:
+  limit: 100
+  duration: 10
+  redis:
+    host: localhost
+    port: 16379
+    db: 2
+##
+##
+api_entreprise_batch:
+  url: https://api-entreprise.batch
+  token: bidon
+  context: context
+  recipient: 26350579400028
+  object: object
+  
+  timeout_seconds: 5
+
+api_entreprise_batch_ratelimiter:
+  limit: 10000
+  duration: 60
+  redis:
+    host: localhost
+    port: 16379
+    db: 3
