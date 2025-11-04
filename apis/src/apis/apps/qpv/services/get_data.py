@@ -111,8 +111,8 @@ def get_annees_qpv(db: Session, params: SourcesQueryParams):
     _regions = get_request_regions(params.source_region)
 
     builder = (
-        SourcesQueryBuilder(db, params)
-        .select_custom_colonnes([distinct(FlattenFinancialLinesDataQPV.annee).label("annee")])
+        SourcesQueryBuilder(FlattenFinancialLinesDataQPV, db, params)
+        .select_custom_model_properties([distinct(FlattenFinancialLinesDataQPV.annee).label("annee")])
         .source_region_in(_regions)
         .data_source_is(params.data_source)
     )

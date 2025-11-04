@@ -133,7 +133,7 @@ class V3QueryBuilder(Generic[T]):
             self.select_custom_model_properties(selected_colonnes)
 
     def select_custom_model_properties(self, colonnes: list, is_grouping: bool = False):
-        if is_grouping:
+        if is_grouping or any(not hasattr(c, "property") for c in colonnes):
             self._query = select(*colonnes).select_from(self._model)
             self._is_grouping = True
         else:
