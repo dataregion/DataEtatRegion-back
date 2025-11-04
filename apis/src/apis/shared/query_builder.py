@@ -358,7 +358,6 @@ class FinancialLineQueryParams(SourcesQueryParams):
         source_region: str | None = Query(None),
         data_source: str | None = Query(None),
         source: str | None = Query(None),
-        n_ej: str | None = Query(None),
         code_programme: str | None = Query(None),
         niveau_geo: str | None = Query(None),
         code_geo: str | None = Query(None),
@@ -371,8 +370,6 @@ class FinancialLineQueryParams(SourcesQueryParams):
         ),
         annee: str | None = Query(None),
         centres_couts: str | None = Query(None),
-        domaine_fonctionnel: str | None = Query(None),
-        referentiel_programmation: str | None = Query(None),
         colonnes: str | None = Query(
             None, description="Liste des codes des colonnes à récupérer, séparés par des virgules"
         ),
@@ -395,7 +392,6 @@ class FinancialLineQueryParams(SourcesQueryParams):
             search,
             fields_search,
         )
-        self.n_ej = self._split(n_ej)
         self.code_programme = self._split(code_programme)
         self.niveau_geo = self._handle_default(niveau_geo)
         self.code_geo = self._split(code_geo)
@@ -410,19 +406,6 @@ class FinancialLineQueryParams(SourcesQueryParams):
         self.annee = [int(a) for a in self.annee] if self.annee is not None else []
 
         self.centres_couts = self._split(centres_couts)
-        self.domaine_fonctionnel = self._split(domaine_fonctionnel)
-        self.referentiel_programmation = self._split(referentiel_programmation)
-
-        if bool(self.niveau_geo) ^ bool(self.code_geo):
-            raise BadRequestError(
-                code=HTTPStatus.BAD_REQUEST,
-                api_message="Les paramètres 'niveau_geo' et 'code_geo' doivent être fournis ensemble.",
-            )
-        if bool(self.ref_qpv) ^ bool(self.code_qpv):
-            raise BadRequestError(
-                code=HTTPStatus.BAD_REQUEST,
-                api_message="Les paramètres 'ref_qpv' et 'code_qpv' doivent être fournis ensemble.",
-            )
 
     def map_colonnes_tableau(self, list_colonnes: Colonnes):
         casted = []

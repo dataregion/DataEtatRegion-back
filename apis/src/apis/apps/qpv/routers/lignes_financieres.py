@@ -3,6 +3,7 @@ import logging
 from types import NoneType
 from typing import Annotated, TypeVar
 
+from apis.shared.query_builder import SourcesQueryParams
 from fastapi import APIRouter, Depends
 from models.entities.financial.query.FlattenFinancialLinesDataQpv import FlattenFinancialLinesDataQPV
 from pydantic import BaseModel
@@ -10,10 +11,7 @@ from sqlalchemy.orm import Session
 
 from models.schemas.financial import FlattenFinancialLinesDataQpvSchema
 
-from apis.apps.qpv.models.qpv_query_params import (
-    QpvQueryParams,
-    SourcesQueryParams,
-)
+from apis.apps.qpv.models.qpv_query_params import QpvQueryParams
 from apis.apps.qpv.services.get_colonnes import validation_colonnes
 from apis.apps.qpv.services.get_data import get_annees_qpv, get_lignes
 from apis.database import get_session

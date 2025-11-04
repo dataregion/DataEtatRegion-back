@@ -3,10 +3,10 @@ from typing import Literal
 from fastapi import Query
 
 from apis.shared.exceptions import BadRequestError
-from apis.shared.query_builder import SourcesQueryParams
+from apis.shared.query_builder import FinancialLineQueryParams
 
 
-class QpvQueryParams(SourcesQueryParams):
+class QpvQueryParams(FinancialLineQueryParams):
     def __init__(
         self,
         source_region: str | None = Query(None),
@@ -37,6 +37,16 @@ class QpvQueryParams(SourcesQueryParams):
             source_region,
             data_source,
             source,
+            code_programme,
+            niveau_geo,
+            code_geo,
+            ref_qpv,
+            code_qpv,
+            theme,
+            beneficiaire_code,
+            beneficiaire_categorieJuridique_type,
+            annee,
+            centres_couts,
             colonnes,
             page,
             page_size,
@@ -45,17 +55,7 @@ class QpvQueryParams(SourcesQueryParams):
             search,
             fields_search,
         )
-        self.code_programme = self._split(code_programme)
         self.not_code_programme = self._split(not_code_programme)
-        self.niveau_geo = niveau_geo
-        self.code_geo = self._split(code_geo)
-        self.ref_qpv = ref_qpv
-        self.code_qpv = self._split(code_qpv)
-        self.theme = self._split(theme, "|")
-        self.beneficiaire_code = self._split(beneficiaire_code)
-        self.beneficiaire_categorieJuridique_type = self._split(beneficiaire_categorieJuridique_type)
-        self.annee = [int(a) for a in self._split(annee)] if annee is not None else []
-        self.centres_couts = self._split(centres_couts)
 
         if bool(self.niveau_geo) ^ bool(self.code_geo):
             raise BadRequestError(

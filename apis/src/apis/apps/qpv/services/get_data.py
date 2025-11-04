@@ -2,7 +2,7 @@ import asyncio
 from apis.apps.qpv.models.chart_data import ChartData
 from apis.apps.qpv.models.dashboard_data import DashboardData
 from apis.apps.qpv.models.map_data import MapData, QpvData
-from apis.shared.query_builder import SourcesQueryBuilder
+from apis.shared.query_builder import SourcesQueryBuilder, SourcesQueryParams
 from models.entities.financial.query.FlattenFinancialLinesDataQpv import FlattenFinancialLinesDataQPV
 from models.schemas.financial import FlattenFinancialLinesDataQpvSchema
 
@@ -16,10 +16,7 @@ from services.utilities.observability import (
 )
 from models.utils import convert_exception
 
-from apis.apps.qpv.models.qpv_query_params import (
-    QpvQueryParams,
-    SourcesQueryParams,
-)
+from apis.apps.qpv.models.qpv_query_params import QpvQueryParams
 from apis.apps.qpv.services.get_colonnes import get_list_colonnes_tableau
 from apis.apps.qpv.services.qpv_query_builder import QpvQueryBuilder
 from apis.shared.exceptions import NoCurrentRegion
