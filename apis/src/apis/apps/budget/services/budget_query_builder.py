@@ -18,7 +18,7 @@ from services.helper import (
 from services.helper import TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver
 
 from apis.apps.budget.models.budget_query_params import BudgetQueryParams
-from apis.apps.budget.models.colonne import Colonne
+from apis.shared.colonne import Colonne
 from apis.shared.enums import BenefOrLoc
 from apis.shared.query_builder import FinancialLineQueryBuilder
 

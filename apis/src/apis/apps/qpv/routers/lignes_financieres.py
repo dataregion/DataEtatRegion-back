@@ -20,7 +20,7 @@ from apis.database import get_session
 from models.connected_user import ConnectedUser
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
-from apis.services.model.pydantic_annotation import make_pydantic_regles_from_marshmallow
+from apis.services.model.pydantic_annotation import make_pydantic_annotation_from_marshmallow_lignes
 from apis.shared.models import APISuccess
 
 
@@ -28,7 +28,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
-PydanticFlattenFinancialLinesModel = make_pydantic_regles_from_marshmallow(FlattenFinancialLinesDataQpvSchema, False)
+PydanticFlattenFinancialLinesModel = make_pydantic_annotation_from_marshmallow_lignes(FlattenFinancialLinesDataQpvSchema, False)
 
 
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)

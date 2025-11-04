@@ -2,7 +2,7 @@ from typing import Annotated
 from pydantic import TypeAdapter, ValidationError
 import pytest
 
-from apis.services.model.pydantic_annotation import make_pydantic_regles_from_marshmallow
+from apis.services.model.pydantic_annotation import make_pydantic_annotation_from_marshmallow_lignes
 
 from models.entities.financial.query import EnrichedFlattenFinancialLines
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
@@ -115,7 +115,7 @@ def test_pydanticed_factory():
 
 ##############
 # Test with a more concrete case
-EnrichedFlattenFinancialLinesModelAnnotation = make_pydantic_regles_from_marshmallow(
+EnrichedFlattenFinancialLinesModelAnnotation = make_pydantic_annotation_from_marshmallow_lignes(
     EnrichedFlattenFinancialLinesSchema, True
 )
 EnrichedFlattenFinancialLinesModel = Annotated[dict, EnrichedFlattenFinancialLinesModelAnnotation]

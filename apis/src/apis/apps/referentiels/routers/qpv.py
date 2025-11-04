@@ -1,14 +1,14 @@
 from http import HTTPStatus
 import logging
 from typing import Annotated
-from apis.services.model.pydantic_annotation import make_pydantic_regles_from_marshmallow
+from apis.services.model.pydantic_annotation import make_pydantic_annotation_from_marshmallow
+from apis.shared.query_builder import V3QueryParams
 from fastapi import Depends
 from requests import Session
 
 from models.entities.refs.Qpv import Qpv as QpvFlask
 from models.schemas.refs import QpvSchema
 
-from apis.apps.budget.models.budget_query_params import V3QueryParams
 from apis.apps.referentiels.services.get_data import get_all_data
 from apis.apps.referentiels.services.referentiels_router_factory import (
     create_referentiel_router,
@@ -20,7 +20,7 @@ from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.models import APISuccess
 
 
-PydanticQpvModel = make_pydantic_regles_from_marshmallow(QpvSchema, False)
+PydanticQpvModel = make_pydantic_annotation_from_marshmallow(QpvSchema)
 Qpv = Annotated[QpvFlask, PydanticQpvModel]
 
 

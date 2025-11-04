@@ -1,11 +1,11 @@
 from http import HTTPStatus
 from logging import Logger
+from apis.shared.query_builder import V3QueryParams
 from fastapi import APIRouter, Depends
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from sqlalchemy.orm import Session, DeclarativeBase
 from typing import Type
 
-from apis.apps.budget.models.budget_query_params import V3QueryParams
 from apis.apps.referentiels.services.get_data import get_all_data, get_one_data
 from apis.database import get_session
 from models.connected_user import ConnectedUser

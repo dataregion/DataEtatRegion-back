@@ -5,7 +5,7 @@ from models.entities.financial.query.FlattenFinancialLinesDataQpv import (
     FlattenFinancialLinesDataQPV,
 )
 
-from apis.apps.budget.models.colonne import Colonne
+from apis.shared.colonne import Colonne
 
 
 def get_list_colonnes_tableau() -> list[Colonne]:

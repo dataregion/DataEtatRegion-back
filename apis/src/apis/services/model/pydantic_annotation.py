@@ -185,9 +185,13 @@ class PydanticFromMarshmallowSchemaAnnotationFactory(Generic[TSchema]):
         return _class
 
 
-def make_pydantic_regles_from_marshmallow(schema: SQLAlchemyAutoSchema, enriched: bool = False):
+def make_pydantic_annotation_from_marshmallow_lignes(schema: SQLAlchemyAutoSchema, enriched: bool = False):
     return PydanticFromMarshmallowSchemaAnnotationFactory[schema].create(
         schema,
         custom_fields_mappers=get_mappers(enriched),
         pre_validation_transformer=enriched_ffl_pre_validation_transformer,
     )
+
+
+def make_pydantic_annotation_from_marshmallow(schema: SQLAlchemyAutoSchema):
+    return PydanticFromMarshmallowSchemaAnnotationFactory[schema].create(schema)

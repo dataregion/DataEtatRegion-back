@@ -1,4 +1,3 @@
-from apis.shared.query_builder import SourcesQueryBuilder
 from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,
 )
@@ -12,10 +11,8 @@ from services.utilities.observability import (
 )
 from models.utils import convert_exception
 
-from apis.apps.budget.models.budget_query_params import (
-    BudgetQueryParams,
-    SourcesQueryParams,
-)
+from apis.shared.query_builder import SourcesQueryBuilder, SourcesQueryParams
+from apis.apps.budget.models.budget_query_params import BudgetQueryParams
 from apis.apps.budget.services.get_colonnes import get_list_colonnes_tableau
 from apis.apps.budget.services.budget_query_builder import BudgetQueryBuilder
 from apis.shared.exceptions import NoCurrentRegion
@@ -40,7 +37,7 @@ def get_ligne(db: Session, params: SourcesQueryParams, id: int):
     _regions = get_request_regions(source_region)
 
     builder = (
-        SourcesQueryBuilder(db, params)
+        SourcesQueryBuilder(EnrichedFlattenFinancialLines, db, params)
         .par_identifiant_technique(params.source, id)
         .data_source_is(params.data_source)
         .source_region_in(_regions)
@@ -127,10 +124,9 @@ def get_annees_budget(db: Session, params: SourcesQueryParams):
     assert params.source_region is not None
     _regions = get_request_regions(params.source_region)
 
-    # TODO Remplacer avec la mécanique de Benjamin qui arrive avec les qpv
-    baseQ = (
-        SourcesQueryBuilder(db, params)
-        .select_custom_model_properties([EnrichedFlattenFinancialLines.annee])
+    builder = (
+        SourcesQueryBuilder(EnrichedFlattenFinancialLines, db, params)
+        .select_custom_model_properties([distinct(EnrichedFlattenFinancialLines.annee).label("annee")])
         .source_region_in(_regions)
         .data_source_is(params.data_source)
     )._query

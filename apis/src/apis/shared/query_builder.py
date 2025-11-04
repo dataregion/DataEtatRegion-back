@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from typing import Annotated, Generic, Literal, Optional, TypeVar, Union, get_args, get_origin
 
+from apis.shared.colonne import Colonnes
 from fastapi import Query
 from fastapi.params import Query as QueryCls
 from models.value_objects.common import DataType
@@ -422,6 +423,19 @@ class FinancialLineQueryParams(SourcesQueryParams):
                 code=HTTPStatus.BAD_REQUEST,
                 api_message="Les paramètres 'ref_qpv' et 'code_qpv' doivent être fournis ensemble.",
             )
+
+    def map_colonnes_tableau(self, list_colonnes: Colonnes):
+        casted = []
+        colonnes = self.colonnes or []
+        for colonne in colonnes:
+            found = [x for x in list_colonnes if x.code == colonne]
+            if len(found) == 0:
+                raise BadRequestError(
+                    code=HTTPStatus.BAD_REQUEST,
+                    api_message=f"La colonne demandée '{colonne}' n'existe pas pour le tableau.",
+                )
+            casted.append(found[0])
+        self.colonnes = casted
 
     def _get_total_cache_dict(self) -> dict | None:
         key = super()._get_total_cache_dict()
