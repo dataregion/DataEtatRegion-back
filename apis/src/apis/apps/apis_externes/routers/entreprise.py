@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
 router = APIRouter()
 
+
 @router.get(
     "/{siret}",
     response_model=InfoApiEntreprise,
@@ -20,7 +21,7 @@ router = APIRouter()
         500: {
             "model": ApiExterneError,
         }
-    }
+    },
 )
 def get_info_entreprise(
     siret: str,
@@ -30,4 +31,3 @@ def get_info_entreprise(
     Récupère les informations d'une entreprise à partir de son SIRET.
     """
     return retrieve_entreprise_info(siret)
-

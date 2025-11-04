@@ -7,8 +7,9 @@ from api_entreprise import (
     CertificationQualibat,
 )
 
+
 @dataclass
-class InfoApiEntreprise():
+class InfoApiEntreprise:
     """Informations qui proviennent de l'API entreprise"""
 
     donnees_etablissement: DonneesEtablissement

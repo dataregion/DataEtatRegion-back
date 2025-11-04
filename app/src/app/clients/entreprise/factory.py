@@ -7,6 +7,7 @@ from models.value_objects.ratelimiter_info import RateLimiterInfo, RedisConnecti
 from services.apis_externes.clients.entreprise.factory import make_api_entreprise as _make_api_entreprise
 from api_entreprise import ApiEntreprise
 
+
 def _ratelimiter_info_from_config(config_path: str):
     config = current_app.config[config_path]
 
@@ -27,6 +28,7 @@ def _ratelimiter_info_from_config(config_path: str):
     )
 
     return info
+
 
 def _make_api_entreprise_from_config(config_key: str) -> ApiEntreprise | None:
     """Fabrique un client API à partir d'une clé de configuration Flask."""
@@ -59,6 +61,7 @@ def _make_api_entreprise_from_config(config_key: str) -> ApiEntreprise | None:
     ratelimiter_info = _ratelimiter_info_from_config(config_key)
     api_entreprise = _make_api_entreprise(info, ratelimiter_info)
     return api_entreprise
+
 
 def make_api_entreprise_batch() -> ApiEntreprise | None:
     """Fabrique un client API pour l'API entreprise utilisable en mode batch."""

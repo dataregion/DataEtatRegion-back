@@ -11,6 +11,7 @@ from . import api
 from . import logger
 from ...clients.demarche_simplifie.errors import InvalidTokenError, UnauthorizedOnDemarche, DemarcheNotFound
 
+
 @api.errorhandler(InvalidTokenError)
 @api.response(500, "Internal Server Error", model=ApiError.schema_model(api))
 def handle_invalid_token_error(error):

@@ -16,13 +16,14 @@ api_entreprise_info_batch = get_config().api_entreprise_batch
 api_entreprise_info_batch_ratelimiter = get_config().api_entreprise_batch_ratelimiter
 api_entreprise_batch = make_api_entreprise(api_entreprise_info_batch, api_entreprise_info_batch_ratelimiter)
 
+
 def _siren(siret: str):
     return siret[0:9]
 
+
 def retrieve_entreprise_info(siret, use_batch=False) -> InfoApiEntreprise:
-    
     _api = api_entreprise_batch if use_batch else api_entreprise
-    
+
     assert _api is not None
     donnees_etablissement = _api.donnees_etablissement(siret)
 

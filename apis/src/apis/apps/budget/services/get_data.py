@@ -137,7 +137,7 @@ def get_annees_budget(db: Session, params: SourcesQueryParams):
         .source_region_in(_regions)
         .data_source_is(params.data_source)
     )._query
-    
+
     q = baseQ.with_only_columns(EnrichedFlattenFinancialLines.annee).distinct()
     annees = db.execute(q).scalars().all()
 

@@ -41,9 +41,9 @@ class CacheableTotalQuery(ABC):
                     # Gérer les listes d'objets non-hashables
                     hashable_list = []
                     for item in value:
-                        if hasattr(item, 'code'): 
+                        if hasattr(item, "code"):
                             hashable_list.append(item.code)
-                        elif hasattr(item, '__dict__'):  # Objet standard avec attributs
+                        elif hasattr(item, "__dict__"):  # Objet standard avec attributs
                             hashable_list.append(frozenset(item.__dict__.items()))
                         else:
                             hashable_list.append(str(item))  # Fallback en string

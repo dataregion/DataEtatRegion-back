@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
 router = APIRouter()
 
+
 @router.get(
     "/{siret}",
     response_model=InfoApiSubvention,
@@ -19,7 +20,7 @@ router = APIRouter()
         500: {
             "model": ApiExterneError,
         }
-    }
+    },
 )
 def get_info_subvention(
     siret: str,

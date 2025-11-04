@@ -50,25 +50,26 @@ def test_when_property_doesnt_count_for_total_caching():
     assert id(key1) != id(key2), "Les clefs de cache doivent être des instances différentes"
     assert key1 == key2, "Les clefs de cache doivent être les mêmes"
 
+
 def test_cache_with_grouping_and_grouped():
     colonne = Colonne(
-            code="programme_code",
-            label="Code Département du SIRET",
-            concatenate="Code Département du SIRET",
-            default=False,
-            type=str
-        )
+        code="programme_code",
+        label="Code Département du SIRET",
+        concatenate="Code Département du SIRET",
+        default=False,
+        type=str,
+    )
     query_params_1 = FinancialLineQueryParams.make_default()
     query_params_1.grouping = [colonne]
     query_params_1.grouped = ["101"]
-    
+
     key1 = query_params_1.get_total_cache_key()
-    
+
     # Vérifier que la clé est bien un frozenset et hashable
     assert isinstance(key1, frozenset), "La clé de cache doit être un frozenset"
     assert hash(key1), "La clé de cache doit être hachable"
-    
-    key_dict = dict(key1)    
+
+    key_dict = dict(key1)
     # Vérifier que grouping contient bien notre colonne sous forme hashable
     assert key_dict["grouping"] == (colonne.code,), "Le grouping doit contenir le code de la colonne"
     assert key_dict["grouped"] == ("101",), "Le grouped doit contenir la valeur sous forme de tuple"

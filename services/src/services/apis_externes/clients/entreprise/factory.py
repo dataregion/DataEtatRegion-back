@@ -5,7 +5,10 @@ from models.value_objects.api_entreprise_info import ApiEntrepriseInfo
 
 from models.value_objects.ratelimiter_info import RateLimiterInfo
 
-def make_api_entreprise(api_entrepise_info: ApiEntrepriseInfo, rate_limiter_info: RateLimiterInfo) -> ApiEntreprise | None:
+
+def make_api_entreprise(
+    api_entrepise_info: ApiEntrepriseInfo, rate_limiter_info: RateLimiterInfo
+) -> ApiEntreprise | None:
     """Fabrique un client API"""
     timeout = 5
 
@@ -26,4 +29,3 @@ def make_api_entreprise(api_entrepise_info: ApiEntrepriseInfo, rate_limiter_info
     api_config.timeout_s = timeout
 
     return ApiEntreprise(api_config)
-

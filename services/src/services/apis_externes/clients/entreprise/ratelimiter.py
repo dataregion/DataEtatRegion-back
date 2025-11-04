@@ -5,8 +5,8 @@ from pyrate_limiter import Limiter, RequestRate, RedisBucket
 from api_entreprise import JSON_RESOURCE_IDENTIFIER
 from models.value_objects.ratelimiter_info import RateLimiterInfo
 
-def make_rate_limiter(ratelimiter_info: RateLimiterInfo):
 
+def make_rate_limiter(ratelimiter_info: RateLimiterInfo):
     limit = ratelimiter_info.limit
     duration = ratelimiter_info.duration
 

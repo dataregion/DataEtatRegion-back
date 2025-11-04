@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
+
 @dataclass
-class RepresentantLegal():
+class RepresentantLegal:
     nom: str
     prenom: str
     civilite: str
@@ -11,13 +12,13 @@ class RepresentantLegal():
 
 
 @dataclass
-class ActionProposee():
+class ActionProposee:
     intitule: str
     objectifs: str
 
 
 @dataclass
-class Subvention():
+class Subvention:
     ej: str
     service_instructeur: str
     dispositif: str

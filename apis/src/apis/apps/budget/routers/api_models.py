@@ -9,7 +9,10 @@ from pydantic import BaseModel
 
 from typing import Annotated, Literal
 
-from apis.services.model.enriched_financial_lines_mappers import enriched_ffl_mappers, enriched_ffl_pre_validation_transformer
+from apis.services.model.enriched_financial_lines_mappers import (
+    enriched_ffl_mappers,
+    enriched_ffl_pre_validation_transformer,
+)
 from apis.services.model.pydantic_annotation import PydanticFromMarshmallowSchemaAnnotationFactory
 
 PydanticEnrichedFlattenFinancialLinesModel = PydanticFromMarshmallowSchemaAnnotationFactory[
@@ -33,4 +36,3 @@ class Groupings(BaseModel):
     type: Literal["groupings"] = "groupings"
     total: Total
     groupings: list[GroupedData]
-

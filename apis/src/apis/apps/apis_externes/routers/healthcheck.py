@@ -8,6 +8,7 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
+
 @router.get(
     "entreprise-batch",
     summary="Vérification de la disponibilité de l'API Entreprise en mode batch",

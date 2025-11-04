@@ -9,11 +9,14 @@ logger = logging.getLogger(__name__)
 ds_config = get_config().api_data_subventions
 data_subventions_client = make_app_api_subventions_client(ds_config)
 
+
 @dataclass
-class InfoApiSubvention():
+class InfoApiSubvention:
     """Informations qui proviennent de l'API subvention"""
+
     subventions: list[Subvention]
     contacts: list[RepresentantLegal]
+
 
 def subvention(siret: str):
     subventions = data_subventions_client.get_subventions_pour_etablissement(siret)

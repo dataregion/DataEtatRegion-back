@@ -11,11 +11,12 @@ from apis.shared.exceptions import InvalidTokenError
 
 logger = logging.getLogger(__name__)
 
+
 def _log_exception(exc: Exception):
     logger.exception(f"Exception durant une requête API externes: {exc}")
 
+
 def setup_exception_handlers(app: FastAPI):
-    
     @app.exception_handler(InvalidTokenError)
     async def invalid_token_error(request: FastAPI, exc: InvalidTokenError):
         """Lorsqu'une erreur de token invalide est survenue"""
@@ -49,9 +50,11 @@ def setup_exception_handlers(app: FastAPI):
             remote_errors=remote,
         )
         return error.to_json_response()
-    
+
     def _message_from_remote(error: DataSubventionsCallError) -> str:
-        if error.call_error_description.api_code == 0: # Code retourné pour une recherche sur une entité qui n'est pas une associaiton
+        if (
+            error.call_error_description.api_code == 0
+        ):  # Code retourné pour une recherche sur une entité qui n'est pas une associaiton
             return "Echec lors de l'appel à l'API Data Subventions : L'entité n'est pas une associaiton."
         else:
             return "Erreur lors de l'appel à l'API Data Subventions"

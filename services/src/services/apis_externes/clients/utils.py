@@ -1,4 +1,3 @@
-
 def _dict_get_nested(dict, *keys, default=None):
     """Récupère les valeurs imbriquées dans un dictionnaire
 

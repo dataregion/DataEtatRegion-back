@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 class RateLimiterInfo(BaseModel):
     """Informations nécessaires pour configurer un client API entreprise."""
+
     redis: RedisConnectionInfo
     """url du redis"""
     limit: int

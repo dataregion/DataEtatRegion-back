@@ -14,6 +14,7 @@ api = Namespace(
 
 auth = current_app.extensions["auth"]
 
+
 def _document_error_responses(api: Namespace):
     """Décorateur qui décrit les différentes réponses en erreur possibles"""
 

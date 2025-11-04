@@ -39,7 +39,7 @@ def healthcheck(
         raw, total, grouped, has_next = get_lignes(session, params)
 
     with SummaryOfTimePerfCounter.cm("hc_serialize_lignes_budgetaires"):
-        data = LignesFinancieres(total=total, lignes = raw)
+        data = LignesFinancieres(total=total, lignes=raw)
 
     assert len(data.lignes) == 10
 
