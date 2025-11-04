@@ -94,7 +94,6 @@ class BudgetQueryParams(FinancialLineQueryParams):
 
     def _get_total_cache_dict(self) -> dict | None:
         key = super()._get_total_cache_dict()
-        print(key)
         if key is None:
             return None
 
@@ -112,7 +111,6 @@ class BudgetQueryParams(FinancialLineQueryParams):
             or self.is_group_request()
         ):
             # La requête ne doit pas être mise en cache
-            print("NO CACHE")
             return None
 
         key.update(
