@@ -80,10 +80,8 @@ class BudgetV3LoadTest(HttpUser):
     def get_lignes_avec_beneficiaire(self):
         """Test GET /lignes par défaut (tâche la plus fréquente)"""
         endpoint_name = "GET /lignes?beneficiaires"
-        
-        params = {
-            "beneficiaire_code": "26350579400028,18310021300028"
-        }
+
+        params = {"beneficiaire_code": "26350579400028,18310021300028"}
 
         with self.client.get(
             f"{self.api_v3_base}/lignes",
