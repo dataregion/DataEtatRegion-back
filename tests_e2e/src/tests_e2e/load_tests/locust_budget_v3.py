@@ -76,7 +76,26 @@ class BudgetV3LoadTest(HttpUser):
             else:
                 response.success()
 
-    # TODO: Décliner en d'autres tests
+    @task(5)
+    def get_lignes_avec_beneficiaire(self):
+        """Test GET /lignes par défaut (tâche la plus fréquente)"""
+        endpoint_name = "GET /lignes?beneficiaires"
+        
+        params = {
+            "beneficiaire_code": "26350579400028,18310021300028"
+        }
+
+        with self.client.get(
+            f"{self.api_v3_base}/lignes",
+            params=params,
+            headers=self.headers,
+            name=endpoint_name,
+            catch_response=True,
+        ) as response:
+            if response.status_code != 200:
+                response.failure(f"Status: {response.status_code}")
+            else:
+                response.success()
 
 
 @events.quitting.add_listener
