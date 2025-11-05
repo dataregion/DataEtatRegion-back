@@ -1,7 +1,7 @@
 """Teste les proprietés de cache des query params pour les lignes financières."""
 
 from pytest import fixture
-from apis.apps.budget.models.colonne import Colonne
+from apis.apps.budget.models.budget_query_params import Colonne
 from apis.apps.budget.services.budget_query_builder import BudgetQueryParams
 
 
@@ -59,7 +59,7 @@ def test_cache_with_grouping_and_grouped():
         default=False,
         type=str,
     )
-    query_params_1 = FinancialLineQueryParams.make_default()
+    query_params_1 = BudgetQueryParams.make_default()
     query_params_1.grouping = [colonne]
     query_params_1.grouped = ["101"]
 

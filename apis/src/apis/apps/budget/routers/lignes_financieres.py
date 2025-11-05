@@ -7,6 +7,7 @@ from apis.shared.query_builder import SourcesQueryParams
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 
 from apis.apps.budget.models.grouped_data import GroupedData
 from apis.apps.budget.models.budget_query_params import BudgetQueryParams
