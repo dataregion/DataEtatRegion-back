@@ -10,6 +10,8 @@ import sys
 import os
 import argparse
 
+from .mail import SendEmail, SendMailCtx
+
 
 def run_performance_test(users=10, spawn_rate=2, run_time="60s"):
     """Lance un test de performance en mode headless avec validation"""
@@ -42,6 +44,11 @@ def run_performance_test(users=10, spawn_rate=2, run_time="60s"):
     try:
         # Lancer Locust
         result = subprocess.run(cmd, capture_output=False)
+        
+        success = result.returncode == 0
+        
+        ctx = SendMailCtx(success=success)
+        SendEmail(ctx).send()
 
         # Le code de sortie sera 1 si les performances ne sont pas assez bonnes
         if result.returncode == 0:

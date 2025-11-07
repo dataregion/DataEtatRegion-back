@@ -49,3 +49,45 @@ def password():
     pwd = os.getenv("PASSWORD", "test_password")
     print(f"PASSWORD: {'***' if pwd else 'None'}")
     return pwd
+
+@functools.lru_cache()
+def mail_enabled():
+    enabled = os.getenv("MAIL_ENABLED", "false").lower() == "true"
+    print(f"MAIL_ENABLED: {enabled}")
+    return enabled
+
+@functools.lru_cache()
+def mail_host():
+    host = os.getenv("MAIL_HOST", "in.message-business.com")
+    print(f"MAIL_HOST: {host}")
+    return host
+
+@functools.lru_cache()
+def mail_port():
+    port = os.getenv("MAIL_PORT", 465)
+    print(f"MAIL_PORT: {port}")
+    return int(port)
+
+@functools.lru_cache()
+def mail_login():
+    login = os.getenv("MAIL_LOGIN", "user@example.com")
+    print(f"MAIL_LOGIN: {login}")
+    return login
+
+@functools.lru_cache()
+def mail_password():
+    password = os.getenv("MAIL_PASSWORD", "password")
+    print(f"MAIL_PASSWORD: {'***' if password else 'None'}")
+    return password
+
+@functools.lru_cache()
+def mail_from():
+    _from = os.getenv("MAIL_FROM", "")
+    print(f"MAIL_FROM: {_from}")
+    return _from
+
+@functools.lru_cache()
+def mail_to():
+    _to = os.getenv("MAIL_TO", "")
+    print(f"MAIL_TO: {_to}")
+    return _to
