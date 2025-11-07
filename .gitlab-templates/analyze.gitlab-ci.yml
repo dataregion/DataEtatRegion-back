@@ -50,6 +50,13 @@ run-loadtests:
       export USERNAME="${E2E_LT_USERNAME}"
       export PASSWORD="${E2E_LT_PASSWORD}"
       export API_BASE_URL="${E2E_LT_API_BASE_URL}"
+      export MAIL_ENABLED="true"
+      export MAIL_HOST="${E2E_LT_MAIL_HOST}"
+      export MAIL_PORT="${E2E_LT_MAIL_PORT}"
+      export MAIL_LOGIN="${E2E_LT_MAIL_LOGIN}"
+      export MAIL_PASSWORD="${E2E_LT_MAIL_PASSWORD}"
+      export MAIL_FROM="${E2E_LT_MAIL_FROM}"
+      export MAIL_TO="${E2E_LT_MAIL_TO}"
   script:
     - env
     - | 

@@ -44,9 +44,9 @@ def run_performance_test(users=10, spawn_rate=2, run_time="60s"):
     try:
         # Lancer Locust
         result = subprocess.run(cmd, capture_output=False)
-        
+
         success = result.returncode == 0
-        
+
         ctx = SendMailCtx(success=success)
         SendEmail(ctx).send()
 
