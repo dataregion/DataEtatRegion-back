@@ -30,5 +30,5 @@ where = ["src"]
 [project.optional-dependencies]
 dev = [
   "pytest ~=9.0",
-  "pytest-cov ~=6.0",
+  "pytest-cov ~=7.0",
 ]
