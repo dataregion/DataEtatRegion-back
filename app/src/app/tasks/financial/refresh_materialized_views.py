@@ -51,6 +51,7 @@ def maj_materialized_views(self):
         # ],
         # "vt_flatten_summarized_ae": [("FinancialAe", FinancialAe.FinancialAe.updated_at)],
         "flatten_financial_lines": ffl_deps,
+        "flatten_financial_lines_data_qpv": ffl_deps,
         "superset_lignes_financieres_52": ffl_deps,
     }
 

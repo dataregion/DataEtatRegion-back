@@ -2,16 +2,13 @@ from typing import Annotated
 from pydantic import TypeAdapter, ValidationError
 import pytest
 
-from apis.services.model.pydantic_annotation import (
-    PydanticFromMarshmallowSchemaAnnotationFactory,
-)
+from apis.services.model.pydantic_annotation import make_pydantic_annotation_from_marshmallow_lignes
 
 from models.entities.financial.query import EnrichedFlattenFinancialLines
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
+from models.value_objects.common import DataType
 
 from apis.services.model.schema_adapter import SchemaAdapter
-
-from apis.services.model.enriched_financial_lines_mappers import enriched_ffl_mappers
 
 from models.schemas.common import DataTypeField
 
@@ -118,9 +115,9 @@ def test_pydanticed_factory():
 
 ##############
 # Test with a more concrete case
-EnrichedFlattenFinancialLinesModelAnnotation = PydanticFromMarshmallowSchemaAnnotationFactory[
-    EnrichedFlattenFinancialLinesSchema
-].create(EnrichedFlattenFinancialLinesSchema, custom_fields_mappers=enriched_ffl_mappers)
+EnrichedFlattenFinancialLinesModelAnnotation = make_pydantic_annotation_from_marshmallow_lignes(
+    EnrichedFlattenFinancialLinesSchema, True
+)
 EnrichedFlattenFinancialLinesModel = Annotated[dict, EnrichedFlattenFinancialLinesModelAnnotation]
 
 
@@ -129,6 +126,7 @@ def test_model_flatten_financial_lines():
 
     data = EnrichedFlattenFinancialLines()
     data.id = 1337
+    data.source = "FINANCIAL_DATA_AE"
     data.n_ej = "test"
     data.n_poste_ej = 0
 
@@ -137,6 +135,7 @@ def test_model_flatten_financial_lines():
         instance = prune_none_and_empty(validated)
         assert instance == {
             "id": 1337,
+            "source": DataType.FINANCIAL_DATA_AE,
             "n_ej": "test",
             "n_poste_ej": 0,
         }
@@ -145,6 +144,7 @@ def test_model_flatten_financial_lines():
     _assert_validate(  # XXX Et aussi du contenu déjà serialisé
         {
             "id": 1337,
+            "source": "FINANCIAL_DATA_AE",
             "n_ej": "test",
             "n_poste_ej": 0,
         }

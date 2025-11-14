@@ -1,27 +1,41 @@
+from models.entities.financial.query import (
+    FlattenFinancialLines,
+    FlattenFinancialLinesDataQPV,
+    EnrichedFlattenFinancialLines,
+)
 from models.schemas.common import DataTypeField
 from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from models.entities.financial.Ademe import Ademe
 from models.entities.financial.FinancialAe import FinancialAe
 from models.entities.financial.FinancialCp import FinancialCp
-from models.entities.financial.query.FlattenFinancialLines import (
-    EnrichedFlattenFinancialLines,
-)
 from models.entities.refs.Siret import Siret
 from models.schemas.tags import TagsSchema
 from sqlalchemy import String
 from .utils import MarshmallowSafeGetAttrMixin
 
 
-class EnrichedFlattenFinancialLinesSchema(
-    MarshmallowSafeGetAttrMixin, SQLAlchemyAutoSchema
-):
+class FlattenFinancialLinesSchema(MarshmallowSafeGetAttrMixin, SQLAlchemyAutoSchema):
     class Meta:
-        model = EnrichedFlattenFinancialLines
+        model = FlattenFinancialLines
 
     source = DataTypeField()
 
+
+class EnrichedFlattenFinancialLinesSchema(FlattenFinancialLinesSchema):
+    class Meta:
+        model = EnrichedFlattenFinancialLines
+
     tags = fields.List(fields.Nested(TagsSchema))
+
+
+class FlattenFinancialLinesDataQpvSchema(
+    MarshmallowSafeGetAttrMixin, SQLAlchemyAutoSchema
+):
+    class Meta:
+        model = FlattenFinancialLinesDataQPV
+
+    source = DataTypeField()
 
 
 class SiretField(fields.Field):

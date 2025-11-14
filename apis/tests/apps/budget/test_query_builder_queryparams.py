@@ -1,26 +1,26 @@
 """Teste les proprietés de cache des query params pour les lignes financières."""
 
 from pytest import fixture
-from apis.apps.budget.models.colonne import Colonne
-from apis.apps.budget.services.query_builder import FinancialLineQueryParams
+from apis.apps.budget.models.budget_query_params import Colonne
+from apis.apps.budget.services.budget_query_builder import BudgetQueryParams
 
 
 @fixture()
 def default_query_params():
-    inst = FinancialLineQueryParams.make_default()
+    inst = BudgetQueryParams.make_default()
     return inst
 
 
 def test_default_query_params_is_total_cacheable():
-    default_query_params = FinancialLineQueryParams.make_default()
+    default_query_params = BudgetQueryParams.make_default()
     cache_key = default_query_params.get_total_cache_key()
-    assert isinstance(default_query_params, FinancialLineQueryParams)
+    assert isinstance(default_query_params, BudgetQueryParams)
     assert hash(cache_key), "La clé de cache doit être hachable"
 
 
 def test_two_different_query_params_gives_two_different_total_cache_keys():
-    query_params_1 = FinancialLineQueryParams.make_default()
-    query_params_2 = FinancialLineQueryParams.make_default()
+    query_params_1 = BudgetQueryParams.make_default()
+    query_params_2 = BudgetQueryParams.make_default()
 
     query_params_2.source_region = "52"  # La source region est un paramètre impliqué dans le calcul des totaux
 
@@ -32,7 +32,7 @@ def test_two_different_query_params_gives_two_different_total_cache_keys():
 
 
 def test_when_query_params_has_property_making_it_total_uncacheable():
-    query_params = FinancialLineQueryParams.make_default()
+    query_params = BudgetQueryParams.make_default()
     query_params.search = "toto"  # le paramètre search rend le paramètre non éligible au caching
     query_params.fields_search = ["beneficiaire"]
 
@@ -41,7 +41,7 @@ def test_when_query_params_has_property_making_it_total_uncacheable():
 
 
 def test_when_property_doesnt_count_for_total_caching():
-    query_params = FinancialLineQueryParams.make_default()
+    query_params = BudgetQueryParams.make_default()
     key1 = query_params.get_total_cache_key()
 
     query_params.page = 2  # La page ne compte pas pour le calcul des totaux
@@ -59,7 +59,7 @@ def test_cache_with_grouping_and_grouped():
         default=False,
         type=str,
     )
-    query_params_1 = FinancialLineQueryParams.make_default()
+    query_params_1 = BudgetQueryParams.make_default()
     query_params_1.grouping = [colonne]
     query_params_1.grouped = ["101"]
 

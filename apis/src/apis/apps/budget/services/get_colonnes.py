@@ -1,11 +1,11 @@
 from http import HTTPStatus
-from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams
+from apis.apps.budget.models.budget_query_params import BudgetQueryParams
 from apis.shared.exceptions import BadRequestError
 from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,
 )
 
-from apis.apps.budget.models.colonne import Colonne
+from apis.shared.colonne import Colonne
 
 
 def get_list_colonnes_tableau() -> list[Colonne]:
@@ -378,7 +378,7 @@ def get_list_colonnes_grouping() -> list[Colonne]:
     ]
 
 
-def validation_colonnes(params: FinancialLineQueryParams):
+def validation_colonnes(params: BudgetQueryParams):
     if params.colonnes is not None:
         params.map_colonnes_tableau(get_list_colonnes_tableau())
     if params.grouping is not None:

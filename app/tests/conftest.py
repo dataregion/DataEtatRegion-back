@@ -2,6 +2,7 @@ from pathlib import Path
 import random
 
 from models.entities.financial.query import FlattenFinancialLines
+from models.entities.financial.query import FlattenFinancialLinesDataQPV
 import pytest
 from sqlalchemy import text
 
@@ -115,6 +116,7 @@ def database(app, connections, request):
     views_sql = {
         "superset_lignes_financieres_52": "SELECT 1 AS dummy",
         "flatten_financial_lines": "SELECT 1 AS dummy",
+        "flatten_financial_lines_data_qpv": "SELECT 1 AS dummy",
         "vt_flatten_summarized_ademe": "SELECT 1 AS dummy",
         "vt_flatten_summarized_ae": "SELECT 1 AS dummy",
         "vt_budget_summary": "SELECT 1 AS dummy",
@@ -124,14 +126,17 @@ def database(app, connections, request):
     tablename = FlattenFinancialLines.__tablename__
     if tablename in db.metadata.tables:
         db.metadata.remove(db.metadata.tables[tablename])
+    tablename = FlattenFinancialLinesDataQPV.__tablename__
+    if tablename in db.metadata.tables:
+        db.metadata.remove(db.metadata.tables[tablename])
 
     with app.app_context():
         db.create_all()
 
-        conn = db.session.connection()
-        for view, sql in views_sql.items():
-            conn.execute(text(f"CREATE MATERIALIZED VIEW {view} AS {sql}"))
-        db.session.commit()
+        with db.engine.begin() as conn:
+            for view, sql in views_sql.items():
+                conn.execute(text(f"CREATE MATERIALIZED VIEW IF NOT EXISTS {view} AS {sql}"))
+            db.session.commit()
 
     return db
 

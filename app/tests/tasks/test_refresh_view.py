@@ -20,6 +20,7 @@ def _build_audit(
         # "vt_m_montant_par_niveau_bop_annee_type",
         # "vt_flatten_summarized_ae",
         "flatten_financial_lines",
+        "flatten_financial_lines_data_qpv",
         "superset_lignes_financieres_52",
     },
 ):
@@ -55,7 +56,7 @@ def test_refresh_no_data_updated_and_no_refresh(database, session):
         .all()
     )
 
-    assert len(events) == 2
+    assert len(events) == 3
     tables_with_events = {e.table for e in events}
     assert "flatten_financial_lines" in tables_with_events
 
@@ -162,7 +163,7 @@ def test_need_ademe_maj(database, session):
         .scalars()
         .all()
     )
-    assert len(events) == 2
+    assert len(events) == 3
 
 
 def test_only_siret_maj(database, session):
@@ -204,7 +205,7 @@ def test_only_siret_maj(database, session):
         .scalars()
         .all()
     )
-    assert len(events) == 2
+    assert len(events) == 3
     tables_with_events = {e.table for e in events}
     assert "flatten_financial_lines" in tables_with_events
 
@@ -249,7 +250,7 @@ def test_only_financial_ae_cp_maj(database, session):
         .scalars()
         .all()
     )
-    assert len(events) == 2
+    assert len(events) == 3
     tables_with_events = {e.table for e in events}
     assert "flatten_financial_lines" in tables_with_events
 
@@ -291,6 +292,6 @@ def test_no_refresh_view_done(database, session):
         .scalars()
         .all()
     )
-    assert len(events) == 2
+    assert len(events) == 3
     tables_with_events = {e.table for e in events}
     assert "flatten_financial_lines" in tables_with_events

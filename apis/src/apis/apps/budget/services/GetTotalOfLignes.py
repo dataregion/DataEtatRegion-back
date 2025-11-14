@@ -2,8 +2,8 @@ import logging
 from apis.config.current import get_config
 from services.utilities.observability import cache_stats
 
-from apis.apps.budget.models.budget_query_params import FinancialLineQueryParams
-from apis.apps.budget.services.query_builder import FinancialLineQueryBuilder
+from apis.apps.budget.models.budget_query_params import BudgetQueryParams
+from apis.apps.budget.services.budget_query_builder import BudgetQueryBuilder
 
 from cachetools import cached, LRUCache
 from cachetools.keys import hashkey
@@ -25,9 +25,7 @@ async def clear_cache_total_of_lignes(message):
     total_cache.clear()
 
 
-def _cache_key(
-    params: FinancialLineQueryParams, additionnal_source_region: str | None, builder: FinancialLineQueryBuilder
-):
+def _cache_key(params: BudgetQueryParams, additionnal_source_region: str | None, builder: BudgetQueryBuilder):
     """
     Calcule une clé de cache unique pour les paramètres donnés.
     Renvoie None si les paramètres ne sont pas cacheables.
@@ -48,28 +46,24 @@ def _cache_key(
 
 @cache_stats()
 @cached(total_cache, key=_cache_key, info=True)
-def _cached_retrieve(
-    params: FinancialLineQueryParams, additionnal_source_region: str | None, builder: FinancialLineQueryBuilder
-):
+def _cached_retrieve(params: BudgetQueryParams, additionnal_source_region: str | None, builder: BudgetQueryBuilder):
     return _retrieve(params, additionnal_source_region, builder)
 
 
-def _retrieve(
-    params: FinancialLineQueryParams, additionnal_source_region: str | None, builder: FinancialLineQueryBuilder
-):
+def _retrieve(params: BudgetQueryParams, additionnal_source_region: str | None, builder: BudgetQueryBuilder):
     return builder.get_total("groupings" if builder.groupby_colonne else "lignes")
 
 
 class GetTotalOfLignes:
     """Service applicatif pour la récupération du total des lignes financières."""
 
-    def __init__(self, builder: FinancialLineQueryBuilder) -> None:
+    def __init__(self, builder: BudgetQueryBuilder) -> None:
         self._builder = builder
         self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def retrieve_total(
         self,
-        params: FinancialLineQueryParams,
+        params: BudgetQueryParams,
         additionnal_source_region: str | None = None,
     ):
         is_cache_enable = get_config().cache_config.budget_totaux_enabled

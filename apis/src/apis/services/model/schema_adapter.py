@@ -25,6 +25,8 @@ def _regular_field_pyschema(field: fields.Field):
         return core_schema.list_schema()
     if isinstance(field, fields.Dict):
         return core_schema.dict_schema()
+    if getattr(field, "geo_type", None) or field.__class__.__name__.lower().startswith("geometry"):
+        return core_schema.str_schema()
     if isinstance(field, fields.Raw):
         return core_schema.any_schema()
     else:

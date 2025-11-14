@@ -1,13 +1,14 @@
 from http import HTTPStatus
 import logging
+from typing import Annotated
+from apis.services.model.pydantic_annotation import make_pydantic_annotation_from_marshmallow
+from apis.shared.query_builder import V3QueryParams
 from fastapi import Depends
-from fastapi.responses import JSONResponse
 from requests import Session
 
-from models.entities.refs.Qpv import Qpv
+from models.entities.refs.Qpv import Qpv as QpvFlask
 from models.schemas.refs import QpvSchema
 
-from apis.apps.budget.models.budget_query_params import V3QueryParams
 from apis.apps.referentiels.services.get_data import get_all_data
 from apis.apps.referentiels.services.referentiels_router_factory import (
     create_referentiel_router,
@@ -19,15 +20,23 @@ from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.models import APISuccess
 
 
+PydanticQpvModel = make_pydantic_annotation_from_marshmallow(QpvSchema)
+Qpv = Annotated[QpvFlask, PydanticQpvModel]
+
+
+class QpvResponse(APISuccess[list[Qpv]]):
+    pass
+
+
 logger = logging.getLogger(__name__)
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
-router = create_referentiel_router(Qpv, QpvSchema, keycloak_validator, logger, "qpv")
+router = create_referentiel_router(Qpv, QpvSchema, QpvResponse, keycloak_validator, logger, "qpv")
 
 
 @router.get(
-    "/{annee}",
+    "/decoupage/{annee}",
     summary="Find all QPV by annee",
-    response_class=JSONResponse,
+    response_model=QpvResponse,
     responses=error_responses(),
 )
 def find_all_by_annee_decoupage(
@@ -51,7 +60,7 @@ def find_all_by_annee_decoupage(
     return APISuccess(
         code=HTTPStatus.OK,
         message=f"Liste des QPV de l'année de découpage {annee}",
-        data=QpvSchema(many=True).dump(data),
+        data=QpvSchema(only=params.colonnes or QpvSchema._declared_fields.keys(), many=True).dump(data),
         current_page=params.page,
         has_next=has_next,
     )

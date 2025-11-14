@@ -28,13 +28,14 @@ def enriched_ffl_data_type_mapper(field_name, field, adapter):
     return None
 
 
-enriched_ffl_mappers = [
-    enriched_ffl_data_type_mapper,
-    enriched_ffl_tags_mapper,
-]
+ffl_mappers = [enriched_ffl_data_type_mapper]
 
 
 def enriched_ffl_pre_validation_transformer(input_value):
     if "source" in input_value is not None:
         input_value["source"] = DataType(input_value["source"])
     return input_value
+
+
+def get_mappers(enriched: bool = False):
+    return ffl_mappers if not enriched else ffl_mappers + [enriched_ffl_tags_mapper]
