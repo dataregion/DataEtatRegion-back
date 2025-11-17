@@ -59,11 +59,9 @@ class BudgetV3LoadTest(HttpUser):
             raise RuntimeError(
                 f"Impossible de récupérer un token réel: {response.status_code}"
             )
-    
+
     def _default_params(self):
-        return {
-            'force_no_cache': 'true'
-        }
+        return {"force_no_cache": "true"}
 
     @task(5)
     def get_lignes_default(self):
