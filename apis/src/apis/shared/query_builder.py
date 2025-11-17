@@ -16,6 +16,8 @@ from apis.apps.budget.models.total import Total
 from apis.shared.exceptions import BadRequestError
 from abc import ABC, abstractmethod
 
+from services.utilities.observability import summary_of_time
+
 
 class CacheableTotalQuery(ABC):
     """Classe abstraite pour les requêtes qui peuvent être mises en cache"""
@@ -231,6 +233,7 @@ class V3QueryBuilder(Generic[T]):
         self._query = self._query.offset(offset).limit(self._params.page_size + 1)
         return self
 
+    @summary_of_time()
     def get_total(self, type: str):
         unpaginated = self._query.limit(None).offset(None).subquery()
         totals_query = select(
