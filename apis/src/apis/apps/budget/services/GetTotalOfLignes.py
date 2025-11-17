@@ -57,9 +57,10 @@ def _retrieve(params: BudgetQueryParams, additionnal_source_region: str | None, 
 class GetTotalOfLignes:
     """Service applicatif pour la récupération du total des lignes financières."""
 
-    def __init__(self, builder: BudgetQueryBuilder) -> None:
+    def __init__(self, builder: BudgetQueryBuilder, force_no_cache: bool = False) -> None:
         self._builder = builder
         self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self._force_no_cache = force_no_cache
 
     def retrieve_total(
         self,
@@ -69,7 +70,7 @@ class GetTotalOfLignes:
         is_cache_enable = get_config().cache_config.budget_totaux_enabled
         key = params.get_total_cache_key()
 
-        do_use_cache = is_cache_enable and key is not None
+        do_use_cache = is_cache_enable and key is not None and not self._force_no_cache
 
         if not do_use_cache:
             result = _retrieve(params, additionnal_source_region, self._builder)
