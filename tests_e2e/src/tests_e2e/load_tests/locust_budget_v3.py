@@ -59,14 +59,22 @@ class BudgetV3LoadTest(HttpUser):
             raise RuntimeError(
                 f"Impossible de récupérer un token réel: {response.status_code}"
             )
+    
+    def _default_params(self):
+        return {
+            'force_no_cache': 'true'
+        }
 
     @task(5)
     def get_lignes_default(self):
         """Test GET /lignes par défaut (tâche la plus fréquente)"""
         endpoint_name = "GET /lignes"
 
+        params = self._default_params()
+
         with self.client.get(
             f"{self.api_v3_base}/lignes",
+            params=params,
             headers=self.headers,
             name=endpoint_name,
             catch_response=True,
@@ -81,7 +89,8 @@ class BudgetV3LoadTest(HttpUser):
         """Test GET /lignes par défaut (tâche la plus fréquente)"""
         endpoint_name = "GET /lignes?beneficiaires"
 
-        params = {"beneficiaire_code": "26350579400028,18310021300028"}
+        params = self._default_params()
+        params.update({"beneficiaire_code": "26350579400028,18310021300028"})
 
         with self.client.get(
             f"{self.api_v3_base}/lignes",
