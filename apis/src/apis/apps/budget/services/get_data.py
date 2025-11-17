@@ -52,6 +52,7 @@ def get_lignes(
     db: Session,
     params: BudgetQueryParams,
     additionnal_source_region: str | None = None,
+    force_no_cache: bool = False,
 ):
     """
     Recherche la ligne budgetaire selon son ID et sa source region
@@ -113,7 +114,7 @@ def get_lignes(
     data, has_next = builder.select_all()
     # TODO : Perfs
     # RGA: j'ai ajouté un cache applicatif sur certains totaux, à voir si c'est suffisant
-    total_retriever = GetTotalOfLignes(builder)
+    total_retriever = GetTotalOfLignes(builder, force_no_cache=force_no_cache)
     total = total_retriever.retrieve_total(params, additionnal_source_region)
     grouped = builder.groupby_colonne is not None
 

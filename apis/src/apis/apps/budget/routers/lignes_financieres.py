@@ -61,6 +61,7 @@ def get_lignes_financieres(
     params: BudgetQueryParams = Depends(),
     session: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    force_no_cache: bool = False,
 ):
     user_param_source_region = params.source_region
     params = handle_national(params, user)
@@ -73,6 +74,7 @@ def get_lignes_financieres(
         session,
         params,
         additionnal_source_region=user_param_source_region,
+        force_no_cache=force_no_cache,
     )
     size = len(data)
     if grouped:
