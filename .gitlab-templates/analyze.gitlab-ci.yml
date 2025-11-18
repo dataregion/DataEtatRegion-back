@@ -57,12 +57,15 @@ run-loadtests:
       export MAIL_PASSWORD="${E2E_LT_MAIL_PASSWORD}"
       export MAIL_FROM="${E2E_LT_MAIL_FROM}"
       export MAIL_TO="${E2E_LT_MAIL_TO}"
+      export NB_USERS=${E2E_LT_NB_USERS:-10}
+      export SPAWN_RATE=${E2E_LT_SPAWN_RATE:-2}
+      export RUN_TIME_SECONDS=${E2E_LT_RUN_TIME_SECONDS:-60}
   script:
     - env
     - | 
       cd tests_e2e/ && \
       source /build/tests_e2e/.venv/bin/activate && \
-      perf-tests --run-time 60 --users 10 --spawn-rate 5
+      perf-tests --run-time $RUN_TIME_SECONDS --users $NB_USERS --spawn-rate $SPAWN_RATE
   rules:
     - if: '$DO_LOAD_TESTS == "✅"'
     - if: '$DO_LOAD_TESTS == "⚙️"'
