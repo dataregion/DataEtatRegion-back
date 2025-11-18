@@ -235,25 +235,34 @@ class V3QueryBuilder(Generic[T]):
 
     @summary_of_time()
     def get_total(self, type: str):
-        unpaginated = self._query.limit(None).offset(None).subquery()
-        totals_query = select(
-            (
-                func.coalesce(func.sum(unpaginated.c.total), 0).label("total")
-                if type == "groupings"
-                else func.coalesce(func.count(unpaginated.c.id), 0).label("total")
-            ),
-            (
-                func.coalesce(func.sum(unpaginated.c.total_montant_engage), 0).label("total_montant_engage")
-                if type == "groupings"
-                else func.coalesce(func.sum(unpaginated.c.montant_ae), 0).label("total_montant_engage")
-            ),
-            (
-                func.coalesce(func.sum(unpaginated.c.total_montant_paye), 0).label("total_montant_paye")
-                if type == "groupings"
-                else func.coalesce(func.sum(unpaginated.c.montant_cp), 0).label("total_montant_paye")
-            ),
+        model = self._model
+        q = (
+            select(
+                (
+                    func.coalesce(func.sum(model.total), 0).label("total")  # type: ignore
+                    if type == "groupings"
+                    else func.coalesce(func.count(model.id), 0).label("total")  # type: ignore
+                ),
+                (
+                    func.coalesce(func.sum(model.total_montant_engage), 0).label("total_montant_engage")  # type: ignore
+                    if type == "groupings"
+                    else func.coalesce(func.sum(model.montant_ae), 0).label("total_montant_engage")  # type: ignore
+                ),
+                (
+                    func.coalesce(func.sum(model.total_montant_paye), 0).label("total_montant_paye")  # type: ignore
+                    if type == "groupings"
+                    else func.coalesce(func.sum(model.montant_cp), 0).label("total_montant_paye")  # type: ignore
+                ),
+            )
+            .select_from(model)
+            .where(*self._query._where_criteria)
+            .group_by(*self._query._group_by_clauses)
+            .order_by(None)
+            .limit(None)
+            .offset(None)
         )
-        result = self._session.execute(totals_query).one()
+        
+        result = self._session.execute(q).one()
         return Total(
             total=result.total,
             total_montant_engage=result.total_montant_engage,
