@@ -52,5 +52,7 @@ class DemarcheSimplifie(Resource):
     def post(self):
         user = connected_user_from_current_token_identity()
         token_id = int(request.args["tokenId"])
-        token = TokenService.find_by_uuid_utilisateur_and_token_id(user.sub, token_id).token
+        token = TokenService.find_by_uuid_utilisateur_and_token_id(user.sub, token_id).get_token(
+            current_app.config["FERNET_SECRET_KEY"]
+        )
         return get_or_make_api_demarche_simplifie(token).do_post(request.get_data()).get("data")
