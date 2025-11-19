@@ -5,7 +5,7 @@ from apis.shared.colonne import Colonnes
 from fastapi import Query
 from fastapi.params import Query as QueryCls
 from models.value_objects.common import DataType
-from sqlalchemy import Column, ColumnElement, ColumnExpressionArgument, Select, Sequence, func, select, or_
+from sqlalchemy import Column, ColumnElement, ColumnExpressionArgument, Select, Sequence, func, select, or_, text
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session, DeclarativeBase, load_only
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -250,7 +250,10 @@ class V3QueryBuilder(Generic[T]):
             .offset(None)
         )
 
-        result = self._session.execute(q).one()
+        txt = str(q.compile(compile_kwargs={"literal_binds": True}))  # TODO: ne pas laisser, faille de sécurité !
+        replaced = txt.replace("flatten_financial_lines", "ffl_columnar")
+
+        result = self._session.execute(text(replaced)).one()
         return Total(
             total=result.total,
             total_montant_engage=result.total_montant_engage,
