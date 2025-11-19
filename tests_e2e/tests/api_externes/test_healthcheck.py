@@ -3,6 +3,6 @@ from tests_e2e.utils import call_request
 
 
 def test_healthcheck_v3(apis_externes_v3):  # noqa: F811
-    response = call_request(f"{apis_externes_v3}/healthcheck")
+    response = call_request(f"{apis_externes_v3}/healthcheckentreprise-batch")
     assert response.status_code == 200
-    assert response.json()["code"] == 200
+    assert response.json()["status"] == 'ok'
