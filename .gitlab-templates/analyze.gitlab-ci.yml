@@ -105,6 +105,7 @@ run-loadtests:
     - uv pip install ruff --system
   script:
     - ruff format --check app/
+    - ruff format --check apis/
     - ruff format --check grist-plugins/
     - ruff format --check services/
     - ruff format --check models/
@@ -117,6 +118,7 @@ run-loadtests:
     - uv pip install ruff --system
   script:
     - ruff check app/
+    - ruff check apis/
     - ruff check grist-plugins/
     - ruff check services/
     - ruff check models/

@@ -55,3 +55,7 @@ tests_e2e/resultats_tests.json
 tests_e2e/resultats_tests.xml
 
 grist-plugins/src/grist_plugins/static/dsfr
+
+.pre-commit-config.yaml
+.pre-commit-config.yml
+.pre-commit-scripts/
