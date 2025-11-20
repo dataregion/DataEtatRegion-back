@@ -238,9 +238,9 @@ class V3QueryBuilder(Generic[T]):
         model = self._model
         q = (
             select(
-                (func.coalesce(func.count(model.id), 0).label("total")), # type: ignore
-                (func.coalesce(func.sum(model.montant_ae), 0).label("total_montant_engage")), # type: ignore
-                (func.coalesce(func.sum(model.montant_cp), 0).label("total_montant_paye")), # type: ignore
+                (func.coalesce(func.count(model.id), 0).label("total")),  # type: ignore
+                (func.coalesce(func.sum(model.montant_ae), 0).label("total_montant_engage")),  # type: ignore
+                (func.coalesce(func.sum(model.montant_cp), 0).label("total_montant_paye")),  # type: ignore
             )
             .select_from(model)
             .where(*self._query._where_criteria)
@@ -249,7 +249,7 @@ class V3QueryBuilder(Generic[T]):
             .limit(None)
             .offset(None)
         )
-        
+
         result = self._session.execute(q).one()
         return Total(
             total=result.total,
