@@ -3,9 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "mkdir -p static/dsfr && cp node_modules/@gouvfr/dsfr/dist/dsfr.min.css static/dsfr"
+    "dev": "vite",
+    "build": "npm run build:dsfr && npm run build:js",
+    "build:dsfr": "mkdir -p static/dsfr && cp node_modules/@gouvfr/dsfr/dist/dsfr.main.css static/dsfr && cp -r node_modules/@gouvfr/dsfr/dist/* static/dsfr",
+    "build:js": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@gouvfr/dsfr": "^1.13.2"
+    "@gouvfr/dsfr": "^1.13.2",
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "terser": "^5.44.1",
+    "vite": "^5.0.0"
   }
 }

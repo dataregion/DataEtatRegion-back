@@ -44,7 +44,13 @@ tests_e2e/build
 
 .import_linter_cache
 
-**/node_modules/**
+**node_modules/**
+**/static/dist/**
+**/static/dsfr/**
+**/dist/**
+**/.DS_Store
+**/*.log
+
 
 tests_e2e/assets/*
 tests_e2e/tests.log

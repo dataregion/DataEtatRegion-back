@@ -8,6 +8,16 @@
       width: 3.2rem;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.icon-spinning {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
 button {
       background-color: #007bff;
       color: white;
@@ -19,9 +29,4 @@ button {
 
 button[disabled] {
       background-color: #777;
-}
-
-button:hover:not([disabled]) {
-      background-color: #0056b3;
-      cursor: pointer;
 }

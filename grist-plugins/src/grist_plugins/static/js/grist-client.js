@@ -1,13 +1,3 @@
-async function getGristDocId() {
-  try {
-    const docId = await grist.docApi.getDocName();
-    return docApi;
-  } catch (error) {
-    console.error('Erreur lors de la récupération du docId:', error);
-    throw error;
-  }
-}
-
 // Récupère le token d'accès et l'URL de base
 async function getGristAuthInfo() {
   try {
@@ -58,5 +48,13 @@ async function gristApiRequest(endpoint, method = 'GET', body = null) {
   return response.json();
 }
 
+/**
+ * Récupère les colonnes de la table.
+ * @returns 
+ */
+async function getColumnTable(tableId) {
+  return await gristApiRequest(`tables/${tableId}/columns?hidden=false`);
+}
+
 // Exporte la fonction pour l'utiliser ailleurs
-export { getGristAuthInfo, gristApiRequest };
+export { getGristAuthInfo, gristApiRequest, getColumnTable };

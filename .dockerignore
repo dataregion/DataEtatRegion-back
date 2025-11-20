@@ -88,3 +88,5 @@ docker/
 # Fichiers temporaires système
 .tmp/
 tmp/
+
+node_modules/

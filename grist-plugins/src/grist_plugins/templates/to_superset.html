@@ -5,12 +5,10 @@
     <meta charset="UTF-8">
     <title>Vers Superset</title>
     <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
-    <link href="/static/dsfr/dsfr.min.css" rel="stylesheet">
+    <link href="/static/dsfr/utility/icons/icons.min.css" rel="stylesheet">
+    <link href="/static/dsfr/dsfr.main.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
-    <script>
-        const postUrl = "{{ actions }}";  // injecte l'URL côté Jinja
-    </script>
-    <script type="module" src="/static/js/to-superset.js"></script>
+    <script type="module" src="{{ jsPath }}"></script>
 </head>
 
 <body>
@@ -36,27 +34,57 @@
         </div>
     </header>
     <main class="fr-container fr-my-4w">
-        <h2 class="fr-h4">Sélection d’une colonne à indexer</h2>
-
-        <form id="columns-form" class="fr-my-2w">
-            <div class="fr-select-group" id="col-select-group">
-                <select class="fr-select" id="column-select" name="column-select"
-                    aria-describedby="column-select-messages">
-                    <option value="" disabled selected>-- Sélectionner une colonne --</option>
-                    <!-- Options injectées en JS -->
-                </select>
-
-                <!-- Messages (erreur / succès) -->
-                <div class="fr-messages-group" id="column-select-messages" aria-live="polite"></div>
-            </div>
-
-            <div class="fr-my-3w">
-                <button type="submit" class="fr-btn" id="submit-btn" disabled>Envoyer les données</button>
-            </div>
-        </form>
-
         <!-- Feedback global -->
-        <div id="feedback" class="fr-alert fr-hidden"></div>
+        <div id="feedback" class="fr-alert fr-hidden" role="alert">
+        </div>
+
+        <div id="loading-plugins">
+            <p class="fr-badge">Chargement du plugins ... </p>
+        </div>
+
+
+        <div id="form-publish" class="fr-hidden">
+            <div id="infos" class="fr-alert fr-alert--info fr-mb-3w" role="status">
+                <p class="fr-alert__title">À propos de ce plugin</p>
+                <p>
+                    Ce plugin permet de copier les données de la table courante vers le système
+                    <strong>DataEtat</strong>.<br>
+                    Ces données pourront ensuite être réutilisées et visualisées dans <strong>Superset</strong> pour des
+                    analyses avancées ou des tableaux de bord partagés.
+                </p>
+                <button title="Masquer le message"
+                    onclick="const alert = this.parentNode; alert.parentNode.removeChild(alert)" type="button"
+                    class="fr-btn--close fr-btn">Masquer le message</button>
+            </div>
+
+            <form id="columns-form" class="fr-my-2w" method="post">
+                <div class="fr-select-group" id="col-select-group">
+                    <label class="fr-label" for="column" id="column-select-label">
+                        Sélectionner un index pour la table
+                    </label>
+                    <select class="fr-select" id="column" name="column" aria-describedby="column-select-messages">
+                        <option value="" disabled selected>-- Sélectionner une colonne --</option>
+                        <!-- Options injectées en JS -->
+                    </select>
+                </div>
+
+                
+                <div class="fr-my-3w" id="submit-container">
+                   
+                    <button type="submit" class="fr-btn" id="submit-btn" disabled>Envoyer les données</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="loading-publish" class="fr-hidden">
+            <span class="fr-icon-refresh-line icon-spinning" aria-hidden="true"></span>
+            Publication en cours...
+        </div>
+
+        <div id="success-publish" class="fr-hidden">
+            <span class="fr-icon-check-line" aria-hidden="true"></span>
+            Publication réalisée avec succès !
+        </div>
     </main>
 </body>
 
