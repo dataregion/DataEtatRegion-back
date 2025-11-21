@@ -1,4 +1,3 @@
-from functools import lru_cache
 import os
 from fastapi.params import Depends
 from typing_extensions import Annotated
@@ -79,7 +78,6 @@ settings = Settings.load_from_yaml()
 
 
 # Fonction de dépendance
-@lru_cache
 def get_settings() -> Settings:
     """Dépendance FastAPI pour injecter les settings."""
     return settings
