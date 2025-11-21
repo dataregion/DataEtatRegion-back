@@ -8,6 +8,7 @@ apis/config/config.yml
 apis/config/*schema.json
 apis/tests/config.yml
 apis/tests/test.db
+grist-plugins/src/grist_plugins/config.yml
 **/node_modules
 app/config/config.yml
 app/migrations/data/ref_*.csv
@@ -43,6 +44,7 @@ gristcli/build
 tests_e2e/build
 
 .import_linter_cache
+
 
 **node_modules/**
 **/static/dist/**

@@ -4,12 +4,12 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 import requests
 
-from grist_plugins.settings import Settings
+from grist_plugins.settings import SettingsDep
+
 
 templates_path = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=templates_path)
 router = APIRouter()
-settings = Settings()
 
 
 @router.get("/init-referentiels", response_class=HTMLResponse)
@@ -23,7 +23,7 @@ async def sync_referentiels(request: Request, tableName: str):
 
 
 @router.post("/init-sync")
-def init_sync(docId: str, tableId: str, tableName: str):
+def init_sync(docId: str, tableId: str, tableName: str, settings: SettingsDep):
     with requests.Session() as session:
         with session.post(
             f"{settings.url_init_sync_db}?docId={docId}&tableId={tableId}&tableName={tableName}&token={settings.token_sync_db}"
@@ -35,7 +35,7 @@ def init_sync(docId: str, tableId: str, tableName: str):
 
 
 @router.put("/launch-sync")
-def launch_sync(docId: str, tableId: str, tableName: str):
+def launch_sync(docId: str, tableId: str, tableName: str, settings: SettingsDep):
     with requests.Session() as session:
         with session.put(
             f"{settings.url_sync_db}?docId={docId}&tableId={tableId}&tableName={tableName}&token={settings.token_sync_db}"

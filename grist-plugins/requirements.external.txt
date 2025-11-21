@@ -36,8 +36,10 @@ fastapi==0.116.2
     # via -r requirements.external.in
 fastapi-cli==0.0.16
     # via fastapi
-fastapi-cloud-cli==0.3.1
+fastapi-cloud-cli==0.5.1
     # via fastapi-cli
+fastar==0.6.0
+    # via fastapi-cloud-cli
 geoalchemy2==0.18.1
     # via models (../models/pyproject.toml)
 geopandas==1.1.1
@@ -136,14 +138,16 @@ python-multipart==0.0.20
 pytz==2025.2
     # via pandas
 pyyaml==6.0.3
-    # via uvicorn
+    # via
+    #   -r requirements.external.in
+    #   uvicorn
 requests==2.32.5
     # via -r requirements.external.in
 rich==14.2.0
     # via
     #   rich-toolkit
     #   typer
-rich-toolkit==0.15.1
+rich-toolkit==0.16.0
     # via
     #   fastapi-cli
     #   fastapi-cloud-cli

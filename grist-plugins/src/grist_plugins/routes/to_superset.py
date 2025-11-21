@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import Form, status
 from pydantic import ValidationError
-from grist_plugins.settings import Settings
+from grist_plugins.settings import SettingsDep
 
 # Modèles importés depuis models/to_superset.py
 from grist_plugins.models.to_superset import ColumnIn
@@ -18,12 +18,9 @@ templates_path = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=templates_path)
 router = APIRouter()
 
-# Charger les settings
-settings = Settings()
-
 
 @router.get("/to-superset", response_class=HTMLResponse)
-async def to_superset_page(request: Request):
+async def to_superset_page(request: Request, settings: SettingsDep):
     logger.info("GET /to-superset - Affichage de la page de sélection de colonne.")
     # Déterminer le chemin du JS selon l'environnement
     js_path = (
