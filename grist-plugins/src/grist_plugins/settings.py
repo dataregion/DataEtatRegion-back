@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     url_sync_db: str = "http://localhost:5000/budget/api/v1/sync-referentiels"
     token_sync_db: str = "GgqZ7LhmBOPsfJo9zH2aRTtJlzy9PV5G"
 
+    url_to_superset_api: str = "http://localhost:8050/grist-to-superset/api/v3/import/table"
+    url_token_to_superset: str = "X-TOKEN-TO-SUPERSET"
+    timeout_api_calls: int | None = 30  # secondes
+
     # Mode développement
     dev_mode: bool = True
 

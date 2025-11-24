@@ -5,13 +5,10 @@ from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import Form, status
+import httpx
 from pydantic import ValidationError
 from grist_plugins.settings import SettingsDep
-
-# Modèles importés depuis models/to_superset.py
-from grist_plugins.models.to_superset import ColumnIn
-import time
-
+from models.value_objects.to_superset import ColumnIn
 
 logger = logging.getLogger(__name__)
 templates_path = Path(__file__).parent.parent / "templates"
@@ -30,23 +27,21 @@ async def to_superset_page(request: Request, settings: SettingsDep):
 
 
 @router.post("/to-superset/publish")
-async def publish(file: UploadFile = File(...), tableId: str = Form(...), columns: str = Form(...)):
+async def publish(
+    settings: SettingsDep, file: UploadFile = File(...), tableId: str = Form(...), columns: str = Form(...)
+):
     # Parser et valider les colonnes avec Pydantic
+    logger.info(f"POST /to-superset/publish - Publication pour la table '{tableId}'")
     try:
         columns_list = [ColumnIn(**col) for col in json.loads(columns)]
     except (json.JSONDecodeError, ValidationError) as e:
         raise HTTPException(status_code=422, detail=f"Invalid columns format: {str(e)}")
 
-    logger.info(f"POST /to-superset/publish - Publication pour la table '{tableId}'")
-    logger.info(f"Colonnes validées : {columns_list}")
+    logger.debug(f"Colonnes validées : {columns_list}")
 
-    logger.info(f"POST /to-superset/publish - Publication pour la table '{tableId}'")
     try:
         # Lire le fichier CSV
-        contents = await file.read()
-        csv_content = contents.decode("utf-8")
-        logger.info(f"Fichier CSV reçu : {file.filename}, taille : {len(csv_content)} bytes")
-
+        file_content = await file.read()
         # Validation : il doit y avoir au moins une colonne indexée
         has_index = any(col.is_index for col in columns_list)
         if not has_index:
@@ -56,9 +51,70 @@ async def publish(file: UploadFile = File(...), tableId: str = Form(...), column
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Vérifier que le fichier n'est pas vide
+        if not file_content:
+            logger.error("Fichier CSV vide")
+            return JSONResponse(
+                content={"success": False, "message": "Le fichier CSV est vide"},
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
         logger.info(f"Validation réussie pour la table : '{tableId}' avec {len(columns_list)} colonne(s)")
-        # TODO, envoyer vers Data Etat Api la création de la table + insert données
-        time.sleep(4)  # Simuler un délai de traitement
+
+        # Appel à l'API d'import distante
+
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            logger.info(f"Envoi vers l'API d'import Grist: {settings.url_to_superset_api}")
+
+            response = await client.post(
+                settings.url_to_superset_api,
+                files={"file": (file.filename or f"{tableId}.csv", file_content, "text/csv")},
+                data={
+                    "table_id": tableId,
+                    "columns": columns,  # On renvoie le JSON tel quel
+                },
+                headers={"X-API-Key": settings.url_token_to_superset},
+            )
+
+            # Gestion des erreurs HTTP
+            if response.status_code == 403:
+                logger.error("Erreur d'authentification avec l'API d'import")
+                return JSONResponse(
+                    content={"success": False, "message": "Erreur d'authentification avec l'API de destination"},
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+            if response.status_code == 400:
+                error_data = response.json()
+                logger.error(f"Erreur de validation côté API: {error_data}")
+                return JSONResponse(
+                    content={"success": False, "message": error_data.get("detail", "Erreur de validation des données")},
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if response.status_code != 200:
+                try:
+                    error_detail = response.json().get("detail", response.text)
+                except Exception:
+                    error_detail = response.text
+
+                logger.error(f"Erreur API ({response.status_code}): {error_detail}")
+                return JSONResponse(
+                    content={"success": False, "message": f"Erreur lors de l'import: {error_detail}"},
+                    status_code=response.status_code,
+                )
+
+            # Succès - Parser la réponse
+            result = response.json()
+            logger.info(f"Import réussi: {result.get('rows_imported', 0)} lignes importées")
+
+            return {
+                "success": True,
+                "message": result.get("message", f"Table '{tableId}' importée avec succès"),
+                "table_id": tableId,
+                "rows_imported": result.get("rows_imported", 0),
+            }
+
         return {"success": True, "message": f"Table '{tableId}' et colonnes validées."}
 
     except json.JSONDecodeError as err:

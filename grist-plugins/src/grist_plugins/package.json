@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "npm run build:dsfr && vite",
     "build": "npm run build:dsfr && npm run build:js",
     "build:dsfr": "mkdir -p static/dsfr && cp node_modules/@gouvfr/dsfr/dist/dsfr.main.css static/dsfr && cp -r node_modules/@gouvfr/dsfr/dist/* static/dsfr",
     "build:js": "vite build",

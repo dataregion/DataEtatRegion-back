@@ -59,3 +59,5 @@ api_entreprise_batch_ratelimiter:
     host: localhost
     port: 16379
     db: 3
+
+token_for_grist_plugins: "tokentestforgristplugins"

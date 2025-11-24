@@ -48,3 +48,7 @@ class Config(BaseModel):
 
     api_entreprise_batch: ApiEntrepriseInfo
     api_entreprise_batch_ratelimiter: RateLimiterInfo
+
+    """Token d'authentification pour les plugins Grist"""
+    token_for_grist_plugins: str
+    

@@ -23,6 +23,7 @@ from apis.apps.apis_externes.api import app as app_apis_externe  # type: ignore 
 from apis.apps.budget.api import app as app_budget  # type: ignore  # noqa: E402
 from apis.apps.qpv.api import app as app_qpv  # type: ignore  # noqa: E402
 from apis.apps.referentiels.api import app as app_referentiels  # type: ignore  # noqa: E402
+from apis.apps.grist_to_superset.api import app as app_grist_to_superset  # type: ignore  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
@@ -70,6 +71,7 @@ def create_app():
     app.mount("/financial-data/api/v3", app_budget)
     app.mount("/data-qpv/api/v3", app_qpv)
     app.mount("/referentiels/api/v3", app_referentiels)
+    app.mount("/grist-to-superset/api/v3", app_grist_to_superset)
 
     app.add_middleware(
         CORSMiddleware,
