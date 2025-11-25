@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from apis.apps.grist_to_superset.routers.grist_to_superset import router as grist_to_superset
+from .errorhandlers import setup_exception_handlers
 
 
 app = FastAPI(
@@ -16,3 +17,5 @@ API permettant de créer une base de donnée pour un utilisateur dans un schema 
 )
 
 app.include_router(grist_to_superset, prefix="", tags=["Grist to Superset"])
+
+setup_exception_handlers(app)

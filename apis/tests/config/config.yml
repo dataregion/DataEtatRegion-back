@@ -4,12 +4,12 @@ sqlalchemy_database_uri: "postgresql+psycopg://postgres:password@localhost:5432/
 
 
 keycloak_openid:
-  url: https://auth.nocode.csm.ovh
+  url: https://oidc.auth
   realm: Regions
-  client_id: back-api
-  secret_key: hNFljZDqcKehP0qJiB82VP6wxKRuu1RC
-  test_user: csm@sib.fr
-  test_password: Q@67x5j5djGeB
+  client_id: back
+  secret_key: secret_key
+  test_user: test@numih.fr
+  test_password: pwd
 
 cache_config:
   budget_totaux_enabled: true

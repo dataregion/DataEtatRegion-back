@@ -66,6 +66,7 @@ def create_app():
     # setup_exception_handlers(app_apis_externe)
     setup_exception_handlers(app_budget)
     setup_exception_handlers(app_referentiels)
+    setup_exception_handlers(app_grist_to_superset)
 
     app.mount("/apis-externes/v3", app_apis_externe)
     app.mount("/financial-data/api/v3", app_budget)
