@@ -4,7 +4,6 @@ from apis.app import create_app
 from apis.config.current import get_config
 
 
-
 # @pytest.fixture(scope="session")
 # def test_db():
 #     postgres_container = DataEtatPostgresContainer()

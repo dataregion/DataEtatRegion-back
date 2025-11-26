@@ -5,8 +5,11 @@ import pandas as pd
 import json
 import logging
 from models.value_objects.to_superset import ColumnIn
+from sqlalchemy.orm import Session
 
 from apis.apps.grist_to_superset.models.publish_response import PublishResponse
+from apis.apps.grist_to_superset.services.import_data_from_grist import ImportService
+from apis.database import get_session
 from apis.security.security_header import verify_api_key
 from apis.shared.exceptions import BadRequestError
 
@@ -25,6 +28,7 @@ async def import_table_data(
     file: UploadFile = File(..., description="Fichier CSV à importer contenant les données"),
     table_id: str = Form(..., description="Identifiant de la table cible"),
     columns: str = Form(..., description="Schéma des colonnes au format JSON"),
+    session: Session = Depends(get_session),
 ):
     """
     Importe des données CSV dans le système.
@@ -67,7 +71,8 @@ async def import_table_data(
     # TODO : Créer le schema de la BDD
     # TODO : Créer la table si elle n'existe pas
     # TODO : Insérer les données
-    # await insert_data_to_database(table_id, df_filtered, columns_schema)
+    import_service = ImportService(session)
+    rows_imported = import_service.import_table(table_id=table_id, dataframe=df_filtered, columns_schema=columns_schema)
 
     data.close()
     file.file.close()
