@@ -3,7 +3,7 @@ import logging
 from types import NoneType
 from typing import Annotated, TypeVar
 
-from apis.shared.query_builder import SourcesQueryParams
+from services.query_builders.source_query_params import SourcesQueryParams
 from fastapi import APIRouter, Depends
 from models.entities.financial.query.FlattenFinancialLinesDataQpv import FlattenFinancialLinesDataQPV
 from pydantic import BaseModel

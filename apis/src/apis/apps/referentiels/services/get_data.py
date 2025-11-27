@@ -1,7 +1,8 @@
 from sqlalchemy import ColumnExpressionArgument
 from sqlalchemy.orm import Session, DeclarativeBase
 
-from apis.shared.query_builder import V3QueryBuilder, V3QueryParams
+from services.query_builders.v3_query_params import V3QueryParams
+from services.query_builders.v3_query_builder import V3QueryBuilder
 
 
 def get_all_data(

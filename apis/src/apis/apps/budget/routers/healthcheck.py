@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
+from services.query_builders.budget_query_params import BudgetQueryParams
 from services.utilities.observability import SummaryOfTimePerfCounter
 
-from apis.apps.budget.models.budget_query_params import BudgetQueryParams
 from apis.apps.budget.services.get_data import get_lignes
 from apis.database import get_session
 from apis.exception_handlers import error_responses

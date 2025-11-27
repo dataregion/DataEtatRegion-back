@@ -16,11 +16,13 @@ from services.helper import (
     TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver,
 )
 from services.helper import TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver
+from services.query_builders.budget_query_params import BudgetQueryParams
 
-from apis.apps.budget.models.budget_query_params import BudgetQueryParams
 from apis.shared.colonne import Colonne
 from apis.shared.enums import BenefOrLoc
-from apis.shared.query_builder import FinancialLineQueryBuilder
+from services.query_builders.financial_line_query_builder import (
+    FinancialLineQueryBuilder,
+)
 
 
 class BudgetQueryBuilder(FinancialLineQueryBuilder):
@@ -38,15 +40,17 @@ class BudgetQueryBuilder(FinancialLineQueryBuilder):
         self._code_geo_column_locinterministerielle_resolver = (
             TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver()
         )
-        self._code_geo_column_benef_resolver = TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver()
+        self._code_geo_column_benef_resolver = (
+            TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver()
+        )
 
     def __init_mechanisme_grouping__(self, params: BudgetQueryParams):
         self.groupby_colonne = None
         self.dynamic_conditions = None
 
         if params.grouping is not None:
-            self.groupby_colonne, self.dynamic_conditions = self._rec_grouping_mechanisme(
-                params.grouping, params.grouped, {}
+            self.groupby_colonne, self.dynamic_conditions = (
+                self._rec_grouping_mechanisme(params.grouping, params.grouped, {})
             )
             if self.groupby_colonne is None:
                 return
@@ -56,8 +60,12 @@ class BudgetQueryBuilder(FinancialLineQueryBuilder):
                 colonnes = [
                     getattr(FinancialLines, self.groupby_colonne.code).label("value"),  # type: ignore
                     func.coalesce(func.count(FinancialLines.id), 0).label("total"),
-                    func.coalesce(func.sum(FinancialLines.montant_ae), 0).label("total_montant_engage"),
-                    func.coalesce(func.sum(FinancialLines.montant_cp), 0).label("total_montant_paye"),
+                    func.coalesce(func.sum(FinancialLines.montant_ae), 0).label(
+                        "total_montant_engage"
+                    ),
+                    func.coalesce(func.sum(FinancialLines.montant_cp), 0).label(
+                        "total_montant_paye"
+                    ),
                 ]
                 if self.groupby_colonne.concatenate:
                     colonnes.append(
@@ -68,7 +76,11 @@ class BudgetQueryBuilder(FinancialLineQueryBuilder):
                         ).label("label")
                     )
                 else:
-                    colonnes.append(getattr(FinancialLines, self.groupby_colonne.code).label("label"))
+                    colonnes.append(
+                        getattr(FinancialLines, self.groupby_colonne.code).label(
+                            "label"
+                        )
+                    )
                 self.select_custom_model_properties(colonnes, is_grouping=True)
 
     def _rec_grouping_mechanisme(
@@ -81,7 +93,9 @@ class BudgetQueryBuilder(FinancialLineQueryBuilder):
             colonne = grouping[0] if len(grouping) > 0 else None
             return colonne, conditions
 
-        conditions[grouping[0].code] = {"value": grouped[0] if grouped[0] != "None" else None}
+        conditions[grouping[0].code] = {
+            "value": grouped[0] if grouped[0] != "None" else None
+        }
         if grouping[0].type is not None:
             conditions[grouping[0].code]["type"] = grouping[0].type
 
@@ -91,7 +105,9 @@ class BudgetQueryBuilder(FinancialLineQueryBuilder):
     Méthodes de conditions spécifiques aux requêtes de Budget
     """
 
-    def niveau_code_geo_in(self, niveau_geo: str | None, code_geo: list | None, source_region: str):
+    def niveau_code_geo_in(
+        self, niveau_geo: str | None, code_geo: list | None, source_region: str
+    ):
         if niveau_geo is not None and code_geo is not None:
             self.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
         return self
@@ -114,10 +130,14 @@ class BudgetQueryBuilder(FinancialLineQueryBuilder):
         if list_code_geo is None:
             return self
 
-        column_codegeo_commune_loc_inter = self._code_geo_column_locinterministerielle_resolver.code_geo_column(
-            type_geo
+        column_codegeo_commune_loc_inter = (
+            self._code_geo_column_locinterministerielle_resolver.code_geo_column(
+                type_geo
+            )
         )
-        column_codegeo_commune_beneficiaire = self._code_geo_column_benef_resolver.code_geo_column(type_geo)
+        column_codegeo_commune_beneficiaire = (
+            self._code_geo_column_benef_resolver.code_geo_column(type_geo)
+        )
 
         self._where_geo(
             type_geo,
@@ -149,7 +169,9 @@ class BudgetQueryBuilder(FinancialLineQueryBuilder):
             if type_geo is TypeCodeGeo.REGION:
                 code_locinter_pattern = [f"N{code}" for code in list_code_geo]
             elif type_geo is TypeCodeGeo.DEPARTEMENT:
-                code_locinter_pattern = [f"N{source_region}{code}" for code in list_code_geo]
+                code_locinter_pattern = [
+                    f"N{source_region}{code}" for code in list_code_geo
+                ]
             # fmt:off
             _conds_code_locinter = [
                 FinancialLines.localisationInterministerielle_code.ilike(f"{pattern}%")

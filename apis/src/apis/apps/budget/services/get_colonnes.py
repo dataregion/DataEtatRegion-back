@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from apis.apps.budget.models.budget_query_params import BudgetQueryParams
+from services.query_builders.budget_query_params import BudgetQueryParams
 from apis.shared.exceptions import BadRequestError
 from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,

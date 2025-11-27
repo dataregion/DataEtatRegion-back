@@ -3,7 +3,7 @@ import logging
 from typing import TypeVar
 
 from apis.apps.qpv.models.map_data import MapData
-from apis.shared.query_builder import SourcesQueryParams
+from services.query_builders.source_query_params import SourcesQueryParams
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 

@@ -3,7 +3,7 @@ from typing import Literal
 from fastapi import Query
 
 from apis.shared.exceptions import BadRequestError
-from apis.shared.query_builder import FinancialLineQueryParams
+from services.query_builders.financial_line_query_builder import FinancialLineQueryParams
 
 
 class QpvQueryParams(FinancialLineQueryParams):

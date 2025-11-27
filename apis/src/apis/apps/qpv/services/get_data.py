@@ -2,10 +2,11 @@ import asyncio
 from apis.apps.qpv.models.chart_data import ChartData
 from apis.apps.qpv.models.dashboard_data import DashboardData
 from apis.apps.qpv.models.map_data import MapData, QpvData
-from apis.shared.query_builder import SourcesQueryBuilder, SourcesQueryParams
 from models.entities.financial.query.FlattenFinancialLinesDataQpv import FlattenFinancialLinesDataQPV
 from models.schemas.financial import FlattenFinancialLinesDataQpvSchema
 
+from services.query_builders.source_query_builder import SourcesQueryBuilder
+from services.query_builders.source_query_params import SourcesQueryParams
 from sqlalchemy import distinct, func, select
 from sqlalchemy.orm import Session
 

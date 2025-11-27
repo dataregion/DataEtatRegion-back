@@ -9,7 +9,7 @@ from models.entities.financial.query.FlattenFinancialLinesDataQpv import (
 from models.value_objects.common import TypeCodeGeo
 
 from apis.apps.qpv.models.qpv_query_params import QpvQueryParams
-from apis.shared.query_builder import FinancialLineQueryBuilder
+from services.query_builders.financial_line_query_builder import FinancialLineQueryBuilder
 
 
 class QpvQueryBuilder(FinancialLineQueryBuilder):
