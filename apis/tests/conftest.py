@@ -5,7 +5,6 @@ import requests
 
 from apis.config.Config import Config
 from .fixtures.app import *  # noqa: F403
-
 from apis.database import get_session
 
 
