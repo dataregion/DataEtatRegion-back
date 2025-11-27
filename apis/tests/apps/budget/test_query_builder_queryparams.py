@@ -1,8 +1,8 @@
 """Teste les proprietés de cache des query params pour les lignes financières."""
 
 from pytest import fixture
-from apis.apps.budget.models.budget_query_params import Colonne
-from apis.apps.budget.services.budget_query_builder import BudgetQueryParams
+from services.query_builders.budget_query_params import Colonne
+from services.query_builders.budget_query_builder import BudgetQueryParams
 
 
 @fixture()
