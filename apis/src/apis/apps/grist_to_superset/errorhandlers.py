@@ -3,6 +3,7 @@ import json
 import logging
 from fastapi import FastAPI
 import pandas
+from apis.apps.grist_to_superset.exceptions.import_data_exceptions import DataInsertException
 from apis.shared.exceptions import BadRequestError
 from pydantic_core import ValidationError
 
@@ -30,6 +31,13 @@ def setup_exception_handlers(app: FastAPI):
         _log_exception(e)
         raise BadRequestError(
             code=HTTPStatus.UNPROCESSABLE_ENTITY, api_message=f"Format JSON invalide pour les colonnes: {str(e)}"
+        )
+
+    @app.exception_handler(DataInsertException)
+    async def data_insert_error(request: FastAPI, e: DataInsertException):
+        raise BadRequestError(
+            code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            api_message=f"Erreur lors de l'insertion des données dans la base : {str(e)}",
         )
 
     @app.exception_handler(ValidationError)

@@ -5,12 +5,13 @@ Service pour gérer l'import de données CSV vers la base de données.
 import logging
 from typing import List
 import pandas as pd
-from requests import Session
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 
 from models.value_objects.to_superset import ColumnIn, ColumnType
+
+from apis.apps.grist_to_superset.exceptions.import_data_exceptions import DataInsertException
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,13 @@ class ImportService:
         # 1. Créer le schéma s'il n'existe pas
         self._create_schema_if_not_exists("grist_data")
 
-        # 2. Créer la table si elle n'existe pas
+        if self.table_exists(schema_name="grist_data", table_name=table_id):
+            logger.info(f"La table 'grist_data.{table_id}' existe déjà. Suppression avant réimport.")
+            self.delete_table(schema_name="grist_data", table_name=table_id)
+
+        # 2. Créer la table
         self._create_table_if_not_exists(schema_name="grist_data", table_name=table_id, columns_schema=columns_schema)
+        logger.debug("Commit après création du schéma et de la table")
 
         # 3. Insérer les données
         rows_imported = self._insert_data(
@@ -75,7 +81,6 @@ class ImportService:
         """
         query = text(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
         self.session.execute(query)
-        self.session.commit()
         logger.info(f"Schéma '{schema_name}' vérifié/créé")
 
     def _create_table_if_not_exists(self, schema_name: str, table_name: str, columns_schema: List[ColumnIn]) -> None:
@@ -145,37 +150,28 @@ class ImportService:
             logger.warning("DataFrame vide, aucune donnée à insérer")
             return 0
 
-        # Préparer les noms de colonnes
         column_names = [col.id for col in columns_schema]
-        columns_str = ", ".join([f'"{col}"' for col in column_names])
+        df_to_insert = dataframe[column_names]
 
-        # Préparer les placeholders pour les valeurs
-        placeholders = ", ".join([f":{col}" for col in column_names])
+        try:
+            df_to_insert.to_sql(
+                name=table_name,
+                con=self.session.get_bind(),
+                schema=schema_name,
+                if_exists="append",
+                index=False,
+                method="multi",
+                chunksize=1000,
+            )
+            self.session.commit()
+            logger.info(f"{len(df_to_insert)} lignes insérées dans '{schema_name}.{table_name}'")
 
-        # Construire la requête d'insertion
-        query = text(f"""
-            INSERT INTO {schema_name}.{table_name} ({columns_str})
-            VALUES ({placeholders})
-        """)
+            return len(df_to_insert)
 
-        # Convertir le DataFrame en liste de dictionnaires
-        records = dataframe[column_names].to_dict("records")
-
-        # Insérer les données par batch pour de meilleures performances
-        batch_size = 1000
-        total_inserted = 0
-
-        nb_records = len(records)
-        for i in range(0, nb_records, batch_size):
-            batch = records[i : i + batch_size]
-            self.session.execute(query)
-            total_inserted += len(batch)
-            logger.debug(f"Batch inséré: {total_inserted}/{nb_records} lignes")
-
-        self.session.commit()
-        logger.info(f"{total_inserted} lignes insérées dans '{schema_name}.{table_name}'")
-
-        return total_inserted
+        except Exception as e:
+            self.session.rollback()
+            logger.error(f"Erreur lors de l'insertion: {str(e)}")
+            raise DataInsertException() from e
 
     def _map_column_type_to_sql(self, column_type: ColumnType) -> str:
         """
@@ -239,4 +235,4 @@ class ImportService:
         query = text(f"DROP TABLE IF EXISTS {schema_name}.{table_name} CASCADE")
         self.session.execute(query)
         self.session.commit()
-        logger.warning(f"Table '{schema_name}.{table_name}' supprimée")
+        logger.info(f"Table '{schema_name}.{table_name}' supprimée")

@@ -67,10 +67,6 @@ async def import_table_data(
     # Filtrer le DataFrame pour ne garder que les colonnes du schéma
     df_filtered = df[[col.id for col in columns_schema]]
 
-    # TODO: Insérer les données dans votre base de données
-    # TODO : Créer le schema de la BDD
-    # TODO : Créer la table si elle n'existe pas
-    # TODO : Insérer les données
     import_service = ImportService(session)
     rows_imported = import_service.import_table(table_id=table_id, dataframe=df_filtered, columns_schema=columns_schema)
 
@@ -78,7 +74,7 @@ async def import_table_data(
     file.file.close()
     return PublishResponse(
         success=True,
-        message=f"Import réussi de {len(df_filtered)} lignes",
+        message=f"Import réussi de {rows_imported} lignes",
         table_id=table_id,
         rows_imported=len(df_filtered),
     )
