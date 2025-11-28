@@ -1,10 +1,11 @@
 import logging
 import json
 from pathlib import Path
+from typing import Annotated
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from fastapi import Form, status
+from fastapi import Form, status, Header
 import httpx
 from pydantic import ValidationError
 from grist_plugins.settings import SettingsDep
@@ -16,6 +17,16 @@ templates = Jinja2Templates(directory=templates_path)
 router = APIRouter()
 
 
+@router.get("/callback", response_class=HTMLResponse)
+async def callback_oidc(request: Request, settings: SettingsDep):
+    logger.info("GET /callback - Affichage de la page de sélection de colonne.")
+    # Déterminer le chemin du JS selon l'environnement
+    js_path = (
+        "http://localhost:5173/static/js/to-superset.js" if settings.dev_mode else "/static/dist/js/to-superset.min.js"
+    )
+    return templates.TemplateResponse("/login/callback_oidc.html", {"request": request, "jsPath": js_path})
+
+
 @router.get("/to-superset", response_class=HTMLResponse)
 async def to_superset_page(request: Request, settings: SettingsDep):
     logger.info("GET /to-superset - Affichage de la page de sélection de colonne.")
@@ -23,13 +34,26 @@ async def to_superset_page(request: Request, settings: SettingsDep):
     js_path = (
         "http://localhost:5173/static/js/to-superset.js" if settings.dev_mode else "/static/dist/js/to-superset.min.js"
     )
-    return templates.TemplateResponse("/to_superset.html", {"request": request, "jsPath": js_path})
+      # Sérialiser la config OIDC en JSON pour l'utiliser en JS
+    oidc_config = {
+        "url": settings.keycloak.url,
+        "realm": settings.keycloak.realm,
+        "clientId": settings.keycloak.client_id
+    }
+    return templates.TemplateResponse("/to_superset.html", {"request": request, "jsPath": js_path, "oidc": oidc_config})
 
 
 @router.post("/to-superset/publish")
 async def publish(
-    settings: SettingsDep, file: UploadFile = File(...), tableId: str = Form(...), columns: str = Form(...)
+    settings: SettingsDep,authorization: Annotated[str | None, Header()] = None,  file: UploadFile = File(...), tableId: str = Form(...), columns: str = Form(...)
 ):
+    
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header manquant")
+    
+    token = authorization.replace("Bearer ", "")
+    logger.info(f"Token reçu: {token[:10]}...")
+
     # Parser et valider les colonnes avec Pydantic
     logger.info(f"POST /to-superset/publish - Publication pour la table '{tableId}'")
     try:
@@ -62,7 +86,6 @@ async def publish(
         logger.info(f"Validation réussie pour la table : '{tableId}' avec {len(columns_list)} colonne(s)")
 
         # Appel à l'API d'import distante
-
         async with httpx.AsyncClient(timeout=60.0) as client:
             logger.info(f"Envoi vers l'API d'import Grist: {settings.url_to_superset_api}")
 
@@ -73,7 +96,7 @@ async def publish(
                     "table_id": tableId,
                     "columns": columns,  # On renvoie le JSON tel quel
                 },
-                headers={"X-API-Key": settings.url_token_to_superset},
+                headers={"X-API-Key": settings.url_token_to_superset, "Authorization": f"Bearer {token}"},
             )
 
             # Gestion des erreurs HTTP
@@ -114,8 +137,6 @@ async def publish(
                 "table_id": tableId,
                 "rows_imported": result.get("rows_imported", 0),
             }
-
-        return {"success": True, "message": f"Table '{tableId}' et colonnes validées."}
 
     except json.JSONDecodeError as err:
         logger.error(f"Erreur JSON pour les colonnes : {err}")

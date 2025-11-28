@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Mon Application{% endblock %}</title>
+    <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+    <link href="/static/dsfr/utility/icons/icons.min.css" rel="stylesheet">
+    <link href="/static/dsfr/dsfr.main.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    <!-- Config OIDC globale -->
+    <script>
+        window.OIDC_CONFIG = {{ oidc | tojson }};
+    </script>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    {% block content %}{% endblock %}
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

@@ -5,12 +5,15 @@ from enum import Enum
 class ColumnType(str, Enum):
     """Types de colonnes supportés."""
 
-    TEXT = "text"
-    NUMERIC = "numeric"
-    DATE = "date"
-    DATETIME = "datetime"
-    BOOL = "bool"
-
+    TEXT = "Text"
+    NUMERIC = "Numeric"
+    INT = "Int"
+    DATE = "Date"
+    DATETIME = "Datetime"
+    BOOL = "Bool"
+    ANY = "Any"
+    CHOICE = "Choice"
+    CHOICELIST = "ChoiceList"
 
 class ColumnIn(BaseModel):
     """Informations nécessaires pour configurer une colonne dans Superset."""

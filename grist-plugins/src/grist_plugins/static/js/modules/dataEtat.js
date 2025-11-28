@@ -48,10 +48,15 @@ export async function fetchTableRows(tableRef, colsToKeep) {
   return rows;
 }
 
-export async function publishDataGrist(tableId, colIndex) {
+function filterColumns(columns) {
+  // Filtrer les colonnes pour exclure les références
+  return columns.filter(col => !col.fields.type.startsWith('Ref:'));
+}
+
+export async function publishDataGrist(tableId, colIndex, token) {
   // récupérer les colonnes
   const tableInfo = await getColumnTable(tableId);
-  const columns = tableInfo.columns;
+  const columns = filterColumns(tableInfo.columns);
 
   const rows = await fetchTableRows(tableId, columns);
 
@@ -74,7 +79,10 @@ export async function publishDataGrist(tableId, colIndex) {
   try {
     const response = await fetch('/to-superset/publish', {
       method: 'POST',
-      body: formData
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
 
     if (!response.ok) {

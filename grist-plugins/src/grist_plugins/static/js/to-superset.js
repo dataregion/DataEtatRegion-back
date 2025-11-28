@@ -1,10 +1,12 @@
 import { publishDataGrist } from './modules/dataEtat.js';
+import { login } from './modules/login.js';
 import { getColumnTable } from './grist-client.js';
 
+const oidcConfig = window.OIDC_CONFIG;
 
 const TYPE_INDEX_AUTHORIZE = ['Numeric', 'Text'];
 
-export function completeColumnIndex(columns) {
+function completeColumnIndex(columns) {
   const select = document.getElementById("column");
   let count = 0;
   columns.forEach(col => {
@@ -98,12 +100,15 @@ async function initGrist() {
     e.preventDefault();
     submitBtn.disabled = true;
     showPart("loading-publish");
+
+    const token = await login( oidcConfig.url, oidcConfig.realm, oidcConfig.clientId );
+
     hidePart("form-publish");
     const data = new FormData(form);
     const indexCol = data.get("column");
     if (tableId && indexCol) {
       try {
-        await publishDataGrist(tableId, indexCol);
+        await publishDataGrist(tableId, indexCol, token);
         hidePart("loading-publish");
         showPart("success-publish");
       } catch(err) {

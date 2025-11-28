@@ -1,10 +1,16 @@
 import os
 from fastapi.params import Depends
+from pydantic import BaseModel
 from typing_extensions import Annotated
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
 import yaml
 from typing import Optional
+
+class KeycloakOpenIdConfig(BaseModel):
+    url: str
+    realm: str
+    client_id: str
 
 
 class Settings(BaseSettings):
@@ -19,6 +25,7 @@ class Settings(BaseSettings):
     url_token_to_superset: str = "X-TOKEN-TO-SUPERSET"
     timeout_api_calls: int | None = 30  # secondes
 
+    keycloak: KeycloakOpenIdConfig
     # Mode développement
     dev_mode: bool = True
 
@@ -42,7 +49,7 @@ class Settings(BaseSettings):
                 return cls()
 
         # 2. Vérifier la variable d'environnement CONFIG_PATH
-        env_config_path = os.getenv("CONFIG_PATH", "./src/grist_plugins/config.yml")
+        env_config_path = os.getenv("CONFIG_PATH", "config.yml")
         if env_config_path:
             config_path = Path(env_config_path)
             if config_path.exists():

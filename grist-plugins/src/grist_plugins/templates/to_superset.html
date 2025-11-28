@@ -1,91 +1,81 @@
-<!DOCTYPE html>
-<html lang="fr">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Vers Superset</title>
-    <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
-    <link href="/static/dsfr/utility/icons/icons.min.css" rel="stylesheet">
-    <link href="/static/dsfr/dsfr.main.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
-    <script type="module" src="{{ jsPath }}"></script>
-</head>
+{% block title %}Vers Superset{% endblock %}
 
-<body>
-    <header role="banner" class="fr-header">
-        <div class="fr-header__body">
-            <div class="fr-container">
-                <div class="fr-header__body-row">
-                    <div class="fr-header__brand fr-link">
-                        <div class="fr-header__brand-top">
-                            <div class="header__logo">
-                                <img src="static/img/logo.svg">
-                            </div>
-                            <div class="fr-header__service">
-                                <p class="fr-header__service-title">
-                                    Grist DataEtat vers Superset
-                                </p>
-                            </div>
+{% block extra_head %}
+<script type="module" src="{{ jsPath }}"></script>
+{% endblock %}
+{% block content %}
+<header role="banner" class="fr-header">
+    <div class="fr-header__body">
+        <div class="fr-container">
+            <div class="fr-header__body-row">
+                <div class="fr-header__brand fr-link">
+                    <div class="fr-header__brand-top">
+                        <div class="header__logo">
+                            <img src="static/img/logo.svg">
                         </div>
-
+                        <div class="fr-header__service">
+                            <p class="fr-header__service-title">
+                                Grist DataEtat vers Superset
+                            </p>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </div>
-    </header>
-    <main class="fr-container fr-my-4w">
-        <!-- Feedback global -->
-        <div id="feedback" class="fr-alert fr-hidden" role="alert">
+    </div>
+</header>
+<main class="fr-container fr-my-4w">
+    <!-- Feedback global -->
+    <div id="feedback" class="fr-alert fr-hidden" role="alert">
+    </div>
+
+    <div id="loading-plugins">
+        <p class="fr-badge">Chargement du plugins ... </p>
+    </div>
+
+    <div id="form-publish" class="fr-hidden">
+        <div id="infos" class="fr-alert fr-alert--info fr-mb-3w" role="status">
+            <p class="fr-alert__title">À propos de ce plugin</p>
+            <p>
+                Ce plugin permet de copier les données de la table courante vers le système
+                <strong>DataEtat</strong>.<br>
+                Ces données pourront ensuite être réutilisées et visualisées dans <strong>Superset</strong> pour des
+                analyses avancées ou des tableaux de bord partagés.
+            </p>
+            <button title="Masquer le message"
+                onclick="const alert = this.parentNode; alert.parentNode.removeChild(alert)" type="button"
+                class="fr-btn--close fr-btn">Masquer le message</button>
         </div>
 
-        <div id="loading-plugins">
-            <p class="fr-badge">Chargement du plugins ... </p>
-        </div>
-
-
-        <div id="form-publish" class="fr-hidden">
-            <div id="infos" class="fr-alert fr-alert--info fr-mb-3w" role="status">
-                <p class="fr-alert__title">À propos de ce plugin</p>
-                <p>
-                    Ce plugin permet de copier les données de la table courante vers le système
-                    <strong>DataEtat</strong>.<br>
-                    Ces données pourront ensuite être réutilisées et visualisées dans <strong>Superset</strong> pour des
-                    analyses avancées ou des tableaux de bord partagés.
-                </p>
-                <button title="Masquer le message"
-                    onclick="const alert = this.parentNode; alert.parentNode.removeChild(alert)" type="button"
-                    class="fr-btn--close fr-btn">Masquer le message</button>
+        <form id="columns-form" class="fr-my-2w" method="post">
+            <div class="fr-select-group" id="col-select-group">
+                <label class="fr-label" for="column" id="column-select-label">
+                    Sélectionner un index pour la table
+                </label>
+                <select class="fr-select" id="column" name="column" aria-describedby="column-select-messages">
+                    <option value="" disabled selected>-- Sélectionner une colonne --</option>
+                    <!-- Options injectées en JS -->
+                </select>
             </div>
 
-            <form id="columns-form" class="fr-my-2w" method="post">
-                <div class="fr-select-group" id="col-select-group">
-                    <label class="fr-label" for="column" id="column-select-label">
-                        Sélectionner un index pour la table
-                    </label>
-                    <select class="fr-select" id="column" name="column" aria-describedby="column-select-messages">
-                        <option value="" disabled selected>-- Sélectionner une colonne --</option>
-                        <!-- Options injectées en JS -->
-                    </select>
-                </div>
+            <div class="fr-my-3w" id="submit-container">
+                <button type="submit" class="fr-btn" id="submit-btn" disabled>Envoyer les données</button>
+            </div>
+        </form>
+    </div>
 
-                
-                <div class="fr-my-3w" id="submit-container">
-                   
-                    <button type="submit" class="fr-btn" id="submit-btn" disabled>Envoyer les données</button>
-                </div>
-            </form>
-        </div>
+    <div id="loading-publish" class="fr-hidden">
+        <span class="fr-icon-refresh-line icon-spinning" aria-hidden="true"></span>
+        Publication en cours...
+    </div>
 
-        <div id="loading-publish" class="fr-hidden">
-            <span class="fr-icon-refresh-line icon-spinning" aria-hidden="true"></span>
-            Publication en cours...
-        </div>
+    <div id="success-publish" class="fr-hidden">
+        <span class="fr-icon-check-line" aria-hidden="true"></span>
+        Publication réalisée avec succès !
+    </div>
+</main>
 
-        <div id="success-publish" class="fr-hidden">
-            <span class="fr-icon-check-line" aria-hidden="true"></span>
-            Publication réalisée avec succès !
-        </div>
-    </main>
-</body>
-
-</html>
+{% endblock %}
