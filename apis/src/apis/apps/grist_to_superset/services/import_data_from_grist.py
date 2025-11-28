@@ -190,6 +190,7 @@ class ImportService:
         type_mapping = {
             ColumnType.TEXT: "TEXT",
             ColumnType.NUMERIC: "NUMERIC",
+            ColumnType.INT: "NUMERIC",
             ColumnType.DATE: "DATE",
             ColumnType.DATETIME: "TIMESTAMP",
             ColumnType.BOOL: "BOOLEAN",
@@ -232,7 +233,7 @@ class ImportService:
         Warning:
             Cette opération est irréversible !
         """
-        query = text(f"DROP TABLE IF EXISTS {schema_name}.{table_name} CASCADE")
+        query = text(f"DROP TABLE IF EXISTS {schema_name}.\"{table_name}\" CASCADE")
         self.session.execute(query)
         self.session.commit()
-        logger.info(f"Table '{schema_name}.{table_name}' supprimée")
+        logger.info(f"Table '{schema_name}.\"{table_name}\"' supprimée")

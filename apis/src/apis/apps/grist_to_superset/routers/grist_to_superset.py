@@ -10,12 +10,17 @@ from sqlalchemy.orm import Session
 from apis.apps.grist_to_superset.models.publish_response import PublishResponse
 from apis.apps.grist_to_superset.services.import_data_from_grist import ImportService
 from apis.database import get_session
+from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.security.security_header import verify_api_key
 from apis.shared.exceptions import BadRequestError
+from models.connected_user import ConnectedUser
+
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
+keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
 @router.post(
     "/import/table",
@@ -29,13 +34,13 @@ async def import_table_data(
     table_id: str = Form(..., description="Identifiant de la table cible"),
     columns: str = Form(..., description="Schéma des colonnes au format JSON"),
     session: Session = Depends(get_session),
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
     """
     Importe des données CSV dans le système.
 
     Requiert un token API valide dans le header X-API-Key.
     """
-
     # Vérifier que c'est bien un CSV
     if file.filename and not file.filename.endswith(".csv"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Le fichier doit être au format CSV")
@@ -44,7 +49,7 @@ async def import_table_data(
     columns_list = json.loads(columns)
     columns_schema = [ColumnIn(**col) for col in columns_list]
 
-    logger.info(f"Import demandé pour la table '{table_id}' avec {len(columns_schema)} colonnes")
+    logger.info(f"Import de l'utilisateur '{user.email}' demandé pour la table '{table_id}' avec {len(columns_schema)} colonnes")
 
     # Lire le CSV
     contents = file.file.read()

@@ -1,6 +1,6 @@
 import io
 import json
-from models.value_objects.to_superset import ColumnIn
+from models.value_objects.to_superset import ColumnIn, ColumnType
 from apis.apps.grist_to_superset.models.publish_response import PublishResponse
 
 from tests import _assert_can_jsonize
@@ -8,9 +8,9 @@ from tests import _assert_can_jsonize
 
 # Données de test
 VALID_COLUMNS = [
-    {"id": "name", "type": "text", "is_index": True},
-    {"id": "age", "type": "numeric", "is_index": False},
-    {"id": "email", "type": "text", "is_index": False},
+    {"id": "name", "type": "Text", "is_index": True},
+    {"id": "age", "type": "Numeric", "is_index": False},
+    {"id": "email", "type": "Text", "is_index": False},
 ]
 
 VALID_CSV_CONTENT = """name,age,email
@@ -32,7 +32,7 @@ def create_csv_file(content: str):
 def test_column_schema_is_serializable():
     """Test que le schéma de colonne est sérialisable en JSON."""
 
-    column = ColumnIn(id="test_col", type="text", is_index=True)
+    column = ColumnIn(id="test_col", type=ColumnType.TEXT, is_index=True)
     dumped = _assert_can_jsonize(column, mode="json")
     assert dumped is not None
 
@@ -83,6 +83,7 @@ def test_import_with_empty_token(client):
 # ============================================================================
 # TESTS DE VALIDATION DES FICHIERS
 # ============================================================================
+from unittest.mock import patch, MagicMock
 
 
 def test_import_with_non_csv_file(client, config):
@@ -90,12 +91,18 @@ def test_import_with_non_csv_file(client, config):
     files = {"file": ("test.txt", io.BytesIO(b"not a csv"), "text/plain")}
     data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
-    response = client.post(
-        "grist-to-superset/api/v3/import/table",
-        data=data,
-        files=files,
-        headers={"X-API-Key": config.token_for_grist_plugins},
-    )
+    # Mock du ConnectedUser pour bypasser la validation Keycloak
+    mock_user = MagicMock()
+    mock_user.user_id = "test-user-123"
+    mock_user.email = "test@example.com"
+
+    with patch('apis.security.keycloak_token_validator.keycloak_validator.validate_token', return_value=mock_user):
+        response = client.post(
+            "grist-to-superset/api/v3/import/table",
+            data=data,
+            files=files,
+            headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
+        )
     assert response.status_code == 400
     assert "CSV" in response.json()["detail"]
 
