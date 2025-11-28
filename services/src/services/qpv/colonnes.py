@@ -1,11 +1,8 @@
-from http import HTTPStatus
-from apis.apps.qpv.models.qpv_query_params import QpvQueryParams
-from apis.shared.exceptions import BadRequestError
 from models.entities.financial.query.FlattenFinancialLinesDataQpv import (
     FlattenFinancialLinesDataQPV,
 )
 
-from apis.shared.colonne import Colonne
+from models.value_objects.colonne import Colonne
 
 
 def get_list_colonnes_tableau() -> list[Colonne]:
@@ -72,22 +69,3 @@ def get_list_colonnes_tableau() -> list[Colonne]:
             label="QPV du lieu de l'action",
         ),
     ]
-
-
-def validation_colonnes(params: QpvQueryParams):
-    if params.colonnes is not None:
-        params.map_colonnes_tableau(get_list_colonnes_tableau())
-
-    if params.sort_by is not None and params.sort_by not in [x.code for x in get_list_colonnes_tableau()]:
-        raise BadRequestError(
-            code=HTTPStatus.BAD_REQUEST,
-            api_message=f"La colonne demandée '{params.sort_by}' n'existe pas pour le tableau.",
-        )
-
-    if params.fields_search is not None and not all(
-        field in [x.code for x in get_list_colonnes_tableau()] for field in params.fields_search
-    ):
-        raise BadRequestError(
-            code=HTTPStatus.BAD_REQUEST,
-            api_message=f"Les colonnes demandées '{params.fields_search}' n'existe pas pour la recherche.",
-        )

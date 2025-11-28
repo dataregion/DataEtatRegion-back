@@ -1,9 +1,8 @@
 from tests import _assert_can_jsonize
 
-from apis.apps.budget.services.get_colonnes import (
-    get_list_colonnes_tableau,
-    get_list_colonnes_grouping,
-)
+from services.qpv.colonnes import get_list_colonnes_tableau
+
+from fastapi.testclient import TestClient
 
 
 ####

@@ -1,6 +1,5 @@
 from typing import Annotated, Generic, Optional, TypeVar, Union, get_args, get_origin
 
-from services.query_builders.v3_query_params import V3QueryParams
 from sqlalchemy import (
     Column,
     ColumnElement,
@@ -17,8 +16,8 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 import logging
 
-from apis.apps.budget.models.total import Total
-
+from models.value_objects.total import Total
+from services.shared.v3_query_params import V3QueryParams
 from services.utilities.observability import summary_of_time
 
 
@@ -45,10 +44,10 @@ class V3QueryBuilder(Generic[T]):
         self._is_grouping = False
         """Représente si le builder qui est en train de build est une aggregation"""
 
-        if self._params.colonnes is not None:
+        if self._params.colonnes_list is not None:
             selected_colonnes = [
                 getattr(self._model, c)
-                for c in self._params.colonnes
+                for c in self._params.colonnes_list
                 if c in inspect(self._model).columns.keys()
             ]
             self.select_custom_model_properties(selected_colonnes)

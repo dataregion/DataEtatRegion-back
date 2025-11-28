@@ -12,15 +12,15 @@ from models.entities.financial.query.FlattenFinancialLines import (
 )
 from models.value_objects.common import TypeCodeGeo
 from models.value_objects.tags import TagVO
+from services.budget.query_params import BudgetQueryParams
 from services.helper import (
     TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver,
 )
 from services.helper import TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver
-from services.query_builders.budget_query_params import BudgetQueryParams
 
-from apis.shared.colonne import Colonne
-from apis.shared.enums import BenefOrLoc
-from services.query_builders.financial_line_query_builder import (
+from models.value_objects.colonne import Colonne
+from models.value_objects.common import BenefOrLoc
+from services.shared.financial_line_query_builder import (
     FinancialLineQueryBuilder,
 )
 
@@ -48,14 +48,18 @@ class BudgetQueryBuilder(FinancialLineQueryBuilder):
         self.groupby_colonne = None
         self.dynamic_conditions = None
 
-        if params.grouping is not None:
+        if params.grouping_list is not None:
             self.groupby_colonne, self.dynamic_conditions = (
-                self._rec_grouping_mechanisme(params.grouping, params.grouped, {})
+                self._rec_grouping_mechanisme(
+                    params.grouping_list, params.grouped_list, {}
+                )
             )
             if self.groupby_colonne is None:
                 return
 
-            if params.grouped is None or len(params.grouped) < len(params.grouping):
+            if params.grouped_list is None or len(params.grouped_list) < len(
+                params.grouping_list
+            ):
                 assert isinstance(self.groupby_colonne.code, str)  # type: ignore
                 colonnes = [
                     getattr(FinancialLines, self.groupby_colonne.code).label("value"),  # type: ignore

@@ -1,8 +1,9 @@
 """Teste les proprietés de cache des query params pour les lignes financières."""
 
 from pytest import fixture
-from services.query_builders.budget_query_params import Colonne
-from services.query_builders.budget_query_builder import BudgetQueryParams
+
+from models.value_objects.colonne import Colonne
+from services.budget.query_params import BudgetQueryParams
 
 
 @fixture()
@@ -34,7 +35,7 @@ def test_two_different_query_params_gives_two_different_total_cache_keys():
 def test_when_query_params_has_property_making_it_total_uncacheable():
     query_params = BudgetQueryParams.make_default()
     query_params.search = "toto"  # le paramètre search rend le paramètre non éligible au caching
-    query_params.fields_search = ["beneficiaire"]
+    query_params.fields_search = "beneficiaire"
 
     total_cache_key = query_params.get_total_cache_key()
     assert total_cache_key is None
@@ -60,8 +61,8 @@ def test_cache_with_grouping_and_grouped():
         type=str,
     )
     query_params_1 = BudgetQueryParams.make_default()
-    query_params_1.grouping = [colonne]
-    query_params_1.grouped = ["101"]
+    query_params_1.grouping = colonne.code
+    query_params_1.grouped = "101"
 
     key1 = query_params_1.get_total_cache_key()
 

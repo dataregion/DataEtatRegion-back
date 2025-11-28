@@ -1,19 +1,21 @@
 from http import HTTPStatus
 import logging
+import requests
 from types import NoneType
 from typing import TypeVar
 
 from fastapi import APIRouter, Depends
+from models.entities.audit.ExportFinancialTask import ExportFinancialTask
+from services.audits.export_financial_task import ExportFinancialTaskService
 from sqlalchemy.orm import Session
 
 from models.connected_user import ConnectedUser
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
-from services.query_builders.budget_query_params import BudgetQueryParams
-from services.query_builders.source_query_params import SourcesQueryParams
+from models.value_objects.grouped_data import GroupedData
+from services.budget.query_params import BudgetQueryParams
+from services.shared.source_query_params import SourcesQueryParams
 
-from apis.apps.budget.models.grouped_data import GroupedData
 from apis.apps.budget.routers.api_models import Groupings, LigneFinanciere, LignesFinancieres
-from apis.apps.budget.services.get_colonnes import validation_colonnes
 from apis.apps.budget.services.get_data import get_annees_budget, get_ligne, get_lignes
 from apis.database import get_session
 from apis.exception_handlers import error_responses
@@ -65,9 +67,6 @@ def get_lignes_financieres(
     user_param_source_region = params.source_region
     params = handle_national(params, user)
 
-    # Validation des paramètres faisant référence à des colonnes
-    validation_colonnes(params)
-
     message = "Liste des données financières"
     data, total, grouped, has_next = get_lignes(
         session,
@@ -80,7 +79,7 @@ def get_lignes_financieres(
         message = "Liste des montants agrégés"
         data = [GroupedData(**d) for d in data]
         for d in data:
-            d.colonne = params.grouping[-1].code
+            d.colonne = params.grouping_list[-1].code
         data = Groupings(total=total, groupings=data)
     else:
         data = LignesFinancieres(total=total, lignes=data)
@@ -152,3 +151,91 @@ def get_annees(
         message="Liste des années présentes dans les lignes financières",
         data=get_annees_budget(session, params),
     )
+
+
+def _get_user() -> ConnectedUser:
+    return ConnectedUser(
+        {
+            "email": "benjamin.bagot@sib.fr",
+            "username": "benjamin.bagot@sib.fr",
+            "region": "053",
+        }
+    )
+
+
+@router.post(
+    "/export",
+    summary="Enregistre une tâche d'export des lignes financières",
+    responses=error_responses(),
+)
+def prepare_export(
+    params: BudgetQueryParams = Depends(),
+    session: Session = Depends(get_session),
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+):
+    # Validation et mise en forme des paramètres
+    user_param_source_region = params.source_region
+    params = handle_national(params, user)
+    params.source_region = (
+        user_param_source_region if not params.source_region else params.source_region + "," + user_param_source_region,
+    )
+
+    # Sauvegarde de la tâche d'export
+    raw_params = vars(params)
+    stripped_params = {k: v for k, v in raw_params.items() if k not in {"page", "page_size", "search", "fields_search"}}
+    task: ExportFinancialTask = ExportFinancialTaskService.save_new_export(session, user.email, stripped_params)
+
+    # Appel API à app pour lancer la tâche d'export
+    try:
+        url: str = "http://data-transform-api/financial-data/api/v2/budget/export"
+        requests.post(url, json={"task_id": task.id})
+        return APISuccess(
+            code=HTTPStatus.OK,
+            message="Export en cours, vous recevrez un lien de téléchargement par mail une fois terminé.",
+            data=None,
+        )
+
+    except Exception as e:
+        task.status = "FAILED"
+        session.commit()
+        return APIError(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=f"Impossible de déclencher la tâche : {str(e)}"
+        )
+
+
+# @router.post(
+#     "/download/{uuid}",
+#     summary="Enregistre une tâche d'export des lignes financières",
+#     responses=error_responses(),
+# )
+# def download_export(
+#     # uuid: str = Depends(),
+#     # format: str = Query("csv", regex="^(csv|xlsx|ods)$"),
+#     session: Session = Depends(get_session),
+#     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+# ):
+#     task: ExportFinancialTask = ExportFinancialTaskService.find_by_uuid(session, "uuid")
+
+#     if not task:
+#         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Aucun export associé à ce code.")
+#     if task.username != user.email:
+#         raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="Vous n'êtes pas autorisé à télécharger cet export.")
+#     if task.status != "DONE":
+#         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"Export non disponible.")
+
+#     base_path = task.file_path
+#     root, _ = os.path.splitext(base_path)
+#     requested_file = f"{root}.{format}"
+#     if not os.path.exists(requested_file):
+#         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"Le fichier '{format}' n'est pas disponible pour cet export.")
+
+#     media_types = {
+#         "csv": "text/csv",
+#         "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+#         "ods": "application/vnd.oasis.opendocument.spreadsheet"
+#     }
+#     return FileResponse(
+#         path=requested_file,
+#         media_type=media_types[format],
+#         filename=f"export.{format}",
+#     )

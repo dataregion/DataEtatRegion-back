@@ -23,3 +23,9 @@ class TypeCodeGeo(Enum):
     DEPARTEMENT = "DEPARTEMENT"
     QPV = "QPV"
     QPV24 = "QPV24"
+
+
+class BenefOrLoc(Enum):
+    BENEFICIAIRE = "beneficiaire"
+    LOCALISATION_INTER = "localisationInterministerielle"
+    LOCALISATION_QPV = "localisation_action_qpv"

@@ -1,7 +1,7 @@
 from models.entities.financial.query import EnrichedFlattenFinancialLines
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
-from apis.apps.budget.models.grouped_data import GroupedData
-from apis.apps.budget.models.total import Total
+from models.value_objects.grouped_data import GroupedData
+from models.value_objects.total import Total
 
 
 from pydantic import BaseModel

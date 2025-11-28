@@ -1,11 +1,8 @@
-from http import HTTPStatus
-from services.query_builders.budget_query_params import BudgetQueryParams
-from apis.shared.exceptions import BadRequestError
 from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,
 )
 
-from apis.shared.colonne import Colonne
+from models.value_objects.colonne import Colonne
 
 
 def get_list_colonnes_tableau() -> list[Colonne]:
@@ -16,7 +13,12 @@ def get_list_colonnes_tableau() -> list[Colonne]:
             default=False,
             type=str,
         ),
-        Colonne(code=EnrichedFlattenFinancialLines.n_ej.description, label="N° EJ", type=str),
+        Colonne(
+            code=EnrichedFlattenFinancialLines.id.description, label="ID", type=int
+        ),
+        Colonne(
+            code=EnrichedFlattenFinancialLines.n_ej.description, label="N° EJ", type=str
+        ),
         Colonne(
             code=EnrichedFlattenFinancialLines.n_poste_ej.description,
             label="N° Poste EJ",
@@ -376,38 +378,3 @@ def get_list_colonnes_grouping() -> list[Colonne]:
         ),
         Colonne(code=EnrichedFlattenFinancialLines.tags.key, label="Tags", type=list),
     ]
-
-
-def validation_colonnes(params: BudgetQueryParams):
-    if params.colonnes is not None:
-        params.map_colonnes_tableau(get_list_colonnes_tableau())
-    if params.grouping is not None:
-        params.map_colonnes_grouping(get_list_colonnes_grouping())
-        # Check la validité de la paire grouping et grouped
-        if params.grouped is None and len(params.grouping) > 1:
-            raise BadRequestError(
-                code=HTTPStatus.BAD_REQUEST,
-                api_message="Mauvaise utilisation des paramètres de grouping",
-            )
-        if params.grouped is not None and len(params.grouping) not in (
-            len(params.grouped) + 1,
-            len(params.grouped),
-        ):
-            raise BadRequestError(
-                code=HTTPStatus.BAD_REQUEST,
-                api_message="Mauvaise utilisation des paramètres de grouping",
-            )
-
-    if params.sort_by is not None and params.sort_by not in [x.code for x in get_list_colonnes_tableau()]:
-        raise BadRequestError(
-            code=HTTPStatus.BAD_REQUEST,
-            api_message=f"La colonne demandée '{params.sort_by}' n'existe pas pour le tableau.",
-        )
-
-    if params.fields_search is not None and not all(
-        field in [x.code for x in get_list_colonnes_tableau()] for field in params.fields_search
-    ):
-        raise BadRequestError(
-            code=HTTPStatus.BAD_REQUEST,
-            api_message=f"Les colonnes demandées '{params.fields_search}' n'existe pas pour la recherche.",
-        )

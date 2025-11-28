@@ -5,8 +5,10 @@ from apis.apps.qpv.models.map_data import MapData, QpvData
 from models.entities.financial.query.FlattenFinancialLinesDataQpv import FlattenFinancialLinesDataQPV
 from models.schemas.financial import FlattenFinancialLinesDataQpvSchema
 
-from services.query_builders.source_query_builder import SourcesQueryBuilder
-from services.query_builders.source_query_params import SourcesQueryParams
+from services.qpv.query_builder import QpvQueryBuilder
+from services.qpv.query_params import QpvQueryParams
+from services.shared.source_query_builder import SourcesQueryBuilder
+from services.shared.source_query_params import SourcesQueryParams
 from sqlalchemy import distinct, func, select
 from sqlalchemy.orm import Session
 
@@ -17,9 +19,7 @@ from services.utilities.observability import (
 )
 from models.utils import convert_exception
 
-from apis.apps.qpv.models.qpv_query_params import QpvQueryParams
-from apis.apps.qpv.services.get_colonnes import get_list_colonnes_tableau
-from apis.apps.qpv.services.qpv_query_builder import QpvQueryBuilder
+from services.qpv.colonnes import get_list_colonnes_tableau
 from apis.shared.exceptions import NoCurrentRegion
 
 
@@ -51,18 +51,18 @@ def _get_query_builder(
 
     builder = (
         QpvQueryBuilder(db, params)
-        .code_programme_in(params.code_programme)
-        .code_programme_not_in(params.not_code_programme)
-        .annee_in(params.annee)
-        .where_geo_loc_qpv(params.niveau_geo, params.code_geo, source_region)
-        .lieu_action_code_qpv_in(params.code_qpv, source_region)
-        .centres_couts_in(params.centres_couts)
-        .themes_in(params.theme)
-        .beneficiaire_siret_in(params.beneficiaire_code)
+        .code_programme_in(params.code_programme_list)
+        .code_programme_not_in(params.not_code_programme_list)
+        .annee_in(params.annee_list)
+        .where_geo_loc_qpv(params.niveau_geo, params.code_geo_list, source_region)
+        .lieu_action_code_qpv_in(params.code_qpv_list, source_region)
+        .centres_couts_in(params.centres_couts_list)
+        .themes_in(params.theme_list)
+        .beneficiaire_siret_in(params.beneficiaire_code_list)
         .categorie_juridique_in(
-            params.beneficiaire_categorieJuridique_type,
-            includes_none=params.beneficiaire_categorieJuridique_type is not None
-            and "autres" in params.beneficiaire_categorieJuridique_type,
+            params.beneficiaire_categorieJuridique_type_list,
+            includes_none=params.beneficiaire_categorieJuridique_type_list is not None
+            and "autres" in params.beneficiaire_categorieJuridique_type_list,
         )
         .source_region_in(_regions)
     )

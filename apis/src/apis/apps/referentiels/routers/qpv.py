@@ -2,7 +2,7 @@ from http import HTTPStatus
 import logging
 from typing import Annotated
 from apis.services.model.pydantic_annotation import make_pydantic_annotation_from_marshmallow
-from services.query_builders.v3_query_params import V3QueryParams
+from services.shared.v3_query_params import V3QueryParams
 from fastapi import Depends
 from requests import Session
 

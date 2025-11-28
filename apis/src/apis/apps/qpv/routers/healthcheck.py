@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 from services.utilities.observability import SummaryOfTimePerfCounter
 
-from apis.apps.qpv.models.qpv_query_params import QpvQueryParams
+from services.qpv.query_params import QpvQueryParams
 from apis.apps.qpv.services.get_data import get_lignes
 from apis.database import get_session
 from apis.exception_handlers import error_responses

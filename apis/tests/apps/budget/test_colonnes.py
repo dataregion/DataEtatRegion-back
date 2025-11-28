@@ -1,6 +1,6 @@
 from tests import _assert_can_jsonize
 
-from apis.apps.budget.services.get_colonnes import (
+from services.budget.colonnes import (
     get_list_colonnes_tableau,
     get_list_colonnes_grouping,
 )

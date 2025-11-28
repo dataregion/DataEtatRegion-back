@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from logging import Logger
-from services.query_builders.v3_query_params import V3QueryParams
+from services.shared.v3_query_params import V3QueryParams
 from fastapi import APIRouter, Depends
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from sqlalchemy.orm import Session, DeclarativeBase

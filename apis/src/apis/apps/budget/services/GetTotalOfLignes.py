@@ -2,8 +2,8 @@ import logging
 from apis.config.current import get_config
 from services.utilities.observability import cache_stats
 
-from services.query_builders.budget_query_params import BudgetQueryParams
-from services.query_builders.budget_query_builder import BudgetQueryBuilder
+from services.budget.query_params import BudgetQueryParams
+from services.budget.query_builder import BudgetQueryBuilder
 
 from cachetools import cached, LRUCache
 from cachetools.keys import hashkey

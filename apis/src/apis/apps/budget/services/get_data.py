@@ -2,14 +2,14 @@ from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines,
 )
 
-from services.query_builders.source_query_builder import SourcesQueryBuilder
-from services.query_builders.source_query_params import SourcesQueryParams
+from services.shared.source_query_builder import SourcesQueryBuilder
+from services.shared.source_query_params import SourcesQueryParams
 from sqlalchemy import distinct
 from sqlalchemy.orm import Session
 
 from models.utils import convert_exception
-from services.query_builders.budget_query_params import BudgetQueryParams
-from services.query_builders.budget_query_builder import BudgetQueryBuilder
+from services.budget.query_params import BudgetQueryParams
+from services.budget.query_builder import BudgetQueryBuilder
 from services.regions import get_request_regions, sanitize_source_region_for_bdd_request
 from services.utilities.observability import (
     gauge_of_currently_executing,
@@ -17,7 +17,7 @@ from services.utilities.observability import (
 )
 
 from apis.shared.exceptions import NoCurrentRegion
-from apis.apps.budget.services.get_colonnes import get_list_colonnes_tableau
+from services.budget.colonnes import get_list_colonnes_tableau
 
 from .GetTotalOfLignes import GetTotalOfLignes
 
@@ -40,7 +40,7 @@ def get_ligne(db: Session, params: SourcesQueryParams, id: int):
 
     builder = (
         SourcesQueryBuilder(EnrichedFlattenFinancialLines, db, params)
-        .par_identifiant_technique(params.source, id)
+        .par_identifiant_technique(params.source_datatype, id)
         .data_source_is(params.data_source)
         .source_region_in(_regions)
     )
@@ -63,31 +63,30 @@ def get_lignes(
     _regions = get_request_regions(source_region)
 
     # On requête toutes les colonnes
-    params.colonnes = [c.code for c in get_list_colonnes_tableau()]
-    params.colonnes.append("id")
+    params.colonnes = ",".join([c.code for c in get_list_colonnes_tableau()])
+    assert "id" in params.colonnes
 
     builder = (
         BudgetQueryBuilder(db, params)
-        .beneficiaire_siret_in(params.beneficiaire_code)
-        .code_programme_in(params.code_programme)
-        .themes_in(params.theme)
-        .annee_in(params.annee)
-        .niveau_code_geo_in(params.niveau_geo, params.code_geo, source_region)
-        .annee_in(params.annee)
-        .centres_couts_in(params.centres_couts)
-        .domaine_fonctionnel_in(params.domaine_fonctionnel)
-        .referentiel_programmation_in(params.referentiel_programmation)
-        .n_ej_in(params.n_ej)
+        .beneficiaire_siret_in(params.beneficiaire_code_list)
+        .code_programme_in(params.code_programme_list)
+        .themes_in(params.theme_list)
+        .annee_in(params.annee_list)
+        .niveau_code_geo_in(params.niveau_geo, params.code_geo_list, source_region)
+        .centres_couts_in(params.centres_couts_list)
+        .domaine_fonctionnel_in(params.domaine_fonctionnel_list)
+        .referentiel_programmation_in(params.referentiel_programmation_list)
+        .n_ej_in(params.n_ej_list)
         .source_is(params.source)
         .data_source_is(params.data_source)
         .source_region_in(_regions)
         .categorie_juridique_in(
-            params.beneficiaire_categorieJuridique_type,
-            includes_none=params.beneficiaire_categorieJuridique_type is not None
-            and "autres" in params.beneficiaire_categorieJuridique_type,
+            params.beneficiaire_categorieJuridique_type_list,
+            includes_none=params.beneficiaire_categorieJuridique_type_list is not None
+            and "autres" in params.beneficiaire_categorieJuridique_type_list,
         )
         .sort_by_params()
-        .tags_fullname_in(params.tags)
+        .tags_fullname_in(params.tags_list)
     )
 
     if additionnal_source_region:

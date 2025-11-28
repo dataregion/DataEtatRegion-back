@@ -1,17 +1,16 @@
 from http import HTTPStatus
 import logging
 from typing import TypeVar
+from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends
+
+from models.connected_user import ConnectedUser
+from services.shared.source_query_params import SourcesQueryParams
+from services.qpv.query_params import QpvQueryParams
 
 from apis.apps.qpv.models.dashboard_data import DashboardData
-from services.query_builders.source_query_params import SourcesQueryParams
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from apis.apps.qpv.models.qpv_query_params import QpvQueryParams
-from apis.apps.qpv.services.get_colonnes import validation_colonnes
 from apis.apps.qpv.services.get_data import get_dashboard_data
 from apis.database import get_session
-from models.connected_user import ConnectedUser
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.models import APISuccess
@@ -47,8 +46,6 @@ async def get_dashboard(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
     handle_region_user(params, user)
-    # Validation des paramètres faisant référence à des colonnes
-    validation_colonnes(params)
 
     message = "Liste des données QPV agrégées pour les graphiques"
     data: DashboardData = await get_dashboard_data(session, params)

@@ -1,8 +1,8 @@
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, DeclarativeBase
 
-from services.query_builders.financial_line_query_params import FinancialLineQueryParams
-from services.query_builders.source_query_builder import SourcesQueryBuilder
+from services.shared.financial_line_query_params import FinancialLineQueryParams
+from services.shared.source_query_builder import SourcesQueryBuilder
 
 
 class FinancialLineQueryBuilder(SourcesQueryBuilder):

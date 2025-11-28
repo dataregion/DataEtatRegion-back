@@ -8,8 +8,8 @@ from models.entities.financial.query.FlattenFinancialLinesDataQpv import (
 )
 from models.value_objects.common import TypeCodeGeo
 
-from apis.apps.qpv.models.qpv_query_params import QpvQueryParams
-from services.query_builders.financial_line_query_builder import FinancialLineQueryBuilder
+from services.qpv.query_params import QpvQueryParams
+from services.shared.financial_line_query_builder import FinancialLineQueryBuilder
 
 
 class QpvQueryBuilder(FinancialLineQueryBuilder):
@@ -24,12 +24,18 @@ class QpvQueryBuilder(FinancialLineQueryBuilder):
     Méthodes de conditions spécifiques aux requêtes de Data QPV
     """
 
-    def where_geo_loc_qpv(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):
+    def where_geo_loc_qpv(
+        self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str
+    ):
         if list_code_geo is None:
             return self
 
         # Protection contre les types géo encore non gérés
-        if type_geo not in [TypeCodeGeo.DEPARTEMENT, TypeCodeGeo.EPCI, TypeCodeGeo.COMMUNE]:
+        if type_geo not in [
+            TypeCodeGeo.DEPARTEMENT,
+            TypeCodeGeo.EPCI,
+            TypeCodeGeo.COMMUNE,
+        ]:
             return self
 
         # Récupération des communes
@@ -50,10 +56,14 @@ class QpvQueryBuilder(FinancialLineQueryBuilder):
         codes_qpv = self._session.scalars(stmt).all()
 
         # Condition sur les codes QPV récupérés
-        self._query = self._query.where(FinancialLinesDataQPV.lieu_action_code_qpv.in_(codes_qpv))
+        self._query = self._query.where(
+            FinancialLinesDataQPV.lieu_action_code_qpv.in_(codes_qpv)
+        )
         return self
 
     def lieu_action_code_qpv_in(self, code_qpv: list | None, source_region: str):
         if code_qpv is not None:
-            self._query = self._query.where(FinancialLinesDataQPV.lieu_action_code_qpv.in_(code_qpv))
+            self._query = self._query.where(
+                FinancialLinesDataQPV.lieu_action_code_qpv.in_(code_qpv)
+            )
         return self

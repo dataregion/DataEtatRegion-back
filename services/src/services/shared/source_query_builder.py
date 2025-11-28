@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session, DeclarativeBase
 
 from models.value_objects.common import DataType
-from services.query_builders.v3_query_builder import V3QueryBuilder
-from services.query_builders.source_query_params import SourcesQueryParams
+from services.shared.v3_query_builder import V3QueryBuilder
+from services.shared.source_query_params import SourcesQueryParams
 
 
 class SourcesQueryBuilder(V3QueryBuilder):

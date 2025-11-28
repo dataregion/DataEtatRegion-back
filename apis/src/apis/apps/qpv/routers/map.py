@@ -3,12 +3,11 @@ import logging
 from typing import TypeVar
 
 from apis.apps.qpv.models.map_data import MapData
-from services.query_builders.source_query_params import SourcesQueryParams
+from services.shared.source_query_params import SourcesQueryParams
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from apis.apps.qpv.models.qpv_query_params import QpvQueryParams
-from apis.apps.qpv.services.get_colonnes import validation_colonnes
+from services.qpv.query_params import QpvQueryParams
 from apis.apps.qpv.services.get_data import get_map_data
 from apis.database import get_session
 from models.connected_user import ConnectedUser
@@ -46,8 +45,6 @@ async def get_map(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
     handle_region_user(params, user)
-    # Validation des paramètres faisant référence à des colonnes
-    validation_colonnes(params)
 
     message = "Liste des données QPV agrégées pour la cartographie"
     data: MapData = await get_map_data(session, params)

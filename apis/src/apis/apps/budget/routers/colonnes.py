@@ -4,8 +4,8 @@ import logging
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from apis.shared.colonne import Colonnes
-from apis.apps.budget.services.get_colonnes import (
+from models.value_objects.colonne import Colonnes
+from services.budget.colonnes import (
     get_list_colonnes_grouping,
     get_list_colonnes_tableau,
 )
