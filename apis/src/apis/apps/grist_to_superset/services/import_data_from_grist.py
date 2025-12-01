@@ -233,7 +233,7 @@ class ImportService:
         Warning:
             Cette opération est irréversible !
         """
-        query = text(f"DROP TABLE IF EXISTS {schema_name}.\"{table_name}\" CASCADE")
+        query = text(f'DROP TABLE IF EXISTS {schema_name}."{table_name}" CASCADE')
         self.session.execute(query)
         self.session.commit()
         logger.info(f"Table '{schema_name}.\"{table_name}\"' supprimée")

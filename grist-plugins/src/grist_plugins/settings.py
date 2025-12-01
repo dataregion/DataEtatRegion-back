@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 from typing import Optional
 
+
 class KeycloakOpenIdConfig(BaseModel):
     url: str
     realm: str

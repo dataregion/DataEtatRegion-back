@@ -83,7 +83,6 @@ def test_import_with_empty_token(client):
 # ============================================================================
 # TESTS DE VALIDATION DES FICHIERS
 # ============================================================================
-from unittest.mock import patch, MagicMock
 
 
 def test_import_with_non_csv_file(client, config):
@@ -91,18 +90,12 @@ def test_import_with_non_csv_file(client, config):
     files = {"file": ("test.txt", io.BytesIO(b"not a csv"), "text/plain")}
     data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
-    # Mock du ConnectedUser pour bypasser la validation Keycloak
-    mock_user = MagicMock()
-    mock_user.user_id = "test-user-123"
-    mock_user.email = "test@example.com"
-
-    with patch('apis.security.keycloak_token_validator.keycloak_validator.validate_token', return_value=mock_user):
-        response = client.post(
-            "grist-to-superset/api/v3/import/table",
-            data=data,
-            files=files,
-            headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
-        )
+    response = client.post(
+        "grist-to-superset/api/v3/import/table",
+        data=data,
+        files=files,
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
+    )
     assert response.status_code == 400
     assert "CSV" in response.json()["detail"]
 
@@ -116,7 +109,7 @@ def test_import_with_empty_csv(client, config):
         "grist-to-superset/api/v3/import/table",
         data=data,
         files=files,
-        headers={"X-API-Key": config.token_for_grist_plugins},
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code == 400
     assert response.json()["message"] == "Le fichier CSV est vide"
@@ -136,7 +129,7 @@ def test_import_with_invalid_json_columns(client, config):
         "grist-to-superset/api/v3/import/table",
         data=data,
         files=files,
-        headers={"X-API-Key": config.token_for_grist_plugins},
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code == 422
     assert "JSON" in response.json()["message"]
@@ -145,8 +138,8 @@ def test_import_with_invalid_json_columns(client, config):
 def test_import_with_missing_columns_in_csv(client, config):
     """Test avec des colonnes manquantes dans le CSV - doit retourner 400."""
     columns_with_missing = [
-        {"id": "name", "type": "text", "is_index": True},
-        {"id": "missing_column", "type": "text", "is_index": False},
+        {"id": "name", "type": "Text", "is_index": True},
+        {"id": "missing_column", "type": "Text", "is_index": False},
     ]
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
     data = {"table_id": "test_table", "columns": json.dumps(columns_with_missing)}
@@ -155,7 +148,7 @@ def test_import_with_missing_columns_in_csv(client, config):
         "grist-to-superset/api/v3/import/table",
         data=data,
         files=files,
-        headers={"X-API-Key": config.token_for_grist_plugins},
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code == 400
     assert "colonnes manquantes dans le csv: missing_column" in response.json()["message"].lower()
@@ -171,7 +164,7 @@ def test_import_with_invalid_column_type(client, config):
         "grist-to-superset/api/v3/import/table",
         data=data,
         files=files,
-        headers={"X-API-Key": config.token_for_grist_plugins},
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code in [422, 400]
 
@@ -190,7 +183,7 @@ def test_import_missing_table_id(client, config):
         "grist-to-superset/api/v3/import/table",
         data=data,
         files=files,
-        headers={"X-API-Key": config.token_for_grist_plugins},
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code == 422
 
@@ -204,7 +197,7 @@ def test_import_missing_columns(client, config):
         "grist-to-superset/api/v3/import/table",
         data=data,
         files=files,
-        headers={"X-API-Key": config.token_for_grist_plugins},
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code == 422
 
@@ -214,7 +207,9 @@ def test_import_missing_file(client, config):
     data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post(
-        "grist-to-superset/api/v3/import/table", data=data, headers={"X-API-Key": config.token_for_grist_plugins}
+        "grist-to-superset/api/v3/import/table",
+        data=data,
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code == 422
 
@@ -233,7 +228,7 @@ def test_import_successful(client, config):
         "grist-to-superset/api/v3/import/table",
         data=data,
         files=files,
-        headers={"X-API-Key": config.token_for_grist_plugins},
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code == 200
     assert response.json()["success"] is True
@@ -253,7 +248,7 @@ Alice,30,alice@example.com"""
         "grist-to-superset/api/v3/import/table",
         data=data,
         files=files,
-        headers={"X-API-Key": config.token_for_grist_plugins},
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code == 200
     assert response.json()["rows_imported"] == 1
@@ -262,8 +257,8 @@ Alice,30,alice@example.com"""
 def test_import_subset_columns(client, config):
     """Test d'import avec un sous-ensemble de colonnes."""
     subset_columns = [
-        {"id": "name", "type": "text", "is_index": True},
-        {"id": "age", "type": "numeric", "is_index": False},
+        {"id": "name", "type": "Text", "is_index": True},
+        {"id": "age", "type": "Numeric", "is_index": False},
     ]
 
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
@@ -273,7 +268,7 @@ def test_import_subset_columns(client, config):
         "grist-to-superset/api/v3/import/table",
         data=data,
         files=files,
-        headers={"X-API-Key": config.token_for_grist_plugins},
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code == 200
     result = response.json()

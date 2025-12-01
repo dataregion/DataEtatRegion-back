@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
+
 @router.post(
     "/import/table",
     response_model=PublishResponse,
@@ -49,7 +50,9 @@ async def import_table_data(
     columns_list = json.loads(columns)
     columns_schema = [ColumnIn(**col) for col in columns_list]
 
-    logger.info(f"Import de l'utilisateur '{user.email}' demandé pour la table '{table_id}' avec {len(columns_schema)} colonnes")
+    logger.info(
+        f"Import de l'utilisateur '{user.email}' demandé pour la table '{table_id}' avec {len(columns_schema)} colonnes"
+    )
 
     # Lire le CSV
     contents = file.file.read()

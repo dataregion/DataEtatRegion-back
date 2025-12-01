@@ -15,6 +15,7 @@ class ColumnType(str, Enum):
     CHOICE = "Choice"
     CHOICELIST = "ChoiceList"
 
+
 class ColumnIn(BaseModel):
     """Informations nécessaires pour configurer une colonne dans Superset."""
 

@@ -34,23 +34,26 @@ async def to_superset_page(request: Request, settings: SettingsDep):
     js_path = (
         "http://localhost:5173/static/js/to-superset.js" if settings.dev_mode else "/static/dist/js/to-superset.min.js"
     )
-      # Sérialiser la config OIDC en JSON pour l'utiliser en JS
+    # Sérialiser la config OIDC en JSON pour l'utiliser en JS
     oidc_config = {
         "url": settings.keycloak.url,
         "realm": settings.keycloak.realm,
-        "clientId": settings.keycloak.client_id
+        "clientId": settings.keycloak.client_id,
     }
     return templates.TemplateResponse("/to_superset.html", {"request": request, "jsPath": js_path, "oidc": oidc_config})
 
 
 @router.post("/to-superset/publish")
 async def publish(
-    settings: SettingsDep,authorization: Annotated[str | None, Header()] = None,  file: UploadFile = File(...), tableId: str = Form(...), columns: str = Form(...)
+    settings: SettingsDep,
+    authorization: Annotated[str | None, Header()] = None,
+    file: UploadFile = File(...),
+    tableId: str = Form(...),
+    columns: str = Form(...),
 ):
-    
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization header manquant")
-    
+
     token = authorization.replace("Bearer ", "")
     logger.info(f"Token reçu: {token[:10]}...")
 
