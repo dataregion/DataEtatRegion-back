@@ -1,12 +1,12 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=6.2,<9", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "grist-plugins"
-version = "0.1.0"
-description = "Plugin FastAPI avec templating HTML pour Grist"
-requires-python = ">=3.11"
+dynamic = ["version", "dependencies"]
+description = "Application qui détient les nouvelles APIs Data Etat (v3+)"
+
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -16,6 +16,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "grist_plugins" = ["*", "static/*", "static/**/*", "templates/**/*", "templates/*"]
+
 
 [project.optional-dependencies]
 dev = [
