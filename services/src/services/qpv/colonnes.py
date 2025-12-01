@@ -8,6 +8,10 @@ from models.value_objects.colonne import Colonne
 def get_list_colonnes_tableau() -> list[Colonne]:
     return [
         Colonne(
+            code=FlattenFinancialLinesDataQPV.id.description,
+            label="ID",
+        ),
+        Colonne(
             code=FlattenFinancialLinesDataQPV.beneficiaire_code.description,
             label="Code du porteur de projet",
         ),

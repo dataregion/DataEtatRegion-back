@@ -1,7 +1,6 @@
-from functools import cached_property
 from http import HTTPStatus
 from typing import List, Optional
-from pydantic import Field, computed_field, model_validator
+from pydantic import ConfigDict, Field, computed_field, model_validator
 
 from models.exceptions import BadRequestError
 from models.value_objects.colonne import Colonne
@@ -12,6 +11,8 @@ from services.shared.financial_line_query_builder import (
 
 
 class BudgetQueryParams(FinancialLineQueryParams):
+    model_config = ConfigDict(frozen=True)
+
     n_ej: Optional[str] = Field(default=None)
     domaine_fonctionnel: Optional[str] = Field(default=None)
     referentiel_programmation: Optional[str] = Field(default=None)
@@ -20,27 +21,22 @@ class BudgetQueryParams(FinancialLineQueryParams):
     grouped: Optional[str] = Field(default=None)
 
     @computed_field
-    @cached_property
     def n_ej_list(self) -> float:
         return self._split(self.n_ej)
 
     @computed_field
-    @cached_property
     def domaine_fonctionnel_list(self) -> float:
         return self._split(self.domaine_fonctionnel)
 
     @computed_field
-    @cached_property
     def referentiel_programmation_list(self) -> float:
         return self._split(self.referentiel_programmation)
 
     @computed_field
-    @cached_property
     def tags_list(self) -> float:
         return self._split(self.tags)
 
     @computed_field
-    @cached_property
     def grouping_list(self) -> Optional[List[Colonne]]:
         casted = []
         codes = self._split(self.grouping) if self.grouping else []
@@ -55,7 +51,6 @@ class BudgetQueryParams(FinancialLineQueryParams):
         return casted if len(casted) > 0 else None
 
     @computed_field
-    @cached_property
     def grouped_list(self) -> float:
         return self._split(self.grouped)
 
@@ -128,8 +123,6 @@ class BudgetQueryParams(FinancialLineQueryParams):
                 "grouped": self.grouped,
             }
         )
-
-        print(key)
 
         return key
 

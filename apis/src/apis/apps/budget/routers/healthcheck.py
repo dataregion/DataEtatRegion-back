@@ -30,10 +30,14 @@ def healthcheck(
     session: Session = Depends(get_session),
     params: BudgetQueryParams = Depends(),
 ):
-    params.colonnes = ["source"]
-    params.source_region = "053"
-    params.page = 1
-    params.page_size = 10
+    params = params.model_copy(
+        update={
+            "colonnes": "source",
+            "source_region": "053",
+            "page": 1,
+            "page_size": 10,
+        }
+    )
 
     with SummaryOfTimePerfCounter.cm("hc_search_lignes_budgetaires"):
         raw, total, grouped, has_next = get_lignes(session, params)

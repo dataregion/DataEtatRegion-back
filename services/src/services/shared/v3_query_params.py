@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from functools import cached_property
 from http import HTTPStatus
 from typing import List, Literal, Optional
 
 from models.exceptions import BadRequestError
-from pydantic import BaseModel, Field, computed_field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 from services.budget.colonnes import get_list_colonnes_tableau
 
 
@@ -50,6 +49,8 @@ class CacheableTotalQuery(ABC):
 
 
 class V3QueryParams(BaseModel, CacheableTotalQuery):
+    model_config = ConfigDict(frozen=True)
+
     colonnes: Optional[str] = Field(default=None)
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=100, ge=1, le=1000)
@@ -59,12 +60,10 @@ class V3QueryParams(BaseModel, CacheableTotalQuery):
     fields_search: Optional[str] = Field(default=None)
 
     @computed_field
-    @cached_property
     def colonnes_list(self) -> Optional[List[str]]:
         return self._split(self.colonnes)
 
     @computed_field
-    @cached_property
     def fields_search_list(self) -> Optional[List[str]]:
         return self._split(self.fields_search)
 

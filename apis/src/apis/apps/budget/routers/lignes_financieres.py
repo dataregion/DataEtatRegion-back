@@ -1,12 +1,9 @@
 from http import HTTPStatus
 import logging
-import requests
 from types import NoneType
 from typing import TypeVar
 
 from fastapi import APIRouter, Depends
-from models.entities.audit.ExportFinancialTask import ExportFinancialTask
-from services.audits.export_financial_task import ExportFinancialTaskService
 from sqlalchemy.orm import Session
 
 from models.connected_user import ConnectedUser
@@ -38,9 +35,9 @@ _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
     """Replace les paramètres en premier argument avec la source_region / data_source de la connexion utilisateur"""
     if user.current_region != "NAT":
-        params.source_region = user.current_region
+        params = params.model_copy(update={"source_region": user.current_region})
     else:
-        params.data_source = "NATION"
+        params = params.model_copy(update={"data_source": "NATION"})
     return params
 
 
@@ -161,81 +158,3 @@ def _get_user() -> ConnectedUser:
             "region": "053",
         }
     )
-
-
-@router.post(
-    "/export",
-    summary="Enregistre une tâche d'export des lignes financières",
-    responses=error_responses(),
-)
-def prepare_export(
-    params: BudgetQueryParams = Depends(),
-    session: Session = Depends(get_session),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
-):
-    # Validation et mise en forme des paramètres
-    user_param_source_region = params.source_region
-    params = handle_national(params, user)
-    params.source_region = (
-        user_param_source_region if not params.source_region else params.source_region + "," + user_param_source_region,
-    )
-
-    # Sauvegarde de la tâche d'export
-    raw_params = vars(params)
-    stripped_params = {k: v for k, v in raw_params.items() if k not in {"page", "page_size", "search", "fields_search"}}
-    task: ExportFinancialTask = ExportFinancialTaskService.save_new_export(session, user.email, stripped_params)
-
-    # Appel API à app pour lancer la tâche d'export
-    try:
-        url: str = "http://data-transform-api/financial-data/api/v2/budget/export"
-        requests.post(url, json={"task_id": task.id})
-        return APISuccess(
-            code=HTTPStatus.OK,
-            message="Export en cours, vous recevrez un lien de téléchargement par mail une fois terminé.",
-            data=None,
-        )
-
-    except Exception as e:
-        task.status = "FAILED"
-        session.commit()
-        return APIError(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=f"Impossible de déclencher la tâche : {str(e)}"
-        )
-
-
-# @router.post(
-#     "/download/{uuid}",
-#     summary="Enregistre une tâche d'export des lignes financières",
-#     responses=error_responses(),
-# )
-# def download_export(
-#     # uuid: str = Depends(),
-#     # format: str = Query("csv", regex="^(csv|xlsx|ods)$"),
-#     session: Session = Depends(get_session),
-#     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
-# ):
-#     task: ExportFinancialTask = ExportFinancialTaskService.find_by_uuid(session, "uuid")
-
-#     if not task:
-#         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Aucun export associé à ce code.")
-#     if task.username != user.email:
-#         raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="Vous n'êtes pas autorisé à télécharger cet export.")
-#     if task.status != "DONE":
-#         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=f"Export non disponible.")
-
-#     base_path = task.file_path
-#     root, _ = os.path.splitext(base_path)
-#     requested_file = f"{root}.{format}"
-#     if not os.path.exists(requested_file):
-#         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f"Le fichier '{format}' n'est pas disponible pour cet export.")
-
-#     media_types = {
-#         "csv": "text/csv",
-#         "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-#         "ods": "application/vnd.oasis.opendocument.spreadsheet"
-#     }
-#     return FileResponse(
-#         path=requested_file,
-#         media_type=media_types[format],
-#         filename=f"export.{format}",
-#     )

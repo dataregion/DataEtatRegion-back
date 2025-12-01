@@ -26,8 +26,7 @@ _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 
 def handle_region_user(params: _params_T, user: ConnectedUser) -> _params_T:
     """Replace les paramètres en premier argument avec la source_region / data_source de la connexion utilisateur"""
-    params.source_region = user.current_region
-    return params
+    return params.model_copy(update={"source_region": user.current_region})
 
 
 class DashboardResponse(APISuccess[DashboardData]):
@@ -45,7 +44,7 @@ async def get_dashboard(
     session: Session = Depends(get_session),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-    handle_region_user(params, user)
+    params = handle_region_user(params, user)
 
     message = "Liste des données QPV agrégées pour les graphiques"
     data: DashboardData = await get_dashboard_data(session, params)

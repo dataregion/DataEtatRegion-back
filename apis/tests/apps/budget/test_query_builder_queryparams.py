@@ -23,7 +23,7 @@ def test_two_different_query_params_gives_two_different_total_cache_keys():
     query_params_1 = BudgetQueryParams.make_default()
     query_params_2 = BudgetQueryParams.make_default()
 
-    query_params_2.source_region = "52"  # La source region est un paramètre impliqué dans le calcul des totaux
+    query_params_2 = query_params_2.model_copy(update={"source_region": "52"})
 
     key1 = query_params_1.get_total_cache_key()
     key2 = query_params_2.get_total_cache_key()
@@ -34,8 +34,12 @@ def test_two_different_query_params_gives_two_different_total_cache_keys():
 
 def test_when_query_params_has_property_making_it_total_uncacheable():
     query_params = BudgetQueryParams.make_default()
-    query_params.search = "toto"  # le paramètre search rend le paramètre non éligible au caching
-    query_params.fields_search = "beneficiaire"
+    query_params = query_params.model_copy(
+        update={
+            "search": "toto",  # le paramètre search rend le paramètre non éligible au caching
+            "fields_search": "beneficiaire",
+        }
+    )
 
     total_cache_key = query_params.get_total_cache_key()
     assert total_cache_key is None
@@ -45,7 +49,7 @@ def test_when_property_doesnt_count_for_total_caching():
     query_params = BudgetQueryParams.make_default()
     key1 = query_params.get_total_cache_key()
 
-    query_params.page = 2  # La page ne compte pas pour le calcul des totaux
+    query_params = query_params.model_copy(update={"page": 2})  # La page ne compte pas pour le calcul des totaux
     key2 = query_params.get_total_cache_key()
 
     assert id(key1) != id(key2), "Les clefs de cache doivent être des instances différentes"
@@ -61,8 +65,12 @@ def test_cache_with_grouping_and_grouped():
         type=str,
     )
     query_params_1 = BudgetQueryParams.make_default()
-    query_params_1.grouping = colonne.code
-    query_params_1.grouped = "101"
+    query_params_1 = query_params_1.model_copy(
+        update={
+            "grouping": colonne.code,
+            "grouped": "101",
+        }
+    )
 
     key1 = query_params_1.get_total_cache_key()
 
@@ -72,5 +80,5 @@ def test_cache_with_grouping_and_grouped():
 
     key_dict = dict(key1)
     # Vérifier que grouping contient bien notre colonne sous forme hashable
-    assert key_dict["grouping"] == (colonne.code,), "Le grouping doit contenir le code de la colonne"
-    assert key_dict["grouped"] == ("101",), "Le grouped doit contenir la valeur sous forme de tuple"
+    assert key_dict["grouping"] == colonne.code, "Le grouping doit contenir le code de la colonne"
+    assert key_dict["grouped"] == "101", "Le grouped doit contenir la valeur sous forme de tuple"

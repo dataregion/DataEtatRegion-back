@@ -37,17 +37,20 @@ def _to_enriched_ffl(data):
 def _get_query_builder(
     db: Session,
     params: QpvQueryParams,
+    additionnal_source_region: str | None = None,
 ) -> QpvQueryBuilder:
     """
     Recherche la ligne budgetaire selon son ID et sa source region
     """
+    print(params.source_region)
+    print(params.data_source)
     source_region = app_layer_sanitize_region(params.source_region, params.data_source)
     assert source_region is not None
     _regions = get_request_regions(source_region)
 
     # On requête toutes les colonnes
-    params.colonnes = [c.code for c in get_list_colonnes_tableau()]
-    params.colonnes.append("id")
+    params = params.model_copy(update={"colonnes": ",".join([c.code for c in get_list_colonnes_tableau()])})
+    assert "id" in [c for c in params.colonnes.split(",")]
 
     builder = (
         QpvQueryBuilder(db, params)
@@ -67,6 +70,12 @@ def _get_query_builder(
         .source_region_in(_regions)
     )
 
+    if additionnal_source_region:
+        _sanitized = app_layer_sanitize_region(additionnal_source_region)
+        assert _sanitized is not None
+        _regions.append(_sanitized)
+        builder = builder.source_region_in([_sanitized], can_be_null=False)
+
     return builder
 
 
@@ -80,21 +89,7 @@ def get_lignes(
     """
     Recherche la ligne budgetaire selon son ID et sa source region
     """
-    source_region = app_layer_sanitize_region(params.source_region, params.data_source)
-    assert source_region is not None
-    _regions = get_request_regions(source_region)
-
-    # On requête toutes les colonnes
-    params.colonnes = [c.code for c in get_list_colonnes_tableau()]
-    params.colonnes.append("id")
-
-    builder = _get_query_builder(db, params)
-
-    if additionnal_source_region:
-        _sanitized = app_layer_sanitize_region(additionnal_source_region)
-        assert _sanitized is not None
-        _regions.append(_sanitized)
-        builder = builder.source_region_in([_sanitized], can_be_null=False)
+    builder = _get_query_builder(db, params, additionnal_source_region)
 
     # Pagination et récupération des données
     builder = builder.paginate()
@@ -104,7 +99,9 @@ def get_lignes(
 
 
 def get_annees_qpv(db: Session, params: SourcesQueryParams):
-    params.source_region = app_layer_sanitize_region(params.source_region, params.data_source)
+    params = params.model_copy(
+        update={"source_region": app_layer_sanitize_region(params.source_region, params.data_source)}
+    )
     assert params.source_region is not None
     _regions = get_request_regions(params.source_region)
 
