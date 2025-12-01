@@ -119,7 +119,7 @@ class ImportService:
         # Créer la requête SQL
         columns_sql = ",\n    ".join(column_definitions)
         query = text(f"""
-            CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
+            CREATE TABLE IF NOT EXISTS {schema_name}."{table_name}" (
                 {columns_sql}
             )
         """)

@@ -4,7 +4,7 @@ import { getColumnTable } from './grist-client.js';
 
 const oidcConfig = window.OIDC_CONFIG;
 
-const TYPE_INDEX_AUTHORIZE = ['Numeric', 'Text'];
+const TYPE_INDEX_AUTHORIZE = ['Numeric', 'Text', 'Int'];
 
 function completeColumnIndex(columns) {
   const select = document.getElementById("column");
