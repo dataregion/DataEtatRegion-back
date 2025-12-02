@@ -16,11 +16,11 @@ from apis.shared.exceptions import BadRequestError
 from models.connected_user import ConnectedUser
 from supersetcli.services.superset_api import SupersetApiService
 from supersetcli.services.errors import UserNotFound
+from apis.config.current import get_config
 
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
 
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
@@ -46,11 +46,12 @@ async def check_user_exists(
         }
     """
     try:
-        # TODO: Récupérer ces valeurs depuis la configuration/variables d'environnement
+        config = get_config()
+        superset_config = config.superset_config
         superset_service = SupersetApiService(
-            server="https://superset.nocode.csm.ovh",
-            username="DataEtatGrist",  # À configurer
-            password="Azertyuiop",  # À configurer
+            server=superset_config.url,
+            username=superset_config.user_tech_login,
+            password=superset_config.user_tech_password,
         )
 
         # Utiliser l'email de l'utilisateur connecté comme username
@@ -76,6 +77,50 @@ async def check_user_exists(
             "exists": False,
             "user_id": None,
         }
+
+
+@router.post(
+    "/link-superset",
+    response_model=PublishResponse,
+    dependencies=[Depends(verify_api_key)],
+    summary="Créer le dataset dans Superset",
+    description="Endpoint sécurisé Créer le dataset côté Superset.",
+)
+async def link_superset(
+    table_id: str = Form(..., description="Identifiant de la table cible"),
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+):
+    """
+    Crée un dataset dans Superset.
+
+    Requiert un token API valide dans le header X-API-Key.
+    """
+
+    logger.info(f"Link Superset requested by user '{user.email}' for the table '{table_id}'")
+    try:
+        config = get_config()
+        superset_config = config.superset_config
+        superset_service = SupersetApiService(
+            server=superset_config.url,
+            username=superset_config.user_tech_login,
+            password=superset_config.user_tech_password,
+        )
+        username = user.email
+        user_id = superset_service.get_user_id_by_username(username)
+
+        if user_id:
+            # TODO config data base_id, schema, catalog
+            dataset_id = superset_service.get_or_create_dataset(
+                database_id=1, schema="grist-data", table_name=table_id, catalog="CHORUS"
+            )
+            superset_service.set_dataset_owners(dataset_id=dataset_id, owner_ids=[user_id])
+
+    except Exception as e:
+        logger.error(f"Error initializing Superset service: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erreur lors de la connexion à Superset.",
+        )
 
 
 @router.post(

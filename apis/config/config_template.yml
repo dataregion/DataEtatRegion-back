@@ -61,3 +61,8 @@ api_entreprise_batch_ratelimiter:
     db: 3
 
 token_for_grist_plugins: "<TOKEN>"
+
+superset_config:
+  url: "http://localhost"
+  user_tech_login: "<USER_LOGIN>"
+  user_tech_password: "<USER_PASSWORD>"

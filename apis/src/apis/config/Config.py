@@ -19,6 +19,11 @@ class KeycloakOpenIdConfig(BaseModel):
         description="For tests only - give a test user to authenticate with",
     )
 
+class SupersetConfig(BaseModel):
+    url: str
+    user_tech_login: str
+    user_tech_password: str
+
 class CacheConfig(BaseModel):
     budget_totaux_enabled: bool = Field(
         default = True,
@@ -51,4 +56,5 @@ class Config(BaseModel):
 
     """Token d'authentification pour les plugins Grist"""
     token_for_grist_plugins: str
-    
+
+    superset_config: SupersetConfig
