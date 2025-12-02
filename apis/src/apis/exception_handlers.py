@@ -22,6 +22,7 @@ def error_responses() -> dict:
     """responses d'erreurs qui correspondant à la gestion d'exceptions"""
     _400_example = APIError(code=400)
     _401_example = APIError(code=401)
+    _422_example = APIError(code=422)
     _500_example = APIError(code=500)
 
     return {
@@ -32,6 +33,10 @@ def error_responses() -> dict:
         401: {
             "model": APIError,
             "content": {"application/json": {"example": _401_example}},
+        },
+        422: {
+            "model": APIError,
+            "content": {"application/json": {"example": _422_example}},
         },
         500: {
             "model": APIError,
@@ -66,7 +71,7 @@ def setup_exception_handlers(app: fastapi.applications.FastAPI):
     @app.exception_handler(RequestValidationError)
     async def custom_validation_exception_handler(_: fastapi.Request, exc: RequestValidationError):
         error = APIError(
-            code=HTTPStatus.BAD_REQUEST.value,
+            code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
             success=False,
             message="Erreur de validation",
             detail=str(exc),
