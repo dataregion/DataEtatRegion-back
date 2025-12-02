@@ -130,6 +130,7 @@ run-loadtests:
     - ruff format --check services/
     - ruff format --check models/
     - ruff format --check gristcli/
+    - ruff format --check supersetcli/
     - ruff format --check tests_e2e/
 
 "Analyse ruff":
@@ -143,4 +144,5 @@ run-loadtests:
     - ruff check services/
     - ruff check models/
     - ruff check gristcli/
+    - ruff check supersetcli/
     - ruff check tests_e2e/

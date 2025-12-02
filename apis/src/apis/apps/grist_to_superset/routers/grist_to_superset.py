@@ -14,6 +14,8 @@ from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.security.security_header import verify_api_key
 from apis.shared.exceptions import BadRequestError
 from models.connected_user import ConnectedUser
+from supersetcli.services.superset_api import SupersetApiService
+from supersetcli.services.errors import UserNotFound
 
 
 router = APIRouter()
@@ -21,6 +23,59 @@ logger = logging.getLogger(__name__)
 
 
 keycloak_validator = KeycloakTokenValidator.get_application_instance()
+
+
+@router.get(
+    "/user/check",
+    dependencies=[Depends(verify_api_key)],
+    summary="Vérifier l'existence d'un utilisateur Superset",
+    description="Endpoint public pour vérifier si un utilisateur existe dans Superset et récupérer son ID.",
+)
+async def check_user_exists(
+    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+):
+    """
+    Vérifie si l'utilisateur connecté existe dans Superset.
+
+    Requiert un token JWT valide.
+
+    Returns:
+        {
+            "exists": bool,
+            "user_id": int | None,
+        }
+    """
+    try:
+        # TODO: Récupérer ces valeurs depuis la configuration/variables d'environnement
+        superset_service = SupersetApiService(
+            server="https://superset.nocode.csm.ovh",
+            username="DataEtatGrist",  # À configurer
+            password="Azertyuiop",  # À configurer
+        )
+
+        # Utiliser l'email de l'utilisateur connecté comme username
+        username = user.email
+        user_id = superset_service.get_user_id_by_username(username)
+
+        if user_id:
+            logger.info(f"User '{username}' found in Superset with ID: {user_id}")
+            return {
+                "exists": True,
+                "user_id": user_id,
+            }
+        else:
+            logger.info(f"User '{username}' not found in Superset")
+            return {
+                "exists": False,
+                "user_id": None,
+            }
+
+    except UserNotFound as e:
+        logger.error(f"Error checking user '{user.email}' in Superset: {str(e)}")
+        return {
+            "exists": False,
+            "user_id": None,
+        }
 
 
 @router.post(

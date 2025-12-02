@@ -35,7 +35,6 @@ Ce projet contient regroupement les Widgets utilisable par Grist pour DataEtat
 rm requirements.external.txt
 uv pip compile requirements.external.in \
   ../models/pyproject.toml \
-  ../gristcli/pyproject.toml \
   -o requirements.external.txt
 ```
 

@@ -3,3 +3,4 @@
 -e ../models
 -e ../services
 -e ../gristcli
+-e ../supersetcli

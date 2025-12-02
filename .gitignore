@@ -41,6 +41,7 @@ services/build
 services/dist
 models/build
 gristcli/build
+supersetcli/build
 tests_e2e/build
 
 .import_linter_cache

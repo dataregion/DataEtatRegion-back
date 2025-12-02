@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=9.2,<10", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "supersetcli"
+dynamic = ["version"]
+description = "Client Superset, pour effectuer des appel aux API Superset"
+dependencies = [
+    "pandas ~= 2.0",
+    "marshmallow-sqlalchemy ~= 1.1",
+    "marshmallow-dataclass ~= 8.5",
+    "marshmallow-jsonschema ~= 0.13"
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.*"]

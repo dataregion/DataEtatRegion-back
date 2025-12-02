@@ -10,6 +10,7 @@ Le projet est organisé en sous-projets:
 | [services](./models/)             | bibliothèque | Les services DRN                                                                |
 | [models](./models/)               | bibliothèque | Les modèles DRN                                                                 |
 | [gristcli](.gristcli/)            | bibliothèque | contient une API pour intéragir avec Grist                                      |
+| [supersercli](.supersercli/)      | bibliothèque | contient une API pour intéragir avec Superset                                   |
 | [tests_e2e](./tests_e2e/)         | utilitaire   | pour les tests d'intégrations                                                   |
 
 ## 📊 Flux des données financières (import -> exposition)

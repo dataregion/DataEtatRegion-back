@@ -2,6 +2,7 @@
 root_packages = [
   "apis",
   "gristcli",
+  "supersetcli",
   "services",
   "models",
 ] 
@@ -13,6 +14,7 @@ type = "layers"
 layers = [
   "apis",
   "gristcli",
+  "supersetcli",
   "services",
   "models",
 ]
@@ -21,10 +23,11 @@ layers = [
 # Règles pour les modules en dessous de app
 
 [[tool.importlinter.contracts]]
-name = "gristcli ne tire pas module projet"
+name = "gristcli et supersetcli ne tire pas module projet"
 type = "forbidden"
 source_modules = [
-  "gristcli"
+  "gristcli",
+  "supersetcli",
 ]
 forbidden_modules = [
   "services", "models", "apis"

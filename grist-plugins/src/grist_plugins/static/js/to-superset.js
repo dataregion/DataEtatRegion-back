@@ -31,17 +31,27 @@ function completeColumnIndex(columns) {
 }
 
 function displayErrorFeedback(message) {
-  const feedBack = document.getElementById("feedback");
+  const errorDiv = document.getElementById("error-publish");
+  const feedBack = document.getElementById("error-feedback");
   const infos = document.getElementById("infos");
   if (feedBack) {
     infos.classList.add("fr-hidden"); // on efface les infos du plugins
     feedBack.classList.remove("fr-hidden");
-    feedBack.classList.add("fr-alert--error");
-    feedBack.innerHTML = `
+    errorDiv.classList.add("fr-alert--error");
+    errorDiv.innerHTML = `
       <p>${message}</p>
-      <button title="Masquer le message" onclick="const alert = this.parentNode; alert.parentNode.removeChild(alert)" type="button" class="fr-btn--close fr-btn">Masquer le message</button>
     `;
   }
+}
+
+function resetError() {
+  const feedBack = document.getElementById("error-feedback");
+  const form = document.getElementById("form-publish");
+  if (feedBack) {
+    feedBack.classList.add("fr-hidden");
+    form.classList.remove("fr-hidden");
+  }
+  showPart("form-publish");
 }
 
 function hidePart(id) {
@@ -114,10 +124,16 @@ async function initGrist() {
       } catch(err) {
         submitBtn.disabled = false;
         displayErrorFeedback(err.message);
-        showPart("form-publish");
+        hidePart("loading-publish");
+        showPart("error-publish");
       }
     }
   });
+
+  const backBtn = document.getElementById("back-btn");
+  if (backBtn) {
+    backBtn.addEventListener("click", resetError);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initGrist);
