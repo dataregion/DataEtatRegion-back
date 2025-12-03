@@ -3,7 +3,11 @@ import json
 import logging
 from fastapi import FastAPI
 import pandas
-from apis.apps.grist_to_superset.exceptions.import_data_exceptions import DataInsertException
+from apis.apps.grist_to_superset.exceptions.import_data_exceptions import (
+    DataInsertException,
+    DataInsertIndexException,
+    UserNotFoundException,
+)
 from apis.shared.exceptions import BadRequestError
 from pydantic_core import ValidationError
 
@@ -34,10 +38,18 @@ def setup_exception_handlers(app: FastAPI):
         )
 
     @app.exception_handler(DataInsertException)
+    @app.exception_handler(DataInsertIndexException)
     async def data_insert_error(request: FastAPI, e: DataInsertException):
         raise BadRequestError(
             code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            api_message=f"Erreur lors de l'insertion des données dans la base : {str(e)}",
+            api_message=str(e),
+        )
+
+    @app.exception_handler(UserNotFoundException)
+    async def user_not_exist_superset(request: FastAPI, e: DataInsertException):
+        raise BadRequestError(
+            code=HTTPStatus.BAD_REQUEST,
+            api_message="L'utilisateur n'est pas présent dans Superset",
         )
 
     @app.exception_handler(ValidationError)

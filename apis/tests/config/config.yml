@@ -62,7 +62,9 @@ api_entreprise_batch_ratelimiter:
 
 token_for_grist_plugins: "tokentestforgristplugins"
 
-superset_config:
-  url: "http://localhost"
-  user_tech_login: "<USER_LOGIN>"
-  user_tech_password: "<USER_PASSWORD>"
+
+to_superset_config:
+  url_superset: "http://localhost"
+  user_superset_tech_login: "DataEtatGrist"
+  user_superset_tech_password: "Azertyuiop"
+  superset_database_id: 1

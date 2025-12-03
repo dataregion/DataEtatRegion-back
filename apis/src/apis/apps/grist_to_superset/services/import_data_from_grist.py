@@ -5,13 +5,14 @@ Service pour gérer l'import de données CSV vers la base de données.
 import logging
 from typing import List
 import pandas as pd
+from sqlalchemy import exc
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 
 from models.value_objects.to_superset import ColumnIn, ColumnType
 
-from apis.apps.grist_to_superset.exceptions.import_data_exceptions import DataInsertException
+from apis.apps.grist_to_superset.exceptions.import_data_exceptions import DataInsertException, DataInsertIndexException
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,9 @@ class ImportService:
         """
         self.session = session
 
-    def import_table(self, table_id: str, dataframe: pd.DataFrame, columns_schema: List[ColumnIn]) -> int:
+    def import_table(
+        self, table_id: str, dataframe: pd.DataFrame, columns_schema: List[ColumnIn], schema_name: str
+    ) -> int:
         """
         Importe les données d'un DataFrame dans la base de données.
 
@@ -51,19 +54,19 @@ class ImportService:
         logger.info(f"Début de l'import pour la table '{table_id}'")
 
         # 1. Créer le schéma s'il n'existe pas
-        self._create_schema_if_not_exists("grist_data")
+        self._create_schema_if_not_exists(schema_name)
 
-        if self.table_exists(schema_name="grist_data", table_name=table_id):
-            logger.info(f"La table 'grist_data.{table_id}' existe déjà. Suppression avant réimport.")
-            self.delete_table(schema_name="grist_data", table_name=table_id)
+        if self.table_exists(schema_name=schema_name, table_name=table_id):
+            logger.info(f"La table '{schema_name}.{table_id}' existe déjà. Suppression avant réimport.")
+            self.delete_table(schema_name=schema_name, table_name=table_id)
 
         # 2. Créer la table
-        self._create_table_if_not_exists(schema_name="grist_data", table_name=table_id, columns_schema=columns_schema)
+        self._create_table_if_not_exists(schema_name=schema_name, table_name=table_id, columns_schema=columns_schema)
         logger.debug("Commit après création du schéma et de la table")
 
         # 3. Insérer les données
         rows_imported = self._insert_data(
-            schema_name="grist_data", table_name=table_id, dataframe=dataframe, columns_schema=columns_schema
+            schema_name=schema_name, table_name=table_id, dataframe=dataframe, columns_schema=columns_schema
         )
 
         logger.info(f"Import terminé: {rows_imported} lignes importées dans '{table_id}'")
@@ -77,7 +80,7 @@ class ImportService:
             schema_name: Nom du schéma à créer
 
         Example:
-            await service._create_schema_if_not_exists("grist_data")
+            await service._create_schema_if_not_exists(schema_name)
         """
         query = text(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
         self.session.execute(query)
@@ -168,6 +171,13 @@ class ImportService:
 
             return len(df_to_insert)
 
+        except exc.IntegrityError as i:
+            self.session.rollback()
+            logger.error(f"Erreur integrite : {str(i)}")
+            index_col = next((col.id for col in columns_schema if col.is_index), "")
+            raise DataInsertIndexException(
+                f"L'index {index_col} ne contient pas des valeurs uniques. Merci de sélectionner un index contient que des valeurs uniques."
+            ) from i
         except Exception as e:
             self.session.rollback()
             logger.error(f"Erreur lors de l'insertion: {str(e)}")

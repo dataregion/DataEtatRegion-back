@@ -53,12 +53,16 @@
         <form id="columns-form" class="fr-my-2w" method="post">
             <div class="fr-select-group" id="col-select-group">
                 <label class="fr-label" for="column" id="column-select-label">
-                    Sélectionner un index pour la table
+                    Sélectionner un index pour la table 
                 </label>
                 <select class="fr-select" id="column" name="column" aria-describedby="column-select-messages">
                     <option value="" disabled selected>-- Sélectionner une colonne --</option>
                     <!-- Options injectées en JS -->
                 </select>
+
+                <div  class="fr-alert fr-alert--warning fr-mb-3w">
+                    <p>La colonne choisie ne doit comporter que des valeurs uniques.</p>
+                </div>
             </div>
 
             <div class="fr-my-3w" id="submit-container">
@@ -67,21 +71,22 @@
         </form>
     </div>
 
-    <div id="loading-publish" class="fr-hidden">
-        <span class="fr-icon-refresh-line icon-spinning" aria-hidden="true"></span>
+    <div id="loading" class="fr-hidden">
+        <span class="fr-icon-refresh-line icon-spinning fr-icon" aria-hidden="true"></span>
         Publication en cours...
     </div>
 
     <div id="error-feedback" class="fr-hidden">
-        <div id="error-publish" class="fr-alert" role="alert">
+        <div id="error-message" class="fr-alert" role="alert">
         </div>
         <br/>
         <button type="button" class="fr-btn" id="back-btn">Revenir au formulaire</button>
     </div>
 
-    <div id="success-publish" class="fr-hidden">
-        <span class="fr-icon-check-line" aria-hidden="true"></span>
-        Publication réalisée avec succès !
+    <div id="success" class="fr-hidden">
+        <span class="fr-icon-check-line fr-icon" aria-hidden="true"></span>
+        Publication et liens à superset réalisée avec succès !<br>
+        Vous pouvez vous rendre sur <a href="{{url_superset}}" target="_blank">Superset</a>.
     </div>
 </main>
 

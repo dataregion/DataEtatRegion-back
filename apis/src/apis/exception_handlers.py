@@ -50,10 +50,7 @@ def setup_exception_handlers(app: fastapi.applications.FastAPI):
         code = exc.code
         message = exc.api_message
 
-        error = APIError(
-            code=code,
-            message=message,
-        )
+        error = APIError(code=code, message=message, detail=message)
         return _to_json_response(error)
 
     @app.exception_handler(BadRequestError)

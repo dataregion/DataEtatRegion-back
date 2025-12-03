@@ -1,4 +1,4 @@
-import { publishDataGrist } from './modules/dataEtat.js';
+import { publishDataGrist, linkWithSuperset } from './modules/dataEtat.js';
 import { login } from './modules/login.js';
 import { getColumnTable } from './grist-client.js';
 
@@ -31,7 +31,7 @@ function completeColumnIndex(columns) {
 }
 
 function displayErrorFeedback(message) {
-  const errorDiv = document.getElementById("error-publish");
+  const errorDiv = document.getElementById("error-message");
   const feedBack = document.getElementById("error-feedback");
   const infos = document.getElementById("infos");
   if (feedBack) {
@@ -66,6 +66,24 @@ function showPart(divId) {
   if (div) {
     div.classList.remove("fr-hidden");
   }
+}
+
+function publishInProgress() {
+  const loadingDiv = document.getElementById('loading');
+  const icon = loadingDiv.querySelector('span');
+  loadingDiv.textContent = ''; // Vide la div
+  loadingDiv.appendChild(icon); // Remet l'icône
+  loadingDiv.appendChild(document.createTextNode('Publication en cours...'));
+  showPart('loading');
+}
+
+function linkToSupersetInProgress() {
+  const loadingDiv = document.getElementById('loading');
+  const icon = loadingDiv.querySelector('span');
+  loadingDiv.textContent = ''; // Vide la div
+  loadingDiv.appendChild(icon); // Remet l'icône
+  loadingDiv.appendChild(document.createTextNode('Liaison avec Superset ...'));
+  showPart('loading');
 }
 
 
@@ -109,7 +127,7 @@ async function initGrist() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     submitBtn.disabled = true;
-    showPart("loading-publish");
+    publishInProgress()
 
     const token = await login( oidcConfig.url, oidcConfig.realm, oidcConfig.clientId );
 
@@ -119,13 +137,15 @@ async function initGrist() {
     if (tableId && indexCol) {
       try {
         await publishDataGrist(tableId, indexCol, token);
-        hidePart("loading-publish");
-        showPart("success-publish");
+        linkToSupersetInProgress()
+        await linkWithSuperset(tableId, token);
+        hidePart("loading");
+        showPart("success");
       } catch(err) {
         submitBtn.disabled = false;
         displayErrorFeedback(err.message);
-        hidePart("loading-publish");
-        showPart("error-publish");
+        hidePart("loading");
+        showPart("error-message");
       }
     }
   });

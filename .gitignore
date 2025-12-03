@@ -69,3 +69,4 @@ grist-plugins/src/grist_plugins/static/dsfr
 .pre-commit-config.yaml
 .pre-commit-config.yml
 .pre-commit-scripts/
+grist-plugins/config.yml

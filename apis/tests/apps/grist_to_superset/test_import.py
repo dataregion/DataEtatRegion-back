@@ -19,6 +19,13 @@ Bob,25,bob@example.com
 Charlie,35,charlie@example.com"""
 
 
+INTEGRITY_CSV_CONTENT = """name,age,email
+Alice,30,alice@example.com
+Alice,32,alice2@example.com
+Bob,25,bob@example.com
+Charlie,35,charlie@example.com"""
+
+
 def create_csv_file(content: str):
     """Helper pour créer un fichier CSV en mémoire."""
     return io.BytesIO(content.encode())
@@ -167,6 +174,24 @@ def test_import_with_invalid_column_type(client, config):
         headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code in [422, 400]
+
+
+def test_integrity_error_index(client, config):
+    """Test d'import réussi avec données valides."""
+    files = {"file": ("test.csv", create_csv_file(INTEGRITY_CSV_CONTENT), "text/csv")}
+    data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
+
+    response = client.post(
+        "grist-to-superset/api/v3/import/table",
+        data=data,
+        files=files,
+        headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
+    )
+    assert response.status_code == 500
+    message_expected = "L'index name ne contient pas des valeurs uniques. Merci de sélectionner un index contient que des valeurs uniques."
+    assert response.json()["success"] is False
+    assert response.json()["message"] == message_expected
+    assert response.json()["detail"] == message_expected
 
 
 # ============================================================================

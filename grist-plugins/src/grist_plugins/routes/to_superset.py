@@ -40,7 +40,10 @@ async def to_superset_page(request: Request, settings: SettingsDep):
         "realm": settings.keycloak.realm,
         "clientId": settings.keycloak.client_id,
     }
-    return templates.TemplateResponse("/to_superset.html", {"request": request, "jsPath": js_path, "oidc": oidc_config})
+    return templates.TemplateResponse(
+        "/to_superset.html",
+        {"request": request, "jsPath": js_path, "oidc": oidc_config, "url_superset": settings.url_superset},
+    )
 
 
 @router.post("/to-superset/publish")
@@ -86,7 +89,10 @@ async def publish(
         if not has_index:
             logger.warning("Validation échouée : aucune colonne indexée.")
             return JSONResponse(
-                {"success": False, "message": "Veuillez sélectionner au moins une colonne comme index."},
+                {
+                    "success": False,
+                    "message": "Veuillez sélectionner au moins une colonne comme index.",
+                },
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -97,7 +103,6 @@ async def publish(
             token=token,
             file=file,
             table_id=tableId,
-            columns=columns_list,
             columns_json=columns,
         )
         return {
@@ -117,4 +122,46 @@ async def publish(
         )
     except Exception as err:
         logger.error(f"Erreur inattendue lors de la publication : {err}")
-        return JSONResponse({"success": False, "message": str(err)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(
+            {
+                "success": False,
+                "message": "Erreur inattendue lors de la publication. Merci de contacter votre Administrateur",
+            },
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@router.post("/to-superset/link")
+async def link(
+    settings: SettingsDep,
+    authorization: Annotated[str | None, Header()] = None,
+    tableId: str = Form(...),
+):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header manquant")
+
+    token = authorization.replace("Bearer ", "")
+    try:
+        superset_service = get_superset_service(settings.url_to_superset_api, settings.url_token_to_superset)
+
+        await superset_service.link_to_superset(
+            token=token,
+            table_id=tableId,
+        )
+        return {
+            "success": True,
+            "message": "Liens Superset réalisé",
+        }
+    except HTTPException:
+        # Les HTTPException du service sont déjà formatées
+        raise
+    except Exception as err:
+        logger.error(f"Erreur inattendue lors du liens avec Superset : {err}")
+        return JSONResponse(
+            {
+                "success": False,
+                "message": "Erreur inattendue lors du liens avec superset. Les données ont bien été importé dans la plateforme, mais nous n'avons pas pu établir le liens avec Superset."
+                "Merci de contacter votre Administrateur",
+            },
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

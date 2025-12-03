@@ -7,6 +7,7 @@ import logging
 from models.value_objects.to_superset import ColumnIn
 from sqlalchemy.orm import Session
 
+from apis.apps.grist_to_superset.exceptions.import_data_exceptions import UserNotFoundException
 from apis.apps.grist_to_superset.models.publish_response import PublishResponse
 from apis.apps.grist_to_superset.services.import_data_from_grist import ImportService
 from apis.database import get_session
@@ -47,11 +48,11 @@ async def check_user_exists(
     """
     try:
         config = get_config()
-        superset_config = config.superset_config
+        superset_config = config.to_superset_config
         superset_service = SupersetApiService(
-            server=superset_config.url,
-            username=superset_config.user_tech_login,
-            password=superset_config.user_tech_password,
+            server=superset_config.url_superset,
+            username=superset_config.user_superset_tech_login,
+            password=superset_config.user_superset_tech_password,
         )
 
         # Utiliser l'email de l'utilisateur connecté comme username
@@ -81,7 +82,6 @@ async def check_user_exists(
 
 @router.post(
     "/link-superset",
-    response_model=PublishResponse,
     dependencies=[Depends(verify_api_key)],
     summary="Créer le dataset dans Superset",
     description="Endpoint sécurisé Créer le dataset côté Superset.",
@@ -99,22 +99,26 @@ async def link_superset(
     logger.info(f"Link Superset requested by user '{user.email}' for the table '{table_id}'")
     try:
         config = get_config()
-        superset_config = config.superset_config
+        superset_config = config.to_superset_config
         superset_service = SupersetApiService(
-            server=superset_config.url,
-            username=superset_config.user_tech_login,
-            password=superset_config.user_tech_password,
+            server=superset_config.url_superset,
+            username=superset_config.user_superset_tech_login,
+            password=superset_config.user_superset_tech_password,
         )
         username = user.email
         user_id = superset_service.get_user_id_by_username(username)
 
         if user_id:
-            # TODO config data base_id, schema, catalog
             dataset_id = superset_service.get_or_create_dataset(
-                database_id=1, schema="grist-data", table_name=table_id, catalog="CHORUS"
+                database_id=superset_config.superset_database_id,
+                schema=superset_config.db_schema_export,
+                table_name=table_id,
+                catalog=superset_config.superset_catalog,
             )
             superset_service.set_dataset_owners(dataset_id=dataset_id, owner_ids=[user_id])
-
+            return HTTPStatus.OK
+        else:
+            raise UserNotFoundException()
     except Exception as e:
         logger.error(f"Error initializing Superset service: {str(e)}")
         raise HTTPException(
@@ -144,7 +148,10 @@ async def import_table_data(
     """
     # Vérifier que c'est bien un CSV
     if file.filename and not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Le fichier doit être au format CSV")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le fichier doit être au format CSV",
+        )
 
     # Parser le schéma des colonnes
     columns_list = json.loads(columns)
@@ -176,7 +183,13 @@ async def import_table_data(
     df_filtered = df[[col.id for col in columns_schema]]
 
     import_service = ImportService(session)
-    rows_imported = import_service.import_table(table_id=table_id, dataframe=df_filtered, columns_schema=columns_schema)
+
+    rows_imported = import_service.import_table(
+        table_id=table_id,
+        dataframe=df_filtered,
+        columns_schema=columns_schema,
+        schema_name=get_config().to_superset_config.db_schema_export,
+    )
 
     data.close()
     file.file.close()

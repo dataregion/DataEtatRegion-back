@@ -1,9 +1,7 @@
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any
 import httpx
 from fastapi import HTTPException, status, UploadFile
-
-from models.value_objects.to_superset import ColumnIn
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +55,6 @@ class SupersetAPIService:
         token: str,
         file: UploadFile,
         table_id: str,
-        columns: List[ColumnIn],
         columns_json: str,
     ) -> Dict[str, Any]:
         """
@@ -104,7 +101,6 @@ class SupersetAPIService:
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Erreur d'authentification avec l'API de destination",
                 )
-
             if response.status_code == 400:
                 error_data = response.json()
                 logger.error(f"Erreur de validation côté API: {error_data}")
@@ -129,6 +125,49 @@ class SupersetAPIService:
             result = response.json()
             logger.info(f"Import réussi: {result.get('rows_imported', 0)} lignes importées")
 
+            return result
+
+    async def link_to_superset(self, token: str, table_id: str):
+        """
+        Construit le liens avec Superset
+
+        Args:
+            token: Token d'authentification de l'utilisateur
+            table_id: Identifiant de la table
+
+        Returns:
+            D
+
+        Raises:
+            HTTPException: En cas d'erreur lors du liens
+        """
+
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            logger.info(f"Envoi de la table '{table_id}' vers {self.base_url}/link-superset")
+
+            response = await client.post(
+                f"{self.base_url}/link-superset",
+                data={
+                    "table_id": table_id,
+                },
+                headers=self._get_headers(token),
+            )
+
+            response.raise_for_status()
+            if response.status_code != 200:
+                try:
+                    error_detail = response.json().get("detail", response.text)
+                except Exception:
+                    error_detail = response.text
+
+                logger.error(f"Erreur API Superset ({response.status_code}): {error_detail}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Erreur lors du liens avec Superset: {error_detail}",
+                )
+            # Succès
+            result = response.json()
+            logger.info(f"Liens avec Superset pour{table_id} OK ")
             return result
 
 

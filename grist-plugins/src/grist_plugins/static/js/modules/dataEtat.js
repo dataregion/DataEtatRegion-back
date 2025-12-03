@@ -53,6 +53,30 @@ function filterColumns(columns) {
   return columns.filter(col => !col.fields.type.startsWith('Ref:'));
 }
 
+async function _parseError(response) {
+  let errorMessage = `Erreur HTTP ${response.status}`;
+  try {
+    // Tenter de parser la réponse JSON
+    const errorData = await response.json();
+
+    // Vérifier si un message custom existe
+    if (errorData.message) {
+      errorMessage = errorData.message;
+    } else if (errorData.detail) {
+      // FastAPI renvoie souvent "detail"
+      errorMessage = typeof errorData.detail === 'string'
+        ? errorData.detail
+        : JSON.stringify(errorData.detail);
+    } else if (errorData.error) {
+      errorMessage = errorData.error;
+    }
+  } catch (parseError) {
+    // Si le parsing JSON échoue, utiliser le statut HTTP
+    console.warn('Impossible de parser la réponse d\'erreur:', parseError);
+  }
+  throw new Error(errorMessage);
+}
+
 export async function publishDataGrist(tableId, colIndex, token) {
   // récupérer les colonnes
   const tableInfo = await getColumnTable(tableId);
@@ -86,27 +110,7 @@ export async function publishDataGrist(tableId, colIndex, token) {
     });
 
     if (!response.ok) {
-      let errorMessage = `Erreur HTTP ${response.status}`;
-      try {
-        // Tenter de parser la réponse JSON
-        const errorData = await response.json();
-
-        // Vérifier si un message custom existe
-        if (errorData.message) {
-          errorMessage = errorData.message;
-        } else if (errorData.detail) {
-          // FastAPI renvoie souvent "detail"
-          errorMessage = typeof errorData.detail === 'string'
-            ? errorData.detail
-            : JSON.stringify(errorData.detail);
-        } else if (errorData.error) {
-          errorMessage = errorData.error;
-        }
-      } catch (parseError) {
-        // Si le parsing JSON échoue, utiliser le statut HTTP
-        console.warn('Impossible de parser la réponse d\'erreur:', parseError);
-      }
-      throw new Error(errorMessage);
+      await _parseError(response);
     }
 
     const result = await response.json();
@@ -120,6 +124,37 @@ export async function publishDataGrist(tableId, colIndex, token) {
     }
 
     // Propager l'erreur
+    throw error;
+  }
+}
+
+
+export async function linkWithSuperset(tableId, token) {
+  // Envoyer à l'endpoint
+  try {
+    const formData = new FormData();
+    formData.append('tableId', tableId);
+    const response = await fetch('/to-superset/link', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      await _parseError(response);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Erreur lors du liens avec Superset:', error);
+
+    // Vérifier si c'est une erreur réseau
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Erreur de connexion au serveur');
+    }
     throw error;
   }
 }
