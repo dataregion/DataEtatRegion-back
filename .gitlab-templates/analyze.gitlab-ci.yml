@@ -99,7 +99,7 @@ run-loadtests:
     set -euo pipefail
     PWD_VAR="$(pwd)"
 
-    for folder in app apis services models grist-plugins gristcli tests_e2e; do
+    for folder in app apis services models grist-plugins gristcli supersetcli tests_e2e; do
       echo >&2 "Analyse pyright pour: $folder"
       cd "$PWD_VAR/$folder/"
       source /build/$folder/.venv/bin/activate
