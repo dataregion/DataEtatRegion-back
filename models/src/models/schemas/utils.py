@@ -28,8 +28,6 @@ class MarshmallowSafeGetAttrMixin:
 
         try:
             val = super().get_attribute(obj, attr, default)
-        except (
-            InvalidRequestError
-        ):  # XXX impossible de récupérer le valeur de l'attribut
+        except InvalidRequestError:  # XXX impossible de récupérer le valeur de l'attribut
             return None
         return val

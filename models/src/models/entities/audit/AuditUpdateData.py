@@ -23,9 +23,7 @@ class AuditUpdateData(_PersistenceBaseModelInstance()):
     source_region: Column[str] = Column(String, nullable=True)
     """Type de donnée. Voir `app.models.enums.DataType.DataType`"""
 
-    date: Column[datetime] = Column(
-        DateTime(timezone=True), default=datetime.utcnow, nullable=False
-    )
+    date: Column[datetime] = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     application_clientid: Column[str] = Column(String, nullable=True)
     """clientid associé à l'outil qui a lancé l'évenement d'import si import manuel"""

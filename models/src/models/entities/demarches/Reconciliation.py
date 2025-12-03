@@ -16,10 +16,6 @@ class Reconciliation(_PersistenceBaseModelInstance()):
     __bind_key__ = "demarches_simplifiees"
 
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
-    dossier_number: Column[int] = Column(
-        Integer, ForeignKey("dossiers.number", ondelete="CASCADE"), nullable=False
-    )
-    financial_ae_id: Column[int] = Column(
-        Integer, nullable=False, index=True, unique=True
-    )
+    dossier_number: Column[int] = Column(Integer, ForeignKey("dossiers.number", ondelete="CASCADE"), nullable=False)
+    financial_ae_id: Column[int] = Column(Integer, nullable=False, index=True, unique=True)
     date_reconciliation: Column[datetime] = Column(DateTime, nullable=False)

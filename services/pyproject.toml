@@ -21,4 +21,5 @@ where = ["src"]
 dev = [
   "pytest ~=9.0",
   "pytest-cov ~=7.0",
+  "testcontainers ~=4.9",
 ]

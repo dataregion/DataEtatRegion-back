@@ -28,9 +28,7 @@ class Preference(_PersistenceBaseModelInstance()):
     dernier_acces = Column(DateTime, nullable=True)
     nombre_utilisation = Column(Integer, nullable=True, default=0)
     # Relationship
-    shares = relationship(
-        "Share", lazy="select", uselist=True, cascade="delete,save-update,merge"
-    )
+    shares = relationship("Share", lazy="select", uselist=True, cascade="delete,save-update,merge")
 
 
 class Share(_PersistenceBaseModelInstance()):

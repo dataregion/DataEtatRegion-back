@@ -29,9 +29,7 @@ class EnrichedFlattenFinancialLinesSchema(FlattenFinancialLinesSchema):
     tags = fields.List(fields.Nested(TagsSchema))
 
 
-class FlattenFinancialLinesDataQpvSchema(
-    MarshmallowSafeGetAttrMixin, SQLAlchemyAutoSchema
-):
+class FlattenFinancialLinesDataQpvSchema(MarshmallowSafeGetAttrMixin, SQLAlchemyAutoSchema):
     class Meta:
         model = FlattenFinancialLinesDataQPV
 
@@ -239,9 +237,7 @@ class FinancialAeSchema(SQLAlchemyAutoSchema):
     N_POSTE_EJ_COLUMNNAME = "n_poste_ej"
     """Nom de la colonne du poste EJ"""
 
-    tags = fields.List(
-        fields.Nested(TagsSchema), attribute=TAGS_COLUMNAME, data_key=TAGS_COLUMNAME
-    )
+    tags = fields.List(fields.Nested(TagsSchema), attribute=TAGS_COLUMNAME, data_key=TAGS_COLUMNAME)
     montant_ae = fields.Float(attribute="montant_ae_total")
     montant_cp = fields.Float()
     date_cp = fields.String()
@@ -249,16 +245,12 @@ class FinancialAeSchema(SQLAlchemyAutoSchema):
     domaine_fonctionnel = DomaineField(attribute="domaine_fonctionnel")
     referentiel_programmation = ReferentielField()
     groupe_marchandise = GroupeMarchandiseField(attribute="groupe_marchandise")
-    localisation_interministerielle = LocalisationInterministerielleField(
-        attribute="localisation_interministerielle"
-    )
+    localisation_interministerielle = LocalisationInterministerielleField(attribute="localisation_interministerielle")
     compte_budgetaire = fields.String()
     contrat_etat_region = fields.String()
     programme = ProgrammeField()
     n_ej = fields.String(attribute=N_EJ_COLUMNAME, data_key=N_EJ_COLUMNAME)
-    n_poste_ej = fields.Integer(
-        attribute=N_POSTE_EJ_COLUMNNAME, data_key=N_POSTE_EJ_COLUMNNAME
-    )
+    n_poste_ej = fields.Integer(attribute=N_POSTE_EJ_COLUMNNAME, data_key=N_POSTE_EJ_COLUMNNAME)
     annee = fields.Integer()
     siret = SiretField()
 

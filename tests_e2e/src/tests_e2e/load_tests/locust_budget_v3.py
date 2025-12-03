@@ -38,9 +38,7 @@ class BudgetV3LoadTest(HttpUser):
 
     def _get_real_token(self):
         """Récupère un token réel depuis Keycloak"""
-        token_url = (
-            f"{keycloak_url()}/realms/{keycloak_realm()}/protocol/openid-connect/token"
-        )
+        token_url = f"{keycloak_url()}/realms/{keycloak_realm()}/protocol/openid-connect/token"
 
         data = {
             "grant_type": "password",
@@ -56,9 +54,7 @@ class BudgetV3LoadTest(HttpUser):
         if response.status_code == 200:
             return response.json()["access_token"]
         else:
-            raise RuntimeError(
-                f"Impossible de récupérer un token réel: {response.status_code}"
-            )
+            raise RuntimeError(f"Impossible de récupérer un token réel: {response.status_code}")
 
     def _default_params(self):
         return {"force_no_cache": "true"}
@@ -112,9 +108,7 @@ def check_performance_on_quit(environment, **kwargs):
 
     print("\n📊 ANALYSE DES PERFORMANCES:")
     print("=" * 80)
-    print(
-        f"{'Endpoint':<35} {'Requêtes':<10} {'Moy(ms)':<10} {'Min(ms)':<10} {'Max(ms)':<10} {'Status':<10}"
-    )
+    print(f"{'Endpoint':<35} {'Requêtes':<10} {'Moy(ms)':<10} {'Min(ms)':<10} {'Max(ms)':<10} {'Status':<10}")
     print("-" * 80)
 
     _items = stats.entries.items()
@@ -160,9 +154,7 @@ def check_performance_on_quit(environment, **kwargs):
                 }
             )
 
-        print(
-            f"{name:<35} {num_requests:<10} {avg_time:<10.0f} {min_time:<10.0f} {max_time:<10.0f} {status:<10}"
-        )
+        print(f"{name:<35} {num_requests:<10} {avg_time:<10.0f} {min_time:<10.0f} {max_time:<10.0f} {status:<10}")
 
     print("=" * 80)
 

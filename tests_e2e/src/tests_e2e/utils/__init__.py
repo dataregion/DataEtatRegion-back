@@ -4,9 +4,7 @@ import requests
 __all__ = ("call_request",)
 
 
-def call_request(
-    url, method="GET", json_data=None, headers=None, token=None, params=None
-):
+def call_request(url, method="GET", json_data=None, headers=None, token=None, params=None):
     """
     Rest call grist
     """

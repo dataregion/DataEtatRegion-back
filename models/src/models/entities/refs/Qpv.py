@@ -21,9 +21,7 @@ class Qpv(_Audit, _PersistenceBaseModelInstance()):
     geom = Column(Geometry("GEOMETRY"), nullable=True)
     centroid = Column(Geometry("POINT"), nullable=True)
 
-    communes = relationship(
-        "Commune", secondary=QpvCommune.__table__, backref="commune_qpvs", viewonly=True
-    )
+    communes = relationship("Commune", secondary=QpvCommune.__table__, backref="commune_qpvs", viewonly=True)
 
 
 # Event listener to automatically calculate the centroid

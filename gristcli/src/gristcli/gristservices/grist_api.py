@@ -65,9 +65,7 @@ class GrisApiService:
 
         Returns the response from the API call.
         """
-        resp = self._call(
-            "orgs/docs/workspaces", method="POST", json_data={"name": name}
-        )
+        resp = self._call("orgs/docs/workspaces", method="POST", json_data={"name": name})
         return resp
 
     def create_doc_on_workspace(self, workspaceId: int, docName: str):
@@ -81,9 +79,7 @@ class GrisApiService:
         Returns the response from the API call.
         """
         json_data = {"name": docName, "isPinned": False}
-        return self._call(
-            f"workspaces/{workspaceId}/docs", method="POST", json_data=json_data
-        )
+        return self._call(f"workspaces/{workspaceId}/docs", method="POST", json_data=json_data)
 
     def new_table(self, docId: str, tableId: str, cols: List[dict], records=None):
         """
@@ -115,17 +111,13 @@ class GrisApiService:
             "tables": [
                 {
                     "id": tableId,
-                    "columns": [
-                        {"id": c["id"], "fields": {"label": c["label"]}} for c in cols
-                    ],
+                    "columns": [{"id": c["id"], "fields": {"label": c["label"]}} for c in cols],
                 }
             ]
         }
         logging.debug(f"Create table {tableId} {json_table}")
 
-        response = self._call(
-            f"docs/{docId}/tables", method="POST", json_data=json_table
-        )
+        response = self._call(f"docs/{docId}/tables", method="POST", json_data=json_table)
         table_create = response.get("tables")[0].get("id")
         logging.debug(f"Table id {table_create} create OK")
 

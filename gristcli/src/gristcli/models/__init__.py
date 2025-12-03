@@ -2,9 +2,7 @@ import json
 
 
 class UserGrist:
-    def __init__(
-        self, username: str, display_name: str, email: str, user_id: str = None
-    ):
+    def __init__(self, username: str, display_name: str, email: str, user_id: str = None):
         self.user_id = user_id
         self.username = username
         self.display_name = display_name

@@ -29,11 +29,7 @@ __all__ = ("FinancialAe",)
 @dataclass
 class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
     __tablename__ = "financial_ae"
-    __table_args__ = (
-        UniqueConstraint(
-            "n_ej", "n_poste_ej", "data_source", name="unique_ej_poste_ej_data_source"
-        ),
-    )
+    __table_args__ = (UniqueConstraint("n_ej", "n_poste_ej", "data_source", name="unique_ej_poste_ej_data_source"),)
 
     # UNIQUE
     n_ej: Column[str] = Column(String, nullable=False)
@@ -41,39 +37,21 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
     data_source = Column(String, nullable=False)
 
     # liens vers les référentiels
-    source_region: Column[str] = Column(
-        String, ForeignKey("ref_region.code"), nullable=True
-    )
-    programme: Column[str] = Column(
-        String, ForeignKey("ref_code_programme.code"), nullable=False
-    )
-    domaine_fonctionnel: Column[str] = Column(
-        String, ForeignKey("ref_domaine_fonctionnel.code"), nullable=False
-    )
-    centre_couts: Column[str] = Column(
-        String, ForeignKey("ref_centre_couts.code"), nullable=False
-    )
-    referentiel_programmation: Column[str] = Column(
-        String, ForeignKey("ref_programmation.code"), nullable=False
-    )
+    source_region: Column[str] = Column(String, ForeignKey("ref_region.code"), nullable=True)
+    programme: Column[str] = Column(String, ForeignKey("ref_code_programme.code"), nullable=False)
+    domaine_fonctionnel: Column[str] = Column(String, ForeignKey("ref_domaine_fonctionnel.code"), nullable=False)
+    centre_couts: Column[str] = Column(String, ForeignKey("ref_centre_couts.code"), nullable=False)
+    referentiel_programmation: Column[str] = Column(String, ForeignKey("ref_programmation.code"), nullable=False)
     localisation_interministerielle: Column[str] = Column(
         String, ForeignKey("ref_localisation_interministerielle.code"), nullable=False
     )
-    groupe_marchandise: Column[str] = Column(
-        String, ForeignKey("ref_groupe_marchandise.code"), nullable=False
-    )
-    fournisseur_titulaire: Column[str] = Column(
-        String, ForeignKey("ref_fournisseur_titulaire.code"), nullable=True
-    )
+    groupe_marchandise: Column[str] = Column(String, ForeignKey("ref_groupe_marchandise.code"), nullable=False)
+    fournisseur_titulaire: Column[str] = Column(String, ForeignKey("ref_fournisseur_titulaire.code"), nullable=True)
     siret: Column[str] = Column(String, ForeignKey("ref_siret.code"), nullable=True)
 
     # autre colonnes
-    date_modification_ej: Column[datetime] = Column(
-        DateTime, nullable=True
-    )  # date issue du fichier Chorus
-    date_replication: Column[datetime] = Column(
-        DateTime, nullable=True
-    )  # Date de création de l'EJ
+    date_modification_ej: Column[datetime] = Column(DateTime, nullable=True)  # date issue du fichier Chorus
+    date_replication: Column[datetime] = Column(DateTime, nullable=True)  # Date de création de l'EJ
     compte_budgetaire: Column[str] = Column(String(255), nullable=False)
     contrat_etat_region: Column[str] = Column(String(255))
     annee: Column[int] = Column(Integer, nullable=False)  # annee de l'AE chorus
@@ -87,31 +65,21 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
     societe: Column[str] = Column(String, nullable=True)
     centre_financier: Column[str] = Column(String, nullable=True)
 
-    tags: Mapped[Tags] = relationship(
-        "Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True
-    )
+    tags: Mapped[Tags] = relationship("Tags", uselist=True, lazy="select", secondary="tag_association", viewonly=True)
     montant_ae = relationship("MontantFinancialAe", uselist=True, lazy="select")
     financial_cp = relationship("FinancialCp", uselist=True, lazy="select")
     ref_programme: Mapped[CodeProgramme] = relationship("CodeProgramme", lazy="select")
-    ref_domaine_fonctionnel: Mapped[DomaineFonctionnel] = relationship(
-        "DomaineFonctionnel", lazy="select"
-    )
-    ref_groupe_marchandise: Mapped[GroupeMarchandise] = relationship(
-        "GroupeMarchandise", lazy="select"
-    )
-    ref_ref_programmation: Mapped[ReferentielProgrammation] = relationship(
-        "ReferentielProgrammation", lazy="select"
-    )
+    ref_domaine_fonctionnel: Mapped[DomaineFonctionnel] = relationship("DomaineFonctionnel", lazy="select")
+    ref_groupe_marchandise: Mapped[GroupeMarchandise] = relationship("GroupeMarchandise", lazy="select")
+    ref_ref_programmation: Mapped[ReferentielProgrammation] = relationship("ReferentielProgrammation", lazy="select")
     ref_siret: Mapped[Siret] = relationship("Siret", lazy="select")
-    ref_localisation_interministerielle: Mapped[LocalisationInterministerielle] = (
-        relationship("LocalisationInterministerielle", lazy="select")
+    ref_localisation_interministerielle: Mapped[LocalisationInterministerielle] = relationship(
+        "LocalisationInterministerielle", lazy="select"
     )
 
     @hybrid_property
     def montant_ae_total(self):
-        return sum(
-            montant_financial_ae.montant for montant_financial_ae in self.montant_ae
-        )
+        return sum(montant_financial_ae.montant for montant_financial_ae in self.montant_ae)
 
     @hybrid_property
     def montant_cp(self):
@@ -120,9 +88,7 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
     @hybrid_property
     def date_cp(self):
         if self.financial_cp:
-            return max(
-                self.financial_cp, key=lambda obj: obj.date_derniere_operation_dp
-            ).date_derniere_operation_dp
+            return max(self.financial_cp, key=lambda obj: obj.date_derniere_operation_dp).date_derniere_operation_dp
         return None
 
     def __init__(self, **kwargs):
@@ -132,9 +98,7 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
         self.update_attribute(kwargs)
 
     def __setattr__(self, key, value):
-        if (key == "date_modification_ej" or key == "date_replication") and isinstance(
-            value, str
-        ):
+        if (key == "date_modification_ej" or key == "date_replication") and isinstance(value, str):
             # cas où les dates sont au format dd/mm/yyyy
             value = datetime.strptime(value.replace("/", "."), "%d.%m.%Y")
 
@@ -148,13 +112,9 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
                 if isinstance(new_financial[COLUMN_MONTANT_NAME], str)
                 else new_financial[COLUMN_MONTANT_NAME]
             )
-            self.add_or_update_montant_ae(
-                nouveau_montant, new_financial[FinancialAe.annee.key]
-            )
+            self.add_or_update_montant_ae(nouveau_montant, new_financial[FinancialAe.annee.key])
             if nouveau_montant < 0 and self.annee:
-                del new_financial[
-                    FinancialAe.annee.key
-                ]  # on ne maj pas l'année comptable si montant <0
+                del new_financial[FinancialAe.annee.key]  # on ne maj pas l'année comptable si montant <0
 
         super().update_attribute(new_financial)
 
@@ -171,10 +131,7 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
             )
             return True
         else:
-            return (
-                datetime.strptime(new_financial["date_modification_ej"], "%d.%m.%Y")
-                > self.date_modification_ej
-            )
+            return datetime.strptime(new_financial["date_modification_ej"], "%d.%m.%Y") > self.date_modification_ej
 
     def add_or_update_montant_ae(self, nouveau_montant: float, annee):
         """
@@ -183,60 +140,38 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
         :param annee: l'année comptable
         :return:
         """
-        if (
-            self.montant_ae is None or not self.montant_ae
-        ):  # si aucun montant AE encore, on ajoute
+        if self.montant_ae is None or not self.montant_ae:  # si aucun montant AE encore, on ajoute
             self.montant_ae = [MontantFinancialAe(montant=nouveau_montant, annee=annee)]
         else:
             montant_ae_annee = next(
-                (
-                    montant_ae
-                    for montant_ae in self.montant_ae
-                    if montant_ae.annee == annee
-                ),
+                (montant_ae for montant_ae in self.montant_ae if montant_ae.annee == annee),
                 None,
             )  # recherche d'un montant sur la même année existant
 
             if nouveau_montant > 0:  # Si nouveau montant positif
                 montant_ae_positif = next(
-                    (
-                        montant_ae
-                        for montant_ae in self.montant_ae
-                        if montant_ae.montant > 0
-                    ),
+                    (montant_ae for montant_ae in self.montant_ae if montant_ae.montant > 0),
                     None,
                 )
 
                 if montant_ae_positif is None:
-                    if (
-                        montant_ae_annee is None
-                    ):  # si aucun montant positif enregistré et sur, alors on ajoute
-                        self.montant_ae.append(
-                            MontantFinancialAe(montant=nouveau_montant, annee=annee)
-                        )
+                    if montant_ae_annee is None:  # si aucun montant positif enregistré et sur, alors on ajoute
+                        self.montant_ae.append(MontantFinancialAe(montant=nouveau_montant, annee=annee))
                     else:
                         montant_ae_annee.montant = nouveau_montant
                         montant_ae_annee.annee = annee
                 else:
                     # sinon je prend le montant positif le plus récent
                     montant_ae_positif.montant = (
-                        nouveau_montant
-                        if (montant_ae_positif.annee <= annee)
-                        else montant_ae_positif.montant
+                        nouveau_montant if (montant_ae_positif.annee <= annee) else montant_ae_positif.montant
                     )
                     montant_ae_positif.annee = (
-                        annee
-                        if (montant_ae_positif.annee <= annee)
-                        else montant_ae_positif.annee
+                        annee if (montant_ae_positif.annee <= annee) else montant_ae_positif.annee
                     )
 
             else:  # nouveau_montant < 0
-                if (
-                    montant_ae_annee is None
-                ):  # si l'année n'est pas déjà enregistré, alors on ajoute le montant
-                    self.montant_ae.append(
-                        MontantFinancialAe(montant=nouveau_montant, annee=annee)
-                    )
+                if montant_ae_annee is None:  # si l'année n'est pas déjà enregistré, alors on ajoute le montant
+                    self.montant_ae.append(MontantFinancialAe(montant=nouveau_montant, annee=annee))
                 else:  # sinon on MAJ
                     montant_ae_annee.montant = nouveau_montant
 
@@ -246,10 +181,7 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
         :param new_financial:
         :return:
         """
-        if (
-            self.source_region is not None
-            and new_financial[FinancialAe.source_region.key] != self.source_region
-        ):
+        if self.source_region is not None and new_financial[FinancialAe.source_region.key] != self.source_region:
             return False
 
         if COLUMN_MONTANT_NAME not in new_financial:
@@ -263,10 +195,7 @@ class FinancialAe(FinancialData, _PersistenceBaseModelInstance()):
 
         annee = new_financial[FinancialAe.annee.key]
 
-        if any(
-            montant_ae.montant == nouveau_montant and montant_ae.annee == annee
-            for montant_ae in self.montant_ae
-        ):
+        if any(montant_ae.montant == nouveau_montant and montant_ae.annee == annee for montant_ae in self.montant_ae):
             return False
 
         return True

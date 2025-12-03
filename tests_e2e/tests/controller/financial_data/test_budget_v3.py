@@ -69,9 +69,9 @@ def test_budget_lignes_appartient_region_de_connexion_utilisateur(
     regions_in_response = [x["source_region"] for x in lignes]
     regions_in_response = list(set(regions_in_response))
 
-    assert len(regions_in_response) == 1 and sanitize_region(
-        regions_in_response[0]
-    ) == sanitize_region(connected_region)
+    assert len(regions_in_response) == 1 and sanitize_region(regions_in_response[0]) == sanitize_region(
+        connected_region
+    )
 
 
 def test_budget_lignes_source_region_pris_en_compte(

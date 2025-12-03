@@ -28,8 +28,6 @@ class Demarche(_PersistenceBaseModelInstance()):
     date_import: Column[datetime] = Column(DateTime, nullable=True)
     reconciliation: Column[str] = Column(JSON, nullable=True)
     affichage: Column[str] = Column(JSON, nullable=True)
-    token_id: Column[int] = Column(
-        Integer, ForeignKey("tokens.id", name="demarches_token_id_fkey"), nullable=True
-    )
+    token_id: Column[int] = Column(Integer, ForeignKey("tokens.id", name="demarches_token_id_fkey"), nullable=True)
 
     token: Mapped[Token] = relationship("Token", lazy="select")

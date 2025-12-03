@@ -40,9 +40,7 @@ class TagVO:
         value = split[1] or None
 
         if type is None:
-            raise ValueError(
-                "Error during parsing tag prettyname. Type should not be empty"
-            )
+            raise ValueError("Error during parsing tag prettyname. Type should not be empty")
 
         return TagVO.from_typevalue(type, value)
 

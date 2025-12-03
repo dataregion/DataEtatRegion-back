@@ -30,9 +30,7 @@ class Tags(_Audit, _PersistenceBaseModelInstance()):
     """Nom du tag destiné à l'affichage UI"""
     enable_rules_auto: Column[bool] = Column(Boolean, nullable=False, default=False)
 
-    associations: Mapped[List["TagAssociation"]] = relationship(
-        cascade="all, delete", back_populates="tag"
-    )
+    associations: Mapped[List["TagAssociation"]] = relationship(cascade="all, delete", back_populates="tag")
 
     @hybrid_property
     def fullname(self):
@@ -54,9 +52,7 @@ class TagAssociation(_Audit, _PersistenceBaseModelInstance()):
     id = Column(Integer, primary_key=True)
     tag_id = Column(Integer, ForeignKey("tags.id", ondelete="cascade"), nullable=False)
 
-    ademe = Column(
-        Integer, ForeignKey("ademe.id", ondelete="cascade"), nullable=True, index=True
-    )
+    ademe = Column(Integer, ForeignKey("ademe.id", ondelete="cascade"), nullable=True, index=True)
     financial_ae = Column(
         Integer,
         ForeignKey("financial_ae.id", ondelete="cascade"),

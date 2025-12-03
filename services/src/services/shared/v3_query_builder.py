@@ -46,9 +46,7 @@ class V3QueryBuilder(Generic[T]):
 
         if self._params.colonnes_list is not None:
             selected_colonnes = [
-                getattr(self._model, c)
-                for c in self._params.colonnes_list
-                if c in inspect(self._model).columns.keys()
+                getattr(self._model, c) for c in self._params.colonnes_list if c in inspect(self._model).columns.keys()
             ]
             self.select_custom_model_properties(selected_colonnes)
 
@@ -59,9 +57,7 @@ class V3QueryBuilder(Generic[T]):
         else:
             # XXX: On ne charge que les colonnes demandées
             # le raiseload empêche le lazy load des colonnes non demandées
-            self._query = select(self._model).options(
-                load_only(*colonnes, raiseload=True)
-            )
+            self._query = select(self._model).options(load_only(*colonnes, raiseload=True))
         return self
 
     def where_custom(self, where: ColumnExpressionArgument[bool]):
@@ -74,20 +70,14 @@ class V3QueryBuilder(Generic[T]):
 
         complete_cond = []
         if value["value"] is not None:
-            complete_cond.append(
-                colonne == value["type"](value["value"])
-                if "type" in value
-                else value["value"]
-            )
+            complete_cond.append(colonne == value["type"](value["value"]) if "type" in value else value["value"])
         if can_be_null or value["value"] is None:
             complete_cond.append(colonne.is_(None))
 
         self._query = self._query.where(or_(*complete_cond))
         return self
 
-    def where_field_in(
-        self, colonne: Column, set_of_values: list | None, can_be_null=False
-    ):
+    def where_field_in(self, colonne: Column, set_of_values: list | None, can_be_null=False):
         if set_of_values is None:
             return
 
@@ -102,9 +92,7 @@ class V3QueryBuilder(Generic[T]):
         self._query = self._query.where(or_(*complete_cond))
         return self
 
-    def where_field_not_in(
-        self, colonne: Column, set_of_values: list | None, can_be_null=False
-    ):
+    def where_field_not_in(self, colonne: Column, set_of_values: list | None, can_be_null=False):
         if set_of_values is None:
             return
 
@@ -120,9 +108,7 @@ class V3QueryBuilder(Generic[T]):
         return self
 
     def _get_model_id_colonne(self) -> InstrumentedAttribute:
-        assert hasattr(self._model, "id") and isinstance(
-            self._model.id, InstrumentedAttribute
-        )  # type: ignore
+        assert hasattr(self._model, "id") and isinstance(self._model.id, InstrumentedAttribute)  # type: ignore
         return self._model.id  # type: ignore
 
     def sort_by_params(self):
@@ -131,9 +117,7 @@ class V3QueryBuilder(Generic[T]):
             if isinstance(sortby_colonne, InstrumentedAttribute):
                 direction = self._params.sort_order or "asc"
                 self._query = self._query.order_by(
-                    sortby_colonne.asc()
-                    if direction == "asc"
-                    else sortby_colonne.desc()
+                    sortby_colonne.asc() if direction == "asc" else sortby_colonne.desc()
                 )
         # On finit toujours par in sort by id ASC après les sort utilisateur
         if not self.is_an_aggregation:
@@ -145,10 +129,7 @@ class V3QueryBuilder(Generic[T]):
     @property
     def is_an_aggregation(self):
         """Représente si la requête qui est en train de build est une aggregation"""
-        return (
-            hasattr(self._params, "grouping")
-            and getattr(self._params, "grouping") is not None
-        )
+        return hasattr(self._params, "grouping") and getattr(self._params, "grouping") is not None
 
     def search(self):
         if self._params.fields_search is not None:
@@ -173,16 +154,8 @@ class V3QueryBuilder(Generic[T]):
         q = (
             select(
                 (func.coalesce(func.count(model.id), 0).label("total")),  # type: ignore
-                (
-                    func.coalesce(func.sum(model.montant_ae), 0).label(
-                        "total_montant_engage"
-                    )
-                ),  # type: ignore
-                (
-                    func.coalesce(func.sum(model.montant_cp), 0).label(
-                        "total_montant_paye"
-                    )
-                ),  # type: ignore
+                (func.coalesce(func.sum(model.montant_ae), 0).label("total_montant_engage")),  # type: ignore
+                (func.coalesce(func.sum(model.montant_cp), 0).label("total_montant_paye")),  # type: ignore
             )
             .select_from(model)
             .where(*self._query._where_criteria)

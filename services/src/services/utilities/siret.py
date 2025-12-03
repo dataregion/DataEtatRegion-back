@@ -30,14 +30,10 @@ class SiretParser:
 
     def _validate_siret_ou_siren(self):
         if not isinstance(self._siret, str):
-            raise SiretFormatError(
-                "Le numéro SIRET/SIREN doit être une chaine de caractères"
-            )
+            raise SiretFormatError("Le numéro SIRET/SIREN doit être une chaine de caractères")
 
         if not self._siret.isdigit() or (len(self._siret) not in (9, 14)):
-            raise SiretFormatError(
-                "Le numéro SIRET/SIREN doit être une chaîne de 9 ou 14 chiffres."
-            )
+            raise SiretFormatError("Le numéro SIRET/SIREN doit être une chaîne de 9 ou 14 chiffres.")
 
         self._is_siren = len(self._siret) == 9
 

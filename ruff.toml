@@ -1,0 +1,31 @@
+line-length = 120
+target-version = "py311"
+extend-exclude = [
+    ".eggs",
+    ".git", 
+    ".hg",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "venv11",
+    "migrations",
+    "config",
+]
+
+[lint]
+extend-select = [
+  "INP001" # Exclut l'usage des namespace packages puisque cela casse certains outils !
+]
+
+[lint.extend-per-file-ignores]
+"migrations.old/*" = ["INP001" ] # Autorise les namespace packages dans les anciennes migrations
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

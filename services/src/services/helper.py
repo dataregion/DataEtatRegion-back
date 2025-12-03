@@ -55,9 +55,7 @@ class TypeCodeGeoToFrance2030CodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolv
         return column
 
 
-class TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver(
-    TypeCodeGeoToSqlAlchemyColumnResolver
-):
+class TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolver):
     def code_geo_column(self, niveau_geo: TypeCodeGeo | str) -> Column[str] | None:
         type_geo = self.parse_niveau_geo(niveau_geo)
 
@@ -65,9 +63,7 @@ class TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver(
 
         match type_geo:
             case TypeCodeGeo.REGION:
-                column = (
-                    FinancialLines.localisationInterministerielle_commune_codeRegion
-                )
+                column = FinancialLines.localisationInterministerielle_commune_codeRegion
             case TypeCodeGeo.DEPARTEMENT:
                 column = FinancialLines.localisationInterministerielle_commune_codeDepartement
             case TypeCodeGeo.EPCI:
@@ -82,9 +78,7 @@ class TypeCodeGeoToFinancialLineLocInterministerielleCodeGeoResolver(
         return column
 
 
-class TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver(
-    TypeCodeGeoToSqlAlchemyColumnResolver
-):
+class TypeCodeGeoToFinancialLineBeneficiaireCodeGeoResolver(TypeCodeGeoToSqlAlchemyColumnResolver):
     def code_geo_column(self, niveau_geo: TypeCodeGeo | str) -> Column[str] | None:
         type_geo = self.parse_niveau_geo(niveau_geo)
 

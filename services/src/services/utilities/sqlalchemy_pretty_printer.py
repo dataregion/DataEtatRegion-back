@@ -33,6 +33,4 @@ def setup(format: str | None = None, level=None):
     sa_logger.addHandler(ch)
     if level is not None:
         sa_logger.setLevel(level)
-    sa_logger.propagate = (
-        False  # XXX: important to prevent double logging of sql requests
-    )
+    sa_logger.propagate = False  # XXX: important to prevent double logging of sql requests

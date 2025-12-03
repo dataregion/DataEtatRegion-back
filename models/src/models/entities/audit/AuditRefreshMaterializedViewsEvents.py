@@ -22,9 +22,7 @@ class AuditRefreshMaterializedViewsEvents(_PersistenceBaseModelInstance()):
     table = Column(String, nullable=True)
 
     @staticmethod
-    def create(
-        event: RefreshMaterializedViewsEvent, table: str
-    ) -> "AuditRefreshMaterializedViewsEvents":
+    def create(event: RefreshMaterializedViewsEvent, table: str) -> "AuditRefreshMaterializedViewsEvents":
         """Crée un row qui représente un evenement de rafraichissement de vue materialisées"""
         _evt = str(event)
 

@@ -10,22 +10,32 @@ RUN cd app/ && \
     uv pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps && \
     cd ..
 
-RUN cd tests_e2e/ && \
+RUN cd apis/ && \
     uv venv && \
-    uv pip install . && \
+    uv pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps && \
     cd ..
 
-RUN cd apis/ && \
+RUN cd tests_e2e/ && \
+    uv venv && \
+    uv pip install .[dev] && \
+    cd ..
+
+RUN cd grist-plugins/ && \
     uv venv && \
     uv pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps && \
     cd ..
 
 RUN cd services/ && \
     uv venv && \
-    uv pip install .[dev] && \
+    SERVICES_IS_TRANSITIVE_DEP=0 uv pip install .[dev] && \
     cd ..
 
 RUN cd models/ && \
+    uv venv && \
+    uv pip install .[dev] && \
+    cd ..
+
+RUN cd gristcli/ && \
     uv venv && \
     uv pip install .[dev] && \
     cd ..
@@ -35,7 +45,9 @@ FROM ghcr.io/astral-sh/uv:0.9.8-python3.13-trixie-slim@sha256:ec7ea3a2dad3a48465
 WORKDIR /build
 
 COPY --from=builder /build/app/.venv /build/app/.venv
-COPY --from=builder /build/tests_e2e/.venv /build/tests_e2e/.venv
 COPY --from=builder /build/apis/.venv /build/apis/.venv
+COPY --from=builder /build/grist-plugins/.venv /build/grist-plugins/.venv
+COPY --from=builder /build/tests_e2e/.venv /build/tests_e2e/.venv
 COPY --from=builder /build/services/.venv /build/services/.venv
 COPY --from=builder /build/models/.venv /build/models/.venv
+COPY --from=builder /build/gristcli/.venv /build/gristcli/.venv

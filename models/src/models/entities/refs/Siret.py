@@ -18,9 +18,7 @@ class Siret(_Audit, _PersistenceBaseModelInstance()):
 
     # FK
     code_commune = Column(String, ForeignKey("ref_commune.code"), nullable=True)
-    categorie_juridique = Column(
-        String, ForeignKey("ref_categorie_juridique.code"), nullable=True
-    )
+    categorie_juridique = Column(String, ForeignKey("ref_categorie_juridique.code"), nullable=True)
     code_qpv15 = Column(String, ForeignKey("ref_qpv.code"), nullable=True)
     code_qpv24 = Column(String, ForeignKey("ref_qpv.code"), nullable=True)
 

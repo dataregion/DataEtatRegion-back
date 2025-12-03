@@ -68,18 +68,12 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
             conds.append(self._model.beneficiaire_categorieJuridique_type)
 
         if types_beneficiaires is not None:
-            conds.append(
-                self._model.beneficiaire_categorieJuridique_type.in_(
-                    types_beneficiaires
-                )
-            )
+            conds.append(self._model.beneficiaire_categorieJuridique_type.in_(types_beneficiaires))
 
         cond = or_(*conds)
         self._query = self._query.where(cond)
         return self
 
     def ej(self, ej: str, poste_ej: int):
-        self._stmt = self._query.where(self._model.n_ej == ej).where(
-            self._model.n_poste_ej == poste_ej
-        )
+        self._stmt = self._query.where(self._model.n_ej == ej).where(self._model.n_poste_ej == poste_ej)
         return self

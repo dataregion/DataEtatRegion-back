@@ -21,9 +21,7 @@ class UserGristDatabaseService:
         """
         logging.debug(f"Retrieve API key for user {id}")
         with self.engine.connect() as connection:
-            result = connection.execute(
-                text("SELECT api_key FROM users WHERE id = :id"), {"id": id}
-            )
+            result = connection.execute(text("SELECT api_key FROM users WHERE id = :id"), {"id": id})
             key = result.mappings().first()
         token = key.get("api_key", None)
         if token is None:
@@ -54,9 +52,7 @@ class UserScimService(GrisApiService):
             "accept": "application/scim+json",
             "content-yype": "application/scim+json",
         }
-        return super()._call(
-            uri, method, prefix=prefix, json_data=json_data, headers=headers
-        )
+        return super()._call(uri, method, prefix=prefix, json_data=json_data, headers=headers)
 
     def search_user_by_username(self, username: str) -> UserGrist:
         """
@@ -87,16 +83,12 @@ class UserScimService(GrisApiService):
         """
         Creates a user in Grist and returns it with its ID
         """
-        user_create = self._call(
-            "/Users", method="POST", json_data=user.to_scim_payload()
-        )
+        user_create = self._call("/Users", method="POST", json_data=user.to_scim_payload())
         user_create = UserGrist(
             user_id=user_create.get("id"),
             username=user_create.get("userName"),
             display_name=user_create.get("displayName"),
             email=user_create.get("emails", [{}])[0].get("value"),
         )
-        logging.debug(
-            f"Create new User {user_create.username} with id {user_create.user_id}"
-        )
+        logging.debug(f"Create new User {user_create.username} with id {user_create.user_id}")
         return user_create

@@ -41,11 +41,7 @@ class SendEmail:
         msg["To"] = mail_to()
         msg.set_content(self.content())
 
-        with smtplib.SMTP_SSL(
-            mail_host(), mail_port()
-        ) as smtp:  # ou votre serveur SMTP/port
-            smtp.login(
-                mail_login(), mail_password()
-            )  # utilisez un mot de passe d'application
+        with smtplib.SMTP_SSL(mail_host(), mail_port()) as smtp:  # ou votre serveur SMTP/port
+            smtp.login(mail_login(), mail_password())  # utilisez un mot de passe d'application
             smtp.send_message(msg)
         print("Email sent successfully.")

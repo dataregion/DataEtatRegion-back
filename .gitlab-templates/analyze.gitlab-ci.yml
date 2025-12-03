@@ -82,22 +82,42 @@ run-loadtests:
   image: "${REGISTRY}nocode/dev:latest-snapshot"
   rules:
     - if: '$DO_ANALYZE == "✅"'
+      needs:
+        - "🐳 dockerizing nocode/dev image"
     - if: '$DO_ANALYZE == "⚙️"'
       when: manual
+      needs:
+        - "🐳 dockerizing nocode/dev image"
     - when: never
+
+"Analyse pyright":
+  <<: *default-analyze
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends libatomic1
+    - uv pip install pyright --system
+  script: |
+    set -euo pipefail
+    PWD_VAR="$(pwd)"
+
+    for folder in app apis services models grist-plugins gristcli tests_e2e; do
+      echo >&2 "Analyse pyright pour: $folder"
+      cd "$PWD_VAR/$folder/"
+      source /build/$folder/.venv/bin/activate
+      pyright .
+    done
 
 "Analyse d'architecture":
   <<: *default-analyze
   script: |
-    cd app/ && \
-      source /build/app/.venv/bin/activate && \
-      lint-imports --config .importlinter.toml --no-cache --show-timings && \
-      cd ..
+    set -euo pipefail
+    PWD_VAR="$(pwd)"
 
-    cd apis/ && \
-      source /build/apis/.venv/bin/activate && \
-      lint-imports --config .importlinter.toml --no-cache --show-timings && \
-      cd ..
+    for folder in app apis; do
+      echo >&2 "Analyse d'architecture pour: $folder"
+      cd "$PWD_VAR/$folder/"
+      source /build/$folder/.venv/bin/activate
+      lint-imports --config .importlinter.toml --no-cache --show-timings
+    done
 
 "Analyse syntaxique":
   <<: *default-analyze

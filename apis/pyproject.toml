@@ -42,28 +42,3 @@ addopts = [
     "-ra", "--import-mode=importlib",
     "-m not integration"
 ]
-
-[tool.ruff]
-line-length = 120
-target-version = "py311"
-extend-exclude = [
-    ".eggs",
-    ".git", 
-    ".hg",
-    ".mypy_cache",
-    ".tox",
-    ".venv",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "venv11",
-    "migrations",
-    "config",
-]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"

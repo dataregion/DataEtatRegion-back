@@ -1,0 +1,5 @@
+{
+    "typeCheckingMode": "off",
+    "_comment": "A activer au fur et à mesure.",
+    "reportMissingImports": "error"
+}

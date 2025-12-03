@@ -19,13 +19,9 @@ class ValeurDonnee(_PersistenceBaseModelInstance()):
 
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
 
-    dossier_number: Column[int] = Column(
-        Integer, ForeignKey("dossiers.number", ondelete="CASCADE"), nullable=False
-    )
+    dossier_number: Column[int] = Column(Integer, ForeignKey("dossiers.number", ondelete="CASCADE"), nullable=False)
     dossier: Mapped[Dossier] = relationship("Dossier", lazy="select")
-    donnee_id: Column[int] = Column(
-        Integer, ForeignKey("donnees.id", ondelete="CASCADE"), nullable=False
-    )
+    donnee_id: Column[int] = Column(Integer, ForeignKey("donnees.id", ondelete="CASCADE"), nullable=False)
     donnee: Mapped[Donnee] = relationship("Donnee", lazy="select")
 
     valeur: Column[str] = Column(String, nullable=True)

@@ -80,18 +80,14 @@ class V3QueryParams(BaseModel, CacheableTotalQuery):
                 api_message="Les paramètres 'search' et 'fields_search' doivent être fournis ensemble.",
             )
 
-        if self.sort_by is not None and self.sort_by not in [
-            x.code for x in get_list_colonnes_tableau()
-        ]:
+        if self.sort_by is not None and self.sort_by not in [x.code for x in get_list_colonnes_tableau()]:
             raise BadRequestError(
                 code=HTTPStatus.BAD_REQUEST,
                 api_message=f"La colonne demandée '{self.sort_by}' n'existe pas pour le tri.",
             )
 
         codes = self._split(self.fields_search) if self.fields_search else []
-        if codes is not None and not all(
-            field in [x.code for x in get_list_colonnes_tableau()] for field in codes
-        ):
+        if codes is not None and not all(field in [x.code for x in get_list_colonnes_tableau()] for field in codes):
             raise BadRequestError(
                 code=HTTPStatus.BAD_REQUEST,
                 api_message=f"Les colonnes demandées '{self.fields_search}' n'existe pas pour la recherche.",

@@ -18,9 +18,7 @@ class Dossier(_PersistenceBaseModelInstance()):
     __bind_key__ = "demarches_simplifiees"
 
     number: Column[int] = Column(Integer, primary_key=True, nullable=False)
-    demarche_number: Column[int] = Column(
-        Integer, ForeignKey("demarches.number", ondelete="CASCADE"), nullable=False
-    )
+    demarche_number: Column[int] = Column(Integer, ForeignKey("demarches.number", ondelete="CASCADE"), nullable=False)
     revision_id: Column[str] = Column(String, nullable=False)
     state: Column[str] = Column(String, nullable=False)
     siret: Column[str] = Column(String, nullable=True)

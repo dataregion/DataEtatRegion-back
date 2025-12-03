@@ -48,9 +48,7 @@ class ApiSubventions:
             )
             return representant
 
-        raws = _dict_get_nested(
-            json_dict, "etablissement", "representants_legaux", default={}
-        )
+        raws = _dict_get_nested(json_dict, "etablissement", "representants_legaux", default={})
         return [map(x) for x in raws]
 
     def _json_to_subventions(self, json_dict) -> list[Subvention]:
@@ -59,16 +57,12 @@ class ApiSubventions:
 
             subvention = Subvention(
                 ej=_dict_get_nested(raw, "ej", "value"),  # type: ignore
-                service_instructeur=_dict_get_nested(
-                    raw, "service_instructeur", "value"
-                ),  # type: ignore
+                service_instructeur=_dict_get_nested(raw, "service_instructeur", "value"),  # type: ignore
                 dispositif=_dict_get_nested(raw, "dispositif", "value"),  # type: ignore
                 sous_dispositif=_dict_get_nested(raw, "sous_dispositif", "value"),  # type: ignore
                 montant_demande=_dict_get_nested(raw, "montants", "demande", "value"),  # type: ignore
                 montant_accorde=_dict_get_nested(raw, "montants", "accorde", "value"),  # type: ignore
-                actions_proposees=[
-                    _parse_action_proposee(x) for x in raw_actions_proposee
-                ],
+                actions_proposees=[_parse_action_proposee(x) for x in raw_actions_proposee],
             )
             return subvention
 

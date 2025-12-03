@@ -24,9 +24,7 @@ class QpvQueryBuilder(FinancialLineQueryBuilder):
     Méthodes de conditions spécifiques aux requêtes de Data QPV
     """
 
-    def where_geo_loc_qpv(
-        self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str
-    ):
+    def where_geo_loc_qpv(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):
         if list_code_geo is None:
             return self
 
@@ -56,14 +54,10 @@ class QpvQueryBuilder(FinancialLineQueryBuilder):
         codes_qpv = self._session.scalars(stmt).all()
 
         # Condition sur les codes QPV récupérés
-        self._query = self._query.where(
-            FinancialLinesDataQPV.lieu_action_code_qpv.in_(codes_qpv)
-        )
+        self._query = self._query.where(FinancialLinesDataQPV.lieu_action_code_qpv.in_(codes_qpv))
         return self
 
     def lieu_action_code_qpv_in(self, code_qpv: list | None, source_region: str):
         if code_qpv is not None:
-            self._query = self._query.where(
-                FinancialLinesDataQPV.lieu_action_code_qpv.in_(code_qpv)
-            )
+            self._query = self._query.where(FinancialLinesDataQPV.lieu_action_code_qpv.in_(code_qpv))
         return self

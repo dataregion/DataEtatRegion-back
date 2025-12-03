@@ -35,13 +35,7 @@ class Commune(_Audit, _PersistenceBaseModelInstance()):
     date_acv: Column[date] = Column(Date, nullable=True)
 
     # FK
-    code_arrondissement: Column[str] = Column(
-        String, ForeignKey("ref_arrondissement.code"), nullable=True
-    )
-    ref_arrondissement: Mapped[Arrondissement] = relationship(
-        "Arrondissement", lazy="joined"
-    )
+    code_arrondissement: Column[str] = Column(String, ForeignKey("ref_arrondissement.code"), nullable=True)
+    ref_arrondissement: Mapped[Arrondissement] = relationship("Arrondissement", lazy="joined")
 
-    qpvs = relationship(
-        "Qpv", secondary=QpvCommune.__table__, backref="qpv_communes", viewonly=True
-    )
+    qpvs = relationship("Qpv", secondary=QpvCommune.__table__, backref="qpv_communes", viewonly=True)

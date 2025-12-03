@@ -14,9 +14,7 @@ class QpvLieuAction(_Audit, _PersistenceBaseModelInstance()):
     code_qpv = Column(String, ForeignKey("ref_qpv.code"), nullable=False)
     n_ej: Column[str] = Column(String, nullable=False)
     annee = Column(Integer, nullable=False, autoincrement=False)
-    ratio_montant = Column(
-        Float(decimal_return_scale=2), nullable=False, autoincrement=False
-    )
+    ratio_montant = Column(Float(decimal_return_scale=2), nullable=False, autoincrement=False)
 
     # Données techniques
     file_import_taskid = Column(String(255))

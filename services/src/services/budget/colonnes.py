@@ -13,12 +13,8 @@ def get_list_colonnes_tableau() -> list[Colonne]:
             default=False,
             type=str,
         ),
-        Colonne(
-            code=EnrichedFlattenFinancialLines.id.description, label="ID", type=int
-        ),
-        Colonne(
-            code=EnrichedFlattenFinancialLines.n_ej.description, label="N° EJ", type=str
-        ),
+        Colonne(code=EnrichedFlattenFinancialLines.id.description, label="ID", type=int),
+        Colonne(code=EnrichedFlattenFinancialLines.n_ej.description, label="N° EJ", type=str),
         Colonne(
             code=EnrichedFlattenFinancialLines.n_poste_ej.description,
             label="N° Poste EJ",

@@ -12,20 +12,14 @@ class CodeProgramme(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     id = Column(Integer, primary_key=True)
     code: Column[str] = Column(String, unique=True, nullable=False)
     # FK
-    code_ministere: Column[str] = Column(
-        String, ForeignKey("ref_ministere.code"), nullable=True
-    )
-    code_theme: Column[str] = Column(
-        String, ForeignKey("ref_theme.code"), nullable=True
-    )
+    code_ministere: Column[str] = Column(String, ForeignKey("ref_ministere.code"), nullable=True)
+    code_theme: Column[str] = Column(String, ForeignKey("ref_theme.code"), nullable=True)
     theme: Column[int] = Column(Integer, ForeignKey("ref_theme.id"), nullable=True)
 
     label: Column[str] = Column(String)
     description: Column[str] = Column(Text)
 
-    theme_r: Mapped[Theme] = relationship(
-        "Theme", uselist=False, lazy="select", foreign_keys=code_theme
-    )
+    theme_r: Mapped[Theme] = relationship("Theme", uselist=False, lazy="select", foreign_keys=code_theme)
     # permet de remonter uniquement le label
     label_theme = association_proxy("theme_r", "label")
 
