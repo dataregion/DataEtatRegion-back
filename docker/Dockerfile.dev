@@ -40,6 +40,11 @@ RUN cd gristcli/ && \
     uv pip install .[dev] && \
     cd ..
 
+RUN cd supersetcli/ && \
+    uv venv && \
+    uv pip install .[dev] && \
+    cd ..
+
 FROM ghcr.io/astral-sh/uv:0.9.8-python3.13-trixie-slim@sha256:ec7ea3a2dad3a48465b33fe743741e0ab1b2d68b7c5b5b67bb4538fe2be62575
 
 WORKDIR /build
@@ -51,3 +56,4 @@ COPY --from=builder /build/tests_e2e/.venv /build/tests_e2e/.venv
 COPY --from=builder /build/services/.venv /build/services/.venv
 COPY --from=builder /build/models/.venv /build/models/.venv
 COPY --from=builder /build/gristcli/.venv /build/gristcli/.venv
+COPY --from=builder /build/supersetcli/.venv /build/supersetcli/.venv
