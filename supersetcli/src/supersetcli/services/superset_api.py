@@ -66,9 +66,7 @@ class SupersetApiService:
         This method is called automatically before API calls if tokens are not set.
         """
         if not self.username or not self.password:
-            raise ValueError(
-                "Username and password must be set before making API calls"
-            )
+            raise ValueError("Username and password must be set before making API calls")
 
         # 1. Login to get access token
         login_url = f"{self.server}/api/v1/security/login"
@@ -86,9 +84,7 @@ class SupersetApiService:
 
         # 2. Get CSRF token
         csrf_url = f"{self.server}/api/v1/security/csrf_token/"
-        csrf_response = self.session.get(
-            csrf_url, headers={"Authorization": f"Bearer {self.access_token}"}
-        )
+        csrf_response = self.session.get(csrf_url, headers={"Authorization": f"Bearer {self.access_token}"})
         csrf_response.raise_for_status()
         self.csrf_token = csrf_response.json()["result"]
 
@@ -133,9 +129,7 @@ class SupersetApiService:
 
         data = json.dumps(json_data).encode("utf8") if json_data is not None else None
 
-        response = self.session.request(
-            method, full_url, data=data, headers=headers, params=params
-        )
+        response = self.session.request(method, full_url, data=data, headers=headers, params=params)
 
         response.raise_for_status()
         return response.json()
@@ -176,9 +170,7 @@ class SupersetApiService:
 
         logging.debug(f"Creating/retrieving dataset {table_name} in schema {schema}")
 
-        response = self._call(
-            "dataset/get_or_create", method="POST", json_data=dataset_data
-        )
+        response = self._call("dataset/get_or_create", method="POST", json_data=dataset_data)
         table_id = response["result"]["table_id"]
         logging.debug(f"Dataset table_id create: {table_id}")
 
@@ -200,9 +192,7 @@ class SupersetApiService:
 
         logging.debug(f"Searching for user with username: {username}")
 
-        response = self._call(
-            "security/users/", method="GET", params={"q": json.dumps(search)}
-        )
+        response = self._call("security/users/", method="GET", params={"q": json.dumps(search)})
 
         if response.get("count", 0) > 0 and response.get("result"):
             user_id = response["result"][0]["id"]
@@ -212,9 +202,7 @@ class SupersetApiService:
         logging.warning(f"User {username} not found")
         raise UserNotFound()
 
-    def set_dataset_owners(
-        self, dataset_id: int, owner_ids: list[int]
-    ) -> Dict[str, Any]:
+    def set_dataset_owners(self, dataset_id: int, owner_ids: list[int]) -> Dict[str, Any]:
         """
         Sets the owners of a dataset.
 
@@ -228,8 +216,6 @@ class SupersetApiService:
 
         logging.debug(f"Setting owners {owner_ids} for dataset {dataset_id}")
 
-        response = self._call(
-            f"dataset/{dataset_id}", method="PUT", json_data=update_data
-        )
+        response = self._call(f"dataset/{dataset_id}", method="PUT", json_data=update_data)
         logging.debug(f"Dataset {dataset_id} owners updated successfully")
         return response
