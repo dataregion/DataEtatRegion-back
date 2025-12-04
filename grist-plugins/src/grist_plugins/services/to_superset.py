@@ -6,7 +6,7 @@ from fastapi import HTTPException, status, UploadFile
 logger = logging.getLogger(__name__)
 
 
-class SupersetAPIService:
+class SupersetDataEtatAPIService:
     """Service pour gérer les appels à l'API Superset"""
 
     def __init__(self, base_url: str, api_key: str, timeout: float = 60.0):
@@ -171,6 +171,6 @@ class SupersetAPIService:
             return result
 
 
-def get_superset_service(base_url: str, api_key: str) -> SupersetAPIService:
+def get_superset_service(base_url: str, api_key: str) -> SupersetDataEtatAPIService:
     """Factory function pour créer une instance du service"""
-    return SupersetAPIService(base_url, api_key)
+    return SupersetDataEtatAPIService(base_url, api_key)

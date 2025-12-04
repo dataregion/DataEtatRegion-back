@@ -61,8 +61,8 @@ async def publish(
     logger.info(f"Token reçu: {token[:10]}...")
 
     # Initialiser le service
-    superset_service = get_superset_service(settings.url_to_superset_api, settings.url_token_to_superset)
-    user_exists = await superset_service.check_user_exists(token)
+    superset_dataetat_service = get_superset_service(settings.url_to_superset_api, settings.url_token_to_superset)
+    user_exists = await superset_dataetat_service.check_user_exists(token)
     if not user_exists:
         logger.error("L'utilisateur ne s'est jamais connecté à Superset")
         raise HTTPException(
@@ -99,7 +99,7 @@ async def publish(
         logger.info(f"Validation réussie pour la table : '{tableId}' avec {len(columns_list)} colonne(s)")
 
         # Appel à l'API d'import distante
-        result = await superset_service.import_table(
+        result = await superset_dataetat_service.import_table(
             token=token,
             file=file,
             table_id=tableId,
@@ -142,9 +142,9 @@ async def link(
 
     token = authorization.replace("Bearer ", "")
     try:
-        superset_service = get_superset_service(settings.url_to_superset_api, settings.url_token_to_superset)
+        superset_dataetat_service = get_superset_service(settings.url_to_superset_api, settings.url_token_to_superset)
 
-        await superset_service.link_to_superset(
+        await superset_dataetat_service.link_to_superset(
             token=token,
             table_id=tableId,
         )

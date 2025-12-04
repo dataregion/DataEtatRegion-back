@@ -20,12 +20,12 @@ class KeycloakOpenIdConfig(BaseModel):
     )
 
 class ToSupersetConfig(BaseModel):
-    url_superset: str
-    user_superset_tech_login: str
+    url_superset: str # l'url public du superset
+    user_superset_tech_login: str # l'utilisateur technique Superset (qui a les droits admin)
     user_superset_tech_password: str
-    superset_database_id: int
-    db_schema_export : str = Field(default='grist_data')
-    superset_catalog: str = Field(default='CHORUS')
+    superset_database_id: int #L'Id de la datasource où les datasets seront créé (d)
+    db_schema_export : str = Field(default='grist_data') # le nom du schema où seront créer les tables en base de données
+    superset_catalog: str = Field(default='CHORUS')  # le nom du catalog dans superset où seront identifiable les données
 
 
 class CacheConfig(BaseModel):

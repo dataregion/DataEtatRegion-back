@@ -62,8 +62,9 @@ api_entreprise_batch_ratelimiter:
 
 token_for_grist_plugins: "<TOKEN>"
 
+# Configuration pour le Go TO SUPERSET
 to_superset_config:
-  url_superset: "http://localhost"
-  user_superset_tech_login: "<USER_LOGIN>"
-  user_superset_tech_password: "<USER_PASSWORD>"
-  superset_database_id: 1
+  url_superset: "http://localhost" #l'url public du superset
+  user_superset_tech_login: "<USER_LOGIN>" # l'utilisateur technique Superset (qui a les droits admin)
+  user_superset_tech_password: "<USER_PASSWORD>" #son password
+  superset_database_id: 1 #L'Id de la datasource où les datasets seront créé
