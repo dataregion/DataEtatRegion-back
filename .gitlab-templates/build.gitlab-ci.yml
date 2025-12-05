@@ -1,5 +1,5 @@
 include:
-  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
     inputs:
       image-name: ${REGISTRY}nocode/data-transform
       image-tag: ${DATA_TRANSFORM_VER}
@@ -11,7 +11,7 @@ include:
       do-push: true
       enable-debug: true
 
-  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
     inputs:
       image-name: ${REGISTRY}nocode/apis
       image-tag: ${DATA_TRANSFORM_VER}
@@ -23,7 +23,7 @@ include:
       do-push: true
       enable-debug: true
 
-  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
     inputs:
       image-name: ${REGISTRY}nocode/grist-plugins
       image-tag: ${DATA_TRANSFORM_VER}

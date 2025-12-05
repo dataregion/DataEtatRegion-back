@@ -1,5 +1,5 @@
 include:
-  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@4.0.4
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
     inputs:
       image-name: ${REGISTRY}nocode/dev
       image-tag: latest-snapshot
