@@ -163,7 +163,7 @@ marshmallow-dataclass==8.7.1
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
     #   api-entreprise
-marshmallow-jsonschema==0.13.0
+marshmallow-jsonschema @ git+https://github.com/gautierrog/marshmallow-jsonschema.git@47fa28df153b2147ff6ab05dc38237873b85dba8
     # via
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
