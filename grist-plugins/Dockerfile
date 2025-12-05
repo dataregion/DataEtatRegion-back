@@ -20,6 +20,9 @@ RUN npm run build
 FROM ghcr.io/astral-sh/uv:0.9.8-python3.13-trixie-slim@sha256:ec7ea3a2dad3a48465b33fe743741e0ab1b2d68b7c5b5b67bb4538fe2be62575  as backend-builder
 
 WORKDIR /build
+
+RUN apt update && apt install -y git
+
 # Copie du projet
 COPY . .
 

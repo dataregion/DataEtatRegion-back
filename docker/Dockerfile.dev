@@ -4,6 +4,8 @@ WORKDIR /build
 # Copie du projet
 COPY . .
 
+RUN apt update && apt install -y git
+
 # Prépare les venv de dev des différentes applications
 RUN cd app/ && \
     uv venv && \
