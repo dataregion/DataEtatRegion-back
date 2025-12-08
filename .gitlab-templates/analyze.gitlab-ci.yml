@@ -1,7 +1,7 @@
 include:
   - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
     inputs:
-      image-name: ${REGISTRY}nocode/dev
+      image-name: nocode/dev
       image-tag: latest-snapshot
       build-context: ./
       dockerfile-name: ./docker/Dockerfile.dev
@@ -36,7 +36,7 @@ include:
 # Construit une image avec les venv de devs installés
 "🐳 dockerizing nocode/dev image":
   stage: ☢️ analyze
-  extends: ".dockerize-${REGISTRY}nocode/dev"
+  extends: ".dockerize-nocode/dev"
   when: always
 
 run-loadtests:

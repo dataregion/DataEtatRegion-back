@@ -1,7 +1,7 @@
 include:
   - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
     inputs:
-      image-name: ${REGISTRY}nocode/data-transform
+      image-name: nocode/data-transform
       image-tag: ${DATA_TRANSFORM_VER}
       build-context: ./
       dockerfile-name: ./app/Dockerfile
@@ -13,7 +13,7 @@ include:
 
   - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
     inputs:
-      image-name: ${REGISTRY}nocode/apis
+      image-name: nocode/apis
       image-tag: ${DATA_TRANSFORM_VER}
       build-context: ./
       dockerfile-name: ./apis/Dockerfile
@@ -25,7 +25,7 @@ include:
 
   - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
     inputs:
-      image-name: ${REGISTRY}nocode/grist-plugins
+      image-name: nocode/grist-plugins
       image-tag: ${DATA_TRANSFORM_VER}
       build-context: ./
       dockerfile-name: ./grist-plugins/Dockerfile
@@ -44,7 +44,7 @@ include:
 
 "🐳 dockerizing data-transform":
   <<: *default-dockerize
-  extends: ".dockerize-${REGISTRY}nocode/data-transform"
+  extends: ".dockerize-nocode/data-transform"
   stage: 🐳 dockerize
   needs: 
     - job: "🐳 dockerizing base image"
@@ -52,7 +52,7 @@ include:
 
 "🐳 dockerizing apis":
   <<: *default-dockerize
-  extends: ".dockerize-${REGISTRY}nocode/apis"
+  extends: ".dockerize-nocode/apis"
   stage: 🐳 dockerize
   needs: 
     - job: "🐳 dockerizing base image"
@@ -60,7 +60,7 @@ include:
 
 "🐳 dockerizing grist-plugins-dataEtat":
   <<: *default-dockerize
-  extends: ".dockerize-${REGISTRY}nocode/grist-plugins"
+  extends: ".dockerize-nocode/grist-plugins"
   stage: 🐳 dockerize
   needs: 
     - job: "🐳 dockerizing base image"
