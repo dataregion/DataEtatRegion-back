@@ -26,7 +26,7 @@ _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 
 def handle_region_user(params: _params_T, user: ConnectedUser) -> _params_T:
     """Replace les paramètres en premier argument avec la source_region / data_source de la connexion utilisateur"""
-    return params.model_copy(update={"source_region": user.current_region})
+    return params.with_update(update={"source_region": user.current_region})
 
 
 class DashboardResponse(APISuccess[DashboardData]):

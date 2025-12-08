@@ -59,6 +59,11 @@ class V3QueryParams(BaseModel, CacheableTotalQuery):
     search: Optional[str] = Field(default=None)
     fields_search: Optional[str] = Field(default=None)
 
+    def with_update(self: BaseModel, update=dict):
+        copy = self.model_copy(update=update)
+        validated = self.model_validate(copy)
+        return validated
+
     @computed_field
     def colonnes_list(self) -> Optional[List[str]]:
         return self._split(self.colonnes)

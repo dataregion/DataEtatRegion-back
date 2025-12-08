@@ -29,7 +29,7 @@ def healthcheck(
     session: Session = Depends(get_session),
     params: QpvQueryParams = Depends(),
 ):
-    params = params.model_copy(
+    params = params.with_update(
         update={
             "colonnes": "source",
             "source_region": "053",

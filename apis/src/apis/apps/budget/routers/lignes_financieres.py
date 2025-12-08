@@ -35,9 +35,9 @@ _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
     """Replace les paramètres en premier argument avec la source_region / data_source de la connexion utilisateur"""
     if user.current_region != "NAT":
-        params = params.model_copy(update={"source_region": user.current_region})
+        params = params.with_update(update={"source_region": user.current_region})
     else:
-        params = params.model_copy(update={"data_source": "NATION"})
+        params = params.with_update(update={"data_source": "NATION"})
     return params
 
 

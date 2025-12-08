@@ -63,7 +63,7 @@ def get_lignes(
     _regions = get_request_regions(source_region)
 
     # On requête toutes les colonnes
-    params = params.model_copy(update={"colonnes": ",".join([c.code for c in get_list_colonnes_tableau()])})
+    params = params.with_update(update={"colonnes": ",".join([c.code for c in get_list_colonnes_tableau()])})
     assert "id" in params.colonnes
 
     builder = (
@@ -122,7 +122,7 @@ def get_lignes(
 
 
 def get_annees_budget(db: Session, params: SourcesQueryParams):
-    params = params.model_copy(
+    params = params.with_update(
         update={"source_region": app_layer_sanitize_region(params.source_region, params.data_source)}
     )
     assert params.source_region is not None

@@ -23,7 +23,7 @@ def test_two_different_query_params_gives_two_different_total_cache_keys():
     query_params_1 = BudgetQueryParams.make_default()
     query_params_2 = BudgetQueryParams.make_default()
 
-    query_params_2 = query_params_2.model_copy(update={"source_region": "52"})
+    query_params_2 = query_params_2.with_update(update={"source_region": "52"})
 
     key1 = query_params_1.get_total_cache_key()
     key2 = query_params_2.get_total_cache_key()
@@ -34,7 +34,7 @@ def test_two_different_query_params_gives_two_different_total_cache_keys():
 
 def test_when_query_params_has_property_making_it_total_uncacheable():
     query_params = BudgetQueryParams.make_default()
-    query_params = query_params.model_copy(
+    query_params = query_params.with_update(
         update={
             "search": "toto",  # le paramètre search rend le paramètre non éligible au caching
             "fields_search": "beneficiaire",
@@ -49,7 +49,7 @@ def test_when_property_doesnt_count_for_total_caching():
     query_params = BudgetQueryParams.make_default()
     key1 = query_params.get_total_cache_key()
 
-    query_params = query_params.model_copy(update={"page": 2})  # La page ne compte pas pour le calcul des totaux
+    query_params = query_params.with_update(update={"page": 2})  # La page ne compte pas pour le calcul des totaux
     key2 = query_params.get_total_cache_key()
 
     assert id(key1) != id(key2), "Les clefs de cache doivent être des instances différentes"
@@ -65,7 +65,7 @@ def test_cache_with_grouping_and_grouped():
         type=str,
     )
     query_params_1 = BudgetQueryParams.make_default()
-    query_params_1 = query_params_1.model_copy(
+    query_params_1 = query_params_1.with_update(
         update={
             "grouping": colonne.code,
             "grouped": "101",
