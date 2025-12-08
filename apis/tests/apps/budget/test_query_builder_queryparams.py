@@ -37,7 +37,7 @@ def test_when_query_params_has_property_making_it_total_uncacheable():
     query_params = query_params.with_update(
         update={
             "search": "toto",  # le paramètre search rend le paramètre non éligible au caching
-            "fields_search": "beneficiaire",
+            "fields_search": "beneficiaire_code",
         }
     )
 
