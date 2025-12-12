@@ -79,7 +79,7 @@ marshmallow==4.1.0
     #   marshmallow-sqlalchemy
 marshmallow-dataclass==8.7.1
     # via models (../models/pyproject.toml)
-marshmallow-jsonschema==0.13.0
+marshmallow-jsonschema @ git+https://github.com/gautierrog/marshmallow-jsonschema.git@47fa28df153b2147ff6ab05dc38237873b85dba8
     # via models (../models/pyproject.toml)
 marshmallow-sqlalchemy==1.4.2
     # via models (../models/pyproject.toml)
@@ -169,13 +169,11 @@ typer==0.20.0
     #   fastapi-cloud-cli
 typing-extensions==4.15.0
     # via
-    #   anyio
     #   fastapi
     #   pydantic
     #   pydantic-core
     #   rich-toolkit
     #   sqlalchemy
-    #   starlette
     #   typeguard
     #   typer
     #   typing-inspect
