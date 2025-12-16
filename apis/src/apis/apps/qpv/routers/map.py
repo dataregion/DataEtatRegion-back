@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from services.qpv.query_params import QpvQueryParams
 from apis.apps.qpv.services.get_data import get_map_data
-from apis.database import get_session
+from apis.database import get_session_main
 from models.connected_user import ConnectedUser
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
@@ -40,7 +40,7 @@ class MapResponse(APISuccess[MapData]):
 )
 async def get_map(
     params: QpvQueryParams = Depends(),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_session_main),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
     params = handle_region_user(params, user)

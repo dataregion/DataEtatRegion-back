@@ -1,8 +1,9 @@
 from app.servicesapp.financial_data import HasNext
-from flask import current_app
+from flask import current_app, request
 from app.controller.financial_data.schema_model import register_flatten_financial_lines_schemamodel
 from app.controller.utils.ControllerUtils import get_pagination_parser
 from app.models.common.Pagination import Pagination
+from models.entities.audit.ExportFinancialTask import ExportFinancialTask
 from models.value_objects.common import DataType
 from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 from app.servicesapp.financial_data import (
@@ -18,6 +19,7 @@ from http import HTTPStatus
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 
 from app.utilities.observability import SummaryOfTimePerfCounter
+from services.audits.export_financial_task import ExportFinancialTaskService
 
 api_ns = Namespace(name="Budget", path="/", description="Api d'accès aux données budgetaires.")
 auth = current_app.extensions["auth"]
@@ -167,3 +169,28 @@ class GetHealthcheck(Resource):
         assert len(result) == 10, "On devrait récupérer 10 lignes budgetaires"
 
         return HTTPStatus.OK
+
+
+@api_ns.route("/budget/export")
+class PostBudgetExport(Resource):
+    def post(self):
+        from app.tasks.financial.export_financial import export_run_financial
+
+        # Récupération du task_id
+        data = request.get_json(silent=True)
+        if not data or "task_id" not in data:
+            return {"error": "Task ID manquant"}, HTTPStatus.BAD_REQUEST
+        task_id = data["task_id"]
+
+        # Récupération de la tâche en BDD
+        task: ExportFinancialTask = ExportFinancialTaskService.find_by_id(task_id)
+        if not task:
+            return {"error": "ExportFinancialTask introuvable"}, HTTPStatus.NOT_FOUND
+
+        # Lancement de l'export
+        try:
+            export_run_financial.delay(task_id)
+        except Exception:
+            return {"error": "Erreur lors de l'appel de la tâche celery"}, HTTPStatus.INTERNAL_SERVER_ERROR
+
+        return {"message": "Export lancé", "task_id": task_id}, HTTPStatus.OK

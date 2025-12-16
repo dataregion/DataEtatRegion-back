@@ -1,0 +1,4 @@
+airflow-home
+.vscode
+
+config/config.yml

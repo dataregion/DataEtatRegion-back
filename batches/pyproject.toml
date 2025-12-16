@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=6.2,<9", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "batches"
+dynamic = ["version", "dependencies"]
+description = "Partie batches de Data Etat"
+
+[project.scripts]
+serve = "batches.prefect.serve:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.*"]
+
+[project.optional-dependencies]
+dev = [
+  "import-linter ~= 2.3",
+  "pytest ~=9.0",
+  "ruff ~= 0.6",
+]

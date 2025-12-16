@@ -10,7 +10,7 @@ from services.qpv.query_params import QpvQueryParams
 
 from apis.apps.qpv.models.dashboard_data import DashboardData
 from apis.apps.qpv.services.get_data import get_dashboard_data
-from apis.database import get_session
+from apis.database import get_session_main
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.models import APISuccess
@@ -41,7 +41,7 @@ class DashboardResponse(APISuccess[DashboardData]):
 )
 async def get_dashboard(
     params: QpvQueryParams = Depends(),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_session_main),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
     params = handle_region_user(params, user)

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 import pytest
 from fastapi.testclient import TestClient
 from .fixtures.app import *  # noqa: F403
-from apis.database import get_session
+from apis.database import get_session_main
 
 
 @pytest.fixture(scope="session")
@@ -12,7 +12,7 @@ def client(app: FastAPI):
 
 @pytest.fixture()
 def db_session(config):
-    return get_session()
+    return get_session_main()
 
 
 @pytest.fixture()

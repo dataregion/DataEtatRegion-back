@@ -28,6 +28,7 @@ def create_celery_app(_app=None) -> Celery:
     )
     celery.conf.update(_app.config)
     celery.conf.task_queues = (
+        Queue("export"),
         Queue("file"),
         Queue("line"),
     )

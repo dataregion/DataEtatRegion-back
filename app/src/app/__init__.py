@@ -3,7 +3,7 @@
 import logging
 
 import yaml
-from app.utilities import sqlalchemy_pretty_printer
+from services.utilities import sqlalchemy_pretty_printer
 from flask import Flask
 from flask_caching import Cache
 from flask_marshmallow import Marshmallow

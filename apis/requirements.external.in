@@ -16,3 +16,5 @@ api-entreprise >= 3.7.2
 prometheus-fastapi-instrumentator ~= 7.1.0
 
 sqlparse ~= 0.4
+
+prefect-client ~= 3.6.5

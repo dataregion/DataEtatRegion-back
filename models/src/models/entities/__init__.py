@@ -12,6 +12,7 @@ from .audit.AuditRefreshMaterializedViewsEvents import (
     AuditRefreshMaterializedViewsEvents,
 )
 from .audit.AuditUpdateData import AuditUpdateData
+from .audit.ExportFinancialTask import ExportFinancialTask
 
 from .preferences.Preference import Preference, Share
 

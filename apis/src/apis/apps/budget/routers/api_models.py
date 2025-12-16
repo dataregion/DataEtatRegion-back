@@ -1,13 +1,14 @@
+import datetime
 from models.entities.financial.query import EnrichedFlattenFinancialLines
 from models.schemas.financial import EnrichedFlattenFinancialLinesSchema
 from models.value_objects.grouped_data import GroupedData
 from models.value_objects.total import Total
 
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional
 
 from apis.services.model.pydantic_annotation import make_pydantic_annotation_from_marshmallow_lignes
 
@@ -28,3 +29,19 @@ class Groupings(BaseModel):
     type: Literal["groupings"] = "groupings"
     total: Total
     groupings: list[GroupedData]
+
+
+class ExportFinancialTask(BaseModel):
+    """DTO pour l'entité ExportFinancialTask."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    username: str
+    prefect_run_id: str
+    target_format: str
+
+    status: str
+    name: str
+
+    started_at: Optional[datetime.datetime]
+    completed_at: Optional[datetime.datetime]

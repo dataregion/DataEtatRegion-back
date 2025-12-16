@@ -19,35 +19,43 @@ class FinancialLineQueryParams(SourcesQueryParams):
     centres_couts: Optional[str] = Field(default=None)
 
     @computed_field
+    @property
     def code_programme_list(self) -> Optional[List[str]]:
         return self._split(self.code_programme)
 
     @computed_field
+    @property
     def code_geo_list(self) -> Optional[List[str]]:
         return self._split(self.code_geo)
 
     @computed_field
+    @property
     def code_qpv_list(self) -> Optional[List[str]]:
         return self._split(self.code_qpv)
 
     @computed_field
+    @property
     def theme_list(self) -> Optional[List[str]]:
         return self._split(self.theme, "|")
 
     @computed_field
+    @property
     def beneficiaire_code_list(self) -> Optional[List[str]]:
         return self._split(self.beneficiaire_code)
 
     @computed_field
+    @property
     def beneficiaire_categorieJuridique_type_list(self) -> Optional[List[str]]:
         return self._split(self.beneficiaire_categorieJuridique_type)
 
     @computed_field
+    @property
     def annee_list(self) -> Optional[List[int]]:
         lst = self._split(self.annee) if self.annee else None
         return [int(x) for x in lst] if lst else None
 
     @computed_field
+    @property
     def centres_couts_list(self) -> Optional[List[str]]:
         return self._split(self.centres_couts)
 

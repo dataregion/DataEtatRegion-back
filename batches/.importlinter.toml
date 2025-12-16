@@ -1,0 +1,15 @@
+[tool.importlinter]
+root_packages = [
+  "batches",
+  "services",
+  "models",
+] 
+
+[[tool.importlinter.contracts]]
+name = "L'architecture en couche est respectée"
+type = "layers"
+layers = [
+  "batches",
+  "services",
+  "models",
+]

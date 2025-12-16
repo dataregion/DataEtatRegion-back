@@ -5,7 +5,7 @@ from setuptools import setup
 
 #
 # XXX Dans le mécanisme de build.
-# On n'inclut pas les sous modules lorsu'on est en mode transitif.
+# On n'inclut pas les sous modules lorsqu'on est en mode transitif.
 #
 IS_TRANSITIVE_DEPENDENCY = bool(int(os.getenv("SERVICES_IS_TRANSITIVE_DEP", 1)))
 

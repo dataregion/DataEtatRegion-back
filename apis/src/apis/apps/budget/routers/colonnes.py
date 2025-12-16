@@ -9,7 +9,7 @@ from services.budget.colonnes import (
     get_list_colonnes_grouping,
     get_list_colonnes_tableau,
 )
-from apis.database import get_session
+from apis.database import get_session_main
 from models.connected_user import ConnectedUser
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.models import APISuccess
@@ -30,7 +30,7 @@ keycloak_validator = KeycloakTokenValidator.get_application_instance()
 )
 def get_colonnes_tableau(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_session_main),
 ):
     logger.debug("[COLONNES] Récupération des colonnes pour le tableau")
     response = APISuccess[Colonnes](
@@ -49,7 +49,7 @@ def get_colonnes_tableau(
 )
 def get_colonnes_grouping(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_session_main),
 ):
     logger.debug("[COLONNES] Récupération des colonnes pour le grouping")
     return APISuccess(

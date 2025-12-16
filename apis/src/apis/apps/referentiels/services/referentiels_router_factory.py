@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, DeclarativeBase
 from typing import Type
 
 from apis.apps.referentiels.services.get_data import get_all_data, get_one_data
-from apis.database import get_session
+from apis.database import get_session_main
 from models.connected_user import ConnectedUser
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
@@ -34,7 +34,7 @@ def create_referentiel_router(
     )
     def list_all(
         params: V3QueryParams = Depends(),
-        session: Session = Depends(get_session),
+        session: Session = Depends(get_session_main),
         user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
     ):
         logger.debug(f"[{model_name.upper()}] Récupération des {model_name}")
@@ -64,7 +64,7 @@ def create_referentiel_router(
     def get_by_code(
         code: str,
         params: V3QueryParams = Depends(),
-        session: Session = Depends(get_session),
+        session: Session = Depends(get_session_main),
         user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
     ):
         logger.debug(f"[{model_name.upper()}] Récupération de {model_name} par {code_column} : {code}")

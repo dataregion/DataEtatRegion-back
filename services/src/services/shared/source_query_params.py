@@ -13,6 +13,7 @@ class SourcesQueryParams(V3QueryParams):
     source: Optional[str] = Field(default=None)
 
     @computed_field
+    @property
     def source_datatype(self) -> Optional[DataType]:
         return DataType(self.source) if self.source else None
 

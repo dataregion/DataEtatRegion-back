@@ -25,6 +25,18 @@ include:
 
   - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
     inputs:
+      image-name: nocode/batches
+      image-tag: ${DATA_TRANSFORM_VER}
+      build-context: ./
+      dockerfile-name: ./batches/Dockerfile
+      do-login: true
+      registry: ${REGISTRY}
+      registry-login: ${REGISTRY_USER}
+      do-push: true
+      enable-debug: true
+
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
+    inputs:
       image-name: nocode/grist-plugins
       image-tag: ${DATA_TRANSFORM_VER}
       build-context: ./
@@ -53,6 +65,14 @@ include:
 "🐳 dockerizing apis":
   <<: *default-dockerize
   extends: ".dockerize-nocode/apis"
+  stage: 🐳 dockerize
+  needs: 
+    - job: "🐳 dockerizing base image"
+      optional: true
+
+"🐳 dockerizing batches":
+  <<: *default-dockerize
+  extends: ".dockerize-nocode/batches"
   stage: 🐳 dockerize
   needs: 
     - job: "🐳 dockerizing base image"

@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 from http import HTTPStatus
-from typing import List, Literal, Optional
+from typing import Any, List, Literal, Mapping, Optional
 
 from models.exceptions import BadRequestError
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
-from services.budget.colonnes import get_list_colonnes_tableau
 
 
 class CacheableTotalQuery(ABC):
@@ -59,16 +58,18 @@ class V3QueryParams(BaseModel, CacheableTotalQuery):
     search: Optional[str] = Field(default=None)
     fields_search: Optional[str] = Field(default=None)
 
-    def with_update(self: BaseModel, update=dict):
+    def with_update(self, update: Mapping[str, Any]):
         copy = self.model_copy(update=update)
         validated = self.model_validate(copy)
         return validated
 
     @computed_field
+    @property
     def colonnes_list(self) -> Optional[List[str]]:
         return self._split(self.colonnes)
 
     @computed_field
+    @property
     def fields_search_list(self) -> Optional[List[str]]:
         return self._split(self.fields_search)
 
@@ -85,27 +86,6 @@ class V3QueryParams(BaseModel, CacheableTotalQuery):
                 api_message="Les paramètres 'search' et 'fields_search' doivent être fournis ensemble.",
             )
 
-        if self.sort_by is not None and self.sort_by not in [x.code for x in get_list_colonnes_tableau()]:
-            raise BadRequestError(
-                code=HTTPStatus.BAD_REQUEST,
-                api_message=f"La colonne demandée '{self.sort_by}' n'existe pas pour le tri.",
-            )
-
-        codes = self._split(self.fields_search) if self.fields_search else []
-        if codes is not None and not all(field in [x.code for x in get_list_colonnes_tableau()] for field in codes):
-            raise BadRequestError(
-                code=HTTPStatus.BAD_REQUEST,
-                api_message=f"Les colonnes demandées '{self.fields_search}' n'existe pas pour la recherche.",
-            )
-
-        codes = self._split(self.colonnes) if self.colonnes else []
-        for code in codes:
-            found = [x for x in get_list_colonnes_tableau() if x.code == code]
-            if len(found) == 0:
-                raise BadRequestError(
-                    code=HTTPStatus.BAD_REQUEST,
-                    api_message=f"La colonne demandée '{code}' n'existe pas pour le tableau.",
-                )
         return self
 
     @staticmethod

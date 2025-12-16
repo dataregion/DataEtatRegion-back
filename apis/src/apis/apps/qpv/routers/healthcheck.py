@@ -10,7 +10,7 @@ from services.utilities.observability import SummaryOfTimePerfCounter
 
 from services.qpv.query_params import QpvQueryParams
 from apis.apps.qpv.services.get_data import get_lignes
-from apis.database import get_session
+from apis.database import get_session_main
 from apis.exception_handlers import error_responses
 from apis.shared.models import APISuccess
 
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
     responses=error_responses(),
 )
 def healthcheck(
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_session_main),
     params: QpvQueryParams = Depends(),
 ):
     params = params.with_update(

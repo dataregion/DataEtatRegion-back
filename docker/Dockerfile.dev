@@ -17,6 +17,11 @@ RUN cd apis/ && \
     uv pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps && \
     cd ..
 
+RUN cd batches/ && \
+    uv venv && \
+    uv pip install .[dev] -r requirements.external.txt && pip install -r requirements.editable.txt --no-deps && \
+    cd ..
+
 RUN cd tests_e2e/ && \
     uv venv && \
     uv pip install .[dev] && \
@@ -53,6 +58,7 @@ WORKDIR /build
 
 COPY --from=builder /build/app/.venv /build/app/.venv
 COPY --from=builder /build/apis/.venv /build/apis/.venv
+COPY --from=builder /build/batches/.venv /build/batches/.venv
 COPY --from=builder /build/grist-plugins/.venv /build/grist-plugins/.venv
 COPY --from=builder /build/tests_e2e/.venv /build/tests_e2e/.venv
 COPY --from=builder /build/services/.venv /build/services/.venv

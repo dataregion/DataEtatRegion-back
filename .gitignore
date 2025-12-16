@@ -43,6 +43,7 @@ models/build
 gristcli/build
 supersetcli/build
 tests_e2e/build
+batches/build
 
 .import_linter_cache
 

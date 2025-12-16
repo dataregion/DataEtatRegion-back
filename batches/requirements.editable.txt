@@ -1,0 +1,4 @@
+-e .
+# Projets dépendants
+-e ../models
+-e ../services

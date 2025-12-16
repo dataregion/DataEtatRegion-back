@@ -1,3 +1,4 @@
+from pathlib import Path
 from models.value_objects.redis_connection_info import RedisConnectionInfo
 from models.value_objects.api_entreprise_info import ApiEntrepriseInfo
 from models.value_objects.api_data_subvention_info import ApiDataSubventionInfo
@@ -39,10 +40,17 @@ class CacheConfig(BaseModel):
     )
 
 class Config(BaseModel):
-    sqlalchemy_database_uri: str
-    """database url à la sqlalchemy: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls"""
     print_sql: bool
     """Flag qui active le paramètre 'echo' de l'engine sqlalchemy"""
+
+    sqlalchemy_database_uri: str
+    """Base de données principale"""
+
+    sqlalchemy_database_uri_audit: str
+    """Base de données d'audit (utilisée avec le bind)"""
+
+    dossier_des_exports: Path
+    """Chemin vers le répertoire qui contient les exports utilisateurs."""
 
     keycloak_openid: KeycloakOpenIdConfig
     
@@ -58,7 +66,7 @@ class Config(BaseModel):
     api_entreprise_batch: ApiEntrepriseInfo
     api_entreprise_batch_ratelimiter: RateLimiterInfo
 
-    """Token d'authentification pour les plugins Grist"""
     token_for_grist_plugins: str
+    """Token d'authentification pour les plugins Grist"""
 
     to_superset_config: ToSupersetConfig

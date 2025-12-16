@@ -1,0 +1,6 @@
+print_sql: true
+
+sqlalchemy_database_uri: "postgresql+psycopg://postgres:passwd@localhost:5432/<DBNAME>"
+sqlalchemy_database_uri_audit: "postgresql+psycopg://postgres:passwd@localhost:5432/<DBNAME_AUDIT>"
+
+dossier_des_exports: "/tmp/DataEtat/exports"

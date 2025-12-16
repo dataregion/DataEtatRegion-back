@@ -1,7 +1,9 @@
 print_sql: true
 
 sqlalchemy_database_uri: "postgresql+psycopg://postgres:password@localhost:5432/<DBNAME>"
+sqlalchemy_database_uri_audit: "postgresql+psycopg://postgres:passwd@localhost:5432/<AUDIT_DBNAME>"
 
+dossier_des_exports: "/tmp/DataEtat/exports"
 
 keycloak_openid:
   url: https://oidc.auth

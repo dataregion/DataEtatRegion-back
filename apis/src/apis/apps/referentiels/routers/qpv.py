@@ -13,7 +13,7 @@ from apis.apps.referentiels.services.get_data import get_all_data
 from apis.apps.referentiels.services.referentiels_router_factory import (
     create_referentiel_router,
 )
-from apis.database import get_session
+from apis.database import get_session_main
 from models.connected_user import ConnectedUser
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
@@ -42,7 +42,7 @@ router = create_referentiel_router(Qpv, QpvSchema, QpvResponse, keycloak_validat
 def find_all_by_annee_decoupage(
     annee: str,
     params: V3QueryParams = Depends(),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_session_main),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
     if annee != "2015" and annee != "2024":

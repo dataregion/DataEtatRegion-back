@@ -4,7 +4,7 @@ from pydantic import ConfigDict, Field, computed_field, model_validator
 
 from models.exceptions import BadRequestError
 from models.value_objects.colonne import Colonne
-from services.budget.colonnes import get_list_colonnes_grouping
+from services.budget.colonnes import get_list_colonnes_grouping, get_list_colonnes_tableau
 from services.shared.financial_line_query_builder import (
     FinancialLineQueryParams,
 )
@@ -21,22 +21,27 @@ class BudgetQueryParams(FinancialLineQueryParams):
     grouped: Optional[str] = Field(default=None)
 
     @computed_field
-    def n_ej_list(self) -> float:
+    @property
+    def n_ej_list(self) -> Optional[list[str]]:
         return self._split(self.n_ej)
 
     @computed_field
-    def domaine_fonctionnel_list(self) -> float:
+    @property
+    def domaine_fonctionnel_list(self) -> Optional[list[str]]:
         return self._split(self.domaine_fonctionnel)
 
     @computed_field
-    def referentiel_programmation_list(self) -> float:
+    @property
+    def referentiel_programmation_list(self) -> Optional[list[str]]:
         return self._split(self.referentiel_programmation)
 
     @computed_field
-    def tags_list(self) -> float:
+    @property
+    def tags_list(self) -> Optional[list[str]]:
         return self._split(self.tags)
 
     @computed_field
+    @property
     def grouping_list(self) -> Optional[List[Colonne]]:
         casted = []
         codes = self._split(self.grouping) if self.grouping else []
@@ -51,7 +56,8 @@ class BudgetQueryParams(FinancialLineQueryParams):
         return casted if len(casted) > 0 else None
 
     @computed_field
-    def grouped_list(self) -> float:
+    @property
+    def grouped_list(self) -> Optional[List[str]]:
         return self._split(self.grouped)
 
     @model_validator(mode="after")
@@ -81,6 +87,28 @@ class BudgetQueryParams(FinancialLineQueryParams):
                 raise BadRequestError(
                     code=HTTPStatus.BAD_REQUEST,
                     api_message="Mauvaise utilisation des paramètres de grouping",
+                )
+
+        if self.sort_by is not None and self.sort_by not in [x.code for x in get_list_colonnes_tableau()]:
+            raise BadRequestError(
+                code=HTTPStatus.BAD_REQUEST,
+                api_message=f"La colonne demandée '{self.sort_by}' n'existe pas pour le tri.",
+            )
+
+        codes = self._split(self.fields_search) if self.fields_search else []
+        if codes is not None and not all(field in [x.code for x in get_list_colonnes_tableau()] for field in codes):
+            raise BadRequestError(
+                code=HTTPStatus.BAD_REQUEST,
+                api_message=f"Les colonnes demandées '{self.fields_search}' n'existe pas pour la recherche.",
+            )
+
+        codes = self._split(self.colonnes) if self.colonnes else []
+        for code in codes:
+            found = [x for x in get_list_colonnes_tableau() if x.code == code]
+            if len(found) == 0:
+                raise BadRequestError(
+                    code=HTTPStatus.BAD_REQUEST,
+                    api_message=f"La colonne demandée '{code}' n'existe pas pour le tableau.",
                 )
 
         return self

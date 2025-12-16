@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from apis.apps.grist_to_superset.exceptions.import_data_exceptions import UserNotFoundException
 from apis.apps.grist_to_superset.models.publish_response import PublishResponse
 from apis.apps.grist_to_superset.services.import_data_from_grist import ImportService
-from apis.database import get_session
+from apis.database import get_session_main
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.security.security_header import verify_api_key
 from apis.shared.exceptions import BadRequestError
@@ -138,7 +138,7 @@ async def import_table_data(
     file: UploadFile = File(..., description="Fichier CSV à importer contenant les données"),
     table_id: str = Form(..., description="Identifiant de la table cible"),
     columns: str = Form(..., description="Schéma des colonnes au format JSON"),
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_session_main),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
     """
