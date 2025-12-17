@@ -146,7 +146,7 @@ class GrisApiService:
         if records is not None:
             self.append_records_to_table(docId, table_create, records)
 
-        return {}
+        return table_create
 
     def get_tables_of_doc(self, docId: str) -> List[Table]:
         response = self._call(f"docs/{docId}/tables")

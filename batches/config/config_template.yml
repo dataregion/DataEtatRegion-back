@@ -4,3 +4,8 @@ sqlalchemy_database_uri: "postgresql+psycopg://postgres:passwd@localhost:5432/<D
 sqlalchemy_database_uri_audit: "postgresql+psycopg://postgres:passwd@localhost:5432/<DBNAME_AUDIT>"
 
 dossier_des_exports: "/tmp/DataEtat/exports"
+
+grist:
+  database_url: "postgresql+psycopg://postgres:passwd@localhost:5432/grist"
+  serveur_url: "https://grist.instance.fr"
+  token_scim: "<TOKEN_SCIM>"

@@ -2,25 +2,35 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Optional
 from batches.database import init_persistence_module, session_scope, session_audit_scope
-from batches.share.TabularWriter import ExportTarget, TabularWriter
+from models.value_objects.export_api import ExportTarget
+from batches.share.schemas.ExportEnrichedFlattenFinancialLinesSchema import ExportEnrichedFlattenFinancialLinesSchema
+from batches.share.tabular_writer.factory import TabularWriterFactory
 
 init_persistence_module()
 from services.budget.query_params import BudgetQueryParams  # noqa: E402
 from services.budget.colonnes import get_list_colonnes_tableau  # noqa: E402
+from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines  # noqa: E402
 from models.entities.audit.ExportFinancialTask import ExportFinancialTask  # noqa: E402
 from services.audits.export_financial_task import ExportFinancialTaskService  # noqa: E402
 
 from prefect import task, flow, runtime  # noqa: E402
 from prefect.cache_policies import NO_CACHE  # noqa: E402
 
+
 PAGE_SIZE = 1000
 
 from batches.filesystem import get_dossier_exports_path  # noqa: E402
 
 
-def _entity_to_colonnes(entity, colonnes: list[str]) -> list[str]:
-    lst = [getattr(entity, col) for col in colonnes]
+def _entity_to_colonnes(dict, colonnes: list[str]) -> list[str]:
+    lst = [dict[col] for col in colonnes]
     return lst
+
+
+def _serialize(ligne: EnrichedFlattenFinancialLines):
+    schema = ExportEnrichedFlattenFinancialLinesSchema().enable_safe_getattr()
+    obj = schema.dump(ligne)
+    return obj
 
 
 @dataclass(frozen=True)
@@ -79,6 +89,14 @@ def initialise_export_task_in_db(ctx: _Ctx) -> _Ctx:
 @task(timeout_seconds=60, log_prints=True, cache_policy=NO_CACHE)
 def initialise_query_params(ctx: _Ctx) -> _Ctx:
     params: BudgetQueryParams = runtime.flow_run.parameters["filters"]  # type: ignore
+    
+    print("On se débarasse de la colonne id pour l'export")
+    colonnes = params.colonnes_list
+    if colonnes is None:
+        colonnes = list(map(lambda c: str(c.code), get_list_colonnes_tableau()))
+    colonnes.remove('id')
+    params = params.with_update({ 'colonnes': ",".join(colonnes) })
+
     ctx = replace(ctx, query_params=params)
     return ctx
 
@@ -101,13 +119,13 @@ def initalise_fs(ctx: _Ctx) -> _Ctx:
     ###
     assert ctx.query_params is not None
     params: BudgetQueryParams = ctx.query_params
-    writer = TabularWriter.create_writer(
+    user_email: str = runtime.flow_run.parameters["user_email"]  # type: ignore
+    writer = TabularWriterFactory.create_writer(
         filep=str(ctx.current_export_file),
         export_target=ctx.target_format,
+        username=user_email,
     )
     colonnes = params.colonnes_list
-    if colonnes is None:
-        colonnes = list(map(lambda c: str(c.code), get_list_colonnes_tableau()))
 
     params = params.with_update({"colonnes": ",".join(colonnes)})
     ctx = replace(ctx, query_params=params)
@@ -131,15 +149,19 @@ def step(ctx: _Ctx) -> _Ctx:
 
     with session_scope() as session:
         data, has_next, grouped, builder = get_lignes(db=session, params=params)
+        data = [_serialize(ligne) for ligne in data]
         assert grouped is False, "Un export ne devrait pas pouvoir se faire sur un grouping!"
 
         ###
         assert ctx.current_export_dir is not None, (
             "Le répertoire d'export doit être initialisé avant d'écrire des données"
         )
-        writer = TabularWriter.create_writer(
+
+        user_email: str = runtime.flow_run.parameters["user_email"]  # type: ignore
+        writer = TabularWriterFactory.create_writer(
             filep=str(ctx.current_export_file),
             export_target=ctx.target_format,
+            username=user_email,
         )
         values = list(map(lambda e: _entity_to_colonnes(e, params.colonnes_list), data))  # type: ignore
         writer.write_rows(values)
@@ -161,7 +183,10 @@ def exporte_une_recherche(
     format: ExportTarget,
     filters: BudgetQueryParams,
 ):
-    ctx = _Ctx(target_format=format)
+    page_size = PAGE_SIZE if format != "to-grist" else 100
+    print(f"Initialise l'export. On parcourt les lignes {page_size} par {page_size}.")
+
+    ctx = _Ctx(target_format=format, page_size=page_size)
     ctx = initialise_export_task_in_db(ctx)
     ctx = initialise_query_params(ctx)
     ctx = initalise_fs(ctx)
@@ -180,4 +205,6 @@ def exporte_une_recherche(
 
 
 if __name__ == "__main__":  # Pour le debug
-    exporte_une_recherche("csm@sib.fr", "Export de test", "csv", BudgetQueryParams.make_default())
+    params = BudgetQueryParams.make_default()
+    params = params.with_update({"source_region": "53"})
+    exporte_une_recherche("csm@sib.fr", "Export de test", "to-grist", params)

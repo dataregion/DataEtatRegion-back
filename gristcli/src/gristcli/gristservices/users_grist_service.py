@@ -50,7 +50,7 @@ class UserScimService(GrisApiService):
         """
         headers = {
             "accept": "application/scim+json",
-            "content-yype": "application/scim+json",
+            "content-type": "application/scim+json",
         }
         return super()._call(uri, method, prefix=prefix, json_data=json_data, headers=headers)
 
