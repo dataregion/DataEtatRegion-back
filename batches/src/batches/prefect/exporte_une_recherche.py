@@ -94,7 +94,8 @@ def initialise_query_params(ctx: _Ctx) -> _Ctx:
     colonnes = params.colonnes_list
     if colonnes is None:
         colonnes = list(map(lambda c: str(c.code), get_list_colonnes_tableau()))
-    colonnes.remove('id')
+    if 'id' in colonnes:
+        colonnes.remove('id')
     params = params.with_update({ 'colonnes': ",".join(colonnes) })
 
     ctx = replace(ctx, query_params=params)

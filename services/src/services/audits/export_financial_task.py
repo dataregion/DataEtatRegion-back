@@ -18,10 +18,11 @@ class ExportFinancialTaskService:
         return session.execute(stmt).scalar_one()
 
     @staticmethod
-    def find_all_by_username(session: Session, username: str):
+    def find_all_file_exports_by_username(session: Session, username: str):
         stmt = (
             select(ExportFinancialTask)
             .where(ExportFinancialTask.username == username)
+            .where(ExportFinancialTask.target_format != "to-grist")
             .order_by(desc(ExportFinancialTask.created_at))
         )
         return session.execute(stmt).scalars().all()

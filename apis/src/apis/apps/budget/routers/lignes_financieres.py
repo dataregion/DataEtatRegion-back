@@ -193,7 +193,7 @@ def list_exports(
     session_audit: Session = Depends(get_session_audit),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-    tasks = ExportFinancialTaskService.find_all_by_username(session_audit, user.email)
+    tasks = ExportFinancialTaskService.find_all_file_exports_by_username(session_audit, user.email)
     dtos = [ExportFinancialTaskDTO.model_validate(x) for x in tasks]
     return APISuccess(
         code=HTTPStatus.OK,
