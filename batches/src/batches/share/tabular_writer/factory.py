@@ -3,6 +3,7 @@ from batches.share.tabular_writer.abstract import TabularWriter
 from batches.share.tabular_writer.csv import CsvTabularWriter
 from batches.share.tabular_writer.excel import ExcelTabularWriter
 from batches.share.tabular_writer.grist import GristTabularWriter
+from batches.share.tabular_writer.ods import OdsTabularWriter
 
 class TabularWriterFactory:
     @staticmethod
@@ -13,4 +14,6 @@ class TabularWriterFactory:
             return GristTabularWriter(filep, username)
         if export_target == 'xlsx':
             return ExcelTabularWriter(filep, username)
+        if export_target == 'ods':
+            return OdsTabularWriter(filep, username)
         raise NotImplementedError()
