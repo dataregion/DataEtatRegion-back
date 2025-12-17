@@ -220,7 +220,9 @@ class DemarcheService:
         """
         # Récupération des données de la démarche via l'API Démarches Simplifiées
         query = DemarcheService.get_query_from_file("get_demarche.gql")
-        token = TokenService.find_by_uuid_utilisateur_and_token_id(uuid_utilisateur, token_id).token
+        token = TokenService.find_by_uuid_utilisateur_and_token_id(uuid_utilisateur, token_id).get_token(
+            current_app.config["FERNET_SECRET_KEY"]
+        )
         demarche_dict = DemarcheService.query(token, query, demarche_number, None)
 
         page_info_dict = demarche_dict["data"]["demarche"]["dossiers"]["pageInfo"]
