@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
+from flask import current_app
 from sqlalchemy import update, exc
 
 from app import db
