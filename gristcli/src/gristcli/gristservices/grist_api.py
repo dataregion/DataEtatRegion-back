@@ -81,6 +81,28 @@ class GrisApiService:
         json_data = {"name": docName, "isPinned": False}
         return self._call(f"workspaces/{workspaceId}/docs", method="POST", json_data=json_data)
 
+    def append_records_to_table(self, docId: str, tableId: str, records: list):
+        """
+        Append records to table.
+
+        The `records` parameter contains the data to be inserted, if not None. It is a list of key-value lists where the key is the column ID and the value is the data value.
+
+        Example:
+        ```
+            [
+                {"col_id_1":"value of row 1 col 1", "col_id_2": "value of row 1 col 2"},
+                {"col_id_1":"value of row 2 col 1", "col_id_2": "value of row 2 col 2"},
+            ]
+        ```
+        """
+        logging.debug("Insert records in table")
+        map_records = {"records": [{"fields": row} for row in records]}
+        self._call(
+            f"docs/{docId}/tables/{tableId}/records",
+            method="POST",
+            json_data=map_records,
+        )
+
     def new_table(self, docId: str, tableId: str, cols: List[dict], records=None):
         """
         Creates a new table in a document with a defined list of columns.
@@ -122,13 +144,7 @@ class GrisApiService:
         logging.debug(f"Table id {table_create} create OK")
 
         if records is not None:
-            logging.debug("Insert records in table")
-            map_records = {"records": [{"fields": row} for row in records]}
-            self._call(
-                f"docs/{docId}/tables/{table_create}/records",
-                method="POST",
-                json_data=map_records,
-            )
+            self.append_records_to_table(docId, table_create, records)
 
         return {}
 
