@@ -17,6 +17,7 @@ from prefect import task, flow, runtime  # noqa: E402
 from prefect.cache_policies import NO_CACHE  # noqa: E402
 
 
+LIMITE_NB_LIGNES_EXPORT = 100_001
 PAGE_SIZE = 1000
 
 from batches.filesystem import get_dossier_exports_path  # noqa: E402
@@ -168,11 +169,15 @@ def step(ctx: _Ctx) -> _Ctx:
         writer.write_rows(values)
         writer.close()
 
+        nb_lignes = ctx.nb_lignes + len(data)
         ctx = replace(
             ctx,
             has_next=has_next,
-            nb_lignes=ctx.nb_lignes + len(data),
+            nb_lignes=nb_lignes,
         )
+        
+        if nb_lignes > LIMITE_NB_LIGNES_EXPORT:
+            raise RuntimeError(f"On limite les exports à {nb_lignes} lignes. On arrête tout.")
         ###
         return ctx
 
