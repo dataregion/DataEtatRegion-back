@@ -13,6 +13,7 @@ Projet qui acceuille les opérations en batch et en tache de fond.
 rm requirements.external.txt
 uv pip compile requirements.external.in \
   ../models/pyproject.toml \
+  ../gristcli/pyproject.toml \
   ../services/pyproject.toml \
   -o requirements.external.txt
 ```

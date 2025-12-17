@@ -4,6 +4,7 @@ from setuptools import setup
 self_path: Path = Path(__file__).parent
 
 models_path: str = (self_path / ".." / "models").as_uri()
+gristcli_path: str = (self_path / ".." / "gristcli").as_uri()
 services_path: str = (self_path / ".." / "services").as_uri()
 
 
@@ -15,6 +16,7 @@ def read_requirements(filename):
 requirements = read_requirements("requirements.external.in")
 requirements += [
     f"models @ {models_path}",
+    f"gristcli @ {gristcli_path}",
     f"services @ {services_path}",
 ]
 
