@@ -9,19 +9,20 @@ from gristcli.models import UserGrist
 
 from datetime import datetime
 
+
 @dataclass
-class _GristInfo():
+class _GristInfo:
     docId: str
     columns: list[str]
     tableId: str
 
-class GristTabularWriter(TabularWriter):
 
+class GristTabularWriter(TabularWriter):
     def __init__(self, filep: str, username: str | None) -> None:
         super().__init__(filep, username)
         self._grist_db_service = make_or_get_grist_database_service()
         self._grist_scim_service = make_or_get_user_scim_service()
-    
+
     def _save_grist_info(self, grist_info: _GristInfo):
         with open(self._filep, "w", encoding="utf-8") as f:
             json.dump(asdict(grist_info), f, ensure_ascii=False, indent=2)
@@ -52,7 +53,7 @@ class GristTabularWriter(TabularWriter):
         print(f"[GRIST] Get Api key for user {self._username}")
         token = self._grist_db_service.get_or_create_api_token(user.user_id)
 
-        grist_api = make_grist_api_service(token = token)
+        grist_api = make_grist_api_service(token=token)
         print("[GRIST] Retrive token sucess")
 
         workspaces = grist_api.get_personnal_workspace()
@@ -77,13 +78,9 @@ class GristTabularWriter(TabularWriter):
         print(f"[GRIST] Création document {docName} dans le workspace {workspace_id}")
         docId = grist_api.create_doc_on_workspace(workspace_id, docName)
         print(f"[GRIST] Document {docId} créé")
-        
-        
-        columns = [
-            { 'id': x, 'label': x }
-            for x in header
-        ]
-        
+
+        columns = [{"id": x, "label": x} for x in header]
+
         print(f"[GRIST] Création table budget dans le doc {docId} avec les colonnes")
         table_id = grist_api.new_table(
             docId,
@@ -94,7 +91,6 @@ class GristTabularWriter(TabularWriter):
         grist_info = _GristInfo(docId=docId, columns=header, tableId=table_id)
         self._save_grist_info(grist_info)
 
-
     def write_rows(self, rows: list) -> None:
         super().write_rows(rows)
         grist_api, _ = self._prepare_grist_context()
@@ -102,17 +98,10 @@ class GristTabularWriter(TabularWriter):
         doc_id = grist_info.docId
         header = grist_info.columns
         table_id = grist_info.tableId
-        
-        data = [
-            dict(zip(header, row, strict=True))
-            for row in rows
-        ]
-        
-        grist_api.append_records_to_table(
-            doc_id,
-            table_id,
-            data
-        )
+
+        data = [dict(zip(header, row, strict=True)) for row in rows]
+
+        grist_api.append_records_to_table(doc_id, table_id, data)
 
     def close(self) -> None:
         return super().close()

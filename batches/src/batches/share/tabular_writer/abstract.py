@@ -19,7 +19,6 @@ class TabularWriter(ABC):
         pass
 
 
-
 class StubTabularWriter(TabularWriter):
     def write_header(self, header: list[str]) -> None:
         print(f"StubTabularWriter.write_header: {header}")

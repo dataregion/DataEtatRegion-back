@@ -5,7 +5,6 @@ import csv
 
 
 class CsvTabularWriter(TabularWriter):
-
     def __init__(self, filep: str, username: str | None = None) -> None:
         super().__init__(filep, username)
 

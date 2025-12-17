@@ -90,14 +90,14 @@ def initialise_export_task_in_db(ctx: _Ctx) -> _Ctx:
 @task(timeout_seconds=60, log_prints=True, cache_policy=NO_CACHE)
 def initialise_query_params(ctx: _Ctx) -> _Ctx:
     params: BudgetQueryParams = runtime.flow_run.parameters["filters"]  # type: ignore
-    
+
     print("On se débarasse de la colonne id pour l'export")
     colonnes = params.colonnes_list
     if colonnes is None:
         colonnes = list(map(lambda c: str(c.code), get_list_colonnes_tableau()))
-    if 'id' in colonnes:
-        colonnes.remove('id')
-    params = params.with_update({ 'colonnes': ",".join(colonnes) })
+    if "id" in colonnes:
+        colonnes.remove("id")
+    params = params.with_update({"colonnes": ",".join(colonnes)})
 
     ctx = replace(ctx, query_params=params)
     return ctx
@@ -175,7 +175,7 @@ def step(ctx: _Ctx) -> _Ctx:
             has_next=has_next,
             nb_lignes=nb_lignes,
         )
-        
+
         if nb_lignes > LIMITE_NB_LIGNES_EXPORT:
             raise RuntimeError(f"On limite les exports à {nb_lignes} lignes. On arrête tout.")
         ###
