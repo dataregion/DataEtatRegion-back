@@ -51,26 +51,34 @@ def setup_exception_handlers(app: FastAPI):
         )
         return error.to_json_response()
 
-    def _message_from_remote(error: DataSubventionsCallError) -> str:
+    def _info_from_remote_dsCallError(error: DataSubventionsCallError):
         if (
             error.call_error_description.api_code == 0
         ):  # Code retourné pour une recherche sur une entité qui n'est pas une associaiton
-            return "Echec lors de l'appel à l'API Data Subventions : L'entité n'est pas une associaiton."
+            return (
+                "Echec lors de l'appel à l'API Data Subventions : L'entité n'est pas une associaton.",
+                CodeErreur.DATA_SUBVENTION_NOT_AN_ASSOCIATION,
+                400,
+            )
         else:
-            return "Erreur lors de l'appel à l'API Data Subventions"
+            return (
+                "Erreur lors de l'appel à l'API Data Subventions",
+                CodeErreur.CODE_CALL_FAILED,
+                500,
+            )
 
     @app.exception_handler(DataSubventionsCallError)
     async def data_subventions_call_error(request: FastAPI, exc: DataSubventionsCallError):
         """Lorsqu'une erreur lors de l'appel à l'API Data Subventions est survenue"""
         _log_exception(exc)
         remote = exc.call_error_description
-        message = _message_from_remote(exc)
+        message, code_erreur, code_retour = _info_from_remote_dsCallError(exc)
         error = ApiExterneError(
-            code=CodeErreur.CODE_CALL_FAILED,
+            code=code_erreur,
             message=message,
             remote_errors=[remote],
         )
-        return error.to_json_response()
+        return error.to_json_response(code_retour)
 
     @app.exception_handler(Exception)
     async def all(request: FastAPI, exc: Exception):
