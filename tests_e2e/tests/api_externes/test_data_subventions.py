@@ -31,7 +31,7 @@ def test_api_subventions_v3_notanassociation(apis_externes_v3, real_token):  # n
     siret = "54210780003943"
     response = call_request(f"{apis_externes_v3}/info-subvention/{siret}", token=real_token)
 
-    assert response.status_code == 500
+    assert response.status_code == 400
     response_json = response.json()
     assert 0 == response_json["remote_errors"][0]["api_code"]
     assert "message" in response_json["remote_errors"][0]
