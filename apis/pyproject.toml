@@ -28,7 +28,7 @@ dev = [
   "mypy ~= 1.11",
   "pip-tools ~= 7.4",
   "pre-commit ~=4.1",
-  "faker ~=37.4",
+  "faker ~=40.1",
   "ruff ~= 0.6",
   "testcontainers ~=4.9",
 ]
