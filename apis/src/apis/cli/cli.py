@@ -1,6 +1,7 @@
 import typer
 import json
 
+from apis.cli.api_externes import api_subventions_client_typer
 from apis.config.Config import Config
 
 cli = typer.Typer()
@@ -26,6 +27,10 @@ def config_json_schema():
     model_str = _config_schema_str()
     print(model_str)
 
+
+cli.add_typer(
+    api_subventions_client_typer, name="data_subventions_client", help="Client data subvention tel qu'utilisé par apis"
+)
 
 if __name__ == "__main__":
     cli()
