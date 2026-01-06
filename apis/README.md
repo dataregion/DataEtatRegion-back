@@ -25,7 +25,6 @@ Vous pouvez ensuite accéder à la documentation interactive sur http://localhos
 
 > **Note** : Adaptez le chemin du module (`src.apis.main:app`) si la structure change.
 
-
 ## Executer les tests
 
 ```bash
@@ -43,6 +42,14 @@ uv pip compile requirements.external.in \
   ../gristcli/pyproject.toml \
   ../supersetcli/pyproject.toml \
   -o requirements.external.txt
+```
+
+## Requêter les apis externes telles que configuré dans le projet
+
+```bash
+cli data_subventions_client --help
+# 
+cli data_subventions_client subventions 33284688000018
 ```
 
 ## Rafraichir les schemas pour autocompletion
