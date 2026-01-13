@@ -1,5 +1,5 @@
 # Stage 1: Build frontend avec Node.js
-FROM node:24.12.0@sha256:b52a8d1206132b36d60e51e413d9a81336e8a0206d3b648cabd6d5a49c4c0f54 AS frontend-builder
+FROM node:24.12.0@sha256:929c026d5a4e4a59685b3c1dbc1a8c3eb090aa95373d3a4fd668daa2493c8331 AS frontend-builder
 
 WORKDIR /build/frontend
 
