@@ -18,7 +18,6 @@ def get_lignes(
         fn_app_layer_sanitize_region = sanitize_source_region_for_bdd_request
 
     source_region = fn_app_layer_sanitize_region(params.source_region, params.data_source)
-    assert source_region is not None
     _regions = get_request_regions(source_region)
 
     # On requête toutes les colonnes
