@@ -13,6 +13,7 @@ from .audit.AuditRefreshMaterializedViewsEvents import (
 )
 from .audit.AuditUpdateData import AuditUpdateData
 from .audit.ExportFinancialTask import ExportFinancialTask
+from .audit.RemoteFile import RemoteFile
 
 from .preferences.Preference import Preference, Share
 
