@@ -18,3 +18,5 @@ prometheus-fastapi-instrumentator ~= 7.1.0
 sqlparse ~= 0.4
 
 prefect-client ~= 3.6.5
+
+tuspyserver ~= 4.2.3

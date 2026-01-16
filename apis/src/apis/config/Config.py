@@ -39,6 +39,12 @@ class CacheConfig(BaseModel):
         description="Taille du cache pour les totaux des lignes budgetaires"
     )
 
+class UploadConfig(BaseModel):
+    tus_folder: str = Field(required=True, description="Chemin du dossier de sauvegarde des fichiers uploadés")
+    final_folder: str = Field(required=True, description="Dossier où seront mis les fichiers budgets chorus à traiter")
+    max_size: int = Field(default=1_000_000_000, description="Taille maximale des fichiers uploadés (ex: 1G)")
+    
+
 class Config(BaseModel):
     print_sql: bool
     """Flag qui active le paramètre 'echo' de l'engine sqlalchemy"""
@@ -70,3 +76,5 @@ class Config(BaseModel):
     """Token d'authentification pour les plugins Grist"""
 
     to_superset_config: ToSupersetConfig
+
+    upload: UploadConfig

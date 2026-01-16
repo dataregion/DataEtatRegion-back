@@ -80,6 +80,16 @@ def create_app():
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=[
+            "Location",
+            "Upload-Offset",
+            "Tus-Resumable",
+            "Tus-Version",
+            "Tus-Extension",
+            "Tus-Max-Size",
+            "Upload-Expires",
+            "Upload-Length",
+        ],
     )
 
     return app

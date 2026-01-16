@@ -71,3 +71,9 @@ to_superset_config:
   user_superset_tech_login: "<USER_LOGIN>" # l'utilisateur technique Superset (qui a les droits admin)
   user_superset_tech_password: "<USER_PASSWORD>" #son password
   superset_database_id: 1 #L'Id de la datasource où les datasets seront créé
+
+
+# UPLOAD
+upload :
+  tus_folder: <chemin_dossier_upload_tus> #dossier temporaire pour les uploads tus
+  final_folder: <chemin_dossier_upload_final> #Dossier où seront mis les fichiers budgets chorus à traiter
