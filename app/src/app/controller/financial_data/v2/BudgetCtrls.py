@@ -7,7 +7,6 @@ from models.entities.audit.ExportFinancialTask import ExportFinancialTask
 from models.value_objects.common import DataType
 from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 from app.servicesapp.financial_data import (
-    get_annees_budget,
     get_ligne_budgetaire,
     search_lignes_budgetaires,
 )
@@ -128,30 +127,6 @@ class GetBudgetCtrl(Resource):
 
         ligne_payload = EnrichedFlattenFinancialLinesSchema().dump(ligne)
         return ligne_payload, HTTPStatus.OK
-
-
-@api_ns.route("/budget/annees")
-class GetPlageAnnees(Resource):
-    """
-    Recupère la plage des années pour lesquelles les données budgetaires courent.
-    """
-
-    @auth("openid")
-    @api_ns.doc(security="OAuth2AuthorizationCodeBearer")
-    @api_ns.response(HTTPStatus.OK, description="Liste des années", model=fields.List(fields.Integer))
-    def get(self):
-        user = connected_user_from_current_token_identity()
-        source_region = None
-        data_source = None
-        if user.current_region != "NAT":
-            source_region = user.current_region
-        else:
-            data_source = "NATION"
-
-        annees = get_annees_budget(source_region, data_source)
-        if annees is None:
-            return [], HTTPStatus.OK
-        return annees, HTTPStatus.OK
 
 
 @api_ns.route("/budget/healthcheck")

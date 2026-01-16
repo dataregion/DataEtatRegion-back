@@ -4,6 +4,7 @@ import os
 from types import NoneType
 from typing import Mapping, TypeVar
 
+import cachetools.func
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 from models.entities.audit.ExportFinancialTask import ExportFinancialTask
@@ -149,11 +150,16 @@ def get_annees(
     session: Session = Depends(get_session_main),
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
+    @cachetools.func.ttl_cache(maxsize=128, ttl=3600)
+    def _get_annees(params: SourcesQueryParams) -> list[int]:
+        annees = get_annees_budget(session, params)
+        return annees
+
     params = handle_national(params, user)
     return APISuccess(
         code=HTTPStatus.OK,
         message="Liste des années présentes dans les lignes financières",
-        data=get_annees_budget(session, params),
+        data=_get_annees(params),
     ).to_json_response()
 
 
