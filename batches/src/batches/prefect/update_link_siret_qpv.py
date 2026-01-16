@@ -13,7 +13,7 @@ from batches.share.tasks.files import CtxDownloadFile, download_remote_file, sho
 
 init_persistence_module()
 
-from models.entities.refs.Siret import Siret
+from models.entities.refs.Siret import Siret  # noqa: E402
 
 
 def _print(text: str):
@@ -22,10 +22,9 @@ def _print(text: str):
 
 @dataclass
 class _CtxTask:
-
     qpv_colname: str
     ctx_download: CtxDownloadFile
-    csv_filename_in_zip: Optional[str]=  None
+    csv_filename_in_zip: Optional[str] = None
     chunksize: int = 100_000
 
     current_chunk: int = 1
@@ -35,7 +34,7 @@ class _CtxTask:
 @task(timeout_seconds=60, log_prints=True, cache_policy=NO_CACHE)
 def update_link_siret_qpv(ctx: _CtxTask) -> _CtxTask:
     _print(f"Chunk {ctx.current_chunk} : Update pour {len(ctx.current_lines)} Siret")
-    
+
     siret_qpv_col = "code_qpv24" if ctx.qpv_colname == "plg_qp24" else "code_qpv15"
     with session_scope() as session:
         to_update = [
@@ -49,11 +48,7 @@ def update_link_siret_qpv(ctx: _CtxTask) -> _CtxTask:
             )
         ]
 
-        stmt = (
-            update(Siret)
-            .where(Siret.code == bindparam("code_siret"))
-            .execution_options(synchronize_session=False)
-        )
+        stmt = update(Siret).where(Siret.code == bindparam("code_siret")).execution_options(synchronize_session=False)
         session.connection().execute(stmt, to_update)
 
     return ctx
@@ -64,7 +59,7 @@ def update_link_siret_qpv_from_url(
     url: str = "https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5",
     day_of_week: int = 5,
     qpv_colname: str = "plg_qp15",
-    check_day=True
+    check_day=True,
 ):
     if check_day:
         today = datetime.today()
@@ -72,25 +67,24 @@ def update_link_siret_qpv_from_url(
             raise RuntimeError(
                 f"Tâche ignorée : aujourd'hui ({datetime.today().date()}) n'est pas le second {day_of_week} du mois."
             )
-        
+
     ctx_download = CtxDownloadFile(
-        task_name= str(runtime.flow_run.flow_name),
+        task_name=str(runtime.flow_run.flow_name),
         url=url,
-        resource_uuid=url.split('/')[-1]    # URL data.gouv.fr : Dernière partie = UUID du fichier
+        resource_uuid=url.split("/")[-1],  # URL data.gouv.fr : Dernière partie = UUID du fichier
     )
 
     ctx = _CtxTask(qpv_colname=qpv_colname, ctx_download=ctx_download)
 
     ctx.ctx_download = should_download(ctx.ctx_download)
     if not ctx.ctx_download.should_download:
-        return 
-    
+        return
+
     ctx.ctx_download = download_remote_file(ctx.ctx_download)
     if ctx.ctx_download.extension != "zip" or ctx.ctx_download.filename is None:
         raise RuntimeError("Une erreur est survenue, un fichier ZIP aurait du être téléchargé.")
-    
-    with zipfile.ZipFile(ctx.ctx_download.filename, "r") as zip_file:
 
+    with zipfile.ZipFile(ctx.ctx_download.filename, "r") as zip_file:
         csv_names = [name for name in zip_file.namelist() if name.lower().endswith(".csv")]
 
         if not csv_names:
@@ -101,7 +95,6 @@ def update_link_siret_qpv_from_url(
 
         ctx.csv_filename_in_zip = csv_names[0]
         with zip_file.open(ctx.csv_filename_in_zip) as csv_file:
-
             _print("Extraction des infos du CSV ....")
 
             chunks = pd.read_csv(
@@ -116,17 +109,16 @@ def update_link_siret_qpv_from_url(
             # Parcourir les chunks et filtrer les lignes
             for i, chunk in enumerate(chunks, start=1):
                 filtered: Optional[pd.DataFrame] = chunk[
-                    chunk[qpv_colname].notna() &
-                    ~chunk[qpv_colname].str.strip().isin(["CSZ", "HZ", ""])
+                    chunk[qpv_colname].notna() & ~chunk[qpv_colname].str.strip().isin(["CSZ", "HZ", ""])
                 ]
 
                 ctx.current_chunk = i
                 ctx.current_lines = filtered
-                
+
                 if filtered is None or filtered.empty:
                     _print(f"Chunk {ctx.current_chunk} vide : On passe au suivant")
                     continue
-    
+
                 ctx = update_link_siret_qpv(ctx)
 
             _print("Fin de la mise à jours des liens Siret Qpv.")
@@ -134,4 +126,6 @@ def update_link_siret_qpv_from_url(
 
 if __name__ == "__main__":  # Pour le debug
     _print("Running main ...")
-    update_link_siret_qpv_from_url("https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5", 5, "plg_qp24", False)
+    update_link_siret_qpv_from_url(
+        "https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5", 5, "plg_qp24", False
+    )

@@ -14,13 +14,13 @@ from batches.database import session_audit_scope
 
 Downloadable = Literal["csv", "zip"]
 
+
 def _print(text: str):
     print(f"[TASK][FILE_UTILS] {text}")
 
 
 @dataclass
 class CtxDownloadFile:
-    
     task_name: str
     url: str
     resource_uuid: str
@@ -28,8 +28,7 @@ class CtxDownloadFile:
     filename: Optional[str] = None
     extension: Optional[Downloadable] = None
     db_fingerprint: Optional[RemoteFile] = None
-    should_download: bool = True    # Par défaut, on télécharge
-
+    should_download: bool = True  # Par défaut, on télécharge
 
 
 @task(timeout_seconds=60, log_prints=True, cache_policy=NO_CACHE)
@@ -56,7 +55,6 @@ def should_download(ctx: CtxDownloadFile) -> CtxDownloadFile:
     _print(f"Content-Length : {content_length}")
 
     with session_audit_scope() as session:
-
         # Recherche fingerprint existant
         remote_file: RemoteFile | None = RemoteFileService.find_by_resource_uuid(session, ctx.resource_uuid)
         if (
