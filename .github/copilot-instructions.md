@@ -69,6 +69,20 @@
 - **API** :
   - Les endpoints API sont définis dans `apis/` et `app/` et exposés via Docker.
   - Toujours passer par les modèles/services pour accéder à la base, jamais de SQL direct dans la logique métier.
+- **Routers FastAPI (`apis/`)** :
+  - **OBLIGATOIRE : Utiliser l'injection de dépendance pour les sessions de base de données.**
+  - **Import des sessions** : `from apis.database import get_session_main, get_session_audit`
+  - **Pattern d'injection** : 
+    ```python
+    def my_endpoint(
+        params: QueryParams = Depends(),
+        session: Session = Depends(get_session_main),  # ou get_session_audit
+        user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    ):
+    ```
+  - **Ne jamais créer manuellement les sessions** : utiliser uniquement les dépendances FastAPI
+  - **Session principale** : `get_session_main` pour la base de données principale
+  - **Session audit** : `get_session_audit` pour la base de données d'audit
 - **Dépréciation des services** :
   - Dans le répertoire `app`, les services sont à déprécier progressivement et doivent être remplacés par des implémentations dans `apis`. Privilégier toute nouvelle logique métier ou refactorisation dans `apis` plutôt que dans `services`.
 

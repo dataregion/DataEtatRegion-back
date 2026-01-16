@@ -4,6 +4,10 @@ import shutil
 from models.exceptions import BadRequestError, ServerError
 from apis.config.current import get_config
 from apis.apps.budget.models.upload import UploadType
+from sqlalchemy.orm import Session
+from models.connected_user import ConnectedUser
+from services.audits.import_chorus_task import ImportChorusTaskService
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +34,8 @@ def validate_metadata(metadata: dict):
         valid_upload_types = [upload_type_enum.value for upload_type_enum in UploadType]
         if upload_type not in valid_upload_types:
             raise BadRequestError(
-                status_code=400, api_message=f"Upload type {upload_type} not allowed. Valid types: {valid_upload_types}"
+                status_code=400,
+                api_message=f"Upload type {upload_type} not allowed. Valid types: {valid_upload_types}",
             )
         logger.info(f"Upload type found: {upload_type}")
     else:
@@ -43,28 +48,17 @@ def validate_metadata(metadata: dict):
             "text/csv",
         ]
         if metadata["filetype"] not in allowed_types:
-            raise BadRequestError(status_code=400, api_message=f"File type {metadata['filetype']} not allowed")
+            raise BadRequestError(
+                status_code=400,
+                api_message=f"File type {metadata['filetype']} not allowed",
+            )
     else:
         raise BadRequestError(status_code=400, api_message="File type is required")
 
     logger.debug("Metadata validation passed")
 
 
-def pre_create_hook(metadata: dict, upload_info: dict):
-    logger.info("Pre-Create Hook called")
-
-    # Valider les metadata
-    validate_metadata(metadata)
-
-    # Example: Check file size limits (1GB)
-    config = get_config()
-    if upload_info["size"] and upload_info["size"] > config.upload.max_size:
-        raise BadRequestError(status_code=413, api_message=f"File too large (max {config.upload.max_size} bytes)")
-
-    logger.debug("Pre-Create Hook validation passed")
-
-
-def on_upload_complete(file_path: str, metadata: dict):
+def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: dict):
     logger.info("Upload complete")
 
     # Valider les metadata
@@ -72,6 +66,7 @@ def on_upload_complete(file_path: str, metadata: dict):
 
     # Copy file to original filename from metadata if present
     filename = metadata.get("filename")
+    new_path = None
     if filename:
         logger.info(f"Upload complete for file {filename} at {file_path}")
         dir_path = get_config().upload.final_folder
@@ -84,3 +79,19 @@ def on_upload_complete(file_path: str, metadata: dict):
             raise ServerError(api_message=f"Failed to move file: {e}")
     else:
         logger.warning("No filename in metadata; file not moved")
+        return
+
+    # Traitement de l'audit via le service dédié
+    session_token = metadata.get("session_token")
+    upload_type = metadata.get("uploadType")
+    year = metadata.get("year")
+
+    ImportChorusTaskService.process_upload_audit(
+        db=db,
+        email=user.email,
+        new_path=new_path,
+        session_token=session_token,
+        upload_type=upload_type,
+        year=int(year),
+        source_region=user.current_region or "NATIONAL",
+    )
