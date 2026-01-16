@@ -14,6 +14,10 @@ from batches.database import session_audit_scope
 
 Downloadable = Literal["csv", "zip"]
 
+def _print(text: str):
+    print(f"[TASK][FILE_UTILS] {text}")
+
+
 @dataclass
 class CtxDownloadFile:
     
@@ -31,59 +35,61 @@ class CtxDownloadFile:
 @task(timeout_seconds=60, log_prints=True, cache_policy=NO_CACHE)
 def should_download(ctx: CtxDownloadFile) -> CtxDownloadFile:
     """
-    Fais une requête HEAD sur l'URL de téléchargement du fichier.
-    Si on trouve les headers "Last-Modified" et "Content-Length" (présents pour data.gouv.fr),
-    on détermine si on doit ou non télécharger le fichier à nouveau.
-
-    :param ctx: Contexte lié au téléchargement du fichier
-    :type ctx: CtxDownloadFile
-    :return: Contexte mis à jour
-    :rtype: CtxDownloadFile
+    Détermine si un fichier distant doit être téléchargé à nouveau
+    en comparant Last-Modified et Content-Length avec le fingerprint en base.
     """
-    print(f"Check des headers pour la tâche {ctx.task_name}")
+    _print(f"Vérification du fichier distant pour {ctx.task_name}")
 
-    # Récupération des headers 
-    response = requests.head(ctx.url)
-    response.raise_for_status()
+    try:
+        response = requests.get(ctx.url, stream=True, allow_redirects=True, timeout=30)
+        response.raise_for_status()
+        headers = response.headers
+    finally:
+        response.close()
 
-    last_modified_raw = response.headers.get("Last-Modified")
-    content_length_raw = response.headers.get("Content-Length")
+    last_modified_raw = headers.get("Last-Modified")
+    content_length_raw = headers.get("Content-Length")
+    last_modified = parsedate_to_datetime(last_modified_raw) if last_modified_raw else None
+    content_length = int(content_length_raw) if content_length_raw else None
 
-    last_modified = None
-    content_length = None
+    _print(f"Last-Modified : {last_modified}")
+    _print(f"Content-Length : {content_length}")
 
-    if last_modified_raw and content_length_raw:
-        last_modified = parsedate_to_datetime(last_modified_raw)
-        content_length = int(content_length_raw)
+    with session_audit_scope() as session:
 
-        # Vérification fingerprint existant
-        remote_file: RemoteFile | None = RemoteFileService.find_by_resource_uuid(ctx.resource_uuid)
-        if remote_file and remote_file.last_modified == last_modified and remote_file.content_length == content_length:
+        # Recherche fingerprint existant
+        remote_file: RemoteFile | None = RemoteFileService.find_by_resource_uuid(session, ctx.resource_uuid)
+        if (
+            remote_file
+            and last_modified
+            and content_length
+            and remote_file.last_modified == last_modified
+            and remote_file.content_length == content_length
+        ):
             ctx.should_download = False
             ctx.db_fingerprint = remote_file
-            print("Fichier inchangé : On ne télécharge pas")
+            _print("Fichier inchangé : pas de téléchargement")
             return ctx
-        elif remote_file and (remote_file.last_modified != last_modified or remote_file.content_length != content_length):
-            print("Nouvelle version du fichier : On télécharge à nouveau")
-    else:
-        print("Headers absents : Vérification impossible, on télécharge")
 
-    # Requête UPSERT
-    with session_audit_scope() as session:
+        if remote_file:
+            _print("Fichier modifié : téléchargement requis")
+        else:
+            _print("Fichier inconnu : premier téléchargement")
+
         stmt = (
             insert(RemoteFile)
             .values(
                 name=ctx.task_name,
                 resource_uuid=ctx.resource_uuid,
-                last_modified=last_modified,    # peut être None
-                content_length=content_length,  # peut être None
+                last_modified=last_modified,
+                content_length=content_length,
             )
             .on_conflict_do_update(
                 index_elements=[RemoteFile.resource_uuid],
                 set_={
                     "name": ctx.task_name,
                     "last_modified": last_modified,
-                    "content_length": content_length
+                    "content_length": content_length,
                 },
             )
             .returning(RemoteFile)
@@ -91,10 +97,11 @@ def should_download(ctx: CtxDownloadFile) -> CtxDownloadFile:
         remote_file = session.execute(stmt).scalar_one()
         ctx.db_fingerprint = remote_file
 
+    ctx.should_download = True
     return ctx
 
 
-@task(timeout_seconds=60, log_prints=True, cache_policy=NO_CACHE)
+@task(log_prints=True, cache_policy=NO_CACHE)
 def download_remote_file(ctx: CtxDownloadFile) -> CtxDownloadFile:
     """
     Fais une requête GET et télécharge dans un fichier temporaire.
@@ -105,7 +112,7 @@ def download_remote_file(ctx: CtxDownloadFile) -> CtxDownloadFile:
     :return: Contexte mis à jour
     :rtype: CtxDownloadFile
     """
-    print(f"Téléchargement du fichier pour la tâche : {ctx.task_name}")
+    _print(f"Téléchargement du fichier pour la tâche : {ctx.task_name}")
     response = requests.get(ctx.url, stream=True)
     response.raise_for_status()
 
@@ -117,7 +124,7 @@ def download_remote_file(ctx: CtxDownloadFile) -> CtxDownloadFile:
                 temp_file.write(chunk)
 
         ctx.filename = temp_file.name
-        print("Fichier téléchargé.")
+        _print("Fichier téléchargé.")
 
         if "zip" in content_type:
             ctx.extension = "zip"
