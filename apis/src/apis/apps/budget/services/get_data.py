@@ -76,7 +76,6 @@ def get_annees_budget(db: Session, params: SourcesQueryParams):
     params = params.with_update(
         update={"source_region": app_layer_sanitize_region(params.source_region, params.data_source)}
     )
-    assert params.source_region is not None
     _regions = get_request_regions(params.source_region)
 
     builder = (
