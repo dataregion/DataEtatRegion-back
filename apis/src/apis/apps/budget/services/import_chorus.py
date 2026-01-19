@@ -81,6 +81,7 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
         logger.warning("No filename in metadata; file not moved")
         return
 
+    region = "NATIONAL" if user.current_region is None or user.current_region == "NAT" else user.current_region
     # Traitement de l'audit via le service dédié
     ImportChorusTaskService.process_upload_audit(
         db=db,
@@ -89,6 +90,6 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
         session_token=metadata.get("session_token"),
         upload_type=metadata.get("uploadType"),
         year=int(metadata.get("year")),
-        source_region=user.current_region or "NATIONAL",
+        source_region=region,
         client_id=user.azp or None,
     )
