@@ -36,13 +36,21 @@ DEFAULT_MAX_ROW = 10000  # 10K
 def delayed_inserts(self):
     # Si on trouve des tâches dans la table, on les récupère pour les éxécuter
     # On dépile en fifo pour chaque region
-    result = db.session.execute(select(AuditInsertFinancialTasks.source_region).distinct())
+    result = db.session.execute(
+        select(AuditInsertFinancialTasks.source_region)
+        .distinct()
+        .where(AuditInsertFinancialTasks.fichier_ae.isnot(None), AuditInsertFinancialTasks.fichier_cp.isnot(None))
+    )
     regions = [row[0] for row in result.fetchall()]
 
     for region in regions:
         stmt = (
             select(AuditInsertFinancialTasks)
-            .where(AuditInsertFinancialTasks.source_region == region)
+            .where(
+                AuditInsertFinancialTasks.source_region == region,
+                AuditInsertFinancialTasks.fichier_ae.isnot(None),
+                AuditInsertFinancialTasks.fichier_cp.isnot(None),
+            )
             .order_by(asc(AuditInsertFinancialTasks.id))
             .limit(1)
         )

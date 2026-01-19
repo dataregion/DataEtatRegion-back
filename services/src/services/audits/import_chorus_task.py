@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from models.entities.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
-from apis.apps.budget.models.upload import UploadType
+from models.value_objects.UploadType import UploadType
 from models.exceptions import ServerError
 import logging
 
