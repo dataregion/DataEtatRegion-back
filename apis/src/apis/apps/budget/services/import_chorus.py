@@ -82,16 +82,13 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
         return
 
     # Traitement de l'audit via le service dédié
-    session_token = metadata.get("session_token")
-    upload_type = metadata.get("uploadType")
-    year = metadata.get("year")
-
     ImportChorusTaskService.process_upload_audit(
         db=db,
         email=user.email,
         new_path=new_path,
-        session_token=session_token,
-        upload_type=upload_type,
-        year=int(year),
+        session_token=metadata.get("session_token"),
+        upload_type=metadata.get("uploadType"),
+        year=int(metadata.get("year")),
         source_region=user.current_region or "NATIONAL",
+        client_id=user.azp or None,
     )

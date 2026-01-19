@@ -11,7 +11,7 @@ class AuditInsertFinancialTasks(_PersistenceBaseModelInstance()):
     __bind_key__ = "audit"
 
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
-    session_token: Column[str] = Column(String, nullable=False, unique=True)
+    session_token: Column[str] = Column(String, nullable=True, unique=True)
     fichier_ae: Column[str] = Column(String, nullable=True)
     fichier_cp: Column[str] = Column(String, nullable=True)
     source_region: Column[str] = Column(String, nullable=False)

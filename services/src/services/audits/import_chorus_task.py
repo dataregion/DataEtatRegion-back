@@ -17,6 +17,7 @@ class ImportChorusTaskService:
         upload_type: str,
         year: int,
         source_region: str,
+        client_id: str = None,
     ) -> None:
         """
         Traite l'insertion ou la mise à jour de l'audit pour les uploads de fichiers financiers
@@ -61,9 +62,9 @@ class ImportChorusTaskService:
                     fichier_ae=(new_path if upload_type == UploadType.FINANCIAL_AE.value else None),
                     fichier_cp=(new_path if upload_type == UploadType.FINANCIAL_CP.value else None),
                     source_region=source_region,
-                    annee=int(year),
+                    annee=year,
                     username=email,
-                    application_clientid=None,
+                    application_clientid=client_id,
                 )
                 db.add(new_record)
                 logger.info(f"Created new record with {upload_type} file: {new_path}")

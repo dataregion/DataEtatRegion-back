@@ -41,8 +41,8 @@ def on_upload_complete(
     db=Depends(get_session_audit),
     current_user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
 ):
-    async def handler(file_path: str, metadata: dict):
-        await upload_complete(db=db, user=current_user, file_path=file_path, metadata=metadata)
+    def handler(file_path: str, metadata: dict):
+        upload_complete(db=db, user=current_user, file_path=file_path, metadata=metadata)
 
     return handler
 
