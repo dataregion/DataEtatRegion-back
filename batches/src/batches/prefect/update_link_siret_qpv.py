@@ -1,10 +1,9 @@
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Optional
 import zipfile
 
 import pandas as pd
-from prefect import task, flow, runtime
+from prefect import task, flow
 from prefect.cache_policies import NO_CACHE
 from sqlalchemy import bindparam, update
 
@@ -56,35 +55,20 @@ def update_link_siret_qpv(ctx: _CtxTask) -> _CtxTask:
 
 @flow(log_prints=True)
 def update_link_siret_qpv_from_url(
-    url: str = "https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5",
-    day_of_week: int = 5,
+    resource_url: str = "https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5",
     qpv_colname: str = "plg_qp15",
-    check_day=True,
 ):
-    if check_day:
-        today = datetime.today()
-        if not (today.weekday() == day_of_week and 8 <= today.day <= 15):
-            raise RuntimeError(
-                f"Tâche ignorée : aujourd'hui ({datetime.today().date()}) n'est pas le second {day_of_week} du mois."
-            )
-
-    ctx_download = CtxDownloadFile(
-        task_name=str(runtime.flow_run.flow_name),
-        url=url,
-        resource_uuid=url.split("/")[-1],  # URL data.gouv.fr : Dernière partie = UUID du fichier
-    )
-
+    _print("Préparation du contexte...")
+    ctx_download = CtxDownloadFile(name="donnees_qpv_entreprises", resource_url=resource_url)
     ctx = _CtxTask(qpv_colname=qpv_colname, ctx_download=ctx_download)
 
+    _print("Vérification du fichier...")
     ctx.ctx_download = should_download(ctx.ctx_download)
-    if not ctx.ctx_download.should_download:
-        return
+    if ctx.ctx_download.should_download:
+        ctx.ctx_download = download_remote_file(ctx.ctx_download)
 
-    ctx.ctx_download = download_remote_file(ctx.ctx_download)
-    if ctx.ctx_download.extension != "zip" or ctx.ctx_download.filename is None:
-        raise RuntimeError("Une erreur est survenue, un fichier ZIP aurait du être téléchargé.")
-
-    with zipfile.ZipFile(ctx.ctx_download.filename, "r") as zip_file:
+    _print("Lecture du fichier...")
+    with zipfile.ZipFile(ctx.ctx_download.file_path, "r") as zip_file:
         csv_names = [name for name in zip_file.namelist() if name.lower().endswith(".csv")]
 
         if not csv_names:
@@ -127,5 +111,5 @@ def update_link_siret_qpv_from_url(
 if __name__ == "__main__":  # Pour le debug
     _print("Running main ...")
     update_link_siret_qpv_from_url(
-        "https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5", 5, "plg_qp24", False
+        "https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5", "plg_qp24"
     )

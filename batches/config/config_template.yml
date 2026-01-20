@@ -4,6 +4,7 @@ sqlalchemy_database_uri: "postgresql+psycopg://postgres:passwd@localhost:5432/<D
 sqlalchemy_database_uri_audit: "postgresql+psycopg://postgres:passwd@localhost:5432/<DBNAME_AUDIT>"
 
 dossier_des_exports: "/tmp/DataEtat/exports"
+dossier_des_telechargements: "/tmp/DataEtat/remote_files"
 
 grist:
   database_url: "postgresql+psycopg://postgres:passwd@localhost:5432/grist"

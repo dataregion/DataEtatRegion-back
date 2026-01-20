@@ -19,6 +19,8 @@ class Config(BaseModel):
     
     dossier_des_exports: Path
     """Chemin vers le répertoire qui contient les exports utilisateurs."""
+    dossier_des_telechargements: Path
+    """Chemin vers le répertoire qui contient les fichiers téléchargés de l'extérieur."""
     
     grist: GristConfig
     """Configuration pour le client grist"""
