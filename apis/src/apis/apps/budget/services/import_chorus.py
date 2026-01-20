@@ -3,7 +3,7 @@ import os
 import shutil
 from models.exceptions import BadRequestError, ServerError
 from apis.config.current import get_config
-from apis.apps.budget.models.upload import UploadType
+from models.value_objects.UploadType import UploadType
 from sqlalchemy.orm import Session
 from models.connected_user import ConnectedUser
 from services.audits.import_chorus_task import ImportChorusTaskService

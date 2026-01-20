@@ -70,3 +70,9 @@ to_superset_config:
   user_superset_tech_login: "DataEtatGrist"
   user_superset_tech_password: "Azertyuiop"
   superset_database_id: 1
+
+
+# UPLOAD
+upload :
+  tus_folder: "/tmp/tus_files"
+  final_folder: "/tmp"

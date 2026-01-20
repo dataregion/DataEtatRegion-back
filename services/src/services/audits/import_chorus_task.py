@@ -14,7 +14,7 @@ class ImportChorusTaskService:
         email: str,
         new_path: str,
         session_token: str,
-        upload_type: str,
+        upload_type: UploadType,
         year: int,
         source_region: str,
         client_id: str = None,
@@ -57,10 +57,15 @@ class ImportChorusTaskService:
             else:
                 # Créer une nouvelle ligne
                 logger.info(f"Creating new record for session_token: {session_token}")
+
+                # Déterminer les fichiers selon le type d'upload
+                fichier_ae = new_path if upload_type == UploadType.FINANCIAL_AE.value else None
+                fichier_cp = new_path if upload_type == UploadType.FINANCIAL_CP.value else None
+
                 new_record = AuditInsertFinancialTasks(
                     session_token=session_token,
-                    fichier_ae=(new_path if upload_type == UploadType.FINANCIAL_AE.value else None),
-                    fichier_cp=(new_path if upload_type == UploadType.FINANCIAL_CP.value else None),
+                    fichier_ae=fichier_ae,
+                    fichier_cp=fichier_cp,
                     source_region=source_region,
                     annee=year,
                     username=email,

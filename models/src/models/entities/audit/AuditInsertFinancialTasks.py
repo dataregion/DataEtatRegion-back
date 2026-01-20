@@ -12,6 +12,9 @@ class AuditInsertFinancialTasks(_PersistenceBaseModelInstance()):
 
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
     session_token: Column[str] = Column(String, nullable=True, unique=True)
+    """ session token de l'import provenant de l'outil d'upload. Permet de regrouper
+      le fichier AE et CP téléverser via TUS unitairement"""
+
     fichier_ae: Column[str] = Column(String, nullable=True)
     fichier_cp: Column[str] = Column(String, nullable=True)
     source_region: Column[str] = Column(String, nullable=False)
