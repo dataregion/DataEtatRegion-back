@@ -35,6 +35,18 @@ class CtxDownloadFile:
     new_content_length: Optional[int] = None
 
 
+@task(log_prints=True, cache_policy=NO_CACHE)
+def download_or_get_file(ctx: CtxDownloadFile) -> CtxDownloadFile:
+    """
+    Check l'existence dans le cache d'u fichier distant à récupérer
+    S'il existe on le retourne, sinon on le télécharge
+    """
+    ctx = should_download(ctx)
+    if ctx.should_download:
+        ctx = download_remote_file(ctx)
+    return ctx
+
+
 @task(timeout_seconds=60, log_prints=True, cache_policy=NO_CACHE)
 def should_download(ctx: CtxDownloadFile) -> CtxDownloadFile:
     """

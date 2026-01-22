@@ -9,6 +9,12 @@ class GristConfig(BaseModel):
     token_scim: str
     """Le token de l'utilisateur SCIM"""
 
+
+class RemoteFilesConfig(BaseModel):
+    donnees_qpv_entreprises: str
+    """URL du fichier contenant le lien entre QPV et SIRET"""
+
+
 class Config(BaseModel):
     print_sql: bool
     """Flag qui active le paramètre 'echo' de l'engine sqlalchemy"""
@@ -24,3 +30,6 @@ class Config(BaseModel):
     
     grist: GristConfig
     """Configuration pour le client grist"""
+
+    cached_remote_files_url: RemoteFilesConfig
+    """Configuration des URL des fichiers distants à télécharger"""

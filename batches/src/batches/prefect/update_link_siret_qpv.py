@@ -7,8 +7,9 @@ from prefect import task, flow
 from prefect.cache_policies import NO_CACHE
 from sqlalchemy import bindparam, update
 
+from batches.config.current import get_config
 from batches.database import init_persistence_module, session_scope
-from batches.share.tasks.files import CtxDownloadFile, download_remote_file, should_download
+from batches.share.tasks.files import CtxDownloadFile, download_or_get_file
 
 init_persistence_module()
 
@@ -55,17 +56,15 @@ def update_link_siret_qpv(ctx: _CtxTask) -> _CtxTask:
 
 @flow(log_prints=True)
 def update_link_siret_qpv_from_url(
-    resource_url: str = "https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5",
+    resource_url: str = get_config().cached_remote_files_url.donnees_qpv_entreprises,
     qpv_colname: str = "plg_qp15",
 ):
     _print("Préparation du contexte...")
     ctx_download = CtxDownloadFile(name="donnees_qpv_entreprises", resource_url=resource_url)
     ctx = _CtxTask(qpv_colname=qpv_colname, ctx_download=ctx_download)
 
-    _print("Vérification du fichier...")
-    ctx.ctx_download = should_download(ctx.ctx_download)
-    if ctx.ctx_download.should_download:
-        ctx.ctx_download = download_remote_file(ctx.ctx_download)
+    _print("Récupération du fichier...")
+    ctx.ctx_download = download_or_get_file(ctx.ctx_download)
 
     _print("Lecture du fichier...")
     with zipfile.ZipFile(ctx.ctx_download.file_path, "r") as zip_file:
