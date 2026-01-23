@@ -15,6 +15,15 @@ class UserGristDatabaseService:
         """Initializes the service with an SQLAlchemy engine."""
         self.engine = create_engine(database_url, pool_pre_ping=True)
 
+    def search_userid_by_email(self, email: str) -> int | None:
+        """Retrieve the user ID based on the email."""
+        logging.debug(f"Retrieve user id from email {email}")
+        with self.engine.connect() as connection:
+            result = connection.execute(text("SELECT user_id FROM logins WHERE email = :email"), {"email": email})
+            key = result.mappings().first()
+        user_id = int(key.get("user_id", None)) if key else None
+        return user_id
+
     def get_or_create_api_token(self, id: int):
         """
         Retrieves the API token for the user based on their ID
