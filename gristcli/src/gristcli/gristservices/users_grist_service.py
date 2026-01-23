@@ -15,7 +15,7 @@ class UserGristDatabaseService:
         """Initializes the service with an SQLAlchemy engine."""
         self.engine = create_engine(database_url, pool_pre_ping=True)
 
-    def search_userid_by_username(self, email: str) -> int | None:
+    def search_userid_by_email(self, email: str) -> int | None:
         """Retrieve the user ID based on the email."""
         logging.debug(f"Retrieve user id from email {email}")
         with self.engine.connect() as connection:
