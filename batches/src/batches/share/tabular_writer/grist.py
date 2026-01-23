@@ -39,19 +39,20 @@ class GristTabularWriter(TabularWriter):
         return f"Export budget {date_formatee}"
 
     def _prepare_grist_context(self):
-        user = self._grist_scim_service.search_user_by_username(self._username)
-        if user is None:
+        user_id = self._grist_db_service.search_userid_by_email(self._username)
+        if user_id is None:
             # SI non exist, create user
             print("[GIRST] No. We create users")
 
-            user = self._grist_scim_service.create_user(
+            _user = self._grist_scim_service.create_user(
                 UserGrist(username=self._username, email=self._username, display_name=self._username)
             )
-            print(f"[GIRST] New user create with id {user.user_id}")
+            user_id = _user.user_id
+            print(f"[GIRST] New user create with id {user_id}")
 
         # Recup token
         print(f"[GRIST] Get Api key for user {self._username}")
-        token = self._grist_db_service.get_or_create_api_token(user.user_id)
+        token = self._grist_db_service.get_or_create_api_token(user_id)
 
         grist_api = make_grist_api_service(token=token)
         print("[GRIST] Retrive token sucess")
