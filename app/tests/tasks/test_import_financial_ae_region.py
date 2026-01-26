@@ -1,5 +1,6 @@
 from unittest.mock import patch, call, ANY
 import json
+import time
 
 import pytest
 
@@ -324,6 +325,12 @@ def test_import_deux_montant_negatif(database, session):
     session.add(chorus)
     session.commit()
 
+    # Capture updated_at après la création
+    updated_at_before = chorus.updated_at
+
+    # Petite pause pour s'assurer que les timestamps seront différents
+    time.sleep(0.1)
+
     # update data, avec montant < 0 sur année antérieur (normalement cas pas possible)
     data_montant_2021 = '{"annee":2021,"montant":-5.50,"n_ej":"init_positif","n_poste_ej":7,"source_region":"35","programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"851296632000174","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53", "data_source":"REGION"}'
     data_montant_2022 = '{"annee":2022,"montant":-2.50,"n_ej":"init_positif","n_poste_ej":7,"source_region":"35","programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"851296632000175","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53", "data_source":"REGION"}'
@@ -344,11 +351,15 @@ def test_import_deux_montant_negatif(database, session):
     assert montant_100.montant == 100
     assert montant_moins_5.montant == -5.50
     assert mointant_moins_2.montant == -2.50
+    # Vérifier que updated_at a été mis à jour lors d'une vraie modification
+    assert data.updated_at > updated_at_before, (
+        "updated_at devrait être mis à jour lors de l'import avec changement de date_modification_ej"
+    )
     delete_references(session)
 
 
 def test_import_montant_positif_apres_negatif_meme_annee(database, session):
-    # WHEN - ligne AE sur année 2024 avec montant > 0
+    # WHEN - ligne AE sur année 2024 avec montant < 0
     data = '{"annee":2021,"montant":-102,"n_ej":"ej_negatif_2021","n_poste_ej":2,"source_region":"35","programme":"103","domaine_fonctionnel":"0103-01-01","centre_couts":"BG00\\/DREETS0035","referentiel_programmation":"BG00\\/010300000108","date_modification_ej":"10.01.2023","fournisseur_titulaire":"1001465507","fournisseur_label":"ATLAS SOUTENIR LES COMPETENCES","siret":"851296632000180","compte_code":"PCE\\/6522800000","compte_budgetaire":"Transferts aux entre","groupe_marchandise":"09.02.01","contrat_etat_region":"#","contrat_etat_region_2":"Non affect\\u00e9","localisation_interministerielle":"N53", "data_source" : "REGION"}'
     chorus = FinancialAe(**json.loads(data))
     add_references(chorus, session, region="35")

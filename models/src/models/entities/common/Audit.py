@@ -1,8 +1,5 @@
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, func
 from sqlalchemy.orm import declared_attr, deferred
-
-
-import datetime
 
 
 class _Audit(object):
@@ -15,15 +12,15 @@ class _Audit(object):
 
     @declared_attr
     def created_at(cls):
-        return deferred(Column(DateTime, default=datetime.datetime.now(datetime.UTC)))
+        return deferred(Column(DateTime, default=func.now()))
 
     @declared_attr
     def updated_at(cls):
         return deferred(
             Column(
                 DateTime,
-                default=datetime.datetime.now(datetime.UTC),
-                onupdate=datetime.datetime.now(datetime.UTC),
+                default=func.now(),
+                onupdate=func.now(),
             )
         )
 
