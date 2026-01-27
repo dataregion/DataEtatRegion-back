@@ -1,7 +1,7 @@
 """empty message
 
 Revision ID: 20260120_delete_themes
-Revises: 20251211_export_financial_task
+Revises: 20260110_audit_remote_files
 Create Date: 2026-01-20 16:57:24.773273
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20260120_delete_themes'
-down_revision = '20251211_export_financial_task'
+down_revision = '20260110_audit_remote_files'
 branch_labels = None
 depends_on = None
 
