@@ -21,7 +21,7 @@ from app.servicesapp.financial_data import (
     get_financial_cp_of_ae,
     import_financial_data,
     import_national_data,
-    import_qpv_lieu_action,
+    do_import_qpv_lieu_action,
 )
 
 api = Namespace(name="Engagement", path="/", description="Api de gestion des données financières de l'état")
@@ -138,11 +138,10 @@ class QpvLieuActionCtrl(Resource):
         Charge un fichier faisant le lien entre QPV et AE
         Les lignes sont insérés de manière asynchrone
         """
-        user = connected_user_from_current_token_identity()
         file_qpv_lieu_action = request.files["fichier"]
-        task = import_qpv_lieu_action(file_qpv_lieu_action, user.username)
+        flow_run = do_import_qpv_lieu_action(file_qpv_lieu_action)
         return jsonify(
             {
-                "status": f"Fichier récupéré. Demande d`import des données QPVLieuAction en cours (taches asynchrone id = {task.id}"
+                "status": f"Fichier récupéré. Demande d`import des données QPVLieuAction en cours (taches asynchrone id = {flow_run.id}"
             }
         )

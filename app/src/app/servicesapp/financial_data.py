@@ -27,6 +27,7 @@ from models.entities.refs.CategorieJuridique import CategorieJuridique
 from models.entities.refs.Siret import Siret
 from models.entities.common.Tags import Tags
 from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines as FinancialLines
+from prefect.deployments import run_deployment
 
 from app.services import BuilderStatementFinancial, FileStorageProtocol
 from app.services import BuilderStatementFinancialCp
@@ -290,14 +291,17 @@ def search_lignes_budgetaires(
     return page_incremental_result
 
 
-def import_qpv_lieu_action(file_qpv, username=""):
+def do_import_qpv_lieu_action(file_qpv, separateur: str = ","):
     save_path = check_file_and_save(file_qpv)
 
+    """Lance un import du fichier QPV et lieu d'action"""
     logging.info(f"[IMPORT][QPV_LIEU_ACTION] Récupération du fichier {save_path}")
-    from app.tasks.financial.import_financial import import_file_qpv_lieu_action
-
-    task = import_file_qpv_lieu_action.delay(str(save_path))
-    return task
+    run = run_deployment(
+        name="import-file-qpv-lieu-action/import_file_qpv_lieu_action",
+        parameters={"fichier": save_path, "separateur": separateur},
+        timeout=0,  # fire and forget
+    )
+    return run
 
 
 #################################################################
