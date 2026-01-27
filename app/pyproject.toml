@@ -16,7 +16,7 @@ include-package-data = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-"app" = ["*", "migrations/*","src/app/services/demarches/queries/*"]
+"app" = ["**/*.gql", "migrations/**/*"]
 
 [project.optional-dependencies]
 dev = [
