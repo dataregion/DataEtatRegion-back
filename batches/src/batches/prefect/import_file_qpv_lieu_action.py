@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+from pathlib import Path
 import shutil
 from prefect import flow, task, runtime
 import pandas as pd
@@ -15,7 +16,8 @@ init_persistence_module()
 from models.entities.financial.QpvLieuAction import QpvLieuAction  # noqa: E402
 
 
-IMPORT_DIR = get_config().dossier_des_imports
+UPLOAD_FOLDER = get_config().upload_folder
+IMPORT_DIR = get_config().dossier_des_imports / "qpv_lieu_action"
 
 
 def _print(message: str):
@@ -97,6 +99,8 @@ def import_file_qpv_lieu_action(fichier: str, separateur: str = ","):
 
     _print(f"Validation header : {fichier}")
     schema = ImportQpvLieuActionSchema()
+
+    # Validation hard, check structure, Exception si échoue
     schema.validate_header(fichier, sep=separateur)
 
     chunks = pd.read_csv(
@@ -112,10 +116,19 @@ def import_file_qpv_lieu_action(fichier: str, separateur: str = ","):
         total += process_chunk(chunk, idx, schema)
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    move_folder = os.path.join(IMPORT_DIR, "save", timestamp)
-    _print(f"Move file {fichier} -> {move_folder}")
-    os.makedirs(move_folder, exist_ok=True)
-    shutil.move(fichier, move_folder)
+    src = Path(fichier)
+
+    folder_historique = UPLOAD_FOLDER / "save" / timestamp
+    os.makedirs(folder_historique, exist_ok=True)
+    dst = folder_historique / src.name
+    _print(f"Copy file (historique) : {src} -> {dst}")
+    shutil.copy(src, dst)
+
+    save_folder = IMPORT_DIR
+    os.makedirs(save_folder, exist_ok=True)
+    dst = save_folder / f"{timestamp}_{src.name}"
+    _print(f"Move file : {src} -> {dst}")
+    shutil.move(src, dst)
 
     _print(f"End : lignes importées : {total}")
     return total

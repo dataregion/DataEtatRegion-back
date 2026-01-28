@@ -23,6 +23,8 @@ class Config(BaseModel):
     sqlalchemy_database_uri_audit: str
     """Base de données d'audit (utilisée avec le bind)"""
     
+    upload_folder: Path
+    """Même dossier de partage utilisé dans les tâches celery pour l'historicité."""
     dossier_des_imports: Path
     """Chemin vers le répertoire qui contient les fichiers importés."""
     dossier_des_exports: Path
