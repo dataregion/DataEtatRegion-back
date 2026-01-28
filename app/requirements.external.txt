@@ -8,14 +8,21 @@ amqp==5.3.1
     # via kombu
 aniso8601==10.0.1
     # via flask-restx
+annotated-doc==0.0.4
+    # via fastapi
 annotated-types==0.7.0
     # via pydantic
 anyio==4.11.0
-    # via httpx
+    # via
+    #   httpx
+    #   prefect-client
+    #   starlette
 api-entreprise==3.7.2
     # via
     #   -r requirements.external.in
     #   services (../services/pyproject.toml)
+asgi-lifespan==2.1.0
+    # via prefect-client
 async-property==0.2.2
     # via python-keycloak
 attrs==25.4.0
@@ -30,6 +37,8 @@ blinker==1.9.0
     # via flask
 cachelib==0.13.0
     # via flask-caching
+cachetools==6.2.6
+    # via prefect-client
 celery==5.5.3
     # via
     #   -r requirements.external.in
@@ -54,18 +63,27 @@ click==8.3.0
     #   click-plugins
     #   click-repl
     #   flask
+    #   uvicorn
 click-didyoumean==0.3.1
     # via celery
 click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
+cloudpickle==3.1.2
+    # via prefect-client
+colorama==0.4.6
+    # via griffe
+coolname==2.2.0
+    # via prefect-client
 cryptography==46.0.3
     # via
     #   -r requirements.external.in
     #   models (../models/pyproject.toml)
     #   authlib
     #   jwcrypto
+dateparser==1.2.2
+    # via prefect-client
 defusedxml==0.7.1
     # via odfpy
 deprecation==2.1.0
@@ -76,6 +94,10 @@ entrypoint2==1.1
     # via pyunpack
 et-xmlfile==2.0.0
     # via openpyxl
+exceptiongroup==1.3.1
+    # via prefect-client
+fastapi==0.128.0
+    # via prefect-client
 flask==3.1.2
     # via
     #   -r requirements.external.in
@@ -102,6 +124,8 @@ flask-sqlalchemy==3.1.1
     #   flask-migrate
 flower==2.0.1
     # via -r requirements.external.in
+fsspec==2026.1.0
+    # via prefect-client
 geoalchemy2==0.18.0
     # via
     #   -r requirements.external.in
@@ -112,31 +136,57 @@ geopandas==1.1.1
     #   models (../models/pyproject.toml)
 gevent==25.9.1
     # via celery
+graphviz==0.21
+    # via prefect-client
 greenlet==3.2.4
     # via
     #   gevent
     #   sqlalchemy
+griffe==1.15.0
+    # via prefect-client
 h11==0.16.0
-    # via httpcore
-httpcore==1.0.9
+    # via
+    #   httpcore
+    #   uvicorn
+h2==4.3.0
     # via httpx
+hpack==4.1.0
+    # via h2
+httpcore==1.0.9
+    # via
+    #   httpx
+    #   prefect-client
 httpx==0.28.1
-    # via python-keycloak
+    # via
+    #   prefect-client
+    #   python-keycloak
 humanize==4.14.0
-    # via flower
+    # via
+    #   flower
+    #   prefect-client
+hyperframe==6.1.0
+    # via h2
 idna==3.11
     # via
     #   anyio
     #   httpx
     #   requests
+importlib-metadata==8.7.1
+    # via opentelemetry-api
 importlib-resources==6.5.2
     # via flask-restx
 itsdangerous==2.2.0
     # via flask
 jinja2==3.1.6
     # via flask
+jsonpatch==1.33
+    # via prefect-client
+jsonpointer==3.0.0
+    # via jsonpatch
 jsonschema==4.25.1
-    # via flask-restx
+    # via
+    #   flask-restx
+    #   prefect-client
 jsonschema-specifications==2025.9.1
     # via jsonschema
 jwcrypto==1.5.6
@@ -145,6 +195,8 @@ kombu==5.5.4
     # via celery
 mako==1.3.10
     # via alembic
+markdown-it-py==4.0.0
+    # via rich
 markupsafe==3.0.3
     # via
     #   flask
@@ -171,6 +223,8 @@ marshmallow-sqlalchemy==1.4.2
     # via
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
+mdurl==0.1.2
+    # via markdown-it-py
 more-itertools==10.8.0
     # via -r requirements.external.in
 mypy-extensions==1.1.0
@@ -187,6 +241,10 @@ odfpy==1.4.1
     # via -r requirements.external.in
 openpyxl==3.1.5
     # via -r requirements.external.in
+opentelemetry-api==1.39.1
+    # via prefect-client
+orjson==3.11.5
+    # via prefect-client
 packaging==25.0
     # via
     #   deprecation
@@ -194,6 +252,7 @@ packaging==25.0
     #   geopandas
     #   kombu
     #   marshmallow
+    #   prefect-client
     #   pyogrio
 pandas==2.3.3
     # via
@@ -201,12 +260,17 @@ pandas==2.3.3
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
     #   geopandas
+pathspec==1.0.4
+    # via prefect-client
 pika==1.3.2
+    # via -r requirements.external.in
+prefect-client==3.6.13
     # via -r requirements.external.in
 prometheus-client==0.23.1
     # via
     #   services (../services/pyproject.toml)
     #   flower
+    #   prefect-client
     #   prometheus-flask-exporter
 prometheus-flask-exporter==0.23.2
     # via -r requirements.external.in
@@ -221,9 +285,22 @@ psycopg-pool==3.2.7
 pycparser==2.23
     # via cffi
 pydantic==2.12.4
-    # via models (../models/pyproject.toml)
+    # via
+    #   models (../models/pyproject.toml)
+    #   fastapi
+    #   prefect-client
+    #   pydantic-extra-types
+    #   pydantic-settings
 pydantic-core==2.41.5
-    # via pydantic
+    # via
+    #   prefect-client
+    #   pydantic
+pydantic-extra-types==2.11.0
+    # via prefect-client
+pydantic-settings==2.12.0
+    # via prefect-client
+pygments==2.19.2
+    # via rich
 pyjwt==2.10.1
     # via -r requirements.external.in
 pyogrio==0.11.1
@@ -235,17 +312,27 @@ pyrate-limiter==2.10.0
 python-dateutil==2.9.0.post0
     # via
     #   celery
+    #   dateparser
     #   pandas
+    #   prefect-client
+python-dotenv==1.2.1
+    # via pydantic-settings
 python-keycloak==5.8.1
     # via -r requirements.external.in
+python-slugify==8.0.4
+    # via prefect-client
 pytz==2025.2
     # via
+    #   dateparser
     #   flower
     #   pandas
+    #   prefect-client
 pyunpack==0.3
     # via -r requirements.external.in
 pyyaml==6.0.3
-    # via -r requirements.external.in
+    # via
+    #   -r requirements.external.in
+    #   prefect-client
 redis==4.6.0
     # via
     #   -r requirements.external.in
@@ -256,6 +343,8 @@ referencing==0.37.0
     #   flask-restx
     #   jsonschema
     #   jsonschema-specifications
+regex==2026.1.15
+    # via dateparser
 requests==2.32.5
     # via
     #   -r requirements.external.in
@@ -265,16 +354,29 @@ requests==2.32.5
     #   requests-toolbelt
 requests-toolbelt==1.0.0
     # via python-keycloak
+rfc3339-validator==0.1.4
+    # via prefect-client
+rich==14.3.1
+    # via prefect-client
 rpds-py==0.28.0
     # via
     #   jsonschema
     #   referencing
+ruamel-yaml==0.19.1
+    # via prefect-client
+ruamel-yaml-clib==0.2.15
+    # via prefect-client
 shapely==2.1.2
     # via geopandas
 six==1.17.0
-    # via python-dateutil
+    # via
+    #   python-dateutil
+    #   rfc3339-validator
 sniffio==1.3.1
-    # via anyio
+    # via
+    #   anyio
+    #   asgi-lifespan
+    #   prefect-client
 sqlalchemy==2.0.44
     # via
     #   gristcli (../gristcli/pyproject.toml)
@@ -287,8 +389,14 @@ sqlparse==0.5.3
     # via
     #   -r requirements.external.in
     #   services (../services/pyproject.toml)
+starlette==0.50.0
+    # via fastapi
 tenacity==9.1.2
     # via -r requirements.external.in
+text-unidecode==1.3
+    # via python-slugify
+toml==0.10.2
+    # via prefect-client
 tornado==6.5.2
     # via flower
 typeguard==4.4.4
@@ -296,10 +404,14 @@ typeguard==4.4.4
 typing-extensions==4.15.0
     # via
     #   alembic
+    #   fastapi
     #   jwcrypto
+    #   opentelemetry-api
+    #   prefect-client
     #   psycopg-pool
     #   pydantic
     #   pydantic-core
+    #   pydantic-extra-types
     #   sqlalchemy
     #   typeguard
     #   typing-inspect
@@ -307,15 +419,21 @@ typing-extensions==4.15.0
 typing-inspect==0.9.0
     # via marshmallow-dataclass
 typing-inspection==0.4.2
-    # via pydantic
+    # via
+    #   pydantic
+    #   pydantic-settings
 tzdata==2025.2
     # via
     #   kombu
     #   pandas
+tzlocal==5.3.1
+    # via dateparser
 urllib3==2.5.0
     # via requests
 uuid==1.30
     # via -r requirements.external.in
+uvicorn==0.40.0
+    # via prefect-client
 vine==5.1.0
     # via
     #   amqp
@@ -327,6 +445,8 @@ watchdog==6.0.0
     # via -r requirements.external.in
 wcwidth==0.2.14
     # via prompt-toolkit
+websockets==16.0
+    # via prefect-client
 werkzeug==3.1.3
     # via
     #   flask
@@ -334,8 +454,12 @@ werkzeug==3.1.3
     #   flask-restx
 wget==3.2
     # via -r requirements.external.in
+whenever==0.9.5
+    # via prefect-client
 xlrd==2.0.2
     # via -r requirements.external.in
+zipp==3.23.0
+    # via importlib-metadata
 zope-event==6.1
     # via gevent
 zope-interface==8.1
