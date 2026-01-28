@@ -1,7 +1,8 @@
-from unittest.mock import patch
+# from unittest.mock import patch
 
 from models.entities.financial.FinancialAe import FinancialAe
-from models.entities.financial.QpvLieuAction import QpvLieuAction
+
+# from models.entities.financial.QpvLieuAction import QpvLieuAction
 # from app.tasks.financial.import_financial import import_file_qpv_lieu_action
 from models.entities.refs import Qpv
 
@@ -9,7 +10,7 @@ from models.entities.refs import Qpv
 import pytest
 from tests.tasks.tags.test_tag_acv import add_references
 from tests import TESTS_PATH
-from tests import delete_references
+# from tests import delete_references
 
 _data = TESTS_PATH / "data"
 
@@ -102,6 +103,7 @@ def add_ae_2(database):
     yield ae_2
     database.session.execute(database.delete(FinancialAe))
     database.session.commit()
+
 
 # TODO Refaire le test sur Prefect
 # def test_import_file_qpv_lieu_action(app, database, session, add_qpv_1, add_qpv_2, add_ae_1, add_ae_2):
