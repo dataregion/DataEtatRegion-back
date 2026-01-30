@@ -92,6 +92,18 @@ class SchemaCsv(BaseModel, ABC):
     # Validation ligne par ligne (tolérante)
     # =======================================================
 
+    def cast_valid_rows(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Applique les dtype métier sur des lignes déjà validées.
+        """
+        df = df.copy()
+
+        for col in self.colonnes:
+            if col.dtype:
+                df[col.name] = df[col.name].apply(lambda v: None if self.is_effectively_empty(v) else col.dtype(v))
+
+        return df
+
     def validate_rows(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
         Valide chaque ligne :
@@ -148,7 +160,7 @@ class SchemaCsv(BaseModel, ABC):
             file,
             sep=sep,
             chunksize=chunksize,
-            dtype=self.pandas_dtypes(),
+            dtype=str,
             keep_default_na=False,
             **kwargs,
         )

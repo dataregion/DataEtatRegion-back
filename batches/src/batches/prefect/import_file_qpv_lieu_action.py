@@ -58,16 +58,9 @@ def save_qpv_lieu_action(values: list, chunk_index: int):
 
 
 @task(log_prints=True)
-def process_chunk(chunk, chunk_index: int, schema: ImportQpvLieuActionSchema):
+def process_chunk(valid_rows: pd.DataFrame, chunk_index: int, schema: ImportQpvLieuActionSchema):
     flow_run_id = runtime.flow_run.id
     values: list[dict] = []
-
-    # Validation soft, ligne par ligne
-    valid_rows, invalid_rows = schema.validate_rows(chunk)
-
-    _print(f"[CHUNK {chunk_index}] {len(valid_rows)} lignes valides à traiter.")
-    if not invalid_rows.empty:
-        _print(f"[CHUNK {chunk_index}] {len(invalid_rows)} lignes invalides ignorées.")
 
     for i, line in enumerate(valid_rows.to_dict(orient="records")):
         lineno = chunk_index * 1000 + i
@@ -95,6 +88,10 @@ def process_chunk(chunk, chunk_index: int, schema: ImportQpvLieuActionSchema):
 
 @flow(log_prints=True)
 def import_file_qpv_lieu_action(fichier: str, separateur: str = ","):
+    from prefect.settings import PREFECT_API_URL
+
+    print("Prefect API URL (runtime):", PREFECT_API_URL.value())
+
     _print(f"Start for file : {fichier}")
 
     _print(f"Validation header : {fichier}")
@@ -103,17 +100,20 @@ def import_file_qpv_lieu_action(fichier: str, separateur: str = ","):
     # Validation hard, check structure, Exception si échoue
     schema.validate_header(fichier, sep=separateur)
 
-    chunks = pd.read_csv(
-        fichier,
-        sep=separateur,
-        header=0,
-        keep_default_na=False,
-        dtype=schema.pandas_dtypes(),
-        chunksize=1000,
-    )
+    chunks = schema.read_chunks(fichier, sep=separateur, chunksize=1000)
+
     total = 0
     for idx, chunk in enumerate(chunks):
-        total += process_chunk(chunk, idx, schema)
+        # Validation soft, ligne par ligne
+        valid_rows, invalid_rows = schema.validate_rows(chunk)
+
+        _print(f"[CHUNK {idx}] {len(valid_rows)} lignes valides à traiter.")
+        if not invalid_rows.empty:
+            _print(f"[CHUNK {idx}] {len(invalid_rows)} lignes invalides ignorées.")
+
+        valid_rows = schema.cast_valid_rows(valid_rows)
+
+        total += process_chunk(valid_rows, idx, schema)
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     src = Path(fichier)

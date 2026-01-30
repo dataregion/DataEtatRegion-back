@@ -24,5 +24,5 @@ dev = [
   "import-linter ~= 2.3",
   "pytest ~=9.0",
   "ruff ~= 0.6",
-  "testcontainers ~=4.9",
+  "testcontainers ~=4.14",
 ]
