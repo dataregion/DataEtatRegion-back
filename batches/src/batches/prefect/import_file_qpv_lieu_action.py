@@ -5,11 +5,11 @@ import shutil
 from prefect import flow, task, runtime
 import pandas as pd
 
-from services.qpv.files.import_qpv_lieu_action_schema import ImportQpvLieuActionSchema
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import insert
 from batches.config.current import get_config
 from batches.database import init_persistence_module, session_scope
+from batches.share.validation.import_qpv_lieu_action_schema import ImportQpvLieuActionSchema
 
 init_persistence_module()
 

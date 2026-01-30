@@ -1,12 +1,11 @@
 from abc import ABC
-from enum import Enum
 from io import StringIO
 from typing import Iterable, List, Tuple
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict
 
-from models.value_objects.colonne_csv import ColonneCsv
+from batches.share.validation.generic_colonne_csv import GenericColonneCsv
 
 
 EMPTY_STRINGS = {
@@ -20,7 +19,13 @@ EMPTY_STRINGS = {
 }
 
 
-class SchemaCsv(BaseModel, ABC):
+class ExpectedColonnes(BaseModel):
+    model_config = ConfigDict(from_attributes=True, frozen=True)
+
+    colonnes: List[GenericColonneCsv]
+
+
+class ValidationSchemaCsv(ABC):
     """
     Schéma CSV minimal et robuste.
 
@@ -31,9 +36,8 @@ class SchemaCsv(BaseModel, ABC):
     - fournir une lecture chunkée standard
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    colonnes: ExpectedColonnes
 
-    colonnes: dict[Enum, ColonneCsv]
     # =======================================================
     # Métadonnées
     # =======================================================
