@@ -1,0 +1,17 @@
+print_sql: false
+
+sqlalchemy_database_uri: "postgresql+psycopg://postgres:password@localhost:5432/<DBNAME>"
+sqlalchemy_database_uri_audit: "postgresql+psycopg://postgres:password@localhost:5432/<AUDIT_DBNAME>"
+
+upload_folder: "/tmp/DataEtat/uploads"
+dossier_des_imports: "/tmp/DataEtat/imports"
+dossier_des_exports: "/tmp/DataEtat/exports"
+dossier_des_telechargements: "/tmp/DataEtat/cached_remote_files"
+
+grist:
+  database_url: "postgresql+psycopg://postgres:password@localhost:5432/<GRIST_DBNAME>"
+  serveur_url: "https://grist.instance.fr"
+  token_scim: "<TOKEN_SCIM>"
+
+cached_remote_files_url:
+  donnees_qpv_entreprises: "https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5"
