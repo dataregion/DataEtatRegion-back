@@ -2,12 +2,15 @@ from unittest.mock import patch
 
 import pytest
 from sqlalchemy import select, delete
-from batches.prefect.import_file_qpv_lieu_action import import_file_qpv_lieu_action
 from tests import TESTS_PATH
 from tests.conftest import patch_session_scope  # noqa: F401
 
-from models.entities.financial.QpvLieuAction import QpvLieuAction
-from models.entities.refs import Qpv
+from models import init as init_persistence_module
+
+init_persistence_module()
+
+from models.entities.financial.QpvLieuAction import QpvLieuAction  # noqa: E402
+from models.entities.refs import Qpv  # noqa: E402
 
 _data = TESTS_PATH / "data" / "qpv_lieu_action"
 
@@ -31,6 +34,10 @@ def test_import_file_qpv_lieu_action(session, add_qpv, patch_session_scope):  # 
     Dans ce test le fichier est parfaitement valide
     On s'attend à ce que les trois lignes soient insérées
     """
+
+    # XXX: important de delayer l'import pour attendre que la fixture prefect soit appliquée
+    # avant la lecture du flow.
+    from batches.prefect.import_file_qpv_lieu_action import import_file_qpv_lieu_action
 
     # On ne touche pas au fichier de tests, on ne créé pas de sauvegarde
     with (
@@ -61,6 +68,10 @@ def test_import_file_qpv_lieu_action_missing_col(session, add_qpv, patch_session
     On s'attend à une exception, c'est une règle de validation hard
     """
 
+    # XXX: important de delayer l'import pour attendre que la fixture prefect soit appliquée
+    # avant la lecture du flow.
+    from batches.prefect.import_file_qpv_lieu_action import import_file_qpv_lieu_action
+
     # Structure non conforme, exception levée
     with pytest.raises(ValueError):
         import_file_qpv_lieu_action.fn(str(_data / "file_comma_missing_col.csv"))
@@ -75,6 +86,10 @@ def test_import_file_qpv_lieu_action_missing_data(session, add_qpv, patch_sessio
     Dans ce test, il manque la valeur de l'année pour deux lignes
     On s'attend à ce que ces deux lignes soient ignorées, c'est une validation soft
     """
+
+    # XXX: important de delayer l'import pour attendre que la fixture prefect soit appliquée
+    # avant la lecture du flow.
+    from batches.prefect.import_file_qpv_lieu_action import import_file_qpv_lieu_action
 
     # On ne touche pas au fichier de tests, on ne créé pas de sauvegarde
     with (
@@ -97,6 +112,10 @@ def test_import_file_qpv_lieu_action_wrong_type(session, add_qpv, patch_session_
     Dans ce test, la valeur de l'année est mal typée pour deux lignes
     On s'attend à ce que ces deux lignes soient ignorées, c'est une validation soft
     """
+
+    # XXX: important de delayer l'import pour attendre que la fixture prefect soit appliquée
+    # avant la lecture du flow.
+    from batches.prefect.import_file_qpv_lieu_action import import_file_qpv_lieu_action
 
     # On ne touche pas au fichier de tests, on ne créé pas de sauvegarde
     with (

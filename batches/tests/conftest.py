@@ -27,8 +27,11 @@ def postgres_container():
 @pytest.fixture(scope="session")
 def prefect_container():
     # Démarrage du container, on passe le port défini dans la variable d'env
-    prefect = DataEtatPrefectContainer(int(urlparse(os.environ["PREFECT_API_URL"]).port))
+    prefect = DataEtatPrefectContainer()
     prefect.start()
+
+    os.environ["PREFECT_API_URL"] = prefect.get_api_url()
+
     try:
         yield prefect
     finally:
