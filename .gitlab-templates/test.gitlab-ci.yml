@@ -44,3 +44,10 @@ run_app_tests:
     - cd app/
     - env
     - source /build/app/.venv/bin/activate
+
+run_batches_tests:
+  <<: *default-tests
+  before_script:
+    - cd batches/
+    - env
+    - source /build/batches/.venv/bin/activate
