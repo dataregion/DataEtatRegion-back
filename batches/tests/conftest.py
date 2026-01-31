@@ -1,7 +1,6 @@
 import os
 import contextlib
 import pytest
-from urllib.parse import urlparse
 
 from services.tests.DataEtatPostgresContainer import DataEtatPostgresContainer
 from services.tests.DataEtatPrefectContainer import DataEtatPrefectContainer
