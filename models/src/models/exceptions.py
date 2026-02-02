@@ -86,6 +86,12 @@ class NoCurrentRegion(InvalidTokenError):
     pass
 
 
+class ForbiddenError(Exception):
+    """Exception en cas d'action interdite"""
+
+    pass
+
+
 #######################################################################
 # Exceptions de l'API V3
 #

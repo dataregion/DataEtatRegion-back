@@ -40,7 +40,7 @@ PydanticEnrichedFlattenFinancialLinesModel = make_pydantic_annotation_from_marsh
 _params_T = TypeVar("_params_T", bound=SourcesQueryParams)
 
 
-def handle_national(params: _params_T, user: ConnectedUser) -> _params_T:
+def enforce_query_params_with_connected_user_rights(params: _params_T, user: ConnectedUser) -> _params_T:
     """Replace les paramètres en premier argument avec la source_region / data_source de la connexion utilisateur"""
     if user.current_region != "NAT":
         params = params.with_update(update={"source_region": user.current_region})
@@ -70,7 +70,7 @@ def get_lignes_financieres(
     force_no_cache: bool = False,
 ):
     user_param_source_region = params.source_region
-    params = handle_national(params, user)
+    params = enforce_query_params_with_connected_user_rights(params, user)
 
     message = "Liste des données financières"
     data, total, grouped, has_next = get_lignes(
@@ -123,7 +123,7 @@ def get_lignes_financieres_by_source(
             detail="La paramètre `source` est requis.",
         ).to_json_response()
 
-    params = handle_national(params, user)
+    params = enforce_query_params_with_connected_user_rights(params, user)
 
     ligne = get_ligne(session, params, id)
     if ligne is None:
@@ -155,7 +155,7 @@ def get_annees(
         annees = get_annees_budget(session, params)
         return annees
 
-    params = handle_national(params, user)
+    params = enforce_query_params_with_connected_user_rights(params, user)
     return APISuccess(
         code=HTTPStatus.OK,
         message="Liste des années présentes dans les lignes financières",
@@ -179,7 +179,7 @@ def do_export(
     user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
     format: ExportTarget = "csv",
 ):
-    params = handle_national(params, user)
+    params = enforce_query_params_with_connected_user_rights(params, user)
     task = service_do_export(session_audit, user.email, format, params)
     dto = ExportFinancialTaskDTO.model_validate(task)
     return APISuccess(code=HTTPStatus.OK, message="Export fraichement lancé.", data=dto)

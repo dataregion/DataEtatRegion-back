@@ -55,10 +55,15 @@ class KeycloakTokenValidator:
             _ex = InvalidTokenError(api_message="Token validation failed")
             raise _ex from e
 
-        return ConnectedUser(dict(claims))
+        connected_user = ConnectedUser(dict(claims))
+        return connected_user
 
     def get_connected_user(self):
+        """Récupère l'utilisateur connecté. Lève une exception si le token est invalide ou l'utilisateur n'a pas les droits d'accès basiques au service."""
+
         async def _wrapped(token: str = Depends(self.oauth2_scheme)) -> ConnectedUser:
-            return self.validate_token(token)
+            connected_user = self.validate_token(token)
+            connected_user.check_has_access_rights()
+            return connected_user
 
         return _wrapped

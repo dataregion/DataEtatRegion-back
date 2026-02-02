@@ -16,7 +16,9 @@ def connected_user_from_current_token_identity():
 
 def _current_connected_user():
     token = _current_token_identity()
-    return ConnectedUser(token)  # pyright: ignore[reportArgumentType]
+    connected_user = ConnectedUser(token)  # pyright: ignore[reportArgumentType]
+    connected_user.check_has_access_rights()
+    return connected_user
 
 
 def _current_token_identity():
