@@ -32,6 +32,12 @@ def pytest_addoption(parser):
         help="ID du client keycloak",
     )
     parser.addoption(
+        "--client-id-with-no-rights",
+        action="store",
+        default=None,
+        help="ID du client keycloak sans droits associé à l'utilisateur",
+    )
+    parser.addoption(
         "--client-secret",
         action="store",
         default=None,
@@ -69,6 +75,14 @@ def keycloak_realm(pytestconfig):
 def client_id(pytestconfig):
     """client id de l'authent keycloak"""
     return pytestconfig.getoption("client_id") or os.getenv("CLIENT_ID", "test_client_id")
+
+
+@pytest.fixture(scope="session")
+def client_id_with_no_rights(pytestconfig):
+    """client id de l'authent keycloak"""
+    return pytestconfig.getoption("client_id_with_no_rights") or os.getenv(
+        "CLIENT_ID_WITH_NO_RIGHTS", "test_client_id_with_no_rights"
+    )
 
 
 @pytest.fixture(scope="session")
@@ -118,6 +132,11 @@ def fake_token():
 @pytest.fixture(scope="session")
 def real_token(keycloak_url, keycloak_realm, client_id, client_secret, username, password):
     return _real_token(keycloak_url, keycloak_realm, client_id, client_secret, username, password)
+
+
+@pytest.fixture(scope="session")
+def real_token_no_rights(keycloak_url, keycloak_realm, client_id_with_no_rights, client_secret, username, password):
+    return _real_token(keycloak_url, keycloak_realm, client_id_with_no_rights, client_secret, username, password)
 
 
 @pytest.fixture(scope="session")

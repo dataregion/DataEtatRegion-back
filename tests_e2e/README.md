@@ -22,14 +22,15 @@ Il est possible de tester sur d'autres environnement en spécifiant les URI, con
 
 Voici les variables disponibles :
 
-| Variable                    | option ligne de commande | option ligne de commande | valeur défaut en locale |
-| :-------------------------- | :----------------------: | :----------------------: | :---------------------: |
-| Url API data-transform      |        --api-url         |       API_BASE_URL       |  http://localhost:5000  |
-| Url de keycloak             |      --keycloak-url      |       KEYCLOAK_URL       |  http://localhost:8080  |
-| realm de keycloak           |     --keycloak-realm     |      KEYCLOAK_REALM      |       test_realm        |
-| un client id valide         |       --client-id        |        CLIENT_ID         |     test_client_id      |
-| un username valide          |        --username        |         USERNAME         |      test_username      |
-| le password de cet username |        --password        |         PASSWORD         |      test_password      |
+| Variable                                                |  option ligne de commande  | option ligne de commande |    valeur défaut en locale    |
+| :------------------------------------------------------ | :------------------------: | :----------------------: | :---------------------------: |
+| Url API data-transform                                  |         --api-url          |       API_BASE_URL       |     http://localhost:5000     |
+| Url de keycloak                                         |       --keycloak-url       |       KEYCLOAK_URL       |     http://localhost:8080     |
+| realm de keycloak                                       |      --keycloak-realm      |      KEYCLOAK_REALM      |          test_realm           |
+| un client id valide                                     |        --client-id         |        CLIENT_ID         |        test_client_id         |
+| un client id valide mais sans droits pour l'utilisateur | --client-id-with-no-rights | CLIENT_ID_WITH_NO_RIGHTS | test_client_id_with_no_rights |
+| un username valide                                      |         --username         |         USERNAME         |         test_username         |
+| le password de cet username                             |         --password         |         PASSWORD         |         test_password         |
 
 ## Exemple
 
@@ -60,4 +61,3 @@ perf-tests
 ### Paramètres configurables
 
 Les variables d'environnement sont les mêmes que pour les tests e2e plus haut
-

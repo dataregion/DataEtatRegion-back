@@ -21,6 +21,11 @@ def test_budget_with_bad_token(api_budget_v3, fake_token):
     assert response.status_code == 401
 
 
+def test_budget_with_token_missing_rights(api_budget_v3, real_token_no_rights):
+    response = call_request(f"{api_budget_v3}/lignes", token=real_token_no_rights)
+    assert response.status_code == 403
+
+
 #########
 # Test lignes
 
