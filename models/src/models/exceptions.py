@@ -89,7 +89,11 @@ class NoCurrentRegion(InvalidTokenError):
 class ForbiddenError(Exception):
     """Exception en cas d'action interdite"""
 
-    pass
+    def to_api_exc(self) -> "_APIException":
+        return _APIException(
+            code=HTTPStatus.FORBIDDEN,
+            api_message="Vous n'avez pas les droits pour effectuer cette action.",
+        )
 
 
 #######################################################################

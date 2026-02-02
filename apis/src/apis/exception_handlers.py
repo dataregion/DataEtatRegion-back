@@ -7,6 +7,7 @@ from models.exceptions import (
     _APIException,
     BadRequestError,
     InvalidTokenError,
+    ForbiddenError,
     ServerError,
 )
 from apis.shared.models import APIError
@@ -22,6 +23,7 @@ def error_responses() -> dict:
     """responses d'erreurs qui correspondant à la gestion d'exceptions"""
     _400_example = APIError(code=400)
     _401_example = APIError(code=401)
+    _403_example = APIError(code=403)
     _422_example = APIError(code=422)
     _500_example = APIError(code=500)
 
@@ -33,6 +35,10 @@ def error_responses() -> dict:
         401: {
             "model": APIError,
             "content": {"application/json": {"example": _401_example}},
+        },
+        403: {
+            "model": APIError,
+            "content": {"application/json": {"example": _403_example}},
         },
         422: {
             "model": APIError,
@@ -60,6 +66,11 @@ def setup_exception_handlers(app: fastapi.applications.FastAPI):
     @app.exception_handler(InvalidTokenError)
     async def invalid_token_handler(request: fastapi.Request, exc: InvalidTokenError):
         return await _api_exc_handler(request, exc)
+
+    @app.exception_handler(ForbiddenError)
+    async def forbidden_token_handler(request: fastapi.Request, exc: ForbiddenError):
+        api_err = exc.to_api_exc()
+        return await _api_exc_handler(request, api_err)
 
     @app.exception_handler(ServerError)
     async def server_error_handler(request: fastapi.Request, exc: ServerError):
