@@ -9,6 +9,28 @@ from .utils_test_budget_v3 import (
 
 
 #########
+# Avec authentification KO
+def test_budget_with_no_token(api_budget_v3):
+    response = call_request(f"{api_budget_v3}/lignes", token=None)
+    assert response.status_code == 401
+
+
+def test_budget_with_bad_token(api_budget_v3, fake_token):
+    response = call_request(f"{api_budget_v3}/lignes", token=fake_token)
+    assert response.status_code == 401
+
+
+def test_budget_with_token_missing_rights(api_budget_v3, real_token_no_rights):
+    response = call_request(f"{api_budget_v3}/lignes", token=real_token_no_rights)
+    assert response.status_code == 403
+
+
+def test_budget_with_tampered_token(api_budget_v3, real_token_tampered):
+    response = call_request(f"{api_budget_v3}/lignes", token=real_token_tampered)
+    assert response.status_code == 401
+
+
+#########
 #
 def test_smoke_healthcheck(api_budget_v3):
     response = call_request(f"{api_budget_v3}/healthcheck")

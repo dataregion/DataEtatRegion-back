@@ -140,6 +140,40 @@ def real_token_no_rights(keycloak_url, keycloak_realm, client_id_with_no_rights,
 
 
 @pytest.fixture(scope="session")
+def real_token_tampered(keycloak_url, keycloak_realm, client_id_with_no_rights, client_secret, username, password):
+    """Représente un token réel qui a été altéré après sa création"""
+    real_token = _real_token(keycloak_url, keycloak_realm, client_id_with_no_rights, client_secret, username, password)
+    # Décoder le token JWT
+    parts = real_token.split(".")
+    if len(parts) != 3:
+        raise ValueError("Token JWT invalide")
+
+    # Décoder le payload (ajouter le padding si nécessaire)
+    payload_b64 = parts[1]
+    padding = 4 - len(payload_b64) % 4
+    if padding != 4:
+        payload_b64 += "=" * padding
+
+    payload = json.loads(base64.urlsafe_b64decode(payload_b64))
+
+    # Altérer les rôles
+    if "realm_access" not in payload:
+        payload["realm_access"] = {}
+    if "roles" not in payload["realm_access"]:
+        payload["realm_access"]["roles"] = []
+
+    payload["realm_access"]["roles"].append("tampered_role")
+
+    # Réencoder le payload
+    tampered_payload = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().strip("=")
+
+    # Reconstruire le token avec le payload altéré (signature invalide)
+    tampered_token = f"{parts[0]}.{tampered_payload}.{parts[2]}"
+
+    return tampered_token
+
+
+@pytest.fixture(scope="session")
 def real_token_with_client(keycloak_url, keycloak_realm, username, password):
     def connect_on_client(client_id, client_secret):
         return _real_token(keycloak_url, keycloak_realm, client_id, client_secret, username, password)
