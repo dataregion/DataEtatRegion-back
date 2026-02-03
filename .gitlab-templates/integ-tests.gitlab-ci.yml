@@ -7,6 +7,7 @@ run-tests-e2e:
       export KEYCLOAK_URL="${E2E_KEYCLOAK_URL}"
       export KEYCLOAK_REALM="${E2E_KEYCLOAK_REALM}"
       export CLIENT_ID="${E2E_CLIENT_ID}"
+      export CLIENT_ID_WITH_NO_RIGHTS="${E2E_CLIENT_ID_WITH_NO_RIGHTS}"
       export USERNAME="${E2E_USERNAME}"
       export PASSWORD="${E2E_PASSWORD}"
     - cd tests_e2e/
