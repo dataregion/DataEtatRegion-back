@@ -24,8 +24,8 @@ class QpvLieuAction(_Audit, _PersistenceBaseModelInstance()):
     ej: Column[str] = Column(String, nullable=False)
     code_qpv: Column[str] = Column(String, ForeignKey("ref_qpv.code"), nullable=False)
     montant_ventille: Column[float] = Column(Float(decimal_return_scale=2), nullable=False, autoincrement=False)
-    libelle_action: Column[str] = Column(String, nullable=False)
-    siret: Column[str] = Column(String, nullable=False)
+    libelle_action: Column[str] = Column(String, nullable=True)
+    siret: Column[str] = Column(String, nullable=True)
 
     # Données techniques
     file_import_taskid = Column(String(255))

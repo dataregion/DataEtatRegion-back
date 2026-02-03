@@ -27,8 +27,8 @@ def upgrade_():
         batch_op.alter_column("n_ej", new_column_name="ej")
         batch_op.alter_column("ratio_montant", new_column_name="montant_ventille")
 
-        batch_op.add_column(sa.Column('libelle_action', sa.String(), nullable=False))
-        batch_op.add_column(sa.Column('siret', sa.String(), nullable=False))
+        batch_op.add_column(sa.Column('libelle_action', sa.String(), nullable=True))
+        batch_op.add_column(sa.Column('siret', sa.String(), nullable=True))
         batch_op.create_unique_constraint('uq_qpv_lieu_action_metier', ['annee_exercice', 'ref_action', 'ej', 'code_qpv'])
     # ### end Alembic commands ###
 
