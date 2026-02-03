@@ -25,10 +25,14 @@ def mock_connected_user():
     """Crée un ConnectedUser pour les tests."""
     return ConnectedUser(
         {
+            "azp": "test-client-id",
             "sub": "test-user-123",
             "email": "test@example.com",
             "preferred_username": "testuser",
             "realm_access": {"roles": ["user", "admin"]},
+            "resource_access": {
+                "test-client-id": {"roles": ["users"]},
+            },
         }
     )
 
