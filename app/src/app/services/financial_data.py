@@ -2,7 +2,7 @@ import logging
 
 from app import db
 
-from sqlalchemy import select, delete
+from sqlalchemy import exists, select, delete
 
 from models.entities.financial.FinancialCp import FinancialCp
 from models.entities.financial.FinancialAe import FinancialAe
@@ -33,14 +33,17 @@ def delete_ae_no_cp_annee_region(annee: int, source_region: str):
 def delete_cp_annee_region(annee: int, source_region: str):
     """
     Supprime CP d'une année comptable d'une région
-    :param annee:
+    La suppression ne se base PAS sur l'année des CP, mais sur l'année des AE auxquelles ils sont liés.
+
+    :param annee: année comptable des AE dont les CP doivent être supprimés
     :param source_region:
     :return:
     """
-    logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour l'année {annee} et la région {source_region}")
+    logging.info(f"[IMPORT FINANCIAL] Suppression des CP de la région {source_region} liés aux AE de l'année {annee}")
+    subquery = exists().where(FinancialCp.id_ae == FinancialAe.id).where(FinancialAe.annee == annee)
     stmt = (
         delete(FinancialCp)
-        .where(FinancialCp.annee == annee)  # type: ignore
+        .where(subquery)
         .where(FinancialCp.source_region == source_region, FinancialCp.data_source == "REGION")
     )
     db.session.execute(stmt)
@@ -63,10 +66,13 @@ def delete_ae_no_cp_annee_national(annee: int):
 def delete_cp_annee_national(annee: int):
     """
     Supprime CP d'une année comptable au niveau National
-    :param annee:
+    La suppression ne se base PAS sur l'année des CP, mais sur l'année des AE auxquelles ils sont liés.
+
+    :param annee: année comptable des AE dont les CP doivent être supprimés
     :return:
     """
-    logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour l'année {annee} du national")
-    stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.data_source == "NATION")
+    logging.info(f"[IMPORT FINANCIAL] Suppression des CP NATION liés aux AE de l'année {annee}")
+    subquery = exists().where(FinancialCp.id_ae == FinancialAe.id).where(FinancialAe.annee == annee)
+    stmt = delete(FinancialCp).where(subquery).where(FinancialCp.data_source == "NATION")
     db.session.execute(stmt)
     db.session.commit()
