@@ -32,15 +32,17 @@ def delete_ae_no_cp_annee_region(annee: int, source_region: str):
 
 def delete_cp_annee_region(annee: int, source_region: str):
     """
-    Supprime CP d'une année comptable d'une région
+    Supprime CP à partir d'une année comptable d'une région
     :param annee:
     :param source_region:
     :return:
     """
-    logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour l'année {annee} et la région {source_region}")
+    logging.info(
+        f"[IMPORT FINANCIAL] Suppression des CP pour les années supérieures ou égales à  {annee} et la région {source_region}"
+    )
     stmt = (
         delete(FinancialCp)
-        .where(FinancialCp.annee == annee)  # type: ignore
+        .where(FinancialCp.annee >= annee)  # type: ignore
         .where(FinancialCp.source_region == source_region, FinancialCp.data_source == "REGION")
     )
     db.session.execute(stmt)
@@ -62,11 +64,11 @@ def delete_ae_no_cp_annee_national(annee: int):
 
 def delete_cp_annee_national(annee: int):
     """
-    Supprime CP d'une année comptable au niveau National
+    Supprime CP à partir d'une année comptable au niveau National
     :param annee:
     :return:
     """
-    logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour l'année {annee} du national")
-    stmt = delete(FinancialCp).where(FinancialCp.annee == annee).where(FinancialCp.data_source == "NATION")
+    logging.info(f"[IMPORT FINANCIAL] Suppression des CP pour les années supérieures ou égales à {annee} du national")
+    stmt = delete(FinancialCp).where(FinancialCp.annee >= annee).where(FinancialCp.data_source == "NATION")
     db.session.execute(stmt)
     db.session.commit()
