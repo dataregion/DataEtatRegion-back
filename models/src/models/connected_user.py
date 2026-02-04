@@ -23,18 +23,39 @@ class ConnectedUser:
         self._sub = None
         self._azp = None
 
+    def _get_resource_access_roles(self, azp: str) -> list:
+        """Récupère les rôles du resource_access de manière sûre."""
+        try:
+            roles = self.token["resource_access"][azp]["roles"]
+            return roles if isinstance(roles, list) else []
+        except Exception as e:
+            self.logger.warning(f"Token au mauvais format lors de la vérification de l'accès à {azp}", exc_info=e)
+            return []
+
     def check_has_access_rights(self):
         """Vérifie que l'utilisateur connecté a les droits d'accès au service."""
         azp = self._retrieve_token_azp()
+        roles = self._get_resource_access_roles(azp)
 
-        try:
-            has_access = "users" in self.token["resource_access"][azp]["roles"]
-        except Exception as e:
-            self.logger.warning(f"Token au mauvais format lors de la vérification de l'accès à {azp}", exc_info=e)
-            has_access = False
-
-        if not has_access:
+        if "users" not in roles:
             raise ForbiddenError("L'utilisateur n'a pas les droits d'accès au service.")
+
+    def check_has_role(self, role: str):
+        """Vérifie que l'utilisateur connecté a le rôle spécifié."""
+        azp = self._retrieve_token_azp()
+        roles = self._get_resource_access_roles(azp)
+
+        if role not in roles:
+            raise ForbiddenError(f"L'utilisateur n'a pas le rôle requis : {role}")
+
+    def check_has_any_role(self, roles: list):
+        """Vérifie que l'utilisateur connecté a l'un des rôles spécifiés."""
+        azp = self._retrieve_token_azp()
+        resource_roles = self._get_resource_access_roles(azp)
+
+        if not any(role in resource_roles for role in roles):
+            roles_str = " ou ".join(roles)
+            raise ForbiddenError(f"L'utilisateur n'a pas l'un des rôles requis : {roles_str}")
 
     @property
     def roles(self):

@@ -39,7 +39,7 @@ def pre_create_hook(
 
 def on_upload_complete(
     db=Depends(get_session_audit),
-    current_user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    current_user: ConnectedUser = Depends(keycloak_validator.get_connected_user_admin_or_comptable()),
 ):
     def handler(file_path: str, metadata: dict):
         upload_complete(db=db, user=current_user, file_path=file_path, metadata=metadata)
@@ -50,7 +50,7 @@ def on_upload_complete(
 tus_router = create_tus_router(
     files_dir=str(config.upload.tus_folder),
     max_size=config.upload.max_size,
-    auth=keycloak_validator.get_connected_user(),
+    auth=keycloak_validator.get_connected_user_admin_or_comptable(),
     pre_create_dep=pre_create_hook,
     upload_complete_dep=on_upload_complete,
     prefix="import",

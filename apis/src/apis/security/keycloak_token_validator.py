@@ -67,3 +67,15 @@ class KeycloakTokenValidator:
             return connected_user
 
         return _wrapped
+
+    def get_connected_user_admin_or_comptable(self):
+        """Récupère l'utilisateur connecté et vérifie qu'il a le rôle admin ou comptable."""
+
+        async def _wrapped(token: str = Depends(self.oauth2_scheme)) -> ConnectedUser:
+            connected_user = self.validate_token(token)
+            connected_user.check_has_access_rights()
+            connected_user.check_has_any_role(["admin", "comptable"])
+
+            return connected_user
+
+        return _wrapped
