@@ -42,7 +42,7 @@ class DashboardResponse(APISuccess[DashboardData]):
 async def get_dashboard(
     params: QpvQueryParams = Depends(),
     session: Session = Depends(get_session_main),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     params = handle_region_user(params, user)
 

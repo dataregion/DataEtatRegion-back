@@ -25,7 +25,7 @@ router = APIRouter()
 )
 def get_info_entreprise(
     siret: str,
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     """
     Récupère les informations d'une entreprise à partir de son SIRET.

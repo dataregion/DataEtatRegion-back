@@ -57,7 +57,7 @@ class LignesResponse(APISuccess[LignesFinancieres | NoneType]):
 def get_lignes_financieres(
     params: QpvQueryParams = Depends(),
     session: Session = Depends(get_session_main),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     params = handle_region_user(params, user)
 
@@ -88,7 +88,7 @@ def get_lignes_financieres(
 def get_annees(
     params: SourcesQueryParams = Depends(),
     session: Session = Depends(get_session_main),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     params = handle_region_user(params, user)
     return APISuccess(

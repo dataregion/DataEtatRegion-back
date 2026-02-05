@@ -25,7 +25,7 @@ keycloak_validator = KeycloakTokenValidator.get_application_instance()
     responses=error_responses(),
 )
 def get_colonnes_tableau(
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
     session: Session = Depends(get_session_main),
 ):
     logger.debug("[COLONNES] Récupération des colonnes pour la recherche et le tableau")

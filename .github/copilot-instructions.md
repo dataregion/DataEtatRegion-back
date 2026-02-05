@@ -85,6 +85,11 @@
   - **Session audit** : `get_session_audit` pour la base de données d'audit
 - **Dépréciation des services** :
   - Dans le répertoire `app`, les services sont à déprécier progressivement et doivent être remplacés par des implémentations dans `apis`. Privilégier toute nouvelle logique métier ou refactorisation dans `apis` plutôt que dans `services`.
+- **Conventions de codage** :
+  - **Fonctions async** : Toute fonction asynchrone doit être préfixée par `afn` pour améliorer la lisibilité et faciliter l'identification des fonctions asynchrones.
+    - ✅ Correct : `async def afn_fetch_data():`
+    - ❌ À éviter : `async def fetch_data():`
+  - Cette convention s'applique à toutes les fonctions async : handlers FastAPI, services, utilitaires, tests, etc.
 
 ## 🔗 Intégrations & dépendances externes
 

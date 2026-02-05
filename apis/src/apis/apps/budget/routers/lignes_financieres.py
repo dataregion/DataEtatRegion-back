@@ -66,7 +66,7 @@ class LigneResponse(APISuccess[LigneFinanciere]):
 def get_lignes_financieres(
     params: BudgetQueryParams = Depends(),
     session: Session = Depends(get_session_main),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
     force_no_cache: bool = False,
 ):
     user_param_source_region = params.source_region
@@ -115,7 +115,7 @@ def get_lignes_financieres_by_source(
     id: int,
     params: SourcesQueryParams = Depends(),
     session: Session = Depends(get_session_main),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     if not params.source:
         return APIError(
@@ -148,7 +148,7 @@ def get_lignes_financieres_by_source(
 def get_annees(
     params: SourcesQueryParams = Depends(),
     session: Session = Depends(get_session_main),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     @cachetools.func.ttl_cache(maxsize=128, ttl=3600)
     def _get_annees(params: SourcesQueryParams) -> list[int]:
@@ -176,7 +176,7 @@ class DoExportResponse(APISuccess[ExportFinancialTaskDTO]):
 def do_export(
     session_audit: Session = Depends(get_session_audit),
     params: BudgetQueryParams = Depends(),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
     format: ExportTarget = "csv",
 ):
     params = enforce_query_params_with_connected_user_rights(params, user)
@@ -197,7 +197,7 @@ class ExportsResponse(APISuccess[list[ExportFinancialTaskDTO]]):
 )
 def list_exports(
     session_audit: Session = Depends(get_session_audit),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     tasks = ExportFinancialTaskService.find_all_file_exports_by_username(session_audit, user.email)
     dtos = [ExportFinancialTaskDTO.model_validate(x) for x in tasks]
@@ -220,7 +220,7 @@ ExportResponse = DoExportResponse
 def get_export(
     uuid: str,
     session_audit: Session = Depends(get_session_audit),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     run_id = uuid
     task = ExportFinancialTaskService.find_by_run_id(session_audit, run_id)
@@ -244,7 +244,7 @@ def get_export(
 def download_export(
     uuid: str,
     session_audit: Session = Depends(get_session_audit),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     run_id = uuid
     task: ExportFinancialTask = ExportFinancialTaskService.find_by_run_id(session_audit, run_id)

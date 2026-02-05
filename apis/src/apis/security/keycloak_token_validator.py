@@ -58,7 +58,7 @@ class KeycloakTokenValidator:
         connected_user = ConnectedUser(dict(claims))
         return connected_user
 
-    def get_connected_user(self):
+    def afn_get_connected_user(self):
         """Récupère l'utilisateur connecté. Lève une exception si le token est invalide ou l'utilisateur n'a pas les droits d'accès basiques au service."""
 
         async def _wrapped(token: str = Depends(self.oauth2_scheme)) -> ConnectedUser:
@@ -68,7 +68,7 @@ class KeycloakTokenValidator:
 
         return _wrapped
 
-    def get_connected_user_admin_or_comptable(self):
+    def afn_get_connected_user_admin_or_comptable(self):
         """Récupère l'utilisateur connecté et vérifie qu'il a le rôle admin ou comptable."""
 
         async def _wrapped(token: str = Depends(self.oauth2_scheme)) -> ConnectedUser:

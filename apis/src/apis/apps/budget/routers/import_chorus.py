@@ -1,3 +1,4 @@
+from http import HTTPStatus
 import logging
 from fastapi import Depends
 from tuspyserver import create_tus_router
@@ -16,7 +17,7 @@ keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
 
 def pre_create_hook(
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_admin_or_comptable()),
 ):
     async def handler(metadata: dict, upload_info: dict):
         logger.info("Pre-Create Hook called")
@@ -28,7 +29,7 @@ def pre_create_hook(
         config = get_config()
         if upload_info["size"] and upload_info["size"] > config.upload.max_size:
             raise BadRequestError(
-                status_code=413,
+                code=HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
                 api_message=f"File too large (max {config.upload.max_size} bytes)",
             )
 
@@ -39,7 +40,7 @@ def pre_create_hook(
 
 def on_upload_complete(
     db=Depends(get_session_audit),
-    current_user: ConnectedUser = Depends(keycloak_validator.get_connected_user_admin_or_comptable()),
+    current_user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_admin_or_comptable()),
 ):
     def handler(file_path: str, metadata: dict):
         upload_complete(db=db, user=current_user, file_path=file_path, metadata=metadata)
@@ -50,7 +51,7 @@ def on_upload_complete(
 tus_router = create_tus_router(
     files_dir=str(config.upload.tus_folder),
     max_size=config.upload.max_size,
-    auth=keycloak_validator.get_connected_user_admin_or_comptable(),
+    auth=keycloak_validator.afn_get_connected_user_admin_or_comptable(),
     pre_create_dep=pre_create_hook,
     upload_complete_dep=on_upload_complete,
     prefix="import",

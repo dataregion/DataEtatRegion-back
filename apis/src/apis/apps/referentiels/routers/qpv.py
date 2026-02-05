@@ -43,7 +43,7 @@ def find_all_by_annee_decoupage(
     annee: str,
     params: V3QueryParams = Depends(),
     session: Session = Depends(get_session_main),
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     if annee != "2015" and annee != "2024":
         raise ValueError("L'année de découpage renseignée est erronée.")

@@ -24,7 +24,7 @@ router = APIRouter()
 )
 def get_info_subvention(
     siret: str,
-    user: ConnectedUser = Depends(keycloak_validator.get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
     response = subvention(siret)
     return response

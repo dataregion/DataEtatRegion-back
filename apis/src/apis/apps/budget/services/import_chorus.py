@@ -18,14 +18,14 @@ def validate_metadata(metadata: dict):
 
     # Vérifier la présence obligatoire du filename
     if "filename" not in metadata:
-        raise BadRequestError(status_code=400, api_message="Filename is required")
+        raise BadRequestError(api_message="Filename is required")
 
     # Vérifier la présence obligatoire du token de session
     session_token = metadata.get("session_token")
     if session_token:
         logger.info(f"Session token found: {session_token}")
     else:
-        raise BadRequestError(status_code=400, api_message="Session token is required")
+        raise BadRequestError(api_message="Session token is required")
 
     # Vérifier la présence obligatoire du uploadType
     upload_type = metadata.get("uploadType")
@@ -34,12 +34,11 @@ def validate_metadata(metadata: dict):
         valid_upload_types = [upload_type_enum.value for upload_type_enum in UploadType]
         if upload_type not in valid_upload_types:
             raise BadRequestError(
-                status_code=400,
                 api_message=f"Upload type {upload_type} not allowed. Valid types: {valid_upload_types}",
             )
         logger.info(f"Upload type found: {upload_type}")
     else:
-        raise BadRequestError(status_code=400, api_message="Upload type is required")
+        raise BadRequestError(api_message="Upload type is required")
 
     # Vérifier la présence obligatoire du filetype
     if "filetype" in metadata:
@@ -49,11 +48,10 @@ def validate_metadata(metadata: dict):
         ]
         if metadata["filetype"] not in allowed_types:
             raise BadRequestError(
-                status_code=400,
                 api_message=f"File type {metadata['filetype']} not allowed",
             )
     else:
-        raise BadRequestError(status_code=400, api_message="File type is required")
+        raise BadRequestError(api_message="File type is required")
 
     logger.debug("Metadata validation passed")
 
