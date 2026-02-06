@@ -10,10 +10,6 @@ Projet qui acceuille les opérations en batch et en tache de fond.
 ## Mettre à jour les dépendances
 
 ```bash
-rm requirements.external.txt
-uv pip compile requirements.external.in \
-  ../models/pyproject.toml \
-  ../gristcli/pyproject.toml \
-  ../services/pyproject.toml \
-  -o requirements.external.txt
+rm requirements.external.txt # à supprimer pour des montées des version plus aggressives
+./.build-helper-scripts/update-requirements-external.sh
 ```

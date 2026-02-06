@@ -35,13 +35,8 @@ pytest -m integration # execute les tests d'intégration
 ## Mettre à jour les dépendances
 
 ```bash
-rm requirements.external.txt
-uv pip compile requirements.external.in \
-  ../models/pyproject.toml \
-  ../services/pyproject.toml \
-  ../gristcli/pyproject.toml \
-  ../supersetcli/pyproject.toml \
-  -o requirements.external.txt
+rm requirements.external.txt # à supprimer pour des montées des version plus aggressives
+./.build-helper-scripts/update-requirements-external.sh
 ```
 
 ## Requêter les apis externes telles que configuré dans le projet

@@ -1,5 +1,4 @@
 <h1 align="center" style="border-bottom: none">
-    <div>
         API Regate Num Data Etat
     </div>
 </h1>
@@ -53,12 +52,8 @@ L'API sera alors accessible sur http://localhost:5000
 ## Mettre à jour les dépendances
 
 ```bash
-rm requirements.external.txt
-uv pip compile requirements.external.in \
-  ../models/pyproject.toml \
-  ../services/pyproject.toml \
-  ../gristcli/pyproject.toml \
-  -o requirements.external.txt
+rm requirements.external.txt # à supprimer pour des montées des version plus aggressives
+./.build-helper-scripts/update-requirements-external.sh
 ```
 
 ## Pre commit hooks

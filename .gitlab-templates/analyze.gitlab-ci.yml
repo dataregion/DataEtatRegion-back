@@ -33,11 +33,45 @@ include:
       echo "DO_DEPLOY_FOR_INTEG     : $_ENABLE_DEPLOY_FOR_INTEG"
       echo "DO_DEPLOY_FOR_PP_AND_P  : $_ENABLE_DEPLOY_FOR_PP_AND_P"
 
+update-pinned-dependencies:
+  stage: ☢️ analyze
+  image: "ghcr.io/astral-sh/uv:0.9.24-python3.13-trixie-slim"
+  when: always
+  script:
+    - |
+      apt update && apt install -y git curl jq
+      git config user.email "forge@acme.me"
+      git config user.name "Forge"
+
+    - ./.gitlab-templates/x-checkout.sh
+    - |
+
+      for folder in app apis batches grist-plugins; do
+        cd $folder/ && ./.build-helper-scripts/update-requirements-external.sh
+        cd ..
+      done
+
+    - |
+      rc=0
+      ./.gitlab-templates/x-commit.sh \
+        "$FORGE_PAT"\
+        "[FORGE] Mise à jour des dépendances épinglées." || rc=$?
+
+      if [ $rc -eq 0 ]; then
+        echo >&2 "Nouvelle révision avec les dépendences pinned, on annule cette pipeline"
+        ./.gitlab-templates/x-cancel-pipeline.sh "$FORGE_PAT"
+      else
+        echo >&2 "Aucune mise à jour de dépendances pinned. On continue"
+      fi
+
 # Construit une image avec les venv de devs installés
 "🐳 dockerizing nocode/dev image":
   stage: ☢️ analyze
   extends: ".dockerize-nocode/dev"
   when: always
+  needs:
+    - job: update-pinned-dependencies
+      optional: true
 
 run-loadtests:
   stage: ☢️ analyze
