@@ -43,15 +43,17 @@ update-pinned-dependencies:
       git config user.email "forge@acme.me"
       git config user.name "Forge"
 
-    - ./.gitlab-templates/x-checkout.sh
     - |
 
       for folder in app apis batches grist-plugins; do
         cd $folder/ && ./.build-helper-scripts/update-requirements-external.sh
         cd ..
+        git add $folder/requirements.external.txt # Pour supporter le rafraichissement des dépendances via suppression du requirements.external.txt
       done
 
     - |
+      
+
       rc=0
       ./.gitlab-templates/x-commit.sh \
         "$FORGE_PAT"\
