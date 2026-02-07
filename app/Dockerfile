@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:0.9.24-python3.13-trixie-slim@sha256:69ef6514bf9b7de044514258356fa68a2d94df2e5dc807b5bfbf88fbb35f3a58 AS builder
+FROM ghcr.io/astral-sh/uv:0.10.0-python3.13-trixie-slim@sha256:860bb2bfdcd1f416f9c799eb6399d2f3b21a3347ca51271c0660300caa40f5d8 AS builder
 
 RUN apt update && apt install -y git
 
@@ -17,7 +17,7 @@ RUN uv pip install \
   --python /venv/bin/python
 
 
-FROM ghcr.io/astral-sh/uv:0.9.24-python3.13-trixie-slim@sha256:69ef6514bf9b7de044514258356fa68a2d94df2e5dc807b5bfbf88fbb35f3a58
+FROM ghcr.io/astral-sh/uv:0.10.0-python3.13-trixie-slim@sha256:860bb2bfdcd1f416f9c799eb6399d2f3b21a3347ca51271c0660300caa40f5d8
 
 # Création du dossier de travail
 RUN mkdir -p /appli/workdir
