@@ -88,7 +88,7 @@ async def check_user_exists(
 )
 async def link_superset(
     table_id: str = Form(..., description="Identifiant de la table cible"),
-    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_for_m2m()),
 ):
     """
     Crée un dataset dans Superset.
@@ -139,7 +139,7 @@ async def import_table_data(
     table_id: str = Form(..., description="Identifiant de la table cible"),
     columns: str = Form(..., description="Schéma des colonnes au format JSON"),
     session: Session = Depends(get_session_main),
-    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_for_m2m()),
 ):
     """
     Importe des données CSV dans le système.
