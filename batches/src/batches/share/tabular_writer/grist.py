@@ -39,8 +39,10 @@ class GristTabularWriter(TabularWriter):
         return f"Export budget {date_formatee}"
 
     def _prepare_grist_context(self):
-        user_id = self._grist_db_service.search_userid_by_email(self._username)
-        if user_id is None:
+        # Patch si API SCIM renvoi 500 : user_id = self._grist_db_service.search_userid_by_email(self._username)
+        user = self._grist_scim_service.search_user_by_username(self._username)
+        user_id = user.user_id if user else None
+        if user is None:
             # SI non exist, create user
             print("[GIRST] No. We create users")
 
