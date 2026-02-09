@@ -138,7 +138,7 @@ def initalise_fs(ctx: _Ctx) -> _Ctx:
     return ctx
 
 
-@task(timeout_seconds=60, log_prints=True, cache_policy=NO_CACHE)
+@task(timeout_seconds=300, log_prints=True, cache_policy=NO_CACHE)
 def step(ctx: _Ctx) -> _Ctx:
     print(f"Requête la page {ctx.current_page}, size: {ctx.page_size}")
 
