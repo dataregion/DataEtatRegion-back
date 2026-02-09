@@ -58,6 +58,15 @@ class KeycloakTokenValidator:
         connected_user = ConnectedUser(dict(claims))
         return connected_user
 
+    def afn_get_connected_user_for_m2m(self):
+        """Récupère l'utilisateur connecté. Ne vérifie pas les droits d'accès par défaut car c'est un appel à destination de la communication m2m."""
+
+        async def _wrapped(token: str = Depends(self.oauth2_scheme)) -> ConnectedUser:
+            connected_user = self.validate_token(token)
+            return connected_user
+
+        return _wrapped
+
     def afn_get_connected_user(self):
         """Récupère l'utilisateur connecté. Lève une exception si le token est invalide ou l'utilisateur n'a pas les droits d'accès basiques au service."""
 

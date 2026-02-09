@@ -33,7 +33,7 @@ keycloak_validator = KeycloakTokenValidator.get_application_instance()
     description="Endpoint public pour vérifier si un utilisateur existe dans Superset et récupérer son ID.",
 )
 async def check_user_exists(
-    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_for_m2m()),
 ):
     """
     Vérifie si l'utilisateur connecté existe dans Superset.
