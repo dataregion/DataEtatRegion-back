@@ -145,7 +145,6 @@ def step(ctx: _Ctx) -> _Ctx:
     assert ctx.query_params is not None
     params: BudgetQueryParams = ctx.query_params
     params = params.with_update({"page": ctx.current_page, "page_size": ctx.page_size})
-    assert params.source_region is not None
 
     from services.budget.lignes_financieres.get_data import get_lignes
 
