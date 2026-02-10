@@ -53,7 +53,7 @@ colorama==0.4.6
     # via griffe
 coolname==3.0.0
     # via prefect-client
-cryptography==46.0.3
+cryptography==46.0.4
     # via
     #   models (../models/pyproject.toml)
     #   authlib
