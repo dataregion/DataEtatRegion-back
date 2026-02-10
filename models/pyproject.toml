@@ -12,7 +12,7 @@ dependencies = [
     "pandas ~= 2.0",
     "geopandas ~= 1.1.0", 
     "geoalchemy2 ~=0.18.0",
-    "cryptography==46.0.4",
+    "cryptography==46.0.5",
     "marshmallow-sqlalchemy ~= 1.1",
     "marshmallow-dataclass ~= 8.5",
     "marshmallow-jsonschema @ git+https://github.com/gautierrog/marshmallow-jsonschema.git@0.13.1"
