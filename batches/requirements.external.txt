@@ -38,7 +38,7 @@ colorama==0.4.6
     # via griffe
 coolname==2.2.0
     # via prefect-client
-cryptography==46.0.4
+cryptography==46.0.5
     # via models (../models/pyproject.toml)
 dateparser==1.3.0
     # via prefect-client

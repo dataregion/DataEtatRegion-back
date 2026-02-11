@@ -78,7 +78,7 @@ colorama==0.4.6
     # via griffe
 coolname==3.0.0
     # via prefect-client
-cryptography==46.0.4
+cryptography==46.0.5
     # via
     #   -r requirements.external.in
     #   models (../models/pyproject.toml)

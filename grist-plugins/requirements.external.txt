@@ -24,7 +24,7 @@ click==8.3.1
     #   rich-toolkit
     #   typer
     #   uvicorn
-cryptography==46.0.4
+cryptography==46.0.5
     # via models (../models/pyproject.toml)
 dnspython==2.8.0
     # via email-validator
