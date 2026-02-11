@@ -19,6 +19,14 @@ PydanticEnrichedFlattenFinancialLinesModel = make_pydantic_annotation_from_marsh
 LigneFinanciere = Annotated[EnrichedFlattenFinancialLines, PydanticEnrichedFlattenFinancialLinesModel]
 
 
+class DetailsPaiement(BaseModel):
+    """Un détail de paiement pour l'API"""
+
+    date_base_dp: Optional[datetime.date]
+    montant: float
+    n_dp: str
+
+
 class LignesFinancieres(BaseModel):
     type: Literal["lignes_financieres"] = "lignes_financieres"
     total: Total
