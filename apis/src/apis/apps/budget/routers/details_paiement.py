@@ -24,17 +24,17 @@ keycloak_validator = KeycloakTokenValidator.get_application_instance()
 
 
 # Models
-class _DetailsPaiement(DetailsPaiement):
+class InnerDetailsPaiement(DetailsPaiement):
     model_config = ConfigDict(from_attributes=True)
 
 
-class _DetailsPaiementResponse(BaseModel):
+class InnerDetailsPaiementResponse(BaseModel):
     ligne_financiere_id: int
 
     dps: list[DetailsPaiement]
 
 
-class DetailsPaiementResponse(APISuccess[_DetailsPaiementResponse]):
+class DetailsPaiementResponse(APISuccess[InnerDetailsPaiementResponse]):
     pass
 
 
@@ -78,8 +78,8 @@ def get_details_paiement_pour_ligne_financiere(
         execution = session.execute(stmt)
         results = execution.scalars().all()
 
-    dps = [_DetailsPaiement.model_validate(dp) for dp in results]
-    data = _DetailsPaiementResponse(
+    dps = [InnerDetailsPaiement.model_validate(dp) for dp in results]
+    data = InnerDetailsPaiementResponse(
         ligne_financiere_id=id_ae,
         dps=dps,
     )
