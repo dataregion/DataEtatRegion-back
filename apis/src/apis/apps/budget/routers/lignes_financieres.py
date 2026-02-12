@@ -2,7 +2,7 @@ from http import HTTPStatus
 import logging
 import os
 from types import NoneType
-from typing import Mapping, TypeVar
+from typing import Mapping
 
 import cachetools.func
 from fastapi import APIRouter, Depends
@@ -20,6 +20,7 @@ from services.shared.source_query_params import SourcesQueryParams
 
 from apis.apps.budget.routers.api_models import ExportFinancialTask as ExportFinancialTaskDTO
 from apis.apps.budget.routers.api_models import Groupings, LigneFinanciere, LignesFinancieres
+from apis.apps.budget.routers.shared import enforce_query_params_with_connected_user_rights
 from apis.apps.budget.services.exports import do_export as service_do_export
 from apis.apps.budget.services.get_data import get_annees_budget, get_ligne, get_lignes
 from apis.database import get_session_main, get_session_audit
@@ -36,17 +37,6 @@ keycloak_validator = KeycloakTokenValidator.get_application_instance()
 PydanticEnrichedFlattenFinancialLinesModel = make_pydantic_annotation_from_marshmallow_lignes(
     EnrichedFlattenFinancialLinesSchema, True
 )
-
-_params_T = TypeVar("_params_T", bound=SourcesQueryParams)
-
-
-def enforce_query_params_with_connected_user_rights(params: _params_T, user: ConnectedUser) -> _params_T:
-    """Replace les paramètres en premier argument avec la source_region / data_source de la connexion utilisateur"""
-    if user.current_region != "NAT":
-        params = params.with_update(update={"source_region": user.current_region})
-    else:
-        params = params.with_update(update={"data_source": "NATION"})
-    return params
 
 
 class LignesResponse(APISuccess[LignesFinancieres | Groupings | NoneType]):
