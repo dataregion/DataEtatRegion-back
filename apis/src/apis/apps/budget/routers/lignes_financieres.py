@@ -1,3 +1,4 @@
+from datetime import datetime
 from http import HTTPStatus
 import logging
 import os
@@ -238,6 +239,7 @@ def download_export(
 ):
     run_id = uuid
     task: ExportFinancialTask = ExportFinancialTaskService.find_by_run_id(session_audit, run_id)
+    date_fin: datetime = task.completed_at
 
     # Validation basique
     if not task:
@@ -269,8 +271,11 @@ def download_export(
         "ods": "application/vnd.oasis.opendocument.spreadsheet",
     }
     media_type = media_types[task.target_format]
+
+    s_date_fin = date_fin.strftime("%Y-%m-%d %H:%M:%S")
+
     return FileResponse(
         path=task.file_path,
         media_type=media_type,
-        filename=f"export.{str(task.target_format)}",
+        filename=f"export_{s_date_fin}.{str(task.target_format)}",
     )

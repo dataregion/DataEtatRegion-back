@@ -89,6 +89,7 @@ def create_app():
             "Tus-Max-Size",
             "Upload-Expires",
             "Upload-Length",
+            "Content-Disposition",
         ],
     )
 
