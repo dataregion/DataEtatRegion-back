@@ -5,6 +5,7 @@ from batches.database import init_persistence_module, session_scope, session_aud
 from models.value_objects.export_api import ExportTarget
 from batches.share.schemas.ExportEnrichedFlattenFinancialLinesSchema import ExportEnrichedFlattenFinancialLinesSchema
 from batches.share.tabular_writer.factory import TabularWriterFactory
+from batches.share.tabular_writer.converter import convert_csv_to_excel, convert_csv_to_ods
 
 init_persistence_module()
 from services.budget.query_params import BudgetQueryParams  # noqa: E402
@@ -41,12 +42,27 @@ class _Ctx:
     """Type de fichier d'export (csv, xlsx, etc)"""
     current_export_dir: Optional[Path] = None
     """Répertoire courant d'export"""
+    needs_conversion: bool = False
+    """Indique si on doit convertir le CSV vers un autre format (True pour xlsx/ods)"""
 
     @property
-    def current_export_file(self) -> Optional[Path]:
+    def csv_file(self) -> Optional[Path]:
+        """Retourne le chemin du fichier CSV (toujours écrit en premier)"""
         if self.current_export_dir is None:
             return None
-        return self.current_export_dir / "export_file"
+        return self.current_export_dir / "export_file.csv"
+
+    @property
+    def final_export_file(self) -> Optional[Path]:
+        """Retourne le chemin du fichier final avec l'extension appropriée"""
+        if self.current_export_dir is None:
+            return None
+        if self.target_format == "xlsx":
+            return self.current_export_dir / "export_file.xlsx"
+        elif self.target_format == "ods":
+            return self.current_export_dir / "export_file.ods"
+        else:
+            return self.current_export_dir / "export_file.csv"
 
     ### budget query params
     query_params: Optional[BudgetQueryParams] = None
@@ -74,6 +90,11 @@ def initialise_export_task_in_db(ctx: _Ctx) -> _Ctx:
     assert user_email is not None
     assert flow_run_id is not None
 
+    # Déterminer si on a besoin d'une conversion après l'export CSV
+    needs_conversion = ctx.target_format in ["xlsx", "ods"]
+    if needs_conversion:
+        print(f"Export {ctx.target_format}: écriture en CSV puis conversion vers {ctx.target_format}")
+
     with session_audit_scope() as session:
         export_entity: ExportFinancialTask = ExportFinancialTaskService.initialize_and_persist_export_task_entity(
             session,
@@ -83,7 +104,7 @@ def initialise_export_task_in_db(ctx: _Ctx) -> _Ctx:
         )
         export_entity.target_format = ctx.target_format  # type: ignore
         session.commit()
-        ctx = replace(ctx, id_of_export_entity=export_entity.id)
+        ctx = replace(ctx, id_of_export_entity=export_entity.id, needs_conversion=needs_conversion)
     return ctx
 
 
@@ -113,18 +134,20 @@ def initalise_fs(ctx: _Ctx) -> _Ctx:
 
     ctx = replace(ctx, current_export_dir=current_partage_path)
 
-    ### Vide le fichier d'export s'il existe déjà
-    assert ctx.current_export_file is not None
-    with ctx.current_export_file.open("wb"):
+    ### Vide le fichier CSV s'il existe déjà
+    assert ctx.csv_file is not None
+    with ctx.csv_file.open("wb"):
         pass
 
     ###
     assert ctx.query_params is not None
     params: BudgetQueryParams = ctx.query_params
     user_email: str = runtime.flow_run.parameters["user_email"]  # type: ignore
+
+    # On écrit toujours en CSV
     writer = TabularWriterFactory.create_writer(
-        filep=str(ctx.current_export_file),
-        export_target=ctx.target_format,
+        filep=str(ctx.csv_file),
+        export_target="csv",
         username=user_email,
     )
     colonnes = params.colonnes_list
@@ -138,7 +161,7 @@ def initalise_fs(ctx: _Ctx) -> _Ctx:
     return ctx
 
 
-@task(timeout_seconds=300, log_prints=True, cache_policy=NO_CACHE)
+@task(timeout_seconds=60, log_prints=True, cache_policy=NO_CACHE)
 def step(ctx: _Ctx) -> _Ctx:
     print(f"Requête la page {ctx.current_page}, size: {ctx.page_size}")
 
@@ -159,9 +182,11 @@ def step(ctx: _Ctx) -> _Ctx:
         )
 
         user_email: str = runtime.flow_run.parameters["user_email"]  # type: ignore
+
+        # On écrit toujours en CSV
         writer = TabularWriterFactory.create_writer(
-            filep=str(ctx.current_export_file),
-            export_target=ctx.target_format,
+            filep=str(ctx.csv_file),
+            export_target="csv",
             username=user_email,
         )
         values = list(map(lambda e: _entity_to_colonnes(e, params.colonnes_list), data))  # type: ignore
@@ -179,6 +204,36 @@ def step(ctx: _Ctx) -> _Ctx:
             raise RuntimeError(f"On limite les exports à {nb_lignes} lignes. On arrête tout.")
         ###
         return ctx
+
+
+@task(timeout_seconds=120, log_prints=True, cache_policy=NO_CACHE)
+def convert_to_final_format(ctx: _Ctx) -> _Ctx:
+    """Convertit le CSV vers le format final (Excel ou ODS) si nécessaire."""
+    if not ctx.needs_conversion:
+        print("Pas de conversion nécessaire, le fichier CSV est le format final")
+        return ctx
+
+    assert ctx.csv_file is not None, "Le CSV doit exister"
+    assert ctx.final_export_file is not None, "Le fichier final doit être défini"
+
+    csv_path = ctx.csv_file
+    target_path = ctx.final_export_file
+
+    if ctx.target_format == "xlsx":
+        print(f"Conversion CSV → Excel: {target_path}")
+        convert_csv_to_excel(csv_path, target_path, chunk_size=1000)
+    elif ctx.target_format == "ods":
+        print(f"Conversion CSV → ODS: {target_path}")
+        convert_csv_to_ods(csv_path, target_path, chunk_size=1000)
+    else:
+        raise ValueError(f"Format non supporté pour la conversion: {ctx.target_format}")
+
+    # Supprimer le CSV temporaire
+    print(f"Suppression du CSV source: {csv_path}")
+    csv_path.unlink()
+    print("✓ Conversion terminée et CSV source supprimé")
+
+    return ctx
 
 
 @flow(log_prints=True)
@@ -202,8 +257,14 @@ def exporte_une_recherche(
 
     print(f"Export terminé, {ctx.nb_lignes} lignes exportées.")
 
+    # Convertir vers le format final si nécessaire (xlsx/ods)
+    ctx = convert_to_final_format(ctx)
+
+    # Utiliser le chemin du fichier final
+    assert ctx.final_export_file is not None
+    filep = str(ctx.final_export_file)
+
     with session_audit_scope() as session:
-        filep = str(ctx.current_export_file)
         task_id = ctx.id_of_export_entity
         assert task_id is not None
         ExportFinancialTaskService.complete_export_task_entity(session, task_id, filep)
