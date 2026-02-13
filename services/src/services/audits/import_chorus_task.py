@@ -82,3 +82,61 @@ class ImportChorusTaskService:
             db.rollback()
             logger.error(f"Failed to update audit table: {e}")
             raise ServerError(api_message=f"Failed to update audit table: {e}")
+
+    @staticmethod
+    def process_upload_audit_final(
+        db: Session,
+        email: str,
+        ae_path: str,
+        cp_path: str,
+        session_token: str,
+        year: int,
+        source_region: str,
+        client_id: str = None,
+    ) -> None:
+        """
+        Insère l'audit final après concaténation des fichiers AE et CP.
+
+        Cette méthode est appelée quand tous les fichiers d'une session d'upload
+        ont été reçus et concaténés.
+
+        Args:
+            db: Session de base de données audit
+            email: Adresse email de l'utilisateur connecté
+            ae_path: Chemin du fichier AE concaténé
+            cp_path: Chemin du fichier CP concaténé
+            session_token: Token de session unique
+            year: Année des données
+            source_region: Région source
+            client_id: ID client de l'application (optionnel)
+        """
+        if not session_token or not year:
+            logger.error("Missing required metadata for audit tracking")
+            return
+
+        try:
+            # Créer une nouvelle entrée avec les deux fichiers concaténés
+            logger.info(f"Creating final audit record for session_token: {session_token}")
+
+            new_record = AuditInsertFinancialTasks(
+                session_token=session_token,
+                fichier_ae=ae_path,
+                fichier_cp=cp_path,
+                source_region=source_region,
+                annee=year,
+                username=email,
+                application_clientid=client_id,
+            )
+            db.add(new_record)
+
+            # Commit les changements
+            db.commit()
+            logger.info(
+                f"Successfully created final audit record for session_token: {session_token}, "
+                f"AE: {ae_path}, CP: {cp_path}"
+            )
+
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Failed to create final audit record: {e}")
+            raise ServerError(api_message=f"Failed to create final audit record: {e}")
