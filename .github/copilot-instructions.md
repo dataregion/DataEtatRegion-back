@@ -86,10 +86,15 @@
 - **Dépréciation des services** :
   - Dans le répertoire `app`, les services sont à déprécier progressivement et doivent être remplacés par des implémentations dans `apis`. Privilégier toute nouvelle logique métier ou refactorisation dans `apis` plutôt que dans `services`.
 - **Conventions de codage** :
-  - **Fonctions async** : Toute fonction asynchrone doit être préfixée par `afn` pour améliorer la lisibilité et faciliter l'identification des fonctions asynchrones.
+  - **Fonctions async** : Toute fonction qui retourne une autre fonction asynchrone doit être préfixée par `afn` pour améliorer la lisibilité et faciliter l'identification des fonctions asynchrones.
     - ✅ Correct : `async def afn_fetch_data():`
     - ❌ À éviter : `async def fetch_data():`
-  - Cette convention s'applique à toutes les fonctions async : handlers FastAPI, services, utilitaires, tests, etc.
+- **le paramètre exc_info des méthodes de login** :
+  - Le paramètre `exc_info` doit être utilisé pour logger les exceptions avec la stack trace complète, ce qui facilite le debugging. Par exemple :
+    ```python
+    except Exception as e:
+        logger.error("Une erreur est survenue", exc_info=e)
+    ```
 
 ## 🔗 Intégrations & dépendances externes
 

@@ -2,6 +2,7 @@ print_sql: true
 
 sqlalchemy_database_uri: "postgresql+psycopg://postgres:passwd@localhost:5432/<DBNAME>"
 sqlalchemy_database_uri_audit: "postgresql+psycopg://postgres:passwd@localhost:5432/<DBNAME_AUDIT>"
+sqlalchemy_database_uri_settings: "postgresql+psycopg://postgres:passwd@localhost:5432/<DBNAME_SETTINGS>"
 
 upload_folder: "/tmp/DataEtat/uploads"
 dossier_des_imports: "/tmp/DataEtat/imports"
@@ -15,3 +16,10 @@ grist:
 
 cached_remote_files_url:
   donnees_qpv_entreprises: "https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5"
+
+smtp:
+  server: "localhost" # smtp4dev
+  port: 2525
+  from_email: "admin@admin.com"
+  # pwd: "postmaster"
+  use_ssl: False

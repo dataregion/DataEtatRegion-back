@@ -106,7 +106,6 @@ from .financial.import_financial import *  # noqa: E402, F403
 from .financial.import_france_2030 import *  # noqa: E402, F403
 from .financial.refresh_materialized_views import *  # noqa: E402, F403
 from .import_refs_tasks import *  # noqa: E402, F403
-from .management_tasks import *  # noqa: E402, F403
 from .refs import *  # noqa: E402, F403
 from .siret import *  # noqa: F403, E402
 from .tags import *  # noqa: E402, F403

@@ -23,7 +23,13 @@ def make_audit_engine():
     return engine
 
 
-EngineName = Literal["audit", "main"]
+def make_settings_engine():
+    db_url = get_config().sqlalchemy_database_uri_settings
+    engine = create_engine(db_url, pool_pre_ping=True, pool_recycle=30, echo=get_config().print_sql)
+    return engine
+
+
+EngineName = Literal["audit", "main", "settings"]
 
 
 @cache_stats()
@@ -31,10 +37,12 @@ EngineName = Literal["audit", "main"]
 def get_sesion_maker(engine_name: EngineName):
     main_engine = make_main_engine()
     audit_engine = make_audit_engine()
+    settings_engine = make_settings_engine()
 
     engines = {
         "main": main_engine,
         "audit": audit_engine,
+        "settings": settings_engine,
     }
 
     if get_config().print_sql:
@@ -57,6 +65,15 @@ def get_session_main():
 
 def get_session_audit():
     session_maker = get_sesion_maker("audit")
+    session = session_maker()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+def get_session_settings():
+    session_maker = get_sesion_maker("settings")
     session = session_maker()
     try:
         yield session

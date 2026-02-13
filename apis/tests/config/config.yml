@@ -2,6 +2,7 @@ print_sql: true
 
 sqlalchemy_database_uri: "postgresql+psycopg://postgres:password@localhost:5432/<DBNAME>"
 sqlalchemy_database_uri_audit: "postgresql+psycopg://postgres:passwd@localhost:5432/<AUDIT_DBNAME>"
+sqlalchemy_database_uri_settings: "postgresql+psycopg://postgres:password@localhost:5432/<DBNAME>"
 
 dossier_des_exports: "/tmp/DataEtat/exports"
 
@@ -12,6 +13,12 @@ keycloak_openid:
   secret_key: secret_key
   test_user: test@numih.fr
   test_password: pwd
+
+keycloak_administrator:
+  url: https://oidc.auth
+  realm: Regions
+  client_id: admin-cli
+  secret_key: secret_key_admin
 
 cache_config:
   budget_totaux_enabled: true

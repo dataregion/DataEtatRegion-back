@@ -1,7 +1,6 @@
 from app.controller import ApiDataEtat
 from flask import Blueprint
 
-from app.controller.administration.PreferenceUsersCtrl import api as prefApi
 from app.controller.administration.AuditCtrl import api as auditApi
 from app.controller.administration.ImportReferentielFinancial import api as importApi
 
@@ -18,5 +17,4 @@ api = ApiDataEtat(
     authorizations=authorizations,
 )
 api.add_namespace(auditApi)
-api.add_namespace(prefApi)
 api.add_namespace(importApi)

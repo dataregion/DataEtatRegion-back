@@ -39,7 +39,7 @@ class KeycloakTokenValidator:
             self._jwk_set = JsonWebKey.import_key_set(response.json())
         return self._jwk_set
 
-    def validate_token(self, token: str) -> ConnectedUser:
+    async def validate_token(self, token: str) -> ConnectedUser:
         try:
             jwk_set = self._get_jwk_set()
             claims = jwt.decode(
@@ -62,7 +62,7 @@ class KeycloakTokenValidator:
         """Récupère l'utilisateur connecté. Ne vérifie pas les droits d'accès par défaut car c'est un appel à destination de la communication m2m."""
 
         async def _wrapped(token: str = Depends(self.oauth2_scheme)) -> ConnectedUser:
-            connected_user = self.validate_token(token)
+            connected_user = await self.validate_token(token)
             return connected_user
 
         return _wrapped
@@ -71,7 +71,7 @@ class KeycloakTokenValidator:
         """Récupère l'utilisateur connecté. Lève une exception si le token est invalide ou l'utilisateur n'a pas les droits d'accès basiques au service."""
 
         async def _wrapped(token: str = Depends(self.oauth2_scheme)) -> ConnectedUser:
-            connected_user = self.validate_token(token)
+            connected_user = await self.validate_token(token)
             connected_user.check_has_access_rights()
             return connected_user
 
@@ -81,7 +81,7 @@ class KeycloakTokenValidator:
         """Récupère l'utilisateur connecté et vérifie qu'il a le rôle admin ou comptable."""
 
         async def _wrapped(token: str = Depends(self.oauth2_scheme)) -> ConnectedUser:
-            connected_user = self.validate_token(token)
+            connected_user = await self.validate_token(token)
             connected_user.check_has_access_rights()
             connected_user.check_has_any_role(["admin", "comptable"])
 

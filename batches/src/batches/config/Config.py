@@ -15,6 +15,21 @@ class RemoteFilesConfig(BaseModel):
     """URL du fichier contenant le lien entre QPV et SIRET"""
 
 
+class SMTPConfig(BaseModel):
+    server: str
+    """Serveur SMTP"""
+    port: int
+    """Port du serveur SMTP"""
+    from_email: str
+    """Adresse email d'envoi"""
+    pwd: str | None = None
+    """Mot de passe SMTP (optionnel)"""
+    login: str | None = None
+    """Login SMTP (optionnel, utilise from_email par défaut)"""
+    use_ssl: bool = False
+    """Utiliser SSL pour la connexion SMTP"""
+
+
 class Config(BaseModel):
     print_sql: bool
     """Flag qui active le paramètre 'echo' de l'engine sqlalchemy"""
@@ -22,6 +37,8 @@ class Config(BaseModel):
     """Base de données principale"""
     sqlalchemy_database_uri_audit: str
     """Base de données d'audit (utilisée avec le bind)"""
+    sqlalchemy_database_uri_settings: str
+    """Base de données settings (utilisée pour les préférences utilisateurs)"""
     
     upload_folder: Path
     """Même dossier de partage utilisé dans les tâches celery pour l'historicité."""
@@ -37,3 +54,6 @@ class Config(BaseModel):
 
     cached_remote_files_url: RemoteFilesConfig
     """Configuration des URL des fichiers distants à télécharger"""
+
+    smtp: SMTPConfig
+    """Configuration SMTP pour l'envoi d'emails"""

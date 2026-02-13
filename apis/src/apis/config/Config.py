@@ -55,10 +55,16 @@ class Config(BaseModel):
     sqlalchemy_database_uri_audit: str
     """Base de données d'audit (utilisée avec le bind)"""
 
+    sqlalchemy_database_uri_settings: str
+    """Base de données settings (schéma pour préférences utilisateurs, etc.)"""
+
     dossier_des_exports: Path
     """Chemin vers le répertoire qui contient les exports utilisateurs."""
 
     keycloak_openid: KeycloakOpenIdConfig
+
+    keycloak_administrator: KeycloakOpenIdConfig
+    """Utilisateur administrateur de keycloak pour la gestion des utilisateurs et des groupes (création, suppression, etc.)"""
     
     cache_config: CacheConfig
     
