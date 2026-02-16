@@ -25,8 +25,6 @@ function completeColumnIndex(columns) {
     messageGroup.innerHTML = `<p class="fr-message fr-message--error">
       Aucune colonne disponible pour créer un index. Il faut une colonne de type Numeric ou Text.
       </p>`;
-    const submitBtn = document.getElementById("submit-btn");
-    if (submitBtn) submitBtn.setAttribute("disabled", "true");
   }
 }
 
@@ -95,8 +93,12 @@ async function initGrist() {
 
   const select = document.getElementById("column");
   const submitBtn = document.getElementById("submit-btn");
+  const submitContainer = document.getElementById("submit-container");
   const label = document.getElementById("column-select-label");
   const form = document.getElementById("columns-form");
+  const colSelectGroup = document.getElementById("col-select-group");
+  const hasIndexYes = document.getElementById("has-index-yes");
+  const hasIndexNo = document.getElementById("has-index-no");
 
   // Récupère une seule fois l'id de la table
   let tableId;
@@ -114,27 +116,34 @@ async function initGrist() {
     displayErrorFeedback("Erreur sur la récupération de la table sélectionnée : " + err.message);
   }
 
-  // 🔹 Activer le bouton uniquement si une colonne est choisie
-  select.addEventListener("change", () => {
-    if (select.value) {
-      submitBtn.removeAttribute("disabled");
-    } else {
-      submitBtn.setAttribute("disabled", "true");
+  // Gérer l'affichage conditionnel du select d'index et du bouton submit
+  hasIndexYes.addEventListener("change", () => {
+    if (hasIndexYes.checked) {
+      colSelectGroup.classList.remove("fr-hidden");
+      submitContainer.classList.remove("fr-hidden");
+    }
+  });
+
+  hasIndexNo.addEventListener("change", () => {
+    if (hasIndexNo.checked) {
+      colSelectGroup.classList.add("fr-hidden");
+      submitContainer.classList.remove("fr-hidden");
+      select.value = ""; // Réinitialiser la sélection
     }
   });
 
   // 🔹 Sur submit, appelle publishDataGrist et empêche le submit classique
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    submitBtn.disabled = true;
     publishInProgress()
 
     const token = await login( oidcConfig.url, oidcConfig.realm, oidcConfig.clientId );
 
     hidePart("form-publish");
     const data = new FormData(form);
-    const indexCol = data.get("column");
-    if (tableId && indexCol) {
+    const indexCol = data.get("column") || null; // Index optionnel
+    
+    if (tableId) {
       try {
         await publishDataGrist(tableId, indexCol, token);
         linkToSupersetInProgress()
@@ -142,7 +151,6 @@ async function initGrist() {
         hidePart("loading");
         showPart("success");
       } catch(err) {
-        submitBtn.disabled = false;
         displayErrorFeedback(err.message);
         hidePart("loading");
         showPart("error-message");

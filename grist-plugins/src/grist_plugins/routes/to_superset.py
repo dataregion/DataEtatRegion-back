@@ -84,18 +84,6 @@ async def publish(
     logger.debug(f"Colonnes validées : {columns_list}")
 
     try:
-        # Validation : il doit y avoir au moins une colonne indexée
-        has_index = any(col.is_index for col in columns_list)
-        if not has_index:
-            logger.warning("Validation échouée : aucune colonne indexée.")
-            return JSONResponse(
-                {
-                    "success": False,
-                    "message": "Veuillez sélectionner au moins une colonne comme index.",
-                },
-                status_code=status.HTTP_400_BAD_REQUEST,
-            )
-
         logger.info(f"Validation réussie pour la table : '{tableId}' avec {len(columns_list)} colonne(s)")
 
         # Appel à l'API d'import distante

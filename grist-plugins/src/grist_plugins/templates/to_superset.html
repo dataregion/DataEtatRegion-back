@@ -34,6 +34,13 @@
 
     <div id="loading-plugins">
         <p class="fr-badge">Chargement du plugins ... </p>
+        <div class="fr-alert fr-alert--info fr-mb-3w" role="status">
+            <p class="fr-alert__title">Besoin d'aide&nbsp;?</p>
+            <p>
+            Si le plugin reste bloqué sur "Chargement du plugins ...", vérifiez que le plugin dispose bien de tous les accès nécessaires sur le document Grist.<br>
+            Pour cela, cliquez sur le bouton de gestion des accès (en haut à droite, panneau de création) et assurez-vous que le plugin a les droits requis.
+            </p>
+        </div>
     </div>
 
     <div id="form-publish" class="fr-hidden">
@@ -51,7 +58,29 @@
         </div>
 
         <form id="columns-form" class="fr-my-2w" method="post">
-            <div class="fr-select-group" id="col-select-group">
+            <div class="fr-form-group">
+                <fieldset class="fr-fieldset">
+                    <legend class="fr-fieldset__legend">
+                        Avez-vous une colonne avec des données uniques ?
+                    </legend>
+                    <div class="fr-fieldset__content">
+                        <div class="fr-radio-group">
+                            <input type="radio" id="has-index-yes" name="has-index" value="yes">
+                            <label class="fr-label" for="has-index-yes">
+                                Oui, je veux définir un index
+                            </label>
+                        </div>
+                        <div class="fr-radio-group">
+                            <input type="radio" id="has-index-no" name="has-index" value="no">
+                            <label class="fr-label" for="has-index-no">
+                                Non, pas d'index spécifique
+                            </label>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="fr-select-group fr-hidden" id="col-select-group">
                 <label class="fr-label" for="column" id="column-select-label">
                     Sélectionner un index pour la table 
                 </label>
@@ -60,13 +89,13 @@
                     <!-- Options injectées en JS -->
                 </select>
 
-                <div  class="fr-alert fr-alert--warning fr-mb-3w">
+                <div class="fr-alert fr-alert--warning fr-mb-3w">
                     <p>La colonne choisie ne doit comporter que des valeurs uniques.</p>
                 </div>
             </div>
 
-            <div class="fr-my-3w" id="submit-container">
-                <button type="submit" class="fr-btn" id="submit-btn" disabled>Envoyer les données</button>
+            <div class="fr-my-3w fr-hidden" id="submit-container">
+                <button type="submit" class="fr-btn" id="submit-btn">Envoyer les données</button>
             </div>
         </form>
     </div>

@@ -174,10 +174,17 @@ class ImportService:
         except exc.IntegrityError as i:
             self.session.rollback()
             logger.error(f"Erreur integrite : {str(i)}")
-            index_col = next((col.id for col in columns_schema if col.is_index), "")
-            raise DataInsertIndexException(
-                f"L'index {index_col} ne contient pas des valeurs uniques. Merci de sélectionner un index contient que des valeurs uniques."
-            ) from i
+            index_col = next((col.id for col in columns_schema if col.is_index), None)
+            if index_col:
+                raise DataInsertIndexException(
+                    f"L'index '{index_col}' ne contient pas des valeurs uniques. "
+                    "Merci de sélectionner un index qui contient uniquement des valeurs uniques."
+                ) from i
+            else:
+                raise DataInsertException(
+                    "Erreur d'intégrité lors de l'insertion des données. "
+                    "Il est recommandé de définir un index avec des valeurs uniques pour éviter les doublons."
+                ) from i
         except Exception as e:
             self.session.rollback()
             logger.error(f"Erreur lors de l'insertion: {str(e)}")

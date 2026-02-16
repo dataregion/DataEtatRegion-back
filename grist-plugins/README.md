@@ -36,11 +36,14 @@ rm requirements.external.txt # à supprimer pour des montées des version plus a
 ./.build-helper-scripts/update-requirements-external.sh
 ```
 
-### Lancement des plugins 
+### Lancement du plugin en local (FastAPI)
 
-Se rendre dans le dossier src/grist_plugins
+Se placer à la racine du dossier `grist-plugins` puis activer le venv Python :
 
 ```bash
-cd src/grist_plugins
-fastapi dev main.py 
+cd /home/sylv1/dataEtat/data-transform/grist-plugins
+source .venv/bin/activate
+uvicorn src.grist_plugins.main:app --reload --host 0.0.0.0
 ```
+
+L'API sera accessible sur http://localhost:8051 et la documentation interactive sur http://localhost:8051/docs
