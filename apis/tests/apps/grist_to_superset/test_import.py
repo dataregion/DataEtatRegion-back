@@ -188,7 +188,7 @@ def test_integrity_error_index(client, config):
         headers={"X-API-Key": config.token_for_grist_plugins, "Authorization": "Bearer fake-token-for-test"},
     )
     assert response.status_code == 500
-    message_expected = "L'index name ne contient pas des valeurs uniques. Merci de sélectionner un index contient que des valeurs uniques."
+    message_expected = "L'index 'name' ne contient pas des valeurs uniques. Merci de sélectionner un index qui contient uniquement des valeurs uniques."
     assert response.json()["success"] is False
     assert response.json()["message"] == message_expected
     assert response.json()["detail"] == message_expected
