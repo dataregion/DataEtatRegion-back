@@ -91,7 +91,27 @@ export async function publishDataGrist(tableId, colIndex, token) {
   });
   // Créer un File
   const file = new File([csv], `${tableId}.csv`, { type: 'text/csv' });
-  const colsClean = columns.map(c => ({ id: c.id, type: c.fields.type, is_index: c.id === colIndex }));
+  
+  // Normaliser les types et extraire la timezone pour les DateTime
+  const colsClean = columns.map(c => {
+    const rawType = c.fields.type;
+    let type = rawType;
+    let timezone = null;
+    
+    // Si c'est un DateTime avec timezone (ex: "DateTime:Europe/Madrid")
+    if (rawType.startsWith('DateTime:')) {
+      const parts = rawType.split(':', 2);
+      type = parts[0];  // "DateTime"
+      timezone = parts[1];  // TimeZone
+    }
+    
+    return {
+      id: c.id,
+      type: type,
+      is_index: c.id === colIndex,
+      timezone: timezone
+    };
+  });
 
   // Préparer FormData
   const formData = new FormData();

@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 from enum import Enum
 
 
@@ -9,7 +10,7 @@ class ColumnType(str, Enum):
     NUMERIC = "Numeric"
     INT = "Int"
     DATE = "Date"
-    DATETIME = "Datetime"
+    DATETIME = "DateTime"
     BOOL = "Bool"
     ANY = "Any"
     CHOICE = "Choice"
@@ -22,3 +23,4 @@ class ColumnIn(BaseModel):
     id: str
     type: ColumnType
     is_index: bool
+    timezone: Optional[str] = None  # Timezone pour les colonnes DateTime (ex: "Europe/Madrid")

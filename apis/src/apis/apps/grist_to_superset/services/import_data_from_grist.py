@@ -154,7 +154,31 @@ class ImportService:
             return 0
 
         column_names = [col.id for col in columns_schema]
-        df_to_insert = dataframe[column_names]
+        df_to_insert = dataframe[column_names].copy()
+
+        # Convertir les colonnes de type DATE et DATETIME depuis timestamp Unix
+        date_cols = [col for col in columns_schema if col.type in (ColumnType.DATE, ColumnType.DATETIME)]
+
+        for col in date_cols:
+            if col.id not in df_to_insert.columns:
+                continue
+
+            logger.debug(f"Conversion de la colonne '{col.id}' ({col.type.value}) depuis timestamp Unix")
+
+            # Convertir depuis timestamp Unix (en secondes) vers datetime
+            df_to_insert[col.id] = pd.to_datetime(df_to_insert[col.id], unit="s", errors="coerce")
+
+            # Pour DateTime avec timezone
+            if col.type == ColumnType.DATETIME and col.timezone:
+                try:
+                    df_to_insert[col.id] = df_to_insert[col.id].dt.tz_localize("UTC").dt.tz_convert(col.timezone)
+                    logger.debug(f"  Timezone appliquée: {col.timezone}")
+                except Exception as e:
+                    logger.warning(f"  Timezone {col.timezone} invalide: {e}")
+
+            # Pour Date, extraire uniquement la date
+            elif col.type == ColumnType.DATE:
+                df_to_insert[col.id] = df_to_insert[col.id].dt.date
 
         try:
             df_to_insert.to_sql(
