@@ -4,6 +4,8 @@ import pytest
 
 from services.tests.DataEtatPostgresContainer import DataEtatPostgresContainer
 from services.tests.DataEtatPrefectContainer import DataEtatPrefectContainer
+from sqlalchemy import text
+import sqlalchemy
 from batches.config.current import get_config
 
 
@@ -17,6 +19,14 @@ def postgres_container():
     # Démarrage du container
     postgres = DataEtatPostgresContainer()
     postgres.start()
+
+    engine = sqlalchemy.create_engine(postgres.get_connection_url())
+    for schema in ["settings", "audit", "demarches_simplifiees"]:
+        engine = engine
+        with engine.connect() as conn:
+            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema};"))
+            conn.commit()
+
     try:
         yield postgres
     finally:
