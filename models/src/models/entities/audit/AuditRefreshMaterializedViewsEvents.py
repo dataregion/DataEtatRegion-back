@@ -11,6 +11,7 @@ class AuditRefreshMaterializedViewsEvents(_PersistenceBaseModelInstance()):
 
     __tablename__ = "audit_refresh_materialized_views"
     __bind_key__ = "audit"
+    __table_args__ = {"schema": "audit"}
 
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
     event: Column[str] = Column(String, nullable=False)

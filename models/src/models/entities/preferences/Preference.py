@@ -8,6 +8,8 @@ from sqlalchemy.orm import relationship
 class Preference(_PersistenceBaseModelInstance()):
     __tablename__ = "preference_users"
     __bind_key__ = "settings"
+    __table_args__ = {"schema": "settings"}
+
     # PK
     id = Column(Integer, primary_key=True, nullable=False)
 
@@ -34,11 +36,12 @@ class Preference(_PersistenceBaseModelInstance()):
 class Share(_PersistenceBaseModelInstance()):
     __tablename__ = "share_preference"
     __bind_key__ = "settings"
+    __table_args__ = {"schema": "settings"}
     # PK
     id = Column(Integer, primary_key=True, nullable=False)
 
     # FK
-    preference_id = Column(Integer, ForeignKey("preference_users.id"))
+    preference_id = Column(Integer, ForeignKey("settings.preference_users.id"))
     shared_username_email = Column(String, nullable=False)
     email_send = Column(Boolean, nullable=False, default=False)
     date_email_send = Column(DateTime, nullable=True)

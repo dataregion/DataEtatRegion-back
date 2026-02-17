@@ -14,6 +14,7 @@ class AuditUpdateData(_PersistenceBaseModelInstance()):
 
     __tablename__ = "audit_update_data"
     __bind_key__ = "audit"
+    __table_args__ = {"schema": "audit"}
     # PK
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
 

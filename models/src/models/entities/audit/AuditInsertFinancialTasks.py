@@ -9,6 +9,7 @@ class AuditInsertFinancialTasks(_PersistenceBaseModelInstance()):
 
     __tablename__ = "audit_insert_financial_tasks"
     __bind_key__ = "audit"
+    __table_args__ = {"schema": "audit"}
 
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
     session_token: Column[str] = Column(String, nullable=True, unique=True)

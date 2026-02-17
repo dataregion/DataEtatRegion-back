@@ -13,6 +13,7 @@ class CachedRemoteFile(_Audit, _PersistenceBaseModelInstance()):
 
     __tablename__ = "audit_cached_remote_files"
     __bind_key__ = "audit"
+    __table_args__ = {"schema": "audit"}
 
     id: Column[int] = Column(Integer, primary_key=True, nullable=False)
     name: Column[str] = Column(String, nullable=False)
