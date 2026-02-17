@@ -80,6 +80,9 @@ def get_metadata(bind):
 def include_object(object, name, type_, reflected, compare_to):
     if type_ != "table":
         return True
+    
+    if name == "spatial_ref_sys":
+        return False # On ignore la table spatial_ref_sys qui est créée par PostGIS et qui n'est pas gérée par SQLAlchemy
 
     skip_autogen = object.info.get("skip_autogenerate")
     if skip_autogen:
