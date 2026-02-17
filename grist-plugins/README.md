@@ -41,8 +41,6 @@ rm requirements.external.txt # à supprimer pour des montées des version plus a
 Se placer à la racine du dossier `grist-plugins` puis activer le venv Python :
 
 ```bash
-cd /home/sylv1/dataEtat/data-transform/grist-plugins
-source .venv/bin/activate
 uvicorn src.grist_plugins.main:app --reload --host 0.0.0.0
 ```
 
