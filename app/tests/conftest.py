@@ -67,7 +67,8 @@ def setup_schemas():
         for schema in ["settings", "audit", "demarches_simplifiees"]:
             engine = db.engines[schema]
             with engine.connect() as conn:
-                conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
+                conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema};"))
+                conn.commit()
 
     yield
     # Nettoyage après les tests
