@@ -24,11 +24,12 @@ class QpvQueryBuilder(FinancialLineQueryBuilder):
     Méthodes de conditions spécifiques aux requêtes de Data QPV
     """
 
-    def where_geo_loc_qpv(self, type_geo: TypeCodeGeo, list_code_geo: list[str], source_region: str):
+    def where_geo_loc_qpv(self, type_geo_str: str, list_code_geo: list[str], source_region: str):
         if list_code_geo is None:
             return self
 
         # Protection contre les types géo encore non gérés
+        type_geo = TypeCodeGeo(type_geo_str.upper())
         if type_geo not in [
             TypeCodeGeo.DEPARTEMENT,
             TypeCodeGeo.EPCI,
