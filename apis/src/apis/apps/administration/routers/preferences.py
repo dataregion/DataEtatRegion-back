@@ -224,7 +224,7 @@ async def get_preference(
     "/{uuid}",
     summary="Mettre à jour une préférence",
     description="Met à jour une préférence existante (nom, filtres, options, partages)",
-    response_model=APISuccess[str],
+    response_model=APISuccess[PreferenceResponse],
     responses=error_responses(),
 )
 async def update_preference(
@@ -252,6 +252,9 @@ async def update_preference(
                 session=session,
             )
 
+            session.refresh(preference)  # Rafraîchir l'instance pour obtenir les partages mis à jour
+            preference_response = PreferenceResponse.model_validate(preference)
+
             # Si des partages existent, déclencher le flow Prefect
             if len(preference.shares) > 0:
                 await alaunch_share_filter_flow(
@@ -262,7 +265,7 @@ async def update_preference(
         return APISuccess(
             code=HTTPStatus.OK,
             message="Préférence mise à jour avec succès",
-            data="Success",
+            data=preference_response,
         )
     except ValueError as e:
         if "droits" in str(e).lower():
