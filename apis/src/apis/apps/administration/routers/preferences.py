@@ -32,6 +32,7 @@ from apis.shared.models import APISuccess
 from apis.shared.request_utils import get_origin_referrer
 from models.connected_user import ConnectedUser
 from models.exceptions import BadRequestError, ForbiddenError, ServerError
+from models.entities.preferences.Preference import Preference
 from services.preferences.preferences_service import (
     create_preference as service_create_preference,
     delete_preference as service_delete_preference,
@@ -122,11 +123,8 @@ async def create_preference(
             )
 
             # Si des partages existent, déclencher le flow Prefect d'envoi d'emails
-            if len(preference.shares) > 0:
-                await alaunch_share_filter_flow(
-                    preference_uuid=str(preference.uuid),
-                    host_link=get_origin_referrer(request),
-                )
+            origin_referrer = get_origin_referrer(request)
+            await _alaunch_share_task_for_new_shares(preference, host_link=origin_referrer)
 
         # Convertir en modèle Pydantic de réponse
         response_data = PreferenceResponse.model_validate(preference)
@@ -256,11 +254,8 @@ async def update_preference(
             preference_response = PreferenceResponse.model_validate(preference)
 
             # Si des partages existent, déclencher le flow Prefect
-            if len(preference.shares) > 0:
-                await alaunch_share_filter_flow(
-                    preference_uuid=str(preference.uuid),
-                    host_link=get_origin_referrer(request),
-                )
+            origin_referrer = get_origin_referrer(request)
+            await _alaunch_share_task_for_new_shares(preference, origin_referrer)
 
         return APISuccess(
             code=HTTPStatus.OK,
@@ -311,7 +306,19 @@ async def delete_preference(
         raise ServerError(api_message="Erreur lors de la suppression de la préférence")
 
 
-async def alaunch_share_filter_flow(preference_uuid: str, host_link: str):
+async def _alaunch_share_task_for_new_shares(preference: Preference, host_link: str):
+    """Lance la tâche de partage par email pour les nouveaux partages"""
+    uuid = preference.uuid
+    assert uuid is not None, "La préférence doit avoir été persistée au préalable"
+
+    unqueued_shares = [share for share in preference.shares if share.queued_with_run_id is None]
+    if len(unqueued_shares) > 0:
+        flow_run = await _alaunch_share_filter_flow(uuid, host_link)
+        for share in unqueued_shares:
+            share.queued_with_run_id = flow_run.id
+
+
+async def _alaunch_share_filter_flow(preference_uuid: str, host_link: str):
     """Fonction utilitaire pour lancer le flow Prefect de partage de préférence."""
     run = await arun_deployment(
         name="share-filter-user/share_filter_user",

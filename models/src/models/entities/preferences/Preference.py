@@ -1,8 +1,9 @@
+from typing import List
 import datetime
 import uuid as uuid
 from models import _PersistenceBaseModelInstance
 from sqlalchemy import Column, ForeignKey, String, Integer, JSON, DateTime, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 
 class Preference(_PersistenceBaseModelInstance()):
@@ -30,7 +31,9 @@ class Preference(_PersistenceBaseModelInstance()):
     dernier_acces = Column(DateTime, nullable=True)
     nombre_utilisation = Column(Integer, nullable=True, default=0)
     # Relationship
-    shares = relationship("Share", lazy="select", uselist=True, cascade="delete,save-update,merge")
+    shares: Mapped[List["Share"]] = relationship(
+        "Share", lazy="select", uselist=True, cascade="delete,save-update,merge"
+    )
 
 
 class Share(_PersistenceBaseModelInstance()):
@@ -45,3 +48,5 @@ class Share(_PersistenceBaseModelInstance()):
     shared_username_email = Column(String, nullable=False)
     email_send = Column(Boolean, nullable=False, default=False)
     date_email_send = Column(DateTime, nullable=True)
+
+    queued_with_run_id = Column(String, nullable=True)

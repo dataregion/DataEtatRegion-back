@@ -10,12 +10,14 @@ from datetime import timezone
 
 import sqlalchemy
 from prefect import flow, task, get_run_logger
+from prefect.concurrency.sync import concurrency
 from prefect.cache_policies import NO_CACHE
 from sqlalchemy import cast
 from sqlalchemy.orm import lazyload
 
 from batches.database import session_settings_scope
 from batches.mail import get_mail_service
+from batches.prefect.utils import ensure_concurrency_limit
 from models.entities.preferences.Preference import Preference
 
 
@@ -56,6 +58,16 @@ def _get_subject(link: str) -> str:
         return SUBJECT_FRANCE_RELANCE
     return SUBJECT_BUDGET
 
+def _get_concurrency_id(uuid: str):
+    return f"share_filter_user_for_{uuid}"
+
+@task
+async def prepare(preference_uuid: str):
+    logger = get_run_logger()
+    concurrency_id = _get_concurrency_id(preference_uuid)
+    logger.info(f"[SHARE][FILTER] ensure that concurrency limit exist for preference {preference_uuid}")
+    await ensure_concurrency_limit(concurrency_id, 1, logger=logger)
+
 
 @task(
     timeout_seconds=120,
@@ -63,7 +75,7 @@ def _get_subject(link: str) -> str:
     cache_policy=NO_CACHE,
     retries=0,  # Pas de retry car c'est une tâche non idempotente
 )
-def send_share_emails(preference_uuid: str, host_link: str):
+async def send_share_emails(preference_uuid: str, host_link: str):
     """Tâche Prefect pour envoyer les emails de partage de préférence.
 
     Récupère une préférence par son UUID, puis envoie un email à chaque
@@ -75,38 +87,50 @@ def send_share_emails(preference_uuid: str, host_link: str):
     """
     logger = get_run_logger()
     logger.info(f"[SHARE][FILTER] Start preference {preference_uuid}")
+    
+    concurrency_id = _get_concurrency_id(preference_uuid)
+    with concurrency(concurrency_id, occupy=1, strict=True):
 
-    # Récupérer le service mail
-    mail_service = get_mail_service()
+        # Récupérer le service mail
+        mail_service = get_mail_service()
 
-    # Ouvrir une session sur la base settings
-    with session_settings_scope() as session:
-        with session.begin():
-            # Requêter la préférence avec ses partages
-            preference = (
-                session.query(Preference)
-                .options(lazyload(Preference.shares))
-                .filter(cast(Preference.uuid, sqlalchemy.String) == preference_uuid)
-                .one_or_none()
-            )
+        # Ouvrir une session sur la base settings
+        with session_settings_scope() as session:
+            with session.begin():
+                # Requêter la préférence avec ses partages
+                preference = (
+                    session.query(Preference)
+                    .options(lazyload(Preference.shares))
+                    .filter(cast(Preference.uuid, sqlalchemy.String) == preference_uuid)
+                    .one_or_none()
+                )
 
-            if preference is None:
-                logger.warning(f"[SHARE][FILTER] Preference {preference_uuid} not found")
-                return
+                if preference is None:
+                    txt = f"[SHARE][FILTER] Preference {preference_uuid} not found"
+                    logger.error(txt)
+                    raise ValueError(txt)
+                
+                appropriate_shares = [
+                    share for share
+                    in preference.shares
+                ]
 
-            if len(preference.shares) == 0:
-                logger.info(f"[SHARE][FILTER] No shares for preference {preference_uuid}")
-                return
+                if len(appropriate_shares) == 0:
+                    logger.info(f"[SHARE][FILTER] No shares for preference {preference_uuid}")
+                    return
 
-            # Construire les liens
-            link_preference = f"{host_link}/?uuid={preference_uuid}"
-            link_register = f"{host_link}/register"
-            subject = _get_subject(host_link)
+                # Construire les liens
+                link_preference = f"{host_link}/?uuid={preference_uuid}"
+                link_register = f"{host_link}/register"
+                subject = _get_subject(host_link)
 
-            # Envoyer un email pour chaque partage non encore envoyé
-            emails_sent = 0
-            for share in preference.shares:
-                if not share.email_send:
+                # Envoyer un email pour chaque partage non encore envoyé
+                emails_sent = 0
+                for share in appropriate_shares:
+                    if share.email_send:
+                        logger.info(f"[SHARE][FILTER] Already sent email to this share (id: {share.id})")
+                        continue
+
                     # Formater les templates
                     txt = TEXT_TEMPLATE.format(
                         preference.username,
@@ -132,12 +156,12 @@ def send_share_emails(preference_uuid: str, host_link: str):
 
                     logger.debug(f"[SHARE][FILTER] Sent email to {share.shared_username_email}")
 
-            # Commit des changements
-            logger.info(f"[SHARE][FILTER] Completed: {emails_sent} email(s) sent for preference {preference_uuid}")
+                # Commit des changements
+                logger.info(f"[SHARE][FILTER] Completed: {emails_sent} email(s) sent for preference {preference_uuid}")
 
 
 @flow(log_prints=True)
-def share_filter_user(preference_uuid: str, host_link: str):
+async def share_filter_user(preference_uuid: str, host_link: str):
     """Flow Prefect pour partager une préférence utilisateur par email.
 
     Ce flow remplace la tâche Celery `share_filter_user`. Il envoie des emails
@@ -147,4 +171,5 @@ def share_filter_user(preference_uuid: str, host_link: str):
         preference_uuid: UUID de la préférence à partager
         host_link: URL de base de l'application pour construire les liens
     """
-    send_share_emails(preference_uuid, host_link)
+    await prepare(preference_uuid)
+    await send_share_emails(preference_uuid, host_link)
