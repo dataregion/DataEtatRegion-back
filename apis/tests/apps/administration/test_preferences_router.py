@@ -21,6 +21,8 @@ from apis.clients.keycloak_admin import KeycloakAdminError
 
 from .conftest import *  # noqa: F401, F403
 
+from prefect.client.schemas.objects import FlowRun
+
 # Préfixe de l'API administration
 API_PREFIX = "/administration/api/v3"
 
@@ -97,6 +99,9 @@ def test_create_preference_with_shares(
     """
     # Mock de l'origin pour le lien de partage
     mock_get_origin.return_value = "http://localhost:4200"
+    mock_run_deployment.return_value = FlowRun(
+        id="550e8400-e29b-41d4-a716-446655440000", flow_id="550e8400-e29b-41d4-a716-446655440000"
+    )
 
     # Préparer les données
     payload = {
@@ -338,6 +343,9 @@ def test_update_preference_with_shares(
     - Prefect EST appelé
     """
     mock_get_origin.return_value = "http://localhost:4200"
+    mock_run_deployment.return_value = FlowRun(
+        id="550e8400-e29b-41d4-a716-446655440000", flow_id="550e8400-e29b-41d4-a716-446655440000"
+    )
 
     payload = {
         "name": unshared_preference.name,
