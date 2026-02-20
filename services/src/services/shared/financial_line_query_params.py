@@ -27,7 +27,7 @@ class FinancialLineQueryParams(SourcesQueryParams):
     @computed_field
     @property
     def niveau_geo_enum(self) -> Optional[TypeCodeGeo]:
-        return TypeCodeGeo(self.niveau_geo.upper())
+        return TypeCodeGeo(self.niveau_geo.upper()) if self.niveau_geo is not None else None
 
     @computed_field
     @property
