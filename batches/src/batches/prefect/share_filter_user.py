@@ -58,8 +58,10 @@ def _get_subject(link: str) -> str:
         return SUBJECT_FRANCE_RELANCE
     return SUBJECT_BUDGET
 
+
 def _get_concurrency_id(uuid: str):
     return f"share_filter_user_for_{uuid}"
+
 
 @task
 async def prepare(preference_uuid: str):
@@ -87,10 +89,9 @@ async def send_share_emails(preference_uuid: str, host_link: str):
     """
     logger = get_run_logger()
     logger.info(f"[SHARE][FILTER] Start preference {preference_uuid}")
-    
+
     concurrency_id = _get_concurrency_id(preference_uuid)
     with concurrency(concurrency_id, occupy=1, strict=True):
-
         # Récupérer le service mail
         mail_service = get_mail_service()
 
@@ -109,11 +110,8 @@ async def send_share_emails(preference_uuid: str, host_link: str):
                     txt = f"[SHARE][FILTER] Preference {preference_uuid} not found"
                     logger.error(txt)
                     raise ValueError(txt)
-                
-                appropriate_shares = [
-                    share for share
-                    in preference.shares
-                ]
+
+                appropriate_shares = [share for share in preference.shares]
 
                 if len(appropriate_shares) == 0:
                     logger.info(f"[SHARE][FILTER] No shares for preference {preference_uuid}")
