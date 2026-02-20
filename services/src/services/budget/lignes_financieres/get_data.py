@@ -30,7 +30,7 @@ def get_lignes(
         .code_programme_in(params.code_programme_list)
         .themes_in(params.theme_list)
         .annee_in(params.annee_list)
-        .niveau_code_geo_in(params.niveau_geo, params.code_geo_list, source_region)
+        .niveau_code_geo_in(params.niveau_geo_enum, params.code_geo_list, source_region)
         .centres_couts_in(params.centres_couts_list)
         .domaine_fonctionnel_in(params.domaine_fonctionnel_list)
         .referentiel_programmation_in(params.referentiel_programmation_list)

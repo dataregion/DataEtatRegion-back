@@ -57,7 +57,7 @@ def _get_query_builder(
         .code_programme_in(params.code_programme_list)
         .code_programme_not_in(params.not_code_programme_list)
         .annee_in(params.annee_list)
-        .where_geo_loc_qpv(params.niveau_geo, params.code_geo_list, source_region)
+        .where_geo_loc_qpv(params.niveau_geo_enum, params.code_geo_list, source_region)
         .lieu_action_code_qpv_in(params.code_qpv_list, source_region)
         .centres_couts_in(params.centres_couts_list)
         .themes_in(params.theme_list)

@@ -93,9 +93,9 @@ class BudgetQueryBuilder(FinancialLineQueryBuilder):
     Méthodes de conditions spécifiques aux requêtes de Budget
     """
 
-    def niveau_code_geo_in(self, niveau_geo: str | None, code_geo: list | None, source_region: str):
+    def niveau_code_geo_in(self, niveau_geo: TypeCodeGeo | None, code_geo: list | None, source_region: str):
         if niveau_geo is not None and code_geo is not None:
-            self.where_geo(TypeCodeGeo[niveau_geo.upper()], code_geo, source_region)
+            self.where_geo(niveau_geo, code_geo, source_region)
         return self
 
     def tags_fullname_in(self, fullnames: list[str] | None):

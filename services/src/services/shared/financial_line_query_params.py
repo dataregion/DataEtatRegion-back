@@ -1,6 +1,7 @@
 from typing import List, Literal, Optional
-
 from pydantic import ConfigDict, Field, computed_field
+
+from models.value_objects.common import TypeCodeGeo
 from services.shared.source_query_params import SourcesQueryParams
 
 
@@ -22,6 +23,11 @@ class FinancialLineQueryParams(SourcesQueryParams):
     @property
     def code_programme_list(self) -> Optional[List[str]]:
         return self._split(self.code_programme)
+
+    @computed_field
+    @property
+    def niveau_geo_enum(self) -> Optional[TypeCodeGeo]:
+        return TypeCodeGeo(self.niveau_geo.upper())
 
     @computed_field
     @property
