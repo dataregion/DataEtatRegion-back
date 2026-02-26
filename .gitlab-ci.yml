@@ -1,7 +1,7 @@
 include:
   - project: SIBSGAR/DataRegateNum/common-gitlab-templates
     ref: main
-    file: product-skeleton.gitlab-ci.yml
+    file: project-skeleton.gitlab-ci.yml
   - .gitlab-templates/analyze.gitlab-ci.yml
   - .gitlab-templates/build.gitlab-ci.yml
   - .gitlab-templates/test.gitlab-ci.yml
