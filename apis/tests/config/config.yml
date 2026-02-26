@@ -61,14 +61,6 @@ api_entreprise_batch:
   
   timeout_seconds: 5
 
-api_entreprise_batch_ratelimiter:
-  limit: 10000
-  duration: 60
-  redis:
-    host: localhost
-    port: 16379
-    db: 3
-
 token_for_grist_plugins: "tokentestforgristplugins"
 
 

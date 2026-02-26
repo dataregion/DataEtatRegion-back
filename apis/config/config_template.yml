@@ -46,13 +46,6 @@ api_entreprise:
 
   timeout_seconds: 30
 
-api_entreprise_ratelimiter:
-  limit: 100
-  duration: 10
-  redis:
-    host: localhost
-    port: 16379
-    db: 2
 ##
 ##
 api_entreprise_batch:
@@ -63,14 +56,6 @@ api_entreprise_batch:
   object: nocode-budget.localhost
   
   timeout_seconds: 5
-
-api_entreprise_batch_ratelimiter:
-  limit: 10000
-  duration: 60
-  redis:
-    host: localhost
-    port: 16379
-    db: 3
 
 token_for_grist_plugins: "<TOKEN>"
 

@@ -9,12 +9,10 @@ from apis.config.current import get_config
 logger = logging.getLogger(__name__)
 
 api_entreprise_info = get_config().api_entreprise
-api_entreprise_info_ratelimiter = get_config().api_entreprise_ratelimiter
-api_entreprise = make_api_entreprise(api_entreprise_info, api_entreprise_info_ratelimiter)
+api_entreprise = make_api_entreprise(api_entreprise_info)
 
 api_entreprise_info_batch = get_config().api_entreprise_batch
-api_entreprise_info_batch_ratelimiter = get_config().api_entreprise_batch_ratelimiter
-api_entreprise_batch = make_api_entreprise(api_entreprise_info_batch, api_entreprise_info_batch_ratelimiter)
+api_entreprise_batch = make_api_entreprise(api_entreprise_info_batch)
 
 
 def _siren(siret: str):

@@ -76,17 +76,6 @@ API_ENTREPRISE_BATCH:
   RECIPIENT: <RECIPIENT> # siret du sib
   OBJECT: <OBJECT>
 
-  # CONFIGURATION POUR LIMITER les appels à l'api Entreprise
-  RATELIMITER:
-    # Exemple 50 appel toutes les 70 secondes
-    LIMIT: 50
-    DURATION: 70
-    # Stockage du lock
-    REDIS:
-      HOST: localhost
-      PORT: 6379
-      DB: 1
-
 API_DEMARCHE_SIMPLIFIE:
   URL: DMS_URL
 
