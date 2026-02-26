@@ -1,6 +1,5 @@
 from api_entreprise import ApiEntreprise, ContextInfo, Config
 
-from .ratelimiter import make_rate_limiter
 from models.value_objects.api_entreprise_info import ApiEntrepriseInfo
 
 from models.value_objects.ratelimiter_info import RateLimiterInfo
@@ -24,7 +23,7 @@ def make_api_entreprise(
         url,
         token,
         ContextInfo(context=context, recipient=recipient, object=object),
-        make_rate_limiter(rate_limiter_info),
+        rate_limiter=None,
     )
     api_config.timeout_s = timeout
 
