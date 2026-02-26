@@ -9,7 +9,7 @@ anyio==4.12.1
     #   httpx
     #   prefect-client
     #   starlette
-api-entreprise==3.7.2
+api-entreprise==31.0.1
     # via services (../services/pyproject.toml)
 asgi-lifespan==2.1.0
     # via prefect-client
@@ -183,8 +183,6 @@ pyogrio==0.12.1
     # via geopandas
 pyproj==3.7.2
     # via geopandas
-pyrate-limiter==2.10.0
-    # via api-entreprise
 python-dateutil==2.9.0.post0
     # via
     #   dateparser
@@ -204,9 +202,7 @@ pyyaml==6.0.3
     #   -r requirements.external.in
     #   prefect-client
 redis==4.6.0
-    # via
-    #   services (../services/pyproject.toml)
-    #   api-entreprise
+    # via services (../services/pyproject.toml)
 referencing==0.37.0
     # via
     #   jsonschema

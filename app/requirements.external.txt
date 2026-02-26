@@ -19,7 +19,7 @@ anyio==4.12.1
     #   httpx
     #   prefect-client
     #   starlette
-api-entreprise==3.7.2
+api-entreprise==31.0.1
     # via
     #   -r requirements.external.in
     #   services (../services/pyproject.toml)
@@ -309,8 +309,6 @@ pyogrio==0.12.1
     # via geopandas
 pyproj==3.7.2
     # via geopandas
-pyrate-limiter==2.10.0
-    # via api-entreprise
 python-dateutil==2.9.0.post0
     # via
     #   celery
@@ -339,7 +337,6 @@ redis==4.6.0
     # via
     #   -r requirements.external.in
     #   services (../services/pyproject.toml)
-    #   api-entreprise
 referencing==0.37.0
     # via
     #   flask-restx
