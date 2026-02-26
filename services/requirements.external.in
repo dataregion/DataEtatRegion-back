@@ -1,5 +1,5 @@
 redis ~= 4.6
-api-entreprise >= 3.7.2
+api-entreprise>=31,<32
 
 sqlparse ~= 0.4
 prometheus-client ~= 0.23.1

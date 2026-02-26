@@ -11,7 +11,7 @@ psycopg[pool] ~= 3.2
 requests ~= 2.32
 
 python-keycloak ~= 5.8
-api-entreprise >= 3.7.2
+api-entreprise>=31,<32
 
 prometheus-fastapi-instrumentator ~= 7.1.0
 
