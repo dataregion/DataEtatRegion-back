@@ -49,6 +49,7 @@ def insert_centre_couts(database):
             "description": "description du code",
             "code_postal": f"354{i + 1}",
             "ville": f"Rennes {i + 1}",
+            "code_departement": None,
         }
         database.session.add(CentreCouts(**cc))
         data.append(cc)
