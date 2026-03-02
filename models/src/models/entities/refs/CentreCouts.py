@@ -11,6 +11,7 @@ class CentreCouts(_Audit, _PersistenceBaseModelInstance()):
     label: Column[str] = Column(String)
     description: Column[str] = Column(Text)
     code_postal: Column[str] = Column(String)
+    code_departement: Column[str] = Column(String(5), nullable=True)
     ville: Column[str] = Column(String)
 
     def __setattr__(self, key, value):

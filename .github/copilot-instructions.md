@@ -47,6 +47,19 @@
 
 - **Construire les images Docker** : Voir [stack/ansible/templates/data-transform/docker-compose.yml](../stack/ansible/templates/data-transform/docker-compose.yml) et [data-transform/.gitlab-templates/build.gitlab-ci.yml](../data-transform/.gitlab-templates/build.gitlab-ci.yml).
 - **Lancer les migrations** : Les migrations Alembic dans `app/migrations/versions/` utilisent un pattern multi-engine (`upgrade_`, `upgrade_audit`, `upgrade_settings`, etc.). Utiliser le bon nom d’engine lors de l’exécution.
+  
+  **Note (exécution locale) :** Pour éviter des erreurs liées aux shebangs des scripts du venv, lancer `flask`/`alembic` via le Python du venv plutôt que d'exécuter directement les scripts. Par exemple :
+
+  ```bash
+  cd data-transform/app
+  source .venv/bin/activate
+  export FLASK_APP=app:create_app_migrate
+  ./.venv/bin/python -m flask db upgrade
+  # ou (direct alembic)
+  ./.venv/bin/python -m alembic upgrade head
+  ```
+
+  Cela évite les erreurs du type "bad interpreter: /path/to/.venv/bin/python3: No such file or directory" lorsque les scripts installés ont un shebang qui n'est pas valide sur la machine.
 - **Workers Celery** : Plusieurs files (`line`, `file`, `celery`, etc.) définies dans docker-compose et démarrées avec des paramètres de concurrence/pool différents.
 - **Tests** : Tests unitaires dans `app/tests/`, E2E dans `tests_e2e/`. Utiliser pytest pour les tests unitaires.
 - **CI/CD** : Les templates GitLab CI dans `.gitlab-templates/` orchestrent builds, déploiements et bump de version.
