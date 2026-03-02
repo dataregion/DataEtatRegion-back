@@ -3,6 +3,7 @@ from sqlalchemy import (
     func,
     literal,
     or_,
+    select,
 )
 from sqlalchemy.orm.session import Session
 
@@ -10,6 +11,7 @@ from models.entities.common.Tags import Tags
 from models.entities.financial.query.FlattenFinancialLines import (
     EnrichedFlattenFinancialLines as FinancialLines,
 )
+from models.entities.refs.Departement import Departement
 from models.value_objects.common import TypeCodeGeo
 from models.value_objects.tags import TagVO
 from services.budget.query_params import BudgetQueryParams
@@ -179,6 +181,18 @@ class BudgetQueryBuilder(FinancialLineQueryBuilder):
             or benef_or_loc == BenefOrLoc.LOCALISATION_QPV
         ):
             conds.append(column_codegeo_commune_beneficiaire.in_(list_code_geo))
+
+        #
+        # Ou le code département du centre de coûts
+        #
+        if benef_or_loc is None or benef_or_loc == BenefOrLoc.BENEFICIAIRE:
+            if type_geo is TypeCodeGeo.DEPARTEMENT:
+                # Filtre direct sur le code département
+                conds.append(FinancialLines.centreCouts_codeDepartement.in_(list_code_geo))
+            elif type_geo is TypeCodeGeo.REGION:
+                # Sous-requête pour récupérer les codes départements de la région
+                subquery = select(Departement.code).where(Departement.code_region.in_(list_code_geo))
+                conds.append(FinancialLines.centreCouts_codeDepartement.in_(subquery))
 
         where_clause = or_(*conds)
         self._query = self._query.where(where_clause)
