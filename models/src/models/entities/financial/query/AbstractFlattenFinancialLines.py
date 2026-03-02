@@ -84,6 +84,7 @@ class AbstractFlattenFinancialLines(_PersistenceBaseModelInstance()):
     centreCouts_code = Column(String)
     centreCouts_label = Column(String)
     centreCouts_description = Column(String)
+    centreCouts_codeDepartement = Column(String)
     data_source = Column(String)
     lieu_action_code_qpv = Column(String)
     lieu_action_label_qpv = Column(String)
