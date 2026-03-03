@@ -48,9 +48,12 @@ def _build_request(id_ligne_financiere: int, source_query_params: SourcesQueryPa
     )
 
     if source_query_params is not None:
-        sanitized_region = sanitize_source_region_for_bdd_request(source_query_params.source_region)
+        sanitized_region = sanitize_source_region_for_bdd_request(
+            source_query_params.source_region, source_query_params.data_source
+        )
+        query_regions = [sanitized_region, None] if sanitized_region else [None]
         stmt = stmt.where(
-            FinancialCp.source_region.in_([sanitized_region, None]),
+            FinancialCp.source_region.in_(query_regions),
         )
     if source_query_params.data_source is not None:
         stmt = stmt.where(FinancialCp.data_source == source_query_params.data_source)
