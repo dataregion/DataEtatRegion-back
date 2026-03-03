@@ -1,3 +1,4 @@
+-- Sources : https://www.regions-et-departements.fr/
 -- Inserts des départements avec leur code région
 INSERT INTO ref_departement (code, label, code_region, created_at, updated_at) VALUES
 ('01','Ain','84', NOW(), NOW()),

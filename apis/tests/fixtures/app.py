@@ -71,6 +71,13 @@ def mock_connected_user():
             "resource_access": {
                 "test-client-id": {"roles": ["users"]},
             },
+            "roles_meta": {
+                "test-client-id": {
+                    "users": {
+                        "region": "53",  # Bretagne
+                    }
+                }
+            },
         }
     )
 
