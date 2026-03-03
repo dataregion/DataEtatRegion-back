@@ -2,7 +2,7 @@ include:
   - component: $CI_SERVER_FQDN/csm/gitlab-components/docker-build@5.0.5
     inputs:
       image-name: nocode/dev
-      image-tag: latest-snapshot
+      image-tag: ${CI_PIPELINE_ID}-snapshot
       build-context: ./
       dockerfile-name: ./docker/Dockerfile.dev
       do-login: true
@@ -77,7 +77,7 @@ update-pinned-dependencies:
 
 run-loadtests:
   stage: ☢️ analyze
-  image: "${REGISTRY}nocode/dev:latest-snapshot"
+  image: "${REGISTRY}nocode/dev:${CI_PIPELINE_ID}-snapshot"
   before_script:
     - |
       export KEYCLOAK_URL="${E2E_LT_KEYCLOAK_URL}"
@@ -115,7 +115,7 @@ run-loadtests:
 
 .default-analyze: &default-analyze
   stage: ☢️ analyze
-  image: "${REGISTRY}nocode/dev:latest-snapshot"
+  image: "${REGISTRY}nocode/dev:${CI_PIPELINE_ID}-snapshot"
   rules:
     - if: '$DO_ANALYZE == "✅"'
       needs:
