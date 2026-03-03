@@ -1,6 +1,6 @@
 .default-tests: &default-tests
   stage: 🧪 test
-  image: "${REGISTRY}nocode/dev:latest-snapshot"
+  image: "${REGISTRY}nocode/dev:${CI_PIPELINE_ID}-snapshot"
   rules:
     - if: '$DO_TEST == "✅"'
     - if: '$DO_TEST == "⚙️"'
