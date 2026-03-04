@@ -2,12 +2,14 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Optional
 from batches.database import init_persistence_module, session_scope, session_audit_scope
-from models.value_objects.export_api import ExportTarget
-from batches.share.schemas.ExportEnrichedFlattenFinancialLinesSchema import ExportEnrichedFlattenFinancialLinesSchema
-from batches.share.tabular_writer.factory import TabularWriterFactory
-from batches.share.tabular_writer.converter import convert_csv_to_excel, convert_csv_to_ods
 
 init_persistence_module()
+
+from models.value_objects.export_api import ExportTarget  # noqa: E402
+from batches.share.schemas.ExportEnrichedFlattenFinancialLinesSchema import ExportEnrichedFlattenFinancialLinesSchema  # noqa: E402
+from batches.share.tabular_writer.factory import TabularWriterFactory  # noqa: E402
+from batches.share.tabular_writer.converter import convert_csv_to_excel, convert_csv_to_ods  # noqa: E402
+
 from services.budget.query_params import BudgetQueryParams  # noqa: E402
 from services.budget.colonnes import get_list_colonnes_tableau  # noqa: E402
 from models.entities.financial.query.FlattenFinancialLines import EnrichedFlattenFinancialLines  # noqa: E402
