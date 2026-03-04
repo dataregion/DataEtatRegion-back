@@ -25,7 +25,7 @@ app_layer_sanitize_region = convert_exception(ValueError, NoCurrentRegion)(sanit
 
 @gauge_of_currently_executing()
 @summary_of_time()
-def get_ligne(db: Session, params: SourcesQueryParams, id: int):
+def get_ligne(db: Session, params: SourcesQueryParams, id: int) -> EnrichedFlattenFinancialLines | None:
     """
     Recherche la ligne budgetaire selon son ID et sa source region
     """

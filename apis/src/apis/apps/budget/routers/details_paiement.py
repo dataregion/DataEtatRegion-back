@@ -2,6 +2,7 @@ import logging
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
+from apis.apps.budget.services.get_data import get_ligne
 from apis.apps.budget.routers.api_models import DetailsPaiement
 from apis.apps.budget.routers.shared import enforce_query_params_with_connected_user_rights
 from apis.database import get_session_main
@@ -14,9 +15,10 @@ from models.connected_user import ConnectedUser
 from models.entities.financial.FinancialCp import FinancialCp
 
 from services.shared.source_query_params import SourcesQueryParams
-from services.regions import sanitize_source_region_for_bdd_request
 
 from apis.shared.models import APISuccess
+
+from models.value_objects.common import DataType
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -38,29 +40,6 @@ class DetailsPaiementResponse(APISuccess[InnerDetailsPaiementResponse]):
     pass
 
 
-#
-def _build_request(id_ligne_financiere: int, source_query_params: SourcesQueryParams):
-    """Construit la requête pour récupérer les CPs"""
-    stmt = select(FinancialCp).where(FinancialCp.id_ae == id_ligne_financiere)
-
-    assert source_query_params.source_region is not None or source_query_params.data_source is not None, (
-        "Au moins un des paramètres source_datatype ou data_source doit être fourni"
-    )
-    sanitized_region = sanitize_source_region_for_bdd_request(
-        source_query_params.source_region,
-        source_query_params.data_source,
-    )
-
-    if sanitized_region is not None:
-        stmt = stmt.where(
-            FinancialCp.source_region.in_([sanitized_region, None]),
-        )
-    if source_query_params.data_source is not None:
-        stmt = stmt.where(FinancialCp.data_source == source_query_params.data_source)
-
-    return stmt
-
-
 @router.get(
     "/{id_ae:int}/details-paiement",
     summary="Récupére les détails de paiement associés à une ligne financière de type AE",
@@ -72,16 +51,24 @@ def get_details_paiement_pour_ligne_financiere(
     session: Session = Depends(get_session_main),
     user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user()),
 ):
-    source_query_params = SourcesQueryParams()
+    source_query_params = SourcesQueryParams(source=DataType.FINANCIAL_DATA_AE)
     source_query_params = enforce_query_params_with_connected_user_rights(source_query_params, user)
 
-    stmt = _build_request(id_ae, source_query_params)
+    assert source_query_params.source_region is not None or source_query_params.data_source is not None, (
+        "Au moins un des paramètres source_datatype ou data_source doit être fourni"
+    )
 
-    with session.begin() as _:
+    ligne = get_ligne(session, source_query_params, id_ae)
+
+    if ligne is None:
+        logger.debug(f"Aucun détails de paiement trouvé pour l'ae avec l'id {id_ae}")
+        dps = []
+    else:
+        stmt = select(FinancialCp).where(FinancialCp.id_ae == ligne.id)
         execution = session.execute(stmt)
         results = execution.scalars().all()
+        dps = [InnerDetailsPaiement.model_validate(dp) for dp in results]
 
-    dps = [InnerDetailsPaiement.model_validate(dp) for dp in results]
     data = InnerDetailsPaiementResponse(
         ligne_financiere_id=id_ae,
         dps=dps,
