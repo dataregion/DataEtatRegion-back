@@ -32,13 +32,11 @@ def get_ligne(db: Session, params: SourcesQueryParams, id: int) -> EnrichedFlatt
     assert params.source is not None
 
     source_region = app_layer_sanitize_region(params.source_region, params.data_source)
-    assert source_region is not None
     _regions = get_request_regions(source_region)
 
     builder = (
         SourcesQueryBuilder(EnrichedFlattenFinancialLines, db, params)
         .par_identifiant_technique(params.source_datatype, id)
-        .data_source_is(params.data_source)
         .source_region_in(_regions)
     )
     return builder.select_one()
