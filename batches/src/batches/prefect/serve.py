@@ -1,4 +1,5 @@
 from prefect import serve
+from batches.flows.sync_referentiel_grist import sync_referentiel_grist_flow
 from batches.prefect.exporte_une_recherche import exporte_une_recherche
 from batches.prefect.import_file_qpv_lieu_action import import_file_qpv_lieu_action
 from batches.prefect.share_filter_user import share_filter_user
@@ -15,11 +16,15 @@ def main():
         name="update_link_siret_qpv_from_url",
         cron="0 0 ? * 6#2",  # Tous les deuxièmes samedi du mois
     )
+    sync_referentiel_grist_deploiement = sync_referentiel_grist_flow.to_deployment(
+        name="sync_referentiel_grist",
+    )
     serve(
         export_recherche_deploiement,  # type: ignore
         import_file_qpv_lieu_action_deploiement,  # type: ignore
         share_filter_user_deploiement,  # type: ignore
         update_link_siret_qpv_from_url_deploiement,  # type: ignore
+        sync_referentiel_grist_deploiement,  # type: ignore
     )
 
 
