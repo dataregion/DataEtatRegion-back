@@ -1,6 +1,4 @@
 from functools import wraps
-
-from flask import request
 from requests import RequestException
 
 from app.controller import ErrorController
@@ -68,20 +66,6 @@ def retry_on_exception(max_retry):
                     retry_count += 1
                     if retry_count == max_retry:
                         raise e
-
-        return wrapper
-
-    return decorator
-
-
-def authM2M(expected_token):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            token = request.args.get("token")
-            if token != expected_token:
-                raise PermissionError("Unauthorized: Invalid token")
-            return func(*args, **kwargs)
 
         return wrapper
 
