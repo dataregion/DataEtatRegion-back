@@ -1,5 +1,5 @@
 from prefect import serve
-from batches.flows.sync_referentiel_grist import sync_referentiel_grist_flow
+from batches.prefect.sync_referentiel_grist import sync_referentiel_grist_flow
 from batches.prefect.exporte_une_recherche import exporte_une_recherche
 from batches.prefect.import_file_qpv_lieu_action import import_file_qpv_lieu_action
 from batches.prefect.share_filter_user import share_filter_user

@@ -8,7 +8,7 @@ from sqlalchemy import select, delete
 
 # Important: importer le flow en premier pour que init_persistence_module() et l'import
 # de tous les modèles refs soient effectués dans le bon ordre
-import batches.flows.sync_referentiel_grist  # noqa: F401
+import batches.prefect.sync_referentiel_grist  # noqa: F401
 
 from models.entities.refs import CentreCouts, SynchroGrist
 
