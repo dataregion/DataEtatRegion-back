@@ -1,9 +1,10 @@
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
+from models.entities.common.SyncedWithGrist import _SyncedWithGrist
 from sqlalchemy import Column, Integer, String, Text
 
 
-class CentreCouts(_Audit, _PersistenceBaseModelInstance()):
+class CentreCouts(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     __table_args__ = {"extend_existing": True}
     __tablename__ = "ref_centre_couts"
     id: Column[int] = Column(Integer, primary_key=True)

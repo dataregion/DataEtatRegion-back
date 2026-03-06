@@ -1,9 +1,10 @@
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
+from models.entities.common.SyncedWithGrist import _SyncedWithGrist
 from sqlalchemy import Column, Integer, String, Text
 
 
-class NomenclatureFrance2030(_Audit, _PersistenceBaseModelInstance()):
+class NomenclatureFrance2030(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     """
     Nomenclature spécifique france 2030
     """

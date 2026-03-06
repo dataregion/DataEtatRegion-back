@@ -1,9 +1,10 @@
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
+from models.entities.common.SyncedWithGrist import _SyncedWithGrist
 from sqlalchemy import Column, String, Text
 
 
-class Ministere(_Audit, _PersistenceBaseModelInstance()):
+class Ministere(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     __tablename__ = "ref_ministere"
     code: Column[str] = Column(String, primary_key=True)
     sigle_ministere: Column[str] = Column(String, nullable=True)

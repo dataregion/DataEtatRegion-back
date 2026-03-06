@@ -1,5 +1,6 @@
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
+from models.entities.common.SyncedWithGrist import _SyncedWithGrist
 from models.entities.refs.QpvCommune import QpvCommune
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.event import listens_for
@@ -8,7 +9,7 @@ from shapely.wkt import loads as wkt_loads
 from geoalchemy2 import Geometry
 
 
-class Qpv(_Audit, _PersistenceBaseModelInstance()):
+class Qpv(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     __tablename__ = "ref_qpv"
     id = Column(Integer, primary_key=True)
     code: Column[str] = Column(String, unique=True, nullable=False)

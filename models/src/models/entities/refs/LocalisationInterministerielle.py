@@ -1,11 +1,12 @@
 from models import _PersistenceBaseModelInstance
 from models.entities.common.Audit import _Audit
+from models.entities.common.SyncedWithGrist import _SyncedWithGrist
 from models.entities.refs.Commune import Commune
 from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship, Mapped
 
 
-class LocalisationInterministerielle(_Audit, _PersistenceBaseModelInstance()):
+class LocalisationInterministerielle(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     __tablename__ = "ref_localisation_interministerielle"
     id = Column(Integer, primary_key=True)
     code: Column[str] = Column(String, unique=True, nullable=False)
