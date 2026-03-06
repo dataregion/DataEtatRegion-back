@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 import httpx
 
 from grist_plugins.settings import settings
-from grist_plugins.routes import to_superset, sync_referentiels
+from grist_plugins.routes import to_superset
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -64,4 +64,3 @@ templates = Jinja2Templates(directory="templates")
 
 # Inclusion des routes
 app.include_router(to_superset.router)
-app.include_router(sync_referentiels.router)
