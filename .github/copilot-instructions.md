@@ -109,18 +109,35 @@
         logger.error("Une erreur est survenue", exc_info=e)
     ```
 
+## 🔄 Synchronisation Grist → Base de données
+
+La synchronisation des référentiels entre Grist et la base de données est gérée par un **flow Prefect** :
+
+- **Flow** : `batches/src/batches/flows/sync_referentiel_grist.py`
+- **Deployment** : `sync_referentiel_grist` (enregistré dans `serve.py`)
+
+**Fonctionnement** :
+1. Le flow récupère les données d'une table Grist via l'API
+2. Valide la structure (présence de `code`, colonnes compatibles)
+3. UPSERT par batch dans la table de référentiel correspondante
+4. Marque `is_deleted=True` pour les entrées supprimées de Grist
+
+**Modèles supportés** : Tous les modèles héritant de `_SyncedWithGrist` (voir `models/src/models/entities/common/SyncedWithGrist.py`)
+
+**⚠️ DÉPRÉCIÉ** : Les anciennes tâches Celery dans `app/src/app/tasks/refs/sync_with_grist.py` sont dépréciées. Utiliser le flow Prefect.
+
 ## 🔗 Intégrations & dépendances externes
 
 - **PostgreSQL** : Base principale, avec plusieurs schémas/engines (main, audit, settings, etc.).
 - **Celery** : File de tâches distribuées, avec files custom et monitoring.
+- **Prefect** : Orchestration des flows batch (synchronisation Grist, exports, imports QPV).
 - **Docker** : Tous les services tournent en containers ; voir les fichiers compose pour l’orchestration.
 - **Grist** : Certains exports de données ciblent Grist (voir références dans le code et compose).
 - **Keycloak** : Utilisé pour l’authentification de certains services (voir configs).
 
 ## 📚 Fichiers & répertoires clés
 
-- [`app/migrations/versions/`](app/migrations/versions/) : Migrations Alembic, pattern multi-engine.
-- [`stack/ansible/templates/data-transform/docker-compose.yml`](../stack/ansible/templates/data-transform/docker-compose.yml) : Orchestration des services.
+- [`app/migrations/versions/`](app/migrations/versions/) : Migrations Alembic, pattern multi-engine.- [`batches/src/batches/flows/`](batches/src/batches/flows/) : Flows Prefect (sync Grist, exports, imports).- [`stack/ansible/templates/data-transform/docker-compose.yml`](../stack/ansible/templates/data-transform/docker-compose.yml) : Orchestration des services.
 - [`app/tests/`](app/tests/) : Tests unitaires.
 - [`tests_e2e/`](tests_e2e/) : Tests end-to-end.
 - [`app/`](app/) : Code principal (modèles, services, celery, API).
