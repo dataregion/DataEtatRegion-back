@@ -92,4 +92,5 @@ def setup_exception_handlers(app: fastapi.applications.FastAPI):
             code=HTTPStatus.INTERNAL_SERVER_ERROR.value,
             message="Une erreur interne est survenue.",
         )
-        return _to_json_response(error)
+        json_response = _to_json_response(error)
+        return json_response

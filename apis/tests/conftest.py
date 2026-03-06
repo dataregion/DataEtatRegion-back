@@ -7,7 +7,12 @@ from apis.database import get_session_main
 
 @pytest.fixture(scope="session")
 def client(app: FastAPI):
-    return TestClient(app)
+    #
+    # Par défaut on ne veut pas que le client
+    # expose les exceptions du serveur, pour pouvoir tester les réponses d'erreur.
+    # Davantage de détails ici: https://github.com/fastapi/fastapi/issues/2799
+    #
+    return TestClient(app, raise_server_exceptions=False)
 
 
 @pytest.fixture()

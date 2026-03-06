@@ -268,6 +268,37 @@ def test_get_preference_by_uuid(
     assert shared_preference.nombre_utilisation == initial_count + 1
 
 
+def test_get_preference_by_uuid_forbidden_for_other_user(
+    client: TestClient,
+    other_user_preference: Preference,
+):
+    """Test qu'une préférence non partagée d'un autre utilisateur est interdite."""
+    response = client.get(f"{API_PREFIX}/users/preferences/{other_user_preference.uuid}")
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_get_preference_by_uuid_shared_with_user(
+    client: TestClient,
+    session_settings: Session,
+    preference_shared_with_user: Preference,
+):
+    """Test qu'une préférence partagée avec l'utilisateur est récupérable."""
+    initial_count = preference_shared_with_user.nombre_utilisation
+
+    response = client.get(f"{API_PREFIX}/users/preferences/{preference_shared_with_user.uuid}")
+
+    assert response.status_code == HTTPStatus.OK
+    data = response.json()
+    assert data["code"] == HTTPStatus.OK
+    assert data["data"]["uuid"] == preference_shared_with_user.uuid
+    assert data["data"]["username"] == preference_shared_with_user.username
+    assert data["data"]["name"] == preference_shared_with_user.name
+
+    session_settings.refresh(preference_shared_with_user)
+    assert preference_shared_with_user.nombre_utilisation == initial_count + 1
+
+
 def test_get_preference_not_found(client: TestClient):
     """Test de récupération d'une préférence inexistante."""
     fake_uuid = "fake-uuid-12345"

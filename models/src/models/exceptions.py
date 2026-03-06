@@ -90,9 +90,12 @@ class ForbiddenError(Exception):
     """Exception en cas d'action interdite"""
 
     def to_api_exc(self) -> "_APIException":
+        txt = str(self)
+        if not txt:
+            txt = "Vous n'avez pas les droits pour effectuer cette action."
         return _APIException(
             code=HTTPStatus.FORBIDDEN,
-            api_message="Vous n'avez pas les droits pour effectuer cette action.",
+            api_message=txt,
         )
 
 

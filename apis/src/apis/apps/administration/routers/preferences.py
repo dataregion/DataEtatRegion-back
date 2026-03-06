@@ -24,14 +24,14 @@ from apis.apps.administration.models.preferences import (
     PreferenceUpdateRequest,
     UserSearchResponse,
 )
-from apis.clients.keycloak_admin import KeycloakAdminError, get_keycloak_admin
+from apis.clients.keycloak_admin import get_keycloak_admin, KeycloakAdminError
 from apis.database import get_session_settings
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.shared.models import APISuccess
 from apis.shared.request_utils import get_origin_referrer
 from models.connected_user import ConnectedUser
-from models.exceptions import BadRequestError, ForbiddenError, ServerError
+from models.exceptions import BadRequestError, ForbiddenError
 from models.entities.preferences.Preference import Preference
 from services.preferences.preferences_service import (
     create_preference as service_create_preference,
@@ -86,7 +86,7 @@ async def search_users(
         raise BadRequestError(api_message="Erreur lors de la recherche d'utilisateurs dans Keycloak")
     except Exception as e:
         logger.error("Erreur lors de la recherche d'utilisateurs", exc_info=e)
-        raise ServerError(api_message="Erreur lors de la recherche d'utilisateurs")
+        raise
 
 
 ###########################
@@ -136,7 +136,7 @@ async def create_preference(
         )
     except Exception as e:
         logger.error("Erreur lors de la création de la préférence", exc_info=e)
-        raise ServerError(api_message="Erreur lors de la création de la préférence")
+        raise
 
 
 @router.get(
@@ -174,7 +174,7 @@ async def list_preferences(
         )
     except Exception as e:
         logger.error("Erreur lors de la récupération des préférences", exc_info=e)
-        raise ServerError(api_message="Erreur lors de la récupération des préférences")
+        raise
 
 
 @router.get(
@@ -200,6 +200,15 @@ async def get_preference(
         if not preference:
             raise BadRequestError(api_message=f"Préférence {uuid} introuvable")
 
+        # Vérifier que l'utilisateur a accès à la préférence (créateur ou partagé)
+        is_creator = preference.username == user.email
+        shares = preference.shares
+        shared_with = [share.shared_username_email for share in shares]
+        is_shared_with_user = any(str(shared_with) == user.email for shared_with in shared_with)
+
+        if not is_creator and not is_shared_with_user:
+            raise ForbiddenError("Vous n'avez pas accès à cette préférence")
+
         # Incrémenter le compteur d'utilisation
         await service_increment_usage(preference, session)
 
@@ -211,11 +220,9 @@ async def get_preference(
             message="Préférence récupérée avec succès",
             data=response_data,
         )
-    except BadRequestError:
-        raise
     except Exception as e:
         logger.error(f"Erreur lors de la récupération de la préférence {uuid}", exc_info=e)
-        raise ServerError(api_message="Erreur lors de la récupération de la préférence")
+        raise
 
 
 @router.post(
@@ -268,7 +275,7 @@ async def update_preference(
         raise BadRequestError(api_message=str(e))
     except Exception as e:
         logger.error(f"Erreur lors de la mise à jour de la préférence {uuid}", exc_info=e)
-        raise ServerError(api_message="Erreur lors de la mise à jour de la préférence")
+        raise
 
 
 @router.delete(
@@ -303,7 +310,7 @@ async def delete_preference(
         raise BadRequestError(api_message=str(e))
     except Exception as e:
         logger.error(f"Erreur lors de la suppression de la préférence {uuid}", exc_info=e)
-        raise ServerError(api_message="Erreur lors de la suppression de la préférence")
+        raise
 
 
 async def _alaunch_share_task_for_new_shares(preference: Preference, host_link: str):
