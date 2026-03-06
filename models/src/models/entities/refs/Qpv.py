@@ -24,6 +24,11 @@ class Qpv(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
 
     communes = relationship("Commune", secondary=QpvCommune.__table__, backref="commune_qpvs", viewonly=True)
 
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()
+
 
 # Event listener to automatically calculate the centroid
 @listens_for(Qpv, "before_insert")

@@ -11,3 +11,8 @@ class Theme(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     code: Column[str] = Column(String, nullable=True, unique=True)
     label: Column[str] = Column(String)
     description: Column[str] = Column(Text)
+
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()

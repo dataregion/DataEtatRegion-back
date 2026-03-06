@@ -23,6 +23,11 @@ class CodeProgramme(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     # permet de remonter uniquement le label
     label_theme = association_proxy("theme_r", "label")
 
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()
+
     def __setattr__(self, key, value):
         """
         Intercept attribute setting for the instance.

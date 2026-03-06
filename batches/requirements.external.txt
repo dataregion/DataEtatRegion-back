@@ -19,7 +19,7 @@ attrs==25.4.0
     #   referencing
 cachetools==6.2.6
     # via prefect-client
-certifi==2026.1.4
+certifi==2026.2.25
     # via
     #   httpcore
     #   httpx
@@ -28,7 +28,7 @@ certifi==2026.1.4
     #   requests
 cffi==2.0.0
     # via cryptography
-charset-normalizer==3.4.4
+charset-normalizer==3.4.5
     # via requests
 click==8.3.1
     # via uvicorn
@@ -48,17 +48,17 @@ et-xmlfile==2.0.0
     # via openpyxl
 exceptiongroup==1.3.1
     # via prefect-client
-fastapi==0.128.5
+fastapi==0.135.1
     # via prefect-client
 fsspec==2026.2.0
     # via prefect-client
-geoalchemy2==0.18.1
+geoalchemy2==0.18.4
     # via models (../models/pyproject.toml)
 geopandas==1.1.2
     # via models (../models/pyproject.toml)
 graphviz==0.21
     # via prefect-client
-greenlet==3.3.1
+greenlet==3.3.2
     # via sqlalchemy
 griffe==1.15.0
     # via prefect-client
@@ -120,7 +120,7 @@ mdurl==0.1.2
     # via markdown-it-py
 mypy-extensions==1.1.0
     # via typing-inspect
-numpy==2.4.2
+numpy==2.4.3
     # via
     #   geopandas
     #   pandas
@@ -130,7 +130,7 @@ odfpy==1.4.1
     # via -r requirements.external.in
 openpyxl==3.1.5
     # via -r requirements.external.in
-opentelemetry-api==1.39.1
+opentelemetry-api==1.40.0
     # via prefect-client
 orjson==3.11.7
     # via prefect-client
@@ -154,9 +154,9 @@ prometheus-client==0.23.1
     # via
     #   services (../services/pyproject.toml)
     #   prefect-client
-psycopg==3.3.2
+psycopg==3.3.3
     # via -r requirements.external.in
-psycopg-binary==3.3.2
+psycopg-binary==3.3.3
     # via -r requirements.external.in
 psycopg-pool==3.3.0
     # via psycopg
@@ -175,7 +175,7 @@ pydantic-core==2.41.5
     #   pydantic
 pydantic-extra-types==2.11.0
     # via prefect-client
-pydantic-settings==2.12.0
+pydantic-settings==2.13.1
     # via prefect-client
 pygments==2.19.2
     # via rich
@@ -188,7 +188,7 @@ python-dateutil==2.9.0.post0
     #   dateparser
     #   pandas
     #   prefect-client
-python-dotenv==1.2.1
+python-dotenv==1.2.2
     # via pydantic-settings
 python-slugify==8.0.4
     # via prefect-client
@@ -207,13 +207,13 @@ referencing==0.37.0
     # via
     #   jsonschema
     #   jsonschema-specifications
-regex==2026.1.15
+regex==2026.2.28
     # via dateparser
 requests==2.32.5
     # via api-entreprise
 rfc3339-validator==0.1.4
     # via prefect-client
-rich==14.3.2
+rich==14.3.3
     # via prefect-client
 rpds-py==0.30.0
     # via
@@ -231,7 +231,7 @@ sniffio==1.3.1
     # via
     #   asgi-lifespan
     #   prefect-client
-sqlalchemy==2.0.46
+sqlalchemy==2.0.48
     # via
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
@@ -245,7 +245,7 @@ text-unidecode==1.3
     # via python-slugify
 toml==0.10.2
     # via prefect-client
-typeguard==4.4.4
+typeguard==4.5.1
     # via marshmallow-dataclass
 typing-extensions==4.15.0
     # via
@@ -273,7 +273,7 @@ tzlocal==5.3.1
     # via dateparser
 urllib3==2.6.3
     # via requests
-uvicorn==0.40.0
+uvicorn==0.41.0
     # via prefect-client
 websockets==15.0.1
     # via prefect-client

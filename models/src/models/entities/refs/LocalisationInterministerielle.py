@@ -19,3 +19,8 @@ class LocalisationInterministerielle(_Audit, _SyncedWithGrist, _PersistenceBaseM
     # FK
     commune_id = Column(Integer, ForeignKey("ref_commune.id"), nullable=True)
     commune: Mapped[Commune] = relationship("Commune", lazy="select")
+
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()

@@ -88,10 +88,6 @@ def process_chunk(valid_rows: pd.DataFrame, chunk_index: int, schema: ImportQpvL
 
 @flow(log_prints=True)
 def import_file_qpv_lieu_action(fichier: str, separateur: str = ","):
-    from prefect.settings import PREFECT_API_URL
-
-    print("Prefect API URL (runtime):", PREFECT_API_URL.value())
-
     _print(f"Start for file : {fichier}")
 
     _print(f"Validation header : {fichier}")

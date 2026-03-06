@@ -1,128 +1,60 @@
-import os
-import contextlib
+"""Configuration globale des tests pour le module batches.
+
+Ce fichier est chargé automatiquement par pytest avant tous les tests.
+Il contient notamment les mocks Prefect nécessaires pour les tests unitaires.
+"""
+
+import logging
+import sys
+from unittest.mock import MagicMock
+from uuid import uuid4
 import pytest
-
-from services.tests.DataEtatPostgresContainer import DataEtatPostgresContainer
-from services.tests.DataEtatPrefectContainer import DataEtatPrefectContainer
-from sqlalchemy import text
-import sqlalchemy
-from batches.config.current import get_config
+from batches.database import get_session_main
+from .fixtures.app import *  # noqa: F403
 
 
-# ------------------------------------------------------------------
-# Containers
-# ------------------------------------------------------------------
+# ============================================================================
+# Mock Prefect pour mode UNIT TEST (sans containers)
+# ============================================================================
+# Ces mocks doivent être définis AVANT tout import de code utilisant Prefect
 
 
-@pytest.fixture(scope="session")
-def postgres_container():
-    # Démarrage du container
-    postgres = DataEtatPostgresContainer()
-    postgres.start()
+def mock_decorator(*args, **kwargs):
+    """Mock pour @flow et @task qui retourne la fonction telle quelle."""
 
-    engine = sqlalchemy.create_engine(postgres.get_connection_url())
-    for schema in ["settings", "audit", "demarches_simplifiees"]:
-        engine = engine
-        with engine.connect() as conn:
-            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema};"))
-            conn.commit()
+    def decorator(func):
+        return func
 
-    try:
-        yield postgres
-    finally:
-        postgres.stop()
+    if len(args) == 1 and callable(args[0]):
+        return decorator(args[0])
+    return decorator
 
 
-@pytest.fixture(scope="session")
-def prefect_container():
-    # Démarrage du container, on passe le port défini dans la variable d'env
-    prefect = DataEtatPrefectContainer()
-    prefect.start()
+# Patcher prefect avant tout import
+if "prefect" not in sys.modules:
+    sys.modules["prefect"] = MagicMock()
+sys.modules["prefect"].flow = mock_decorator
+sys.modules["prefect"].task = mock_decorator
+sys.modules["prefect"].get_run_logger = MagicMock(return_value=logging.getLogger("prefect.test"))
 
-    os.environ["PREFECT_API_URL"] = prefect.get_api_url()
+# Mock runtime avec flow_run.id qui retourne un UUID valide
+mock_runtime = MagicMock()
+mock_runtime.flow_run.id = str(uuid4())
+sys.modules["prefect"].runtime = mock_runtime
 
-    try:
-        yield prefect
-    finally:
-        prefect.stop()
+# Mock get_run_logger pour retourner un logger standard
+prefect_logging = MagicMock()
+prefect_logging.get_run_logger = MagicMock(return_value=logging.getLogger("prefect.test"))
+sys.modules["prefect.logging"] = prefect_logging
 
+# Mock cache_policies (utilisé dans sync_referentiel_grist)
+prefect_cache_policies = MagicMock()
+prefect_cache_policies.NO_CACHE = MagicMock()
+sys.modules["prefect.cache_policies"] = prefect_cache_policies
 
-# ------------------------------------------------------------------
-# Environment (AVANT TOUT SQLAlchemy)
-# ------------------------------------------------------------------
-
-
-@pytest.fixture(scope="session")
-def setup_environment(postgres_container, prefect_container):
-    config = get_config()
-
-    # Surcharge de l'URL de la BDD, on injecte l'URL du container Postgres
-    config.sqlalchemy_database_uri = postgres_container.get_connection_url()
-    config.sqlalchemy_database_uri_audit = postgres_container.get_connection_url()
-
-    yield
+# ============================================================================
 
 
-# ------------------------------------------------------------------
-# Création / destruction des tables
-# ------------------------------------------------------------------
-
-
-@pytest.fixture(scope="session")
-def setup_database(setup_environment):
-    from models import Base
-
-    print("Tables enregistrées :", list(Base.metadata.tables.keys()))
-
-    from batches.database import get_session_maker
-
-    SessionMaker = get_session_maker("main")
-    engine = SessionMaker.kw["bind"]
-
-    print("CREATE_ALL tables :", list(Base.metadata.tables.keys()))
-    Base.metadata.create_all(engine)
-
-    try:
-        yield
-    finally:
-        Base.metadata.drop_all(engine)
-
-
-# ------------------------------------------------------------------
-# Session SQLAlchemy par test (transaction rollback)
-# ------------------------------------------------------------------
-
-
-@pytest.fixture(scope="function")
-def session(setup_database):
-    from batches.database import get_session_maker
-
-    SessionMaker = get_session_maker("main")
-    engine = SessionMaker.kw["bind"]
-
-    connection = engine.connect()
-    transaction = connection.begin()
-    db_session = SessionMaker(bind=connection)
-
-    try:
-        yield db_session
-    finally:
-        db_session.close()
-        transaction.rollback()
-        connection.close()
-
-
-# ------------------------------------------------------------------
-# Patch session_scope pour Prefect
-# ------------------------------------------------------------------
-
-
-@pytest.fixture
-def patch_session_scope(session, monkeypatch):
-    import batches.prefect.import_file_qpv_lieu_action as import_mod
-
-    @contextlib.contextmanager
-    def _session_scope_override():
-        yield session
-
-    monkeypatch.setattr(import_mod, "session_scope", _session_scope_override)
+@pytest.fixture()
+def db_session(config):
+    return get_session_main()

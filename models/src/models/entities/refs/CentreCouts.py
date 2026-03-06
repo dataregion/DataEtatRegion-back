@@ -15,6 +15,11 @@ class CentreCouts(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     code_departement: Column[str] = Column(String(5), nullable=True)
     ville: Column[str] = Column(String)
 
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()
+
     def __setattr__(self, key, value):
         if key == "code" and isinstance(value, str) and value.startswith("BG00/"):
             value = value[5:]

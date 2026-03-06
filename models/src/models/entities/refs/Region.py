@@ -10,6 +10,11 @@ class Region(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     code = Column(String, unique=True, nullable=False)
     label = Column(String)
 
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()
+
 
 comp_code_region = {
     "ADCE": "00",  # Administration centrale

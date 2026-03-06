@@ -17,3 +17,8 @@ class GroupeMarchandise(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance(
     # mutualisation avec compte_general
     code_pce: Column[str] = Column(String)
     label_pce: Column[str] = Column(String)
+
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()

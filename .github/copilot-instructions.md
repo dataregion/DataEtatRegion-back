@@ -45,7 +45,7 @@
     ```
   4. Accéder à la doc interactive : http://localhost:8000/docs
 
-- **Construire les images Docker** : Voir [stack/ansible/templates/data-transform/docker-compose.yml](../stack/ansible/templates/data-transform/docker-compose.yml) et [data-transform/.gitlab-templates/build.gitlab-ci.yml](../data-transform/.gitlab-templates/build.gitlab-ci.yml).
+
 - **Lancer les migrations** : Les migrations Alembic dans `app/migrations/versions/` utilisent un pattern multi-engine (`upgrade_`, `upgrade_audit`, `upgrade_settings`, etc.). Utiliser le bon nom d’engine lors de l’exécution.
   
   **Note (exécution locale) :** Pour éviter des erreurs liées aux shebangs des scripts du venv, lancer `flask`/`alembic` via le Python du venv plutôt que d'exécuter directement les scripts. Par exemple :

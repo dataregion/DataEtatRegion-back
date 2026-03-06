@@ -10,3 +10,8 @@ class CategorieJuridique(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance
     code: Column[str] = Column(String, unique=True, nullable=False)
     type: Column[str] = Column(String)
     label: Column[str] = Column(String)
+
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()

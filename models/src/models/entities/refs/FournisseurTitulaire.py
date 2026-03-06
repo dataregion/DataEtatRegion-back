@@ -10,3 +10,8 @@ class FournisseurTitulaire(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstan
     code: Column[str] = Column(String, unique=True, nullable=False)
     label: Column[str] = Column(String)
     description: Column[str] = Column(Text)
+
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()

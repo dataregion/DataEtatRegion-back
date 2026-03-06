@@ -10,3 +10,8 @@ class Ministere(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     sigle_ministere: Column[str] = Column(String, nullable=True)
     label: Column[str] = Column(String, nullable=False)
     description: Column[str] = Column(Text)
+
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()

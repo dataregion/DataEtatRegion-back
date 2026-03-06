@@ -17,6 +17,11 @@ class DomaineFonctionnel(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance
     label: Column[str] = Column(String)
     description: Column[str] = Column(Text)
 
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()
+
     @hybrid_property
     def code_programme(self) -> str | None:
         """

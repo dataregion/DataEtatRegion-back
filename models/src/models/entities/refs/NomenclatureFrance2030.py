@@ -15,3 +15,8 @@ class NomenclatureFrance2030(_Audit, _SyncedWithGrist, _PersistenceBaseModelInst
     numero: Column[int] = Column(Integer, nullable=False)
     mot: Column[str] = Column(String(255), nullable=False)
     phrase: Column[str] = Column(Text, nullable=False)
+
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()

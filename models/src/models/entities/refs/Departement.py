@@ -15,3 +15,8 @@ class Departement(_Audit, _SyncedWithGrist, _PersistenceBaseModelInstance()):
     # FK vers region
     code_region: Column[str] = Column(String, ForeignKey("ref_region.code"), nullable=False)
     region: Mapped[Region] = relationship("Region", lazy="joined")
+
+    @staticmethod
+    def exclude_schema():
+        """Combine les exclusions de _Audit et _SyncedWithGrist."""
+        return _Audit.exclude_schema() + _SyncedWithGrist.exclude_schema()

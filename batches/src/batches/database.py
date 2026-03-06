@@ -59,6 +59,15 @@ def get_session_maker(engine_name: EngineName):
     return SessionLocal
 
 
+def get_session_main():
+    session_maker = get_session_maker("main")
+    session = session_maker()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
 @contextmanager
 def session_scope():
     session_maker = get_session_maker("main")
