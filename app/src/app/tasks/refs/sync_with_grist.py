@@ -1,3 +1,16 @@
+"""
+DÉPRÉCIÉ: Ce module est remplacé par le flow Prefect `batches.flows.sync_referentiel_grist`.
+
+Le nouveau flow Prefect offre :
+- Support de tous les référentiels (pas seulement ref_theme et ref_code_programme)
+- Traitement par batch avec parallélisation
+- Soft delete automatique des entrées absentes de Grist
+- Interface Prefect pour le monitoring et le re-run
+
+Migration : Utiliser le flow `sync_referentiel_grist_flow` dans batches/src/batches/flows/sync_referentiel_grist.py
+"""
+
+import warnings
 from datetime import datetime
 import logging
 from typing import List
@@ -17,6 +30,11 @@ from app.clients.grist.factory import make_grist_api_client
 logger = logging.getLogger()
 
 celery = celeryapp.celery
+
+_DEPRECATION_MESSAGE = (
+    "Les tâches Celery sync_with_grist sont dépréciées. "
+    "Utilisez le flow Prefect batches.flows.sync_referentiel_grist.sync_referentiel_grist_flow à la place."
+)
 
 
 def _get_model_by_tablename(tablename):
@@ -48,6 +66,8 @@ def _get_sync_config(doc_id: str, table_id: str, table_name: str):
 
 @celery.task(name="init_referentiels_with_grist", bind=True)
 def init_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, table_name: str):
+    """DÉPRÉCIÉ: Utiliser sync_referentiel_grist_flow de Prefect."""
+    warnings.warn(_DEPRECATION_MESSAGE, DeprecationWarning, stacklevel=2)
     try:
         logger.info("[GRIST][INIT] Start Call init-grist-to-db")
         grist_api = make_grist_api_client(token)
@@ -88,6 +108,8 @@ def init_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, t
 
 @celery.task(name="sync_referentiels_with_grist", bind=True)
 def sync_referentiels_from_grist(self, token: str, doc_id: str, table_id: str, table_name: str):
+    """DÉPRÉCIÉ: Utiliser sync_referentiel_grist_flow de Prefect."""
+    warnings.warn(_DEPRECATION_MESSAGE, DeprecationWarning, stacklevel=2)
     try:
         logger.info("[GRIST][SYNC] Start Call sync-grist-to-db")
         grist_api = make_grist_api_client(token)

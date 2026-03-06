@@ -1,3 +1,15 @@
+"""
+DÉPRÉCIÉ: Ce controller est remplacé par le flow Prefect `batches.flows.sync_referentiel_grist`.
+
+Le nouveau flow Prefect offre :
+- Support de tous les référentiels (pas seulement ref_theme et ref_code_programme)
+- Traitement par batch avec parallélisation
+- Soft delete automatique des entrées absentes de Grist
+- Interface Prefect pour le monitoring et le re-run
+
+Migration : Appeler le deployment Prefect `sync_referentiel_grist` via l'API Prefect.
+"""
+
 import logging
 from app.clients.grist.factory import GristConfiguationException
 from app.controller.Decorators import authM2M

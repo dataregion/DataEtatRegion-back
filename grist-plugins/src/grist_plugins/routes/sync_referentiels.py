@@ -1,3 +1,15 @@
+"""
+DÉPRÉCIÉ: Ce module sera remplacé par une intégration directe avec Prefect.
+
+Les endpoints `/init-sync` et `/launch-sync` appellent actuellement le backend Flask
+qui utilise des tâches Celery. Ces endpoints seront remplacés par des appels directs
+au deployment Prefect `sync_referentiel_grist`.
+
+Migration prévue :
+- Nouvel endpoint `/sync-referentiel-prefect` qui déclenche le flow Prefect
+- Suppression des endpoints `/init-sync` et `/launch-sync`
+"""
+
 from pathlib import Path
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, JSONResponse
