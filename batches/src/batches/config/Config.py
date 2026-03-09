@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from pathlib import Path
+from models.value_objects.api_entreprise_info import ApiEntrepriseInfo
+
 
 class GristConfig(BaseModel):
     database_url: str
@@ -14,6 +16,14 @@ class RemoteFilesConfig(BaseModel):
     donnees_qpv_entreprises: str
     """URL du fichier contenant le lien entre QPV et SIRET"""
 
+
+class RedisConfig(BaseModel):
+    host: str = "localhost"
+    """Host du serveur redis"""
+    port: int = 6379
+    """Port du serveur redis"""
+    db: int = 0
+    """Numéro de la base de données redis"""
 
 class SMTPConfig(BaseModel):
     server: str
@@ -61,3 +71,9 @@ class Config(BaseModel):
     # Concurrency pour le traitement des batches (par défaut 3)
     max_concurrent: int = 3
     """Nombre maximum de batches lancés en parallèle lors du sync (par défaut 3)"""
+
+    api_entreprise: ApiEntrepriseInfo = None
+    """Configuration du client API entreprise (optionnel, nécessaire pour le batch update_siret)"""
+    
+    api_geo_url: str = None
+    """URL de l'api geo"""

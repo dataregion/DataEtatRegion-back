@@ -4,6 +4,7 @@ from batches.prefect.exporte_une_recherche import exporte_une_recherche
 from batches.prefect.import_file_qpv_lieu_action import import_file_qpv_lieu_action
 from batches.prefect.share_filter_user import share_filter_user
 from batches.prefect.update_link_siret_qpv import update_link_siret_qpv_from_url
+from batches.prefect.update_siret import update_all_sirets
 
 
 def main():
@@ -19,12 +20,18 @@ def main():
     sync_referentiel_grist_deploiement = sync_referentiel_grist_flow.to_deployment(
         name="sync_referentiel_grist",
     )
+    update_all_sirets_deploiement = update_all_sirets.to_deployment(
+        name="update_all_sirets",
+        cron="0 2 * * *",  # Tous les jours à 2h du matin
+        parameters={"max_sirets": 10_000},
+    )
     serve(
         export_recherche_deploiement,  # type: ignore
         import_file_qpv_lieu_action_deploiement,  # type: ignore
         share_filter_user_deploiement,  # type: ignore
         update_link_siret_qpv_from_url_deploiement,  # type: ignore
         sync_referentiel_grist_deploiement,  # type: ignore
+        update_all_sirets_deploiement,  # type: ignore
     )
 
 

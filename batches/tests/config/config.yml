@@ -17,9 +17,21 @@ grist:
 cached_remote_files_url:
   donnees_qpv_entreprises: "https://www.data.gouv.fr/fr/datasets/r/ba6a4e4c-aac6-4764-bbd2-f80ae345afc5"
 
+api_entreprise:
+  url: https://staging.entreprise.api.gouv.fr
+  token: mon_token
+
+  context: nocode-batches.localhost
+  recipient: 26350579400028
+  object: nocode-batches.localhost
+
+  timeout_seconds: 30
+
 smtp:
   server: "localhost" # smtp4dev
   port: 2525
   from_email: "admin@admin.com"
   # pwd: "postmaster"
   use_ssl: False
+
+api_geo_url: "https://geo.api.test"

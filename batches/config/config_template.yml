@@ -23,3 +23,5 @@ smtp:
   from_email: "admin@admin.com"
   # pwd: "postmaster"
   use_ssl: False
+
+api_geo_url: "https://geo.api.test"
