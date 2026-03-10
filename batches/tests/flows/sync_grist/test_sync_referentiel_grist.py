@@ -154,7 +154,7 @@ def test_sync_batch_task_insert(session):
 
     synchro = _create_synchro_grist(session)
     synchro_meta = {"synchro_grist_id": synchro.id}
-    batch = [{"id": 42, "fields": {"code": "BG00/C001", "label": "Centre test"}}]
+    batch = [{"id": 42, "fields": {"code": "C001", "label": "Centre test"}}]
 
     result = sync_batch_task(batch, synchro_meta, "ref_centre_couts")
 
@@ -175,12 +175,12 @@ def test_sync_batch_task_update(session):
     from batches.prefect.sync_referentiel_grist import sync_batch_task
 
     synchro = _create_synchro_grist(session)
-    existing = CentreCouts(code="BG00/C002", label="Ancien label", grist_row_id=99, synchro_grist_id=synchro.id)
+    existing = CentreCouts(code="C002", label="Ancien label", grist_row_id=99, synchro_grist_id=synchro.id)
     session.add(existing)
     session.commit()
 
     synchro_meta = {"synchro_grist_id": synchro.id}
-    batch = [{"id": 99, "fields": {"code": "BG00/C002", "label": "Nouveau label"}}]
+    batch = [{"id": 99, "fields": {"code": "C002", "label": "Nouveau label"}}]
 
     result = sync_batch_task(batch, synchro_meta, "ref_centre_couts")
 
@@ -191,6 +191,56 @@ def test_sync_batch_task_update(session):
 
     # Nettoyage
     session.execute(delete(CentreCouts).where(CentreCouts.grist_row_id == 99))
+    session.execute(delete(SynchroGrist).where(SynchroGrist.id == synchro.id))
+    session.commit()
+
+
+def test_sync_batch_task_update_existing_without_grist_row_id(session):
+    """Un record existant sans grist_row_id (données historiques) doit être mis à jour et lié à Grist."""
+    from batches.prefect.sync_referentiel_grist import sync_batch_task
+
+    synchro = _create_synchro_grist(session)
+    # Ligne existante SANS grist_row_id (données créées avant la synchronisation Grist)
+    # Note: CentreCouts.__setattr__ enlève le préfixe "BG00/" du code, donc "BG00/C003" devient "C003"
+    existing = CentreCouts(code="C003", label="Label historique")
+    session.add(existing)
+    session.flush()  # Force l'écriture en DB pour obtenir l'ID
+    existing_id = existing.id
+    session.commit()  # Commit pour rendre visible aux autres sessions
+
+    # Vérifier que la ligne a bien été créée (le code est stocké sans préfixe)
+    check = session.execute(select(CentreCouts).where(CentreCouts.code == "C003")).scalar_one_or_none()
+    assert check is not None, "La ligne test n'a pas été créée correctement"
+    assert check.id == existing_id
+    assert check.grist_row_id is None  # Pas encore de grist_row_id
+
+    session.expire_all()  # Expire le cache de la session
+
+    synchro_meta = {"synchro_grist_id": synchro.id}
+    # On synchronise avec Grist : même code mais avec grist_row_id=50
+    batch = [{"id": 50, "fields": {"code": "C003", "label": "Label depuis Grist"}}]
+
+    result = sync_batch_task(batch, synchro_meta, "ref_centre_couts")
+
+    assert result["inserted"] == 0
+    assert result["updated"] == 1
+
+    # La ligne existante doit être mise à jour (pas de doublon créé)
+    updated = session.execute(select(CentreCouts).where(CentreCouts.id == existing_id)).scalar_one()
+    assert updated.label == "Label depuis Grist"
+    assert updated.grist_row_id == 50
+    assert updated.synchro_grist_id == synchro.id
+    assert updated.code == "C003", f"Code attendu: 'C003', obtenu: '{updated.code}'"
+
+    # Vérifier qu'il n'y a qu'une seule ligne avec ce code (stocké sans préfixe)
+    all_rows = session.execute(select(CentreCouts)).scalars().all()
+    matching_rows = [r for r in all_rows if r.code == "C003"]
+    assert len(matching_rows) == 1, (
+        f"Attendu 1 ligne avec code='C003', trouvé {len(matching_rows)} lignes. Tous les codes: {[r.code for r in all_rows]}"
+    )
+
+    # Nettoyage
+    session.execute(delete(CentreCouts).where(CentreCouts.id == existing_id))
     session.execute(delete(SynchroGrist).where(SynchroGrist.id == synchro.id))
     session.commit()
 
@@ -206,9 +256,9 @@ def test_soft_delete_missing_task(session):  # noqa: F811
 
     synchro = _create_synchro_grist(session)
     # Ligne encore présente dans Grist (grist_row_id=10)
-    present = CentreCouts(code="BG00/P001", label="Present", grist_row_id=10, synchro_grist_id=synchro.id)
+    present = CentreCouts(code="P001", label="Present", grist_row_id=10, synchro_grist_id=synchro.id)
     # Ligne absente de Grist (grist_row_id=20)
-    absent = CentreCouts(code="BG00/A001", label="Absent", grist_row_id=20, synchro_grist_id=synchro.id)
+    absent = CentreCouts(code="A001", label="Absent", grist_row_id=20, synchro_grist_id=synchro.id)
     session.add_all([present, absent])
     session.commit()  # ✅ Commit pour persister les données (visible par toutes les sessions)
 

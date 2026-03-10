@@ -5,6 +5,24 @@ Projet qui accueille les opérations en batch et en tâches de fond avec Prefect
 | Variable d'environnement | Description                        |
 | ------------------------ | ---------------------------------- |
 | BATCHES_CONFIG_PATH      | Chemin du fichier de configuration |
+| PREFECT_API_URL          | URL du serveur Prefect (requis pour serveur externe) |
+
+## Démarrer le serveur Prefect
+
+**⚠️ Prérequis : Serveur Prefect externe**
+
+Ce projet utilise `prefect-client` qui nécessite un serveur Prefect externe. Pour lancer le serveur de déploiements :
+
+```bash
+cd data-transform/batches
+source .venv/bin/activate
+export PREFECT_API_URL=http://your-prefect-server:4200/api
+serve
+```
+
+**Variables d'environnement requises :**
+- `PREFECT_API_URL` : URL complète de l'API du serveur Prefect (ex: `http://localhost:4200/api`)
+- `BATCHES_CONFIG_PATH` : Chemin vers le fichier de configuration (ex: `./config/config.yml`)
 
 
 ## Flows disponibles

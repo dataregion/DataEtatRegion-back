@@ -57,3 +57,7 @@ class Config(BaseModel):
 
     smtp: SMTPConfig
     """Configuration SMTP pour l'envoi d'emails"""
+    
+    # Concurrency pour le traitement des batches (par défaut 3)
+    max_concurrent: int = 3
+    """Nombre maximum de batches lancés en parallèle lors du sync (par défaut 3)"""

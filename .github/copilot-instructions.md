@@ -60,6 +60,26 @@
   ```
 
   Cela évite les erreurs du type "bad interpreter: /path/to/.venv/bin/python3: No such file or directory" lorsque les scripts installés ont un shebang qui n'est pas valide sur la machine.
+
+- **Lancer le serveur Prefect (`batches/`)** :
+  1. Se placer dans le dossier `batches` :
+    ```bash
+    cd data-transform/batches
+    ```
+  2. Activer le venv Python :
+    ```bash
+    source .venv/bin/activate
+    ```
+  3. **⚠️ OBLIGATOIRE : Définir l'URL du serveur Prefect externe** :
+    ```bash
+    export PREFECT_API_URL=http://your-prefect-server:4200/api
+    ```
+  4. Lancer le serveur de déploiements :
+    ```bash
+    serve
+    ```
+  **Note importante** : Le projet utilise `prefect-client`, qui nécessite un serveur Prefect externe. Sans `PREFECT_API_URL`, la commande `serve` échouera avec une erreur "No module named 'docket'".
+
 - **Workers Celery** : Plusieurs files (`line`, `file`, `celery`, etc.) définies dans docker-compose et démarrées avec des paramètres de concurrence/pool différents.
 - **Tests** : Tests unitaires dans `app/tests/`, E2E dans `tests_e2e/`. Utiliser pytest pour les tests unitaires.
 - **CI/CD** : Les templates GitLab CI dans `.gitlab-templates/` orchestrent builds, déploiements et bump de version.

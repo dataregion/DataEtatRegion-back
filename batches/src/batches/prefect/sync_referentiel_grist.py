@@ -5,6 +5,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from batches.database import init_persistence_module, session_scope
+from batches.config.current import get_config
 from batches.grist import make_grist_api_service
 from prefect import flow, get_run_logger, task
 from prefect.cache_policies import NO_CACHE
@@ -14,7 +15,8 @@ init_persistence_module()
 from models import Base  # noqa: E402
 from models.entities.common.SyncedWithGrist import _SyncedWithGrist  # noqa: E402
 from models.entities.refs import SynchroGrist  # noqa: E402, F401 — import refs pour enregistrer tous les modèles
-from sqlalchemy import insert, select, update  # noqa: E402
+from sqlalchemy import select, update  # noqa: E402
+from sqlalchemy.dialects.postgresql import insert  # noqa: E402
 
 
 def _get_model_by_tablename(tablename: str) -> type:
@@ -53,10 +55,19 @@ def init_synchro_config_task(referentiel: str, doc_id: str, table_id: str) -> di
             session.flush()
             logger.info(f"[GRIST][INIT] Entrée SynchroGrist créée pour '{referentiel}'")
         else:
-            logger.info(f"[GRIST][INIT] Entrée SynchroGrist existante pour '{referentiel}' (id={synchro_grist.id})")
-        # Lire l'id avant l'expiration post-commit
+            logger.info(
+                f"[GRIST][INIT] Entrée SynchroGrist existante pour '{referentiel}' (doc_id={synchro_grist.grist_doc_id})"
+            )
+        # Lire l'id et les infos Grist avant l'expiration post-commit
         synchro_id = synchro_grist.id
-    return {"synchro_grist_id": synchro_id, "dataetat_table_name": referentiel}
+        grist_doc = getattr(synchro_grist, "grist_doc_id", None)
+        grist_table = getattr(synchro_grist, "grist_table_id", None)
+    return {
+        "synchro_grist_id": synchro_id,
+        "dataetat_table_name": referentiel,
+        "grist_doc_id": grist_doc,
+        "grist_table_id": grist_table,
+    }
 
 
 @task(cache_policy=NO_CACHE)
@@ -98,34 +109,57 @@ def sync_batch_task(
     model = _get_model_by_tablename(referentiel)
     synchro_grist_id = synchro_meta["synchro_grist_id"]
     now = datetime.now(ZoneInfo("Europe/Paris"))
-    inserted = 0
-    updated = 0
+
     with session_scope() as session:
+        # Récupérer les codes existants pour compter inserted vs updated
+        batch_codes = [record["fields"]["code"] for record in batch if "code" in record["fields"]]
+        stmt_existing = select(model.code).where(model.code.in_(batch_codes))  # type: ignore[attr-defined]
+        existing_codes = set(session.execute(stmt_existing).scalars().all())
+
+        inserted = 0
+        updated = 0
+
         for record in batch:
             grist_row_id = record["id"]
             fields = dict(record["fields"])
-            stmt_select = select(model).where(model.grist_row_id == grist_row_id)  # type: ignore[attr-defined]
-            existing = session.execute(stmt_select).scalar_one_or_none()
-            if existing is None:
-                fields["synchro_grist_id"] = synchro_grist_id
-                fields["grist_row_id"] = grist_row_id
-                fields["created_at"] = now
-                fields["updated_at"] = now
-                session.execute(insert(model).values(**fields))
-                inserted += 1
-                logger.info(f"[GRIST][SYNC] INSERT {referentiel} (grist_row_id={grist_row_id})")
-            else:
-                fields["updated_at"] = now
-                session.execute(
-                    update(model)  # type: ignore[arg-type]
-                    .where(
-                        model.synchro_grist_id == synchro_grist_id,  # type: ignore[attr-defined]
-                        model.grist_row_id == grist_row_id,  # type: ignore[attr-defined]
-                    )
-                    .values(**fields)
-                )
+
+            # Préparer les valeurs pour l'UPSERT
+            values = {
+                **fields,
+                "synchro_grist_id": synchro_grist_id,
+                "grist_row_id": grist_row_id,
+                "created_at": now,
+                "updated_at": now,
+            }
+
+            # Valeurs à mettre à jour en cas de conflit (tous les champs sauf created_at)
+            update_values = {
+                **fields,
+                "synchro_grist_id": synchro_grist_id,
+                "grist_row_id": grist_row_id,
+                "updated_at": now,
+            }
+
+            # UPSERT avec ON CONFLICT DO UPDATE sur la colonne 'code'
+            stmt = insert(model).values(**values)
+            stmt = stmt.on_conflict_do_update(
+                index_elements=["code"],  # Colonne avec contrainte UNIQUE
+                set_=update_values,
+            )
+            session.execute(stmt)
+
+            # Compter inserted vs updated
+            if fields.get("code") in existing_codes:
                 updated += 1
-                logger.info(f"[GRIST][SYNC] UPDATE {referentiel} (grist_row_id={grist_row_id})")
+                logger.info(
+                    f"[GRIST][SYNC] UPDATE {referentiel} (code={fields.get('code')}, grist_row_id={grist_row_id})"
+                )
+            else:
+                inserted += 1
+                logger.info(
+                    f"[GRIST][SYNC] INSERT {referentiel} (code={fields.get('code')}, grist_row_id={grist_row_id})"
+                )
+
     return {"inserted": inserted, "updated": updated}
 
 
@@ -162,9 +196,9 @@ def soft_delete_missing_task(
 @flow
 def sync_referentiel_grist_flow(
     referentiel: str,
-    doc_id: str,
-    table_id: str,
     token: str,
+    grist_doc_id: str | None = None,
+    grist_table_id: str | None = None,
     batch_size: int = 100,
 ):
     """
@@ -172,31 +206,50 @@ def sync_referentiel_grist_flow(
 
     Args:
         referentiel: Nom de la table SQL du référentiel (ex: 'ref_centre_couts').
-        doc_id: Identifiant du document Grist.
-        table_id: Identifiant de la table Grist.
+        grist_doc_id: Identifiant du document Grist.
+        grist_table_id: Identifiant de la table Grist.
         token: Token d'accès à l'API Grist.
         batch_size: Taille des batches de synchronisation (défaut: 100).
     """
     logger = get_run_logger()
-    logger.info(f"[GRIST] Démarrage sync '{referentiel}' (doc={doc_id}, table={table_id})")
+    logger.info(f"[GRIST] Démarrage sync '{referentiel}' (doc={grist_doc_id}, table={grist_table_id})")
 
     validate_model_task(referentiel)
-    synchro_meta = init_synchro_config_task(referentiel, doc_id, table_id)
 
-    records = fetch_grist_records_task(doc_id, table_id, token)
+    # Initialiser ou récupérer la config de synchronisation. Si `grist_doc_id`/`grist_table_id`
+    # ne sont pas fournis, `init_synchro_config_task` retournera les valeurs existantes en base.
+    synchro_meta = init_synchro_config_task(referentiel, grist_doc_id, grist_table_id)
+    grist_doc_id = synchro_meta.get("grist_doc_id")
+    grist_table_id = synchro_meta.get("grist_table_id")
+
+    if not grist_doc_id or not grist_table_id:
+        raise RuntimeError("grist_doc_id et grist_table_id sont requis pour récupérer les enregistrements Grist")
+
+    records = fetch_grist_records_task(grist_doc_id, grist_table_id, token)
     validate_grist_data_task(records, referentiel)
 
     all_grist_ids = [r["id"] for r in records]
 
-    # Soumettre les batches en parallèle
-    futures = []
-    for i in range(0, len(records), batch_size):
-        batch = records[i : i + batch_size]
-        futures.append(sync_batch_task.submit(batch, synchro_meta, referentiel))
+    # Traitement des batches avec parallélisme limité pour ne pas saturer le pool DB
+    # Lire la configuration si disponible (défaut 3)
+    max_concurrent = get_config().max_concurrent
+    total_inserted = 0
+    total_updated = 0
+    all_batches = [records[i : i + batch_size] for i in range(0, len(records), batch_size)]
+    total_batches = len(all_batches)
 
-    results = [f.result() for f in futures]
-    total_inserted = sum(r["inserted"] for r in results)
-    total_updated = sum(r["updated"] for r in results)
+    for group_start in range(0, total_batches, max_concurrent):
+        group = all_batches[group_start : group_start + max_concurrent]
+        group_num_start = group_start + 1
+        group_num_end = min(group_start + max_concurrent, total_batches)
+        logger.info(f"[GRIST] Lancement batches {group_num_start}-{group_num_end}/{total_batches}")
+
+        futures = [sync_batch_task.submit(batch, synchro_meta, referentiel) for batch in group]
+        for f in futures:
+            result = f.result()
+            total_inserted += result["inserted"]
+            total_updated += result["updated"]
+
     logger.info(f"[GRIST] Batches terminés : {total_inserted} insérés, {total_updated} mis à jour")
 
     deleted_count = soft_delete_missing_task(referentiel, synchro_meta, all_grist_ids)
@@ -206,8 +259,9 @@ def sync_referentiel_grist_flow(
 
 if __name__ == "__main__":
     sync_referentiel_grist_flow(
-        referentiel="ref_centre_couts",
-        doc_id="<docId>",
-        table_id="<tableId>",
+        referentiel="<ref>",
         token="<token>",
+        grist_doc_id=None,
+        grist_table_id=None,
+        batch_size=1000,
     )
