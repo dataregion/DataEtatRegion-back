@@ -1,7 +1,7 @@
 """add synced_with_grist columns
 
-Revision ID: 20260306_add_synced_with_grist_columns
-Revises: 20260302_update_views_add_cdpt_py
+Revision ID: 20260306_add_grist_columns
+Revises: 20260302_update_views_add_cdpt
 Create Date: 2026-03-06 15:31:02.000000
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 import logging
 
 # revision identifiers, used by Alembic.
-revision = '20260306_add_synced_with_grist_columns'
-down_revision = '20260302_update_views_add_cdpt_py'
+revision = '20260306_add_grist_columns'
+down_revision = '20260302_update_views_add_cdpt'
 branch_labels = None
 depends_on = None
 
