@@ -1,5 +1,6 @@
 import logging
 import os
+import csv
 from models.exceptions import BadRequestError, ServerError
 from apis.config.current import get_config
 from models.value_objects.UploadType import UploadType
@@ -10,6 +11,65 @@ from services.audits.upload_session import UploadSessionService
 
 
 logger = logging.getLogger(__name__)
+
+
+def validate_csv_file_content(file_path: str) -> None:
+    """
+    Valide que le fichier est vraiment un CSV et non un autre type de fichier.
+
+    Cette fonction vérifie :
+    1. Que le fichier peut être décodé en UTF-8 (détecte les fichiers binaires)
+    2. Que le fichier peut être lu comme un CSV valide avec le sniffer
+
+    Args:
+        file_path: Chemin vers le fichier à valider
+
+    Raises:
+        BadRequestError: Si le fichier n'est pas un CSV valide
+    """
+    try:
+        # Lire le fichier en UTF-8 strict (les fichiers binaires vont échouer ici)
+        with open(file_path, "r", encoding="utf-8") as f:
+            # Lire les 10 premières lignes pour valider la structure CSV
+            sample_lines = [line for i, line in enumerate(f) if i < 10]
+
+            if not sample_lines:
+                raise BadRequestError(api_message="Le fichier CSV est vide")
+
+            # Essayer de parser avec le module csv
+            sample = "".join(sample_lines)
+            try:
+                # Détecter le dialecte CSV
+                sniffer = csv.Sniffer()
+                dialect = sniffer.sniff(sample, delimiters=",;\t")
+
+                # Essayer de parser les lignes
+                reader = csv.reader(sample_lines, dialect=dialect)
+                rows = list(reader)
+
+                if not rows:
+                    raise BadRequestError(api_message="Le fichier CSV ne contient aucune donnée valide")
+
+                # Vérifier qu'il y a au moins une colonne
+                if rows and len(rows[0]) == 0:
+                    raise BadRequestError(api_message="Le fichier CSV ne contient aucune colonne")
+
+                logger.info(
+                    f"Fichier CSV validé : {len(rows)} lignes lues, {len(rows[0]) if rows else 0} colonnes détectées"
+                )
+
+            except csv.Error as e:
+                logger.error(f"Erreur lors de la lecture du fichier CSV : {e}", exc_info=e)
+                raise BadRequestError(api_message="Le fichier ne peut pas être lu comme un CSV valide")
+
+    except BadRequestError:
+        # Relancer les BadRequestError sans les wrapper
+        raise
+    except UnicodeDecodeError:
+        raise BadRequestError(api_message="Le fichier n'est pas un CSV")
+    except Exception as e:
+        logger.error(f"Erreur lors de la validation du fichier CSV : {e}", exc_info=e)
+        raise BadRequestError(api_message=f"Erreur lors de la validation du fichier : {str(e)}")
 
 
 def _get_upload_session_service() -> UploadSessionService:
@@ -95,6 +155,10 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
 
     # Valider les metadata
     validate_metadata(metadata)
+
+    # Valider le contenu du fichier (vérifier que c'est bien un CSV)
+    logger.info(f"Validating CSV file content: {file_path}")
+    validate_csv_file_content(file_path)
 
     # Extraire les informations des metadata
     session_token = metadata.get("session_token")
