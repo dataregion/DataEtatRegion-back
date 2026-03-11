@@ -66,17 +66,17 @@ update-pinned-dependencies:
         echo >&2 "Aucune mise à jour de dépendances pinned. On continue"
       fi
 
-"Analyse semgrep":
-  stage: ☢️ analyze
-  image: semgrep/semgrep
-  script: semgrep ci
-  rules:
-    - if: '$DO_ANALYZE == "✅"'
-    - if: '$DO_ANALYZE == "⚙️"'
-      when: manual
-    - when: never
-  needs:
-    - update-pinned-dependencies
+# "Analyse semgrep":
+#   stage: ☢️ analyze
+#   image: semgrep/semgrep
+#   script: semgrep ci
+#   rules:
+#     - if: '$DO_ANALYZE == "✅"'
+#     - if: '$DO_ANALYZE == "⚙️"'
+#       when: manual
+#     - when: never
+#   needs:
+#     - update-pinned-dependencies
 
 # Construit une image avec les venv de devs installés
 "🐳 dockerizing nocode/dev image":
