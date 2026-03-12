@@ -5,7 +5,7 @@ from functools import wraps
 from tenacity import retry, stop_after_attempt
 
 from app import celeryapp
-from celery import current_app
+from celery import current_app as celery_current_app
 
 celery = celeryapp.celery
 logger = logging.getLogger()
@@ -21,10 +21,21 @@ TIMEOUT_QUEUE_RETRY = "timeout_queue_retry"
 DEFAULT_MAX_QUEUE_SIZE = 100000
 DEFAULT_TIMEOUT_QUEUE_RETRY = 60
 
-max_queue_size = current_app.conf[MAX_QUEUE_SIZE] if MAX_QUEUE_SIZE in current_app.conf else DEFAULT_MAX_QUEUE_SIZE
-timeout_queue_retry = (
-    current_app.conf[TIMEOUT_QUEUE_RETRY] if TIMEOUT_QUEUE_RETRY in current_app.conf else DEFAULT_TIMEOUT_QUEUE_RETRY
-)
+
+def _get_celery_app():
+    if celeryapp.celery is not None:
+        return celeryapp.celery
+
+    return celery_current_app._get_current_object()
+
+
+def _get_celery_conf():
+    return _get_celery_app().conf
+
+
+def _get_celery_config_value(key: str, default):
+    conf = _get_celery_conf()
+    return conf[key] if key in conf else default
 
 
 def lazy_rabbit_connector():
@@ -34,12 +45,13 @@ def lazy_rabbit_connector():
     def get_connection():
         nonlocal conn
         nonlocal chan
+        broker_url = getattr(_get_celery_conf(), "broker_url", None)
 
-        if current_app.conf.broker_url is None:
+        if broker_url is None:
             return None
 
         if conn is None or conn.is_closed:
-            conn = pika.BlockingConnection(pika.URLParameters(current_app.conf.broker_url))
+            conn = pika.BlockingConnection(pika.URLParameters(broker_url))
 
         if chan is None or chan.is_closed:
             chan = conn.channel()
@@ -52,9 +64,7 @@ def lazy_rabbit_connector():
 lazy_channel = lazy_rabbit_connector()
 
 
-def limiter_queue(
-    queue_name: str, max_queue_size: int = max_queue_size, timeout_queue_retry: int = timeout_queue_retry
-):
+def limiter_queue(queue_name: str, max_queue_size: int | None = None, timeout_queue_retry: int | None = None):
     """
     Vérifie que le nombre de message dans la file "queue_name" de rabbitmq n'atteint pas la taille max
     Si taille max dépassé, attente de 10 seconde.
@@ -64,16 +74,26 @@ def limiter_queue(
     def wrapper(func):
         @wraps(func)
         def inner_wrapper(*args, **kwargs):
-            if not current_app.conf.task_always_eager:
+            celery_conf = _get_celery_conf()
+            current_max_queue_size = _get_celery_config_value(MAX_QUEUE_SIZE, DEFAULT_MAX_QUEUE_SIZE)
+            current_timeout_queue_retry = _get_celery_config_value(TIMEOUT_QUEUE_RETRY, DEFAULT_TIMEOUT_QUEUE_RETRY)
+
+            if max_queue_size is not None:
+                current_max_queue_size = max_queue_size
+
+            if timeout_queue_retry is not None:
+                current_timeout_queue_retry = timeout_queue_retry
+
+            if not celery_conf.task_always_eager:
                 num_retries = 0
 
                 while True:
                     queue_info = _get_queue(queue_name)
                     msg_count = queue_info.method.message_count
 
-                    if msg_count <= max_queue_size:
+                    if msg_count <= current_max_queue_size:
                         break
-                    if num_retries >= timeout_queue_retry:
+                    if num_retries >= current_timeout_queue_retry:
                         raise LimitQueueException(
                             f"Timeout exceeded while waiting for the queue '{queue_name}' to be available."
                         )
