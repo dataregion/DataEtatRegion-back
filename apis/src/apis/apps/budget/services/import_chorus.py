@@ -144,9 +144,6 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
                 client_id=user.azp or None,
             )
 
-            # Nettoyer les fichiers temporaires de la session
-            session_service.cleanup_session(session_token)
-
             logger.info(f"Session {session_token} finalized successfully")
 
         except Exception as e:

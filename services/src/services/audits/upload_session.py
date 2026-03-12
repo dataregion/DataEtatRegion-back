@@ -5,8 +5,57 @@ Ce service permet de :
 - Tracker les fichiers reçus par session_token
 - Détecter quand tous les fichiers d'une session sont reçus
 - Concaténer les fichiers CSV AE et CP en fichiers uniques
+- Conserver l'historique des sessions pour analyse
+
+## Stockage des sessions
+
+Les sessions d'upload sont stockées dans des fichiers JSON au format :
+`{sessions_folder}/{session_token}.json`
+
+Chaque fichier de session contient :
+- Les métadonnées de la session (token, année, région, utilisateur, etc.)
+- La liste des fichiers reçus (AE et CP)
+- Le hash SHA256 de chaque fichier uploadé
+- Les chemins des fichiers finaux concaténés (après finalisation)
+
+**IMPORTANT** : Les fichiers de session sont conservés indéfiniment après traitement
+pour permettre l'audit et l'analyse. Seuls les fichiers temporaires sont supprimés.
+
+## Structure du SessionState (JSON)
+
+```json
+{
+  "session_token": "uuid-v4",
+  "total_ae_files": 2,
+  "total_cp_files": 3,
+  "year": 2024,
+  "source_region": "BRETAGNE",
+  "username": "user@example.com",
+  "client_id": "budget-app",
+  "received_ae_files": ["/path/to/temp/001_financial-ae_file1.csv", ...],
+  "received_cp_files": ["/path/to/temp/001_financial-cp_file1.csv", ...],
+  "original_ae_filenames": ["file1.csv", "file2.csv"],
+  "original_cp_filenames": ["file3.csv", "file4.csv", "file5.csv"],
+  "file_hashes": {
+    "/path/to/temp/001_financial-ae_file1.csv": "sha256_hash_1",
+    "/path/to/temp/002_financial-ae_file2.csv": "sha256_hash_2",
+    ...
+  },
+  "final_ae_file": "/path/to/final/file1_2_AE_2024.csv",
+  "final_cp_file": "/path/to/final/file3_3_CP_2024.csv"
+}
+```
+
+## Cycle de vie d'une session
+
+1. **Création** : Premier fichier uploadé → création du SessionState
+2. **Enregistrement** : Chaque fichier est hashé (SHA256) puis déplacé dans le dossier temporaire
+3. **Finalisation** : Quand tous les fichiers sont reçus → concaténation des CSV
+4. **Sauvegarde** : Le SessionState final est sauvegardé avec les chemins finaux
+5. **Nettoyage** : Les fichiers temporaires sont supprimés, le JSON de session est **conservé**
 """
 
+import hashlib
 import json
 import logging
 import os
@@ -35,6 +84,11 @@ class SessionState:
     received_cp_files: list[str] = field(default_factory=list)
     original_ae_filenames: list[str] = field(default_factory=list)
     original_cp_filenames: list[str] = field(default_factory=list)
+    # Hash SHA256 de chaque fichier uploadé (clé: chemin du fichier, valeur: hash)
+    file_hashes: dict[str, str] = field(default_factory=dict)
+    # Chemins des fichiers finaux concaténés
+    final_ae_file: Optional[str] = None
+    final_cp_file: Optional[str] = None
 
     @property
     def is_complete(self) -> bool:
@@ -115,6 +169,22 @@ class UploadSessionService:
         with open(session_file, "w", encoding="utf-8") as f:
             json.dump(state.to_dict(), f, indent=2)
 
+    def _calculate_file_hash(self, file_path: str) -> str:
+        """Calcule le hash SHA256 d'un fichier.
+
+        Args:
+            file_path: Chemin du fichier
+
+        Returns:
+            Hash SHA256 en hexadécimal
+        """
+        sha256_hash = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            # Lire le fichier par blocs pour économiser la mémoire
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        return sha256_hash.hexdigest()
+
     def register_file(
         self,
         file_path: str,
@@ -158,6 +228,10 @@ class UploadSessionService:
             )
             logger.info(f"Created new session state for {session_token}")
 
+        # Calculer le hash du fichier avant de le déplacer
+        file_hash = self._calculate_file_hash(file_path)
+        logger.info(f"Calculated hash for {file_path}: {file_hash}")
+
         # Copier le fichier dans le dossier temporaire de la session
         temp_folder = self._get_session_temp_folder(session_token)
         filename = os.path.basename(file_path)
@@ -169,6 +243,9 @@ class UploadSessionService:
 
         shutil.move(file_path, temp_path)
         logger.info(f"Moved file to {temp_path}")
+
+        # Enregistrer le hash du fichier
+        state.file_hashes[str(temp_path)] = file_hash
 
         # Enregistrer le fichier dans la liste appropriée
         if upload_type == UploadType.FINANCIAL_AE.value:
@@ -262,25 +339,13 @@ class UploadSessionService:
         # Concaténer les fichiers CP
         cp_final_path = self.concatenate_csv_files(state.received_cp_files, cp_output)
 
+        # Enregistrer les chemins des fichiers finaux dans l'état
+        state.final_ae_file = ae_final_path
+        state.final_cp_file = cp_final_path
+
+        # Sauvegarder l'état final avec les fichiers finaux
+        self._save_session_state(state)
+
         logger.info(f"Session {session_token} finalized: AE={ae_final_path}, CP={cp_final_path}")
 
         return ae_final_path, cp_final_path
-
-    def cleanup_session(self, session_token: str) -> None:
-        """
-        Nettoie les fichiers temporaires d'une session.
-
-        Args:
-            session_token: Token de session
-        """
-        # Supprimer le dossier temporaire
-        temp_folder = self._get_session_temp_folder(session_token)
-        if temp_folder.exists():
-            shutil.rmtree(temp_folder)
-            logger.info(f"Cleaned up temp folder for session {session_token}")
-
-        # Supprimer le fichier de session
-        session_file = self._get_session_file(session_token)
-        if session_file.exists():
-            session_file.unlink()
-            logger.info(f"Cleaned up session file for {session_token}")
