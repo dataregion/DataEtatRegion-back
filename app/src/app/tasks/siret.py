@@ -13,7 +13,7 @@ from flask import current_app
 from app import celeryapp, db
 from models.entities.refs.Siret import Siret
 
-from app.services.siret import update_siret_from_api_entreprise
+from app.services.siret import AppUpdateRefSiretService
 from app.clients.entreprise import LimitHitError
 
 from app.utilities.bucketting import which_bucket
@@ -61,7 +61,7 @@ def update_all_siret_task(self):
 @celery.task(name="update_siret_task", bind=True)
 def update_siret_task(self, index: int, code: str):
     try:
-        siret = update_siret_from_api_entreprise(code)
+        siret = AppUpdateRefSiretService.create_for_app().update_siret_from_api_entreprise(db.session, code)
     except LimitHitError as e:
         delay = (e.delay) + 5
         logger.info(

@@ -9,7 +9,7 @@ from flask import current_app
 
 from app import celeryapp, db
 from models.entities.financial.France2030 import France2030
-from app.services.siret import check_siret
+from app.services.siret import AppUpdateRefSiretService
 from app.tasks import logger, limiter_queue, LineImportTechInfo
 from app.tasks.financial.errors import _handle_exception_import
 from app.utilities.siret import SiretParser
@@ -95,7 +95,7 @@ def import_line_france_2030(self, line: str, tech_info_list: list):
 
     logger.info(f"[IMPORT][FRANCE 2030][LINE] Tentative ligne France 2030 beneficiaire {france_2030.siret}")
     # SIRET beneficiaire
-    check_siret(france_2030.siret)
+    AppUpdateRefSiretService.create_for_app().check_siret(db.session, france_2030.siret)
 
     db.session.add(france_2030)
     logger.info("[IMPORT][FRANCE 2030][LINE] Ajout ligne france 2030")

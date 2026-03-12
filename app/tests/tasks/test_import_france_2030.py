@@ -40,7 +40,7 @@ def test_import_ligne_france_2030(database, session):
     # DO
 
     with patch(
-        "app.services.siret.update_siret_from_api_entreprise",
+        "services.refs.siret.UpdateRefSiretService.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "39922695000026", "code_commune": "35099"}),
     ):
         import_line_france_2030(data, tech_info_list=("a task id", 1))

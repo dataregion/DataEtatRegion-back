@@ -18,7 +18,7 @@ from models.entities.refs.FournisseurTitulaire import FournisseurTitulaire
 from models.entities.refs.GroupeMarchandise import GroupeMarchandise
 from models.entities.refs.LocalisationInterministerielle import LocalisationInterministerielle
 from models.entities.refs.ReferentielProgrammation import ReferentielProgrammation
-from app.services.siret import check_siret
+from app.services.siret import AppUpdateRefSiretService
 from app.tasks import limiter_queue
 
 import pandas
@@ -180,7 +180,7 @@ def _insert_references(new_ae_or_cp: FinancialAe | FinancialCp):
                 if not db.session.query(model).filter_by(code=str(code)).one_or_none():
                     instances_to_save.append(model(code=str(code)))
 
-            check_siret(new_ae_or_cp.siret)
+            AppUpdateRefSiretService.create_for_app().check_siret(db.session, new_ae_or_cp.siret)
 
             # Bulk save all new instances
             if instances_to_save:
@@ -314,9 +314,9 @@ def import_line_ademe(self, line_ademe: str, tech_info_list: list):
     )
 
     # SIRET Attribuant
-    check_siret(new_ademe.siret_attribuant)
+    AppUpdateRefSiretService.create_for_app().check_siret(db.session, new_ademe.siret_attribuant)
     # SIRET beneficiaire
-    check_siret(new_ademe.siret_beneficiaire)
+    AppUpdateRefSiretService.create_for_app().check_siret(db.session, new_ademe.siret_beneficiaire)
 
     db.session.add(new_ademe)
     logger.info("[IMPORT][FINANCIAL] Ajout ligne financière")

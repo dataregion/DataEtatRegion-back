@@ -198,7 +198,7 @@ def test_import_new_line_ae_with_commit_fail(database, session):
     session.commit()
     # Simulation du siret
     with patch(
-        "app.services.siret.update_siret_from_api_entreprise",
+        "services.refs.siret.UpdateRefSiretService.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "85129663200018", "code_commune": "35099"}),
     ):
         # Simulation d'une exception lors du commit
@@ -229,7 +229,7 @@ def test_import_changing_ref(database, session):
 
     # Simulation du siret
     with patch(
-        "app.services.siret.update_siret_from_api_entreprise",
+        "services.refs.siret.UpdateRefSiretService.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "85129663200018", "code_commune": "35099"}),
     ):
         import_lines_financial_ae.run([data_wout_siret, data_wout_siret, data_w_siret], "35", 2023, 0, [])
@@ -462,7 +462,7 @@ def test_import_new_line_ae_with_cp(database, session):
 
     # DO
     with patch(
-        "app.services.siret.update_siret_from_api_entreprise",
+        "services.refs.siret.UpdateRefSiretService.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "84442098400016", "code_commune": "35099"}),
     ):
         import_lines_financial_ae.run(

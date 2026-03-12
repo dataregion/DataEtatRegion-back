@@ -36,7 +36,7 @@ def test_import_line_ademe(app, database, session):
     session.commit()
     # DO
     with patch(
-        "app.services.siret.update_siret_from_api_entreprise",
+        "services.refs.siret.UpdateRefSiretService.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "38529030900454", "code_commune": "35099"}),
     ):
         import_line_ademe(data, tech_info_list=("a task id", 1))

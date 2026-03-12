@@ -99,7 +99,7 @@ def test_import_line_with_dp_exist(session):
 
     # DO
     with patch(
-        "app.services.siret.update_siret_from_api_entreprise",
+        "services.refs.siret.UpdateRefSiretService.update_siret_from_api_entreprise",
         return_value=Siret(**{"code": "2121212", "code_commune": "35099"}),
     ):
         import_lines_financial_cp([{"data": data_new_cp, "task": _next_tech_info()}], 0, "53", 2023)
