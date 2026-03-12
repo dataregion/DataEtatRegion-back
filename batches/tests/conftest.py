@@ -1,14 +1,4 @@
 """Configuration globale des tests pour le module batches.
-from models.value_objects.api_entreprise_info import ApiEntrepriseInfo
-    config.api_entreprise = ApiEntrepriseInfo(
-        url="https://staging.entreprise.api.gouv.fr",
-        token="mon_token",
-        context="nocode-batches.localhost",
-        recipient=26350579400028,
-        object="nocode-batches.localhost",
-        timeout_seconds=30,
-    )
-    from batches.database import get_session_maker
 
 Ce fichier est chargé automatiquement par pytest avant tous les tests.
 Il contient notamment les mocks Prefect nécessaires pour les tests unitaires.
