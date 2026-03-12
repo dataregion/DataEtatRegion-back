@@ -17,14 +17,6 @@ class RemoteFilesConfig(BaseModel):
     """URL du fichier contenant le lien entre QPV et SIRET"""
 
 
-class RedisConfig(BaseModel):
-    host: str = "localhost"
-    """Host du serveur redis"""
-    port: int = 6379
-    """Port du serveur redis"""
-    db: int = 0
-    """Numéro de la base de données redis"""
-
 class SMTPConfig(BaseModel):
     server: str
     """Serveur SMTP"""
