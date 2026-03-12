@@ -23,7 +23,6 @@ def main():
     update_all_sirets_deploiement = update_all_sirets.to_deployment(
         name="update_all_sirets",
         cron="0 2 * * *",  # Tous les jours à 2h du matin
-        parameters={"max_sirets": 10_000},
     )
     serve(
         export_recherche_deploiement,  # type: ignore

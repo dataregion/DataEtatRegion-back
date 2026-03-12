@@ -2,6 +2,11 @@ from pydantic import BaseModel
 from pathlib import Path
 from models.value_objects.api_entreprise_info import ApiEntrepriseInfo
 
+class UpdateAllSiretConfig(BaseModel):
+    nb_siret_per_run: int
+
+class TasksDefaultsConfig(BaseModel):
+    update_all_sirets: UpdateAllSiretConfig
 
 class GristConfig(BaseModel):
     database_url: str
@@ -33,6 +38,9 @@ class SMTPConfig(BaseModel):
 
 
 class Config(BaseModel):
+    tasks_config: TasksDefaultsConfig
+    """Configurations par défaut des tâches"""
+
     print_sql: bool
     """Flag qui active le paramètre 'echo' de l'engine sqlalchemy"""
     sqlalchemy_database_uri: str

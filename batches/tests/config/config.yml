@@ -9,6 +9,10 @@ dossier_des_imports: "/tmp/DataEtat/imports"
 dossier_des_exports: "/tmp/DataEtat/exports"
 dossier_des_telechargements: "/tmp/DataEtat/cached_remote_files"
 
+tasks_config:
+  update_all_sirets:
+    nb_siret_per_run: 10000
+
 grist:
   database_url: "postgresql+psycopg://postgres:password@localhost:5432/<GRIST_DBNAME>"
   serveur_url: "https://grist.instance.fr"

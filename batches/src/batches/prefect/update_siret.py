@@ -23,7 +23,6 @@ from models.value_objects.api_entreprise_info import ApiEntrepriseInfo  # noqa: 
 # Constantes
 # ──────────────────────────────────────────────
 UPDATE_SIRET_CONCURRENCY_ID = "update_all_siret"
-DEFAULT_MAX_SIRETS = 500
 """Nombre maximum de SIRETs à traiter par exécution du flow."""
 
 
@@ -41,7 +40,7 @@ def _info(text: str, logger):
 # ──────────────────────────────────────────────
 @dataclass
 class UpdateSiretFlowContext:
-    max_sirets: int = DEFAULT_MAX_SIRETS
+    max_sirets: int
     """Nombre maximum de SIRETs à traiter."""
 
     processed: int = 0
@@ -155,13 +154,13 @@ async def _update_one_siret(siret: str, api_entreprise: ApiEntreprise):
 # Flow Prefect
 # ──────────────────────────────────────────────
 @flow(log_prints=True, timeout_seconds=3 * 60 * 60)
-async def update_all_sirets(max_sirets: int = DEFAULT_MAX_SIRETS):
+async def update_all_sirets(max_sirets: int | None = None):
     """Flow de mise à jour des SIRETs via l'API entreprise.
 
     Le flow s'arrête après avoir traité `max_sirets` SIRETs (condition d'arrêt).
 
     Args:
-        max_sirets: Nombre maximum de SIRETs à traiter. Par défaut 500.
+        max_sirets: Nombre maximum de SIRETs à traiter.
     """
     logger = _get_logger()
     await ensure_concurrency_limit(UPDATE_SIRET_CONCURRENCY_ID, limit=1, logger=_get_logger())
@@ -176,6 +175,8 @@ async def update_all_sirets(max_sirets: int = DEFAULT_MAX_SIRETS):
             raise RuntimeError(
                 "La configuration `api_geo_url` est absente. Veuillez la renseigner dans le fichier de configuration."
             )
+
+        max_sirets = max_sirets or config.tasks_config.update_all_sirets.nb_siret_per_run
 
         _info(f"Démarrage du flow. max_sirets={max_sirets}", logger)
         ctx = UpdateSiretFlowContext(max_sirets=max_sirets)
