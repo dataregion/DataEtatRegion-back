@@ -256,8 +256,6 @@ pyyaml==6.0.3
     # via
     #   prefect-client
     #   uvicorn
-redis==4.6.0
-    # via services (../services/pyproject.toml)
 referencing==0.37.0
     # via
     #   jsonschema

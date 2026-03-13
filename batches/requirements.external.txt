@@ -201,8 +201,6 @@ pyyaml==6.0.3
     # via
     #   -r requirements.external.in
     #   prefect-client
-redis==4.6.0
-    # via services (../services/pyproject.toml)
 referencing==0.37.0
     # via
     #   jsonschema
