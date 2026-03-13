@@ -146,10 +146,10 @@ def initalise_fs(ctx: _Ctx) -> _Ctx:
     params: BudgetQueryParams = ctx.query_params
     user_email: str = runtime.flow_run.parameters["user_email"]  # type: ignore
 
-    # On écrit toujours en CSV
+    export_target = "csv" if ctx.needs_conversion else ctx.target_format
     writer = TabularWriterFactory.create_writer(
         filep=str(ctx.csv_file),
-        export_target="csv",
+        export_target=export_target,
         username=user_email,
     )
     colonnes = params.colonnes_list
@@ -185,10 +185,10 @@ def step(ctx: _Ctx) -> _Ctx:
 
         user_email: str = runtime.flow_run.parameters["user_email"]  # type: ignore
 
-        # On écrit toujours en CSV
+        export_target = "csv" if ctx.needs_conversion else ctx.target_format
         writer = TabularWriterFactory.create_writer(
             filep=str(ctx.csv_file),
-            export_target="csv",
+            export_target=export_target,
             username=user_email,
         )
         values = list(map(lambda e: _entity_to_colonnes(e, params.colonnes_list), data))  # type: ignore

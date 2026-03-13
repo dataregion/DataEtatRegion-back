@@ -6,6 +6,7 @@ from sqlalchemy import (
     ColumnExpressionArgument,
     Select,
     Sequence,
+    String,
     func,
     select,
     or_,
@@ -116,9 +117,13 @@ class V3QueryBuilder(Generic[T]):
             sortby_colonne = getattr(self._model, self._params.sort_by, None)
             if isinstance(sortby_colonne, InstrumentedAttribute):
                 direction = self._params.sort_order or "asc"
-                self._query = self._query.order_by(
-                    sortby_colonne.asc() if direction == "asc" else sortby_colonne.desc()
-                )
+
+                if isinstance(sortby_colonne.type, String):
+                    sort_expr = func.regexp_replace(sortby_colonne, r"^\s+|\s+$", "", "g")
+                else:
+                    sort_expr = sortby_colonne
+
+                self._query = self._query.order_by(sort_expr.asc() if direction == "asc" else sort_expr.desc())
         # On finit toujours par in sort by id ASC après les sort utilisateur
         if not self.is_an_aggregation:
             id_attr = self._get_model_id_colonne()
