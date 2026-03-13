@@ -198,7 +198,7 @@ class TestQualification:
 
         # act: lancer update_all_sirets avec max_sirets=3
         with patch("batches.prefect.update_siret._make_api_entreprise_client", return_value=mock_client):
-            ctx = await update_all_sirets.fn(max_sirets=3)
+            ctx = await update_all_sirets(max_sirets=3)
 
         # verify: tous les SIRETs ont été traités
         assert ctx.processed == 3
@@ -256,7 +256,7 @@ class TestUpdateAllSiretsFlow:
         max_sirets = 3
 
         with patch("batches.prefect.update_siret._make_api_entreprise_client", return_value=mock_client):
-            ctx = await update_all_sirets.fn(max_sirets=max_sirets)
+            ctx = await update_all_sirets(max_sirets=max_sirets)
 
         assert ctx.processed == max_sirets
         assert ctx.total_in_db == 10
@@ -272,7 +272,7 @@ class TestUpdateAllSiretsFlow:
         mock_client = _make_mock_api_client()
 
         with patch("batches.prefect.update_siret._make_api_entreprise_client", return_value=mock_client):
-            ctx = await update_all_sirets.fn(max_sirets=1000)
+            ctx = await update_all_sirets(max_sirets=1000)
 
         assert ctx.processed == 3
         assert ctx.total_in_db == 3
@@ -291,7 +291,7 @@ class TestUpdateAllSiretsFlow:
         ]
 
         with patch("batches.prefect.update_siret._make_api_entreprise_client", return_value=mock_client):
-            ctx = await update_all_sirets.fn(max_sirets=1000)
+            ctx = await update_all_sirets(max_sirets=1000)
 
         assert ctx.success == 1
         assert ctx.errors == 2
@@ -306,7 +306,7 @@ class TestUpdateAllSiretsFlow:
         with patch("batches.prefect.update_siret.get_config") as mock_config:
             mock_config.return_value.api_entreprise = None
             with pytest.raises(RuntimeError, match="api_entreprise"):
-                await update_all_sirets.fn(max_sirets=10)
+                await update_all_sirets(max_sirets=10)
 
     @pytest.mark.anyio
     async def test_flow_max_siret_with_errors(self, session, many_sirets, prepare_update_siret_module_for_tests):
@@ -328,7 +328,7 @@ class TestUpdateAllSiretsFlow:
         max_sirets = 3
 
         with patch("batches.prefect.update_siret._make_api_entreprise_client", return_value=mock_client):
-            ctx = await update_all_sirets.fn(max_sirets=max_sirets)
+            ctx = await update_all_sirets(max_sirets=max_sirets)
 
         # 3 succès atteints, le flow doit s'être arrêté
         assert ctx.processed == max_sirets
