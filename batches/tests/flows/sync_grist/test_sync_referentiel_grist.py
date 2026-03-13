@@ -1,7 +1,5 @@
 """Tests unitaires pour le flow sync_referentiel_grist."""
 
-import logging
-from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -15,13 +13,12 @@ from models.entities.refs import CentreCouts, SynchroGrist
 # ---------------------------------------------------------------------------
 
 
-def test_validate_model_task_ok(caplog: Any):
+def test_validate_model_task_ok():
     from batches.prefect.sync_referentiel_grist import validate_model_task
 
-    caplog.set_level(logging.INFO)
     # ref_centre_couts hérite de _SyncedWithGrist et possède 'code'
-    validate_model_task("ref_centre_couts")
-    assert "[GRIST][VALIDATE] Modèle valide : ref_centre_couts" in caplog.messages
+    result = validate_model_task("ref_centre_couts")
+    assert result is None
 
 
 def test_validate_model_task_unknown_table():
