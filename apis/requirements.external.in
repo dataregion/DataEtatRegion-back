@@ -2,6 +2,8 @@ cachetools ~= 6.2.1
 fastapi[standard] ~= 0.116.1
 sqlalchemy ~= 2.0.43
 
+redis ~= 7.3.0
+
 authlib ~= 1.6.1
 
 psycopg ~= 3.2
