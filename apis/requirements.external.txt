@@ -264,6 +264,8 @@ pyyaml==6.0.3
     # via
     #   prefect-client
     #   uvicorn
+redis==7.3.0
+    # via -r requirements.external.in
 referencing==0.37.0
     # via
     #   jsonschema
