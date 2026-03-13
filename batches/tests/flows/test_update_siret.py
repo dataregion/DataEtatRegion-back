@@ -5,8 +5,6 @@ from datetime import datetime
 import pytest
 from sqlalchemy import select
 
-from tests.conftest import patch_session_scope  # noqa: F401
-
 from models import init as init_persistence_module
 
 init_persistence_module()

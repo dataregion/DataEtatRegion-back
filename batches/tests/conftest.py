@@ -10,6 +10,7 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 import pytest
 from batches.database import get_session_main
+from contextlib import contextmanager
 from .fixtures.app import *  # noqa: F403
 
 
@@ -20,9 +21,10 @@ from .fixtures.app import *  # noqa: F403
 
 
 def mock_decorator(*args, **kwargs):
-    """Mock pour @flow et @task qui retourne la fonction telle quelle."""
+    """Mock pour @flow et @task qui retourne la fonction telle quelle, en ajoutant un attribut 'fn'."""
 
     def decorator(func):
+        func.fn = func
         return func
 
     if len(args) == 1 and callable(args[0]):
@@ -51,6 +53,32 @@ sys.modules["prefect.logging"] = prefect_logging
 prefect_cache_policies = MagicMock()
 prefect_cache_policies.NO_CACHE = MagicMock()
 sys.modules["prefect.cache_policies"] = prefect_cache_policies
+
+prefect_concurrency_sync = MagicMock()
+
+
+@contextmanager
+def dummy_context_manager(*args, **kwargs):
+    yield
+
+
+prefect_concurrency_sync.concurrency = MagicMock()
+prefect_concurrency_sync.concurrency.__enter__ = dummy_context_manager().__enter__
+prefect_concurrency_sync.concurrency.__exit__ = dummy_context_manager().__exit__
+prefect_concurrency_sync.concurrency.__call__ = lambda *a, **kw: dummy_context_manager()
+sys.modules["prefect.concurrency.sync"] = prefect_concurrency_sync
+
+# Mock prefect.client.orchestration
+prefect_client_orchestration = MagicMock()
+sys.modules["prefect.client.orchestration"] = prefect_client_orchestration
+
+# Mock prefect.exceptions
+prefect_exceptions = MagicMock()
+sys.modules["prefect.exceptions"] = prefect_exceptions
+
+# Mock prefect.client.schemas.actions
+prefect_client_schemas_actions = MagicMock()
+sys.modules["prefect.client.schemas.actions"] = prefect_client_schemas_actions
 
 # ============================================================================
 

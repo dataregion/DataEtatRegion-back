@@ -8,13 +8,41 @@ from api_entreprise.models.errors import ApiError as ApiErrorModel
 
 from models.entities.refs.Siret import Siret  # noqa: E402
 from models.entities.refs.Commune import Commune  # noqa: E402
-from models.entities.refs.CategorieJuridique import CategorieJuridique  # noqa: E402
+from models.entities.refs.CategorieJuridique import CategorieJuridique
+from sqlalchemy import text  # noqa: E402
+
+from batches.database import get_session_main
 
 import pytest
+
 
 # ──────────────────────────────────────────────
 # Fixtures
 # ──────────────────────────────────────────────
+@pytest.fixture(autouse=True, scope="function")
+def truncate_test_data(session):
+    yield
+    try:
+        session.execute(text("TRUNCATE TABLE ref_siret RESTART IDENTITY CASCADE;"))
+        session.execute(text("TRUNCATE TABLE ref_commune RESTART IDENTITY CASCADE;"))
+        session.execute(text("TRUNCATE TABLE ref_categorie_juridique RESTART IDENTITY CASCADE;"))
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+
+
+@pytest.fixture
+def session(test_db):
+    gen = get_session_main()
+    session = next(gen)
+    try:
+        yield session
+    finally:
+        try:
+            next(gen)
+        except StopIteration:
+            pass
 
 
 @pytest.fixture(autouse=True)
