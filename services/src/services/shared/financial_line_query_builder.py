@@ -64,11 +64,13 @@ class FinancialLineQueryBuilder(SourcesQueryBuilder):
         includes_none: bool = False,
     ):
         conds = []
-        if types_beneficiaires is not None and includes_none:
-            conds.append(self._model.beneficiaire_categorieJuridique_type)
 
         if types_beneficiaires is not None:
-            conds.append(self._model.beneficiaire_categorieJuridique_type.in_(types_beneficiaires))
+            if includes_none:
+                conds.append(self._model.beneficiaire_categorieJuridique_type.is_(None))
+
+            _values = [x for x in types_beneficiaires]
+            conds.append(self._model.beneficiaire_categorieJuridique_type.in_(_values))
 
         cond = or_(*conds)
         self._query = self._query.where(cond)
