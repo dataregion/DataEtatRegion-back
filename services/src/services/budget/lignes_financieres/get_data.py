@@ -40,8 +40,10 @@ def get_lignes(
         .source_region_in(_regions)
         .categorie_juridique_in(
             params.beneficiaire_categorieJuridique_type_list,
-            includes_none=params.beneficiaire_categorieJuridique_type_list is not None
-            and "autres" in params.beneficiaire_categorieJuridique_type_list,
+            includes_none=(
+                params.beneficiaire_categorieJuridique_type_list is not None
+                and "autres" in params.beneficiaire_categorieJuridique_type_list
+            ),
         )
         .sort_by_params()
         .tags_fullname_in(params.tags_list)
