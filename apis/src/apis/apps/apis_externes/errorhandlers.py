@@ -52,8 +52,13 @@ def setup_exception_handlers(app: FastAPI):
         return error.to_json_response()
 
     def _info_from_remote_dsCallError(error: DataSubventionsCallError):
+        message = (
+            error.call_error_description.message.lower()
+            if error.call_error_description and error.call_error_description.message
+            else ""
+        )
         if (
-            error.call_error_description.api_code == 0
+            error.call_error_description.api_code == 0 or "pas une association" in message
         ):  # Code retourné pour une recherche sur une entité qui n'est pas une associaiton
             return (
                 "Echec lors de l'appel à l'API Data Subventions : L'entité n'est pas une associaton.",

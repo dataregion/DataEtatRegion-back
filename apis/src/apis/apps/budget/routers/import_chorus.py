@@ -1,10 +1,11 @@
 from http import HTTPStatus
 import logging
 from fastapi import Depends
+from fastapi.concurrency import run_in_threadpool
 from tuspyserver import create_tus_router
 from apis.apps.budget.services.import_chorus import validate_metadata, upload_complete
 from apis.config.current import get_config
-from apis.database import get_session_audit
+from apis.database import session_audit_scope
 from models.connected_user import ConnectedUser
 from models.exceptions import BadRequestError
 
@@ -38,14 +39,19 @@ def pre_create_hook(
     return handler
 
 
+def _upload_complete_in_thread(user: ConnectedUser, file_path: str, metadata: dict) -> None:
+    with session_audit_scope() as db:
+        upload_complete(db=db, user=user, file_path=file_path, metadata=metadata)
+
+
 def on_upload_complete(
-    db=Depends(get_session_audit),
     current_user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_admin_or_comptable()),
 ):
-    def handler(file_path: str, metadata: dict):
-        upload_complete(db=db, user=current_user, file_path=file_path, metadata=metadata)
+    async def afn_handler(file_path: str, metadata: dict):
+        # Exécute la logique métier sync dans le threadpool pour éviter de bloquer l'event loop.
+        await run_in_threadpool(_upload_complete_in_thread, current_user, file_path, metadata)
 
-    return handler
+    return afn_handler
 
 
 tus_router = create_tus_router(
