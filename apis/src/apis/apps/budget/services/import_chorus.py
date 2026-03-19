@@ -3,6 +3,7 @@ import os
 import csv
 from models.exceptions import BadRequestError, ServerError
 from apis.config.current import get_config
+from apis.database import get_sesion_maker
 from models.value_objects.UploadType import UploadType
 from sqlalchemy.orm import Session
 from models.connected_user import ConnectedUser
@@ -79,6 +80,7 @@ def _get_upload_session_service() -> UploadSessionService:
     return UploadSessionService(
         sessions_folder=sessions_folder,
         final_folder=config.upload.final_folder,
+        db_session_factory=get_sesion_maker("main"),
     )
 
 
@@ -158,50 +160,49 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
 
     # Enregistrer le fichier dans la session d'upload
     session_service = _get_upload_session_service()
-
-    try:
-        session_state = session_service.register_file(
-            file_path=file_path,
-            session_token=session_token,
-            upload_type=upload_type,
-            total_ae_files=total_ae_files,
-            total_cp_files=total_cp_files,
-            year=year,
-            source_region=region,
-            username=user.email,
-            client_id=user.azp or None,
-        )
-    except Exception as e:
-        logger.error(f"Failed to register file in session: {e}")
-        raise ServerError(api_message=f"Failed to register file in session: {e}")
-
-    # Vérifier si la session est complète
-    if session_state.is_complete:
-        logger.info(f"Session {session_token} is complete, finalizing...")
-
+    with session_service.borrow_session(session_token) as upload_session:
         try:
-            # Concaténer les fichiers
-            ae_final_path, cp_final_path = session_service.finalize_session(session_token)
-
-            # Insérer dans la table d'audit
-            ImportChorusTaskService.process_upload_audit_final(
-                db=db,
-                email=user.email,
-                ae_path=ae_final_path,
-                cp_path=cp_final_path,
-                session_token=session_token,
+            session_state = upload_session.register_file(
+                file_path=file_path,
+                upload_type=upload_type,
+                total_ae_files=total_ae_files,
+                total_cp_files=total_cp_files,
                 year=year,
                 source_region=region,
+                username=user.email,
                 client_id=user.azp or None,
             )
-
-            logger.info(f"Session {session_token} finalized successfully")
-
         except Exception as e:
-            logger.error(f"Failed to finalize session: {e}")
-            raise ServerError(api_message=f"Failed to finalize session: {e}")
-    else:
-        logger.info(
-            f"Session {session_token}: waiting for more files "
-            f"({session_state.total_received}/{session_state.total_expected})"
-        )
+            logger.error(f"Failed to register file in session: {e}")
+            raise ServerError(api_message=f"Failed to register file in session: {e}")
+
+        # Vérifier si la session est complète
+        if session_state.is_complete:
+            logger.info(f"Session {session_token} is complete, finalizing...")
+
+            try:
+                # Concaténer les fichiers
+                ae_final_path, cp_final_path = upload_session.finalize()
+
+                # Insérer dans la table d'audit
+                ImportChorusTaskService.process_upload_audit_final(
+                    db=db,
+                    email=user.email,
+                    ae_path=ae_final_path,
+                    cp_path=cp_final_path,
+                    session_token=session_token,
+                    year=year,
+                    source_region=region,
+                    client_id=user.azp or None,
+                )
+
+                logger.info(f"Session {session_token} finalized successfully")
+
+            except Exception as e:
+                logger.error(f"Failed to finalize session: {e}")
+                raise ServerError(api_message=f"Failed to finalize session: {e}")
+        else:
+            logger.info(
+                f"Session {session_token}: waiting for more files "
+                f"({session_state.total_received}/{session_state.total_expected})"
+            )
