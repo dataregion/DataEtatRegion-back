@@ -110,19 +110,6 @@ def validate_metadata(metadata: dict):
     else:
         raise BadRequestError(api_message="Upload type is required")
 
-    # Vérifier la présence obligatoire du filetype
-    if "filetype" in metadata:
-        logger.info(f"File type found: {metadata['filetype']}")
-        allowed_types = [
-            "text/csv",
-        ]
-        if metadata["filetype"] not in allowed_types:
-            raise BadRequestError(
-                api_message=f"File type {metadata['filetype']} not allowed",
-            )
-    else:
-        raise BadRequestError(api_message="File type is required")
-
     # Vérifier la présence obligatoire de total_ae_files et total_cp_files
     total_ae_files = metadata.get("total_ae_files")
     total_cp_files = metadata.get("total_cp_files")

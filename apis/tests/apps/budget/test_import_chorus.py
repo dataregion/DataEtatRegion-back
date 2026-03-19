@@ -83,57 +83,6 @@ class TestPreCreateHookValidation:
         assert "Upload type is required" in str(exc_info.value.api_message)
 
     @pytest.mark.asyncio
-    async def test_validate_metadata_missing_filetype(self):
-        """Le pre_create_hook doit lever une erreur si filetype manque."""
-        # Arrange
-        user = ConnectedUser(
-            {
-                "sub": "test-user-123",
-                "email": "test@example.com",
-                "preferred_username": "testuser",
-                "realm_access": {"roles": ["user"]},
-            }
-        )
-
-        handler = pre_create_hook(user=user)
-        metadata = {"filename": "test.csv", "session_token": "test-token", "uploadType": "financial-ae"}
-
-        # Act & Assert
-        with pytest.raises(BadRequestError) as exc_info:
-            await handler(metadata=metadata, upload_info={"size": 1000})
-
-        assert exc_info.value.code.value == 400
-        assert "File type is required" in str(exc_info.value.api_message)
-
-    @pytest.mark.asyncio
-    async def test_validate_metadata_invalid_filetype(self):
-        """Le pre_create_hook doit lever une erreur si filetype invalide."""
-        # Arrange
-        user = ConnectedUser(
-            {
-                "sub": "test-user-123",
-                "email": "test@example.com",
-                "preferred_username": "testuser",
-                "realm_access": {"roles": ["user"]},
-            }
-        )
-
-        handler = pre_create_hook(user=user)
-        metadata = {
-            "filename": "test.xlsx",
-            "session_token": "test-token",
-            "uploadType": "financial-ae",
-            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        }
-
-        # Act & Assert
-        with pytest.raises(BadRequestError) as exc_info:
-            await handler(metadata=metadata, upload_info={"size": 1000})
-
-        assert exc_info.value.code.value == 400
-        assert "not allowed" in str(exc_info.value.api_message)
-
-    @pytest.mark.asyncio
     async def test_validate_metadata_invalid_upload_type(self):
         """Le pre_create_hook doit lever une erreur si uploadType invalide."""
         # Arrange
