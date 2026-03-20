@@ -1,32 +1,26 @@
 """Tests unitaires du TUS (Tus Upload Server) pour l'import Chorus avec priorité sur les droits."""
 
-import pytest
-import tempfile
 import os
+import tempfile
+from types import SimpleNamespace
+from unittest.mock import patch
 
-from apis.apps.budget.routers.import_chorus import pre_create_hook
-from apis.apps.budget.services.import_chorus import validate_csv_file_content
-from models.connected_user import ConnectedUser
+import pytest
+
+from apis.apps.budget.routers.import_chorus import initialize_session, pre_create_hook
+from apis.apps.budget.services.import_chorus import initialize_upload_session, validate_csv_file_content
 from models.exceptions import BadRequestError
+from services.audits.upload_session import InitializeSessionRequest
 
 
 class TestPreCreateHookValidation:
     """Tests de validation du pre_create_hook."""
 
     @pytest.mark.asyncio
-    async def test_validate_metadata_missing_filename(self):
+    async def test_validate_metadata_missing_filename(self, mock_connected_user):
         """Le pre_create_hook doit lever une erreur si filename manque."""
         # Arrange
-        user = ConnectedUser(
-            {
-                "sub": "test-user-123",
-                "email": "test@example.com",
-                "preferred_username": "testuser",
-                "realm_access": {"roles": ["user"]},
-            }
-        )
-
-        handler = pre_create_hook(user=user)
+        handler = pre_create_hook(user=mock_connected_user)
         metadata = {"session_token": "test-token", "uploadType": "financial-ae", "filetype": "text/csv"}
 
         # Act & Assert
@@ -37,19 +31,10 @@ class TestPreCreateHookValidation:
         assert "Filename is required" in str(exc_info.value.api_message)
 
     @pytest.mark.asyncio
-    async def test_validate_metadata_missing_session_token(self):
+    async def test_validate_metadata_missing_session_token(self, mock_connected_user):
         """Le pre_create_hook doit lever une erreur si session_token manque."""
         # Arrange
-        user = ConnectedUser(
-            {
-                "sub": "test-user-123",
-                "email": "test@example.com",
-                "preferred_username": "testuser",
-                "realm_access": {"roles": ["user"]},
-            }
-        )
-
-        handler = pre_create_hook(user=user)
+        handler = pre_create_hook(user=mock_connected_user)
         metadata = {"filename": "test.csv", "uploadType": "financial-ae", "filetype": "text/csv"}
 
         # Act & Assert
@@ -60,19 +45,10 @@ class TestPreCreateHookValidation:
         assert "Session token is required" in str(exc_info.value.api_message)
 
     @pytest.mark.asyncio
-    async def test_validate_metadata_missing_upload_type(self):
+    async def test_validate_metadata_missing_upload_type(self, mock_connected_user):
         """Le pre_create_hook doit lever une erreur si uploadType manque."""
         # Arrange
-        user = ConnectedUser(
-            {
-                "sub": "test-user-123",
-                "email": "test@example.com",
-                "preferred_username": "testuser",
-                "realm_access": {"roles": ["user"]},
-            }
-        )
-
-        handler = pre_create_hook(user=user)
+        handler = pre_create_hook(user=mock_connected_user)
         metadata = {"filename": "test.csv", "session_token": "test-token", "filetype": "text/csv"}
 
         # Act & Assert
@@ -83,19 +59,10 @@ class TestPreCreateHookValidation:
         assert "Upload type is required" in str(exc_info.value.api_message)
 
     @pytest.mark.asyncio
-    async def test_validate_metadata_invalid_upload_type(self):
+    async def test_validate_metadata_invalid_upload_type(self, mock_connected_user):
         """Le pre_create_hook doit lever une erreur si uploadType invalide."""
         # Arrange
-        user = ConnectedUser(
-            {
-                "sub": "test-user-123",
-                "email": "test@example.com",
-                "preferred_username": "testuser",
-                "realm_access": {"roles": ["user"]},
-            }
-        )
-
-        handler = pre_create_hook(user=user)
+        handler = pre_create_hook(user=mock_connected_user)
         metadata = {
             "filename": "test.csv",
             "session_token": "test-token",
@@ -111,19 +78,10 @@ class TestPreCreateHookValidation:
         assert "not allowed" in str(exc_info.value.api_message)
 
     @pytest.mark.asyncio
-    async def test_validate_metadata_file_too_large(self):
+    async def test_validate_metadata_file_too_large(self, mock_connected_user):
         """Le pre_create_hook doit lever une erreur si fichier trop volumineux."""
         # Arrange
-        user = ConnectedUser(
-            {
-                "sub": "test-user-123",
-                "email": "test@example.com",
-                "preferred_username": "testuser",
-                "realm_access": {"roles": ["user"]},
-            }
-        )
-
-        handler = pre_create_hook(user=user)
+        handler = pre_create_hook(user=mock_connected_user)
         metadata = {
             "filename": "test.csv",
             "session_token": "test-token",
@@ -144,19 +102,10 @@ class TestPreCreateHookValidation:
         assert "too large" in str(exc_info.value.api_message)
 
     @pytest.mark.asyncio
-    async def test_validate_metadata_valid_input(self):
+    async def test_validate_metadata_valid_input(self, mock_connected_user):
         """Le pre_create_hook doit passer avec des métadatas valides."""
         # Arrange
-        user = ConnectedUser(
-            {
-                "sub": "test-user-123",
-                "email": "test@example.com",
-                "preferred_username": "testuser",
-                "realm_access": {"roles": ["user"]},
-            }
-        )
-
-        handler = pre_create_hook(user=user)
+        handler = pre_create_hook(user=mock_connected_user)
         metadata = {
             "filename": "test.csv",
             "session_token": "test-token",
@@ -191,6 +140,46 @@ class TestValidateCsvFileContent:
         finally:
             # Cleanup
             os.unlink(temp_path)
+
+
+class TestInitializeSessionRoute:
+    """Tests du endpoint d'initialisation de session."""
+
+    @patch("apis.apps.budget.routers.import_chorus.initialize_upload_session")
+    def test_initialize_session_returns_server_generated_token(
+        self, mock_initialize_upload_session, mock_connected_user
+    ):
+        """Le endpoint doit renvoyer le session_token généré par le serveur."""
+        mock_initialize_upload_session.return_value = "generated-session-token"
+
+        response = initialize_session(
+            payload=InitializeSessionRequest(total_ae_files=2, total_cp_files=1, year=2025),
+            user=mock_connected_user,
+        )
+
+        assert response == {"session_token": "generated-session-token"}
+        mock_initialize_upload_session.assert_called_once()
+
+
+class TestInitializeSessionService:
+    """Tests du service d'initialisation de session."""
+
+    @patch("apis.apps.budget.services.import_chorus.uuid4")
+    @patch("apis.apps.budget.services.import_chorus._get_upload_session_service")
+    def test_initialize_upload_session_generates_server_token(self, mock_get_service, mock_uuid4, mock_connected_user):
+        """Le service doit générer le session_token côté serveur."""
+        mock_uuid4.return_value = "generated-token"
+        mock_upload_session = SimpleNamespace(initialize=lambda *args, **kwargs: None)
+        mock_get_service.return_value.borrow_session.return_value.__enter__.return_value = mock_upload_session
+        mock_get_service.return_value.borrow_session.return_value.__exit__.return_value = None
+
+        session_token = initialize_upload_session(
+            initialize_request=InitializeSessionRequest(total_ae_files=2, total_cp_files=1, year=2025),
+            user=mock_connected_user,
+        )
+
+        assert session_token == "generated-token"
+        mock_get_service.return_value.borrow_session.assert_called_once_with("generated-token")
 
     def test_validate_csv_file_content_pdf_file(self):
         """validate_csv_file_content doit rejeter un fichier PDF."""

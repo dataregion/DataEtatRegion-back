@@ -72,26 +72,23 @@ router = APIRouter(prefix="/import", tags=["Import Chorus"])
 
 
 @router.post(
-    "/session/{session_token}/initialize",
+    "/session/initialize",
     status_code=HTTPStatus.CREATED,
-    summary="Initialise et persiste l'état d'une session d'upload avant l'envoi des fichiers.",
+    summary="Initialise une session d'upload avant l'envoi des fichiers.",
     responses={
-        201: {"description": "La session a été initialisée"},
+        201: {"description": "La session a été initialisée et le session_token a été généré"},
         400: {"description": "Payload invalide ou session incohérente"},
     },
 )
 def initialize_session(
-    session_token: str,
     payload: InitializeSessionRequest,
     user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_admin_or_comptable()),
-) -> Response:
-
-    initialize_upload_session(
-        session_token=session_token,
+) -> dict[str, str]:
+    session_token = initialize_upload_session(
         initialize_request=payload,
         user=user,
     )
-    return Response(status_code=HTTPStatus.CREATED)
+    return {"session_token": session_token}
 
 
 @router.get(

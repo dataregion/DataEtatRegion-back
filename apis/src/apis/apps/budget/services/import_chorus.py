@@ -1,6 +1,7 @@
 import logging
 import os
 import csv
+from uuid import uuid4
 from models.exceptions import BadRequestError, ServerError
 from apis.config.current import get_config
 from apis.database import get_sesion_maker
@@ -85,14 +86,14 @@ def _get_upload_session_service() -> UploadSessionService:
 
 
 def initialize_upload_session(
-    session_token: str,
     initialize_request: InitializeSessionRequest,
     user: ConnectedUser,
-) -> None:
+) -> str:
     """Initialise et persiste une session d'upload avant la réception des fichiers."""
     if initialize_request.total_ae_files < 1 or initialize_request.total_cp_files < 1:
         raise BadRequestError(api_message="total_ae_files and total_cp_files must be at least 1")
 
+    session_token = str(uuid4())
     region = "NATIONAL" if user.current_region is None or user.current_region == "NAT" else user.current_region
 
     session_service = _get_upload_session_service()
@@ -115,6 +116,8 @@ def initialize_upload_session(
         except Exception as e:
             logger.error(f"Failed to initialize upload session {session_token}: {e}", exc_info=e)
             raise ServerError(api_message=f"Failed to initialize upload session: {e}")
+
+    return session_token
 
 
 def validate_metadata(metadata: dict):
