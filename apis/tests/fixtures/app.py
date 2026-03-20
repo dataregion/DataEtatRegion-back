@@ -1,4 +1,5 @@
 from fastapi.security import OAuth2PasswordBearer
+import copy
 import pytest
 
 from apis.app import create_app
@@ -83,29 +84,52 @@ def mock_connected_user():
 
 
 @pytest.fixture(scope="session")
-def patch_keycloak_validator(mock_connected_user):
+def admin_budget_persona(mock_connected_user):
+    """Crée une persona admin pour les tests budget."""
+    persona = copy.deepcopy(mock_connected_user)
+    persona.token["resource_access"][persona.azp]["roles"] = ["users", "admin"]
+    return persona
+
+
+@pytest.fixture(scope="session")
+def patch_keycloak_validator(keycloak_validator_patch_fn, mock_connected_user):
     """Patch KeycloakTokenValidator pour les tests."""
-    from apis.security.keycloak_token_validator import KeycloakTokenValidator
 
-    #
-    # On stub le traitement du flow oauth2password bearer pour les tests
-    #
-    original_validate_token = KeycloakTokenValidator.validate_token
-    original_oauth2passwordbearer = OAuth2PasswordBearer.__call__
-
-    async def stub_call(self, request):
-        return None
-
-    async def mocked_validate_token(self, token):
-        return mock_connected_user
-
-    OAuth2PasswordBearer.__call__ = stub_call
-    KeycloakTokenValidator.validate_token = mocked_validate_token
-
+    keycloak_validator_patch_fn(mock_connected_user)
     yield
 
-    OAuth2PasswordBearer.__call__ = original_oauth2passwordbearer
-    KeycloakTokenValidator.validate_token = original_validate_token
+
+@pytest.fixture(scope="session")
+def keycloak_validator_patch_fn():
+    """Renvoit une fonction pour patcher le keycloak validator"""
+
+    from apis.security.keycloak_token_validator import KeycloakTokenValidator
+
+    original_validate_token = None
+    original_oauth2_call = None
+
+    def patcher(mock_connected_user):
+
+        nonlocal original_validate_token
+        nonlocal original_oauth2_call
+        original_validate_token = KeycloakTokenValidator.validate_token
+        original_oauth2_call = OAuth2PasswordBearer.__call__
+
+        async def stub_oauth_call(self, request):
+            return None
+
+        async def mocked_validate_token(self, token):
+            return mock_connected_user
+
+        KeycloakTokenValidator.validate_token = mocked_validate_token
+        OAuth2PasswordBearer.__call__ = stub_oauth_call
+
+    yield patcher
+
+    if original_validate_token is not None:
+        KeycloakTokenValidator.validate_token = original_validate_token
+    if original_oauth2_call is not None:
+        OAuth2PasswordBearer.__call__ = original_oauth2_call
 
 
 @pytest.fixture(scope="session")
