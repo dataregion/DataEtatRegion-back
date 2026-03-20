@@ -148,23 +148,14 @@ def validate_metadata(metadata: dict):
     else:
         raise BadRequestError(api_message="Upload type is required")
 
-    # Vérifier la présence obligatoire de total_ae_files et total_cp_files
-    total_ae_files = metadata.get("total_ae_files")
-    total_cp_files = metadata.get("total_cp_files")
-
-    if total_ae_files is None:
-        raise BadRequestError(api_message="total_ae_files is required")
-    if total_cp_files is None:
-        raise BadRequestError(api_message="total_cp_files is required")
-
+    # Vérifier la présence obligatoire de l'indice du fichier
+    indice = metadata.get("indice")
+    if indice is None:
+        raise BadRequestError(api_message="indice is required")
     try:
-        total_ae = int(total_ae_files)
-        total_cp = int(total_cp_files)
-        if total_ae < 1 or total_cp < 1:
-            raise BadRequestError(api_message="total_ae_files and total_cp_files must be at least 1")
-        logger.info(f"Expected files: AE={total_ae}, CP={total_cp}")
-    except ValueError:
-        raise BadRequestError(api_message="total_ae_files and total_cp_files must be integers")
+        int(indice)
+    except (ValueError, TypeError):
+        raise BadRequestError(api_message="indice must be an integer")
 
     logger.debug("Metadata validation passed")
 
@@ -188,11 +179,7 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
     # Extraire les informations des metadata
     session_token = metadata.get("session_token")
     upload_type = metadata.get("uploadType")
-    total_ae_files = int(metadata.get("total_ae_files"))
-    total_cp_files = int(metadata.get("total_cp_files"))
-    year = int(metadata.get("year"))
-
-    region = "NATIONAL" if user.current_region is None or user.current_region == "NAT" else user.current_region
+    indice = int(metadata.get("indice"))
 
     # Enregistrer le fichier dans la session d'upload
     session_service = _get_upload_session_service()
@@ -201,12 +188,7 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
             session_state = upload_session.register_file(
                 file_path=file_path,
                 upload_type=upload_type,
-                total_ae_files=total_ae_files,
-                total_cp_files=total_cp_files,
-                year=year,
-                source_region=region,
-                username=user.email,
-                client_id=user.azp or None,
+                indice=indice,
             )
         except ValueError as e:
             logger.error(f"Failed to register file in session: {e}", exc_info=e)
@@ -230,8 +212,8 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
                     ae_path=ae_final_path,
                     cp_path=cp_final_path,
                     session_token=session_token,
-                    year=year,
-                    source_region=region,
+                    year=session_state.year,
+                    source_region=session_state.source_region,
                     client_id=user.azp or None,
                 )
 

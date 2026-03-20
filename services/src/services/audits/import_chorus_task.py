@@ -36,43 +36,30 @@ class ImportChorusTaskService:
 
         try:
             # Chercher une entrée existante avec le même session_token
-            existing_record = (
-                db.query(AuditInsertFinancialTasks)
-                .filter_by(
-                    session_token=session_token,
-                    username=email,
-                    source_region=source_region,
-                )
-                .first()
-            )
+            existing_record = db.query(AuditInsertFinancialTasks).filter_by(session_token=session_token).first()
 
             if existing_record:
-                # Mettre à jour la ligne existante
                 logger.info(f"Updating existing record for session_token: {session_token}")
-                if upload_type == UploadType.FINANCIAL_AE.value:
-                    existing_record.fichier_ae = new_path
-                elif upload_type == UploadType.FINANCIAL_CP.value:
-                    existing_record.fichier_cp = new_path
-                logger.info(f"Updated record with {upload_type} file: {new_path}")
+                record = existing_record
             else:
-                # Créer une nouvelle ligne
                 logger.info(f"Creating new record for session_token: {session_token}")
-
-                # Déterminer les fichiers selon le type d'upload
-                fichier_ae = new_path if upload_type == UploadType.FINANCIAL_AE.value else None
-                fichier_cp = new_path if upload_type == UploadType.FINANCIAL_CP.value else None
-
-                new_record = AuditInsertFinancialTasks(
+                record = AuditInsertFinancialTasks(
                     session_token=session_token,
-                    fichier_ae=fichier_ae,
-                    fichier_cp=fichier_cp,
-                    source_region=source_region,
-                    annee=year,
-                    username=email,
-                    application_clientid=client_id,
+                    fichier_ae=None,
+                    fichier_cp=None,
                 )
-                db.add(new_record)
+                db.add(record)
                 logger.info(f"Created new record with {upload_type} file: {new_path}")
+
+            record.source_region = source_region
+            record.annee = year
+            record.username = email
+            record.application_clientid = client_id
+            if upload_type == UploadType.FINANCIAL_AE.value:
+                record.fichier_ae = new_path
+            elif upload_type == UploadType.FINANCIAL_CP.value:
+                record.fichier_cp = new_path
+            logger.info(f"Upserted record with {upload_type} file: {new_path}")
 
             # Commit les changements
             db.commit()
@@ -95,10 +82,10 @@ class ImportChorusTaskService:
         client_id: str = None,
     ) -> None:
         """
-        Insère l'audit final après concaténation des fichiers AE et CP.
+        Insère ou met à jour l'audit final après concaténation des fichiers AE et CP.
 
         Cette méthode est appelée quand tous les fichiers d'une session d'upload
-        ont été reçus et concaténés.
+        ont été reçus et concaténés. Elle effectue un upsert (insert ou update).
 
         Args:
             db: Session de base de données audit
@@ -115,28 +102,38 @@ class ImportChorusTaskService:
             return
 
         try:
-            # Créer une nouvelle entrée avec les deux fichiers concaténés
-            logger.info(f"Creating final audit record for session_token: {session_token}")
+            # Chercher une entrée existante avec le même session_token
+            existing_record = db.query(AuditInsertFinancialTasks).filter_by(session_token=session_token).first()
 
-            new_record = AuditInsertFinancialTasks(
-                session_token=session_token,
-                fichier_ae=ae_path,
-                fichier_cp=cp_path,
-                source_region=source_region,
-                annee=year,
-                username=email,
-                application_clientid=client_id,
-            )
-            db.add(new_record)
+            if existing_record:
+                logger.info(f"Updating final audit record for session_token: {session_token}")
+                record = existing_record
+            else:
+                logger.info(f"Creating final audit record for session_token: {session_token}")
+                record = AuditInsertFinancialTasks(
+                    session_token=session_token,
+                    fichier_ae=None,
+                    fichier_cp=None,
+                )
+                db.add(record)
+                logger.info(f"Created new final audit record for session_token: {session_token}")
+
+            record.fichier_ae = ae_path
+            record.fichier_cp = cp_path
+            record.source_region = source_region
+            record.annee = year
+            record.username = email
+            record.application_clientid = client_id
+            logger.info(f"Upserted final audit record with AE: {ae_path}, CP: {cp_path}")
 
             # Commit les changements
             db.commit()
             logger.info(
-                f"Successfully created final audit record for session_token: {session_token}, "
+                f"Successfully processed final audit record for session_token: {session_token}, "
                 f"AE: {ae_path}, CP: {cp_path}"
             )
 
         except Exception as e:
             db.rollback()
-            logger.error(f"Failed to create final audit record: {e}")
-            raise ServerError(api_message=f"Failed to create final audit record: {e}")
+            logger.error(f"Failed to process final audit record: {e}", exc_info=e)
+            raise ServerError(api_message=f"Failed to process final audit record: {e}")

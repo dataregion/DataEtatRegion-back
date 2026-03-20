@@ -107,12 +107,16 @@ class SessionState(MandatorySessionStateData):
     @property
     def is_complete(self) -> bool:
         """Vérifie si tous les fichiers de la session ont été reçus"""
-        return len(self.received_ae_files) == self.total_ae_files and len(self.received_cp_files) == self.total_cp_files
+        received_ae_files = [f for f in self.received_ae_files if f is not None]
+        received_cp_files = [f for f in self.received_cp_files if f is not None]
+        return len(received_ae_files) == self.total_ae_files and len(received_cp_files) == self.total_cp_files
 
     @property
     def total_received(self) -> int:
         """Nombre total de fichiers reçus"""
-        return len(self.received_ae_files) + len(self.received_cp_files)
+        received_ae = [f for f in self.received_ae_files if f is not None]
+        received_cp = [f for f in self.received_cp_files if f is not None]
+        return len(received_ae) + len(received_cp)
 
     @property
     def total_expected(self) -> int:
@@ -245,6 +249,15 @@ class UploadSession:
 
         if self._state is None:
             self._state = SessionState.initialize(data, client_id=client_id)
+
+            n_ae_files = data.total_ae_files
+            n_cp_files = data.total_cp_files
+
+            self._state.received_ae_files = [None] * n_ae_files
+            self._state.received_cp_files = [None] * n_cp_files
+            self._state.original_ae_filenames = [None] * n_ae_files
+            self._state.original_cp_filenames = [None] * n_cp_files
+
             self._service._save_session_state(self._state)
             logger.info(f"Initialized session state for {self.id}")
             return self._state
@@ -268,29 +281,13 @@ class UploadSession:
         self,
         file_path: str,
         upload_type: str,
-        total_ae_files: int,
-        total_cp_files: int,
-        year: int,
-        source_region: str,
-        username: str,
-        client_id: Optional[str] = None,
+        indice: int,
     ) -> SessionState:
         """Enregistre un fichier uploadé dans la session courante."""
         self._ensure_lock_is_active()
 
         if self._state is None:
             raise ValueError(f"Session {self.id} is not initialized. Call initialize() before register_file().")
-
-        if (
-            self._state.total_ae_files != total_ae_files
-            or self._state.total_cp_files != total_cp_files
-            or self._state.year != year
-            or self._state.source_region != source_region
-        ):
-            raise ValueError(
-                "Session metadata mismatch during register_file "
-                f"(session={self.id}, received=AE:{total_ae_files}/CP:{total_cp_files}/year:{year}/region:{source_region})"
-            )
 
         file_hash = self._service._calculate_file_hash(file_path)
         logger.info(f"Calculated hash for {file_path}: {file_hash}")
@@ -307,11 +304,11 @@ class UploadSession:
         self._state.file_hashes[str(temp_path)] = file_hash
 
         if upload_type == UploadType.FINANCIAL_AE.value:
-            self._state.received_ae_files.append(str(temp_path))
-            self._state.original_ae_filenames.append(filename)
+            self._state.received_ae_files[indice] = str(temp_path)
+            self._state.original_ae_filenames[indice] = filename
         elif upload_type == UploadType.FINANCIAL_CP.value:
-            self._state.received_cp_files.append(str(temp_path))
-            self._state.original_cp_filenames.append(filename)
+            self._state.received_cp_files[indice] = str(temp_path)
+            self._state.original_cp_filenames[indice] = filename
         else:
             raise ValueError(f"Unsupported upload type: {upload_type}")
 

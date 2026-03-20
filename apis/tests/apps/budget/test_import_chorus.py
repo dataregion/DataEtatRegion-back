@@ -87,8 +87,7 @@ class TestPreCreateHookValidation:
             "session_token": "test-token",
             "uploadType": "financial-ae",
             "filetype": "text/csv",
-            "total_ae_files": "1",
-            "total_cp_files": "1",
+            "indice": "0",
         }
 
         # Fichier de taille excessive
@@ -111,8 +110,7 @@ class TestPreCreateHookValidation:
             "session_token": "test-token",
             "uploadType": "financial-ae",
             "filetype": "text/csv",
-            "total_ae_files": "1",
-            "total_cp_files": "1",
+            "indice": "0",
         }
 
         upload_info = {"size": 1000}  # Fichier petit

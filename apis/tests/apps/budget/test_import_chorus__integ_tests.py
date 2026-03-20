@@ -19,9 +19,7 @@ def _upload_file(
     content: bytes,
     session_token: str,
     upload_type: str,
-    year: int,
-    total_ae_files: int,
-    total_cp_files: int,
+    indice: int,
 ) -> str:
     create_response = client.post(
         "/import",
@@ -33,10 +31,8 @@ def _upload_file(
                     "filename": filename,
                     "filetype": "text/csv",
                     "session_token": session_token,
-                    "year": str(year),
                     "uploadType": upload_type,
-                    "total_ae_files": str(total_ae_files),
-                    "total_cp_files": str(total_cp_files),
+                    "indice": str(indice),
                 }
             ),
         },
@@ -88,9 +84,7 @@ def test_import_process_uploads_ae_and_cp_idempotency(test_db, admin_budget_pers
                 content=ae_content,
                 session_token=session_token,
                 upload_type="financial-ae",
-                year=2025,
-                total_ae_files=1,
-                total_cp_files=1,
+                indice=0,
             )
         for _ in range(2):  # Upload the same files twice to test idempotency
             _upload_file(
@@ -99,9 +93,7 @@ def test_import_process_uploads_ae_and_cp_idempotency(test_db, admin_budget_pers
                 content=cp_content,
                 session_token=session_token,
                 upload_type="financial-cp",
-                year=2025,
-                total_ae_files=1,
-                total_cp_files=1,
+                indice=0,
             )
 
         check_response = client.get(f"/import/session/{session_token}")
@@ -150,9 +142,7 @@ def test_import_process_uploads_ae_and_cp_files_with_fastapi_testclient(
             content=ae_content,
             session_token=session_token,
             upload_type="financial-ae",
-            year=2025,
-            total_ae_files=1,
-            total_cp_files=1,
+            indice=0,
         )
         _upload_file(
             client,
@@ -160,9 +150,7 @@ def test_import_process_uploads_ae_and_cp_files_with_fastapi_testclient(
             content=cp_content,
             session_token=session_token,
             upload_type="financial-cp",
-            year=2025,
-            total_ae_files=1,
-            total_cp_files=1,
+            indice=0,
         )
 
         check_response = client.get(f"/import/session/{session_token}")

@@ -118,12 +118,7 @@ class TestUploadSessionLock:
             first_state = session.register_file(
                 file_path=ae_file_1,
                 upload_type=UploadType.FINANCIAL_AE.value,
-                total_ae_files=2,
-                total_cp_files=1,
-                year=2024,
-                source_region="BRETAGNE",
-                username="user@example.com",
-                client_id="budget-app",
+                indice=0,
             )
             assert first_state.total_received == 1
 
@@ -131,22 +126,12 @@ class TestUploadSessionLock:
             session.register_file(
                 file_path=ae_file_2,
                 upload_type=UploadType.FINANCIAL_AE.value,
-                total_ae_files=2,
-                total_cp_files=1,
-                year=2024,
-                source_region="BRETAGNE",
-                username="user@example.com",
-                client_id="budget-app",
+                indice=1,
             )
             session.register_file(
                 file_path=cp_file_1,
                 upload_type=UploadType.FINANCIAL_CP.value,
-                total_ae_files=2,
-                total_cp_files=1,
-                year=2024,
-                source_region="BRETAGNE",
-                username="user@example.com",
-                client_id="budget-app",
+                indice=0,
             )
 
             assert session.state is not None
@@ -361,11 +346,7 @@ class TestUploadSessionService:
             state = upload_session.register_file(
                 file_path=str(test_file),
                 upload_type="financial-ae",
-                total_ae_files=1,
-                total_cp_files=1,
-                year=2024,
-                source_region="BRETAGNE",
-                username="test@example.com",
+                indice=0,
             )
 
         assert len(state.file_hashes) == 1
@@ -400,38 +381,22 @@ class TestUploadSessionService:
             upload_session.register_file(
                 file_path=str(ae_file1),
                 upload_type="financial-ae",
-                total_ae_files=2,
-                total_cp_files=2,
-                year=2024,
-                source_region="BRETAGNE",
-                username="test@example.com",
+                indice=0,
             )
             upload_session.register_file(
                 file_path=str(ae_file2),
                 upload_type="financial-ae",
-                total_ae_files=2,
-                total_cp_files=2,
-                year=2024,
-                source_region="BRETAGNE",
-                username="test@example.com",
+                indice=1,
             )
             upload_session.register_file(
                 file_path=str(cp_file1),
                 upload_type="financial-cp",
-                total_ae_files=2,
-                total_cp_files=2,
-                year=2024,
-                source_region="BRETAGNE",
-                username="test@example.com",
+                indice=0,
             )
             upload_session.register_file(
                 file_path=str(cp_file2),
                 upload_type="financial-cp",
-                total_ae_files=2,
-                total_cp_files=2,
-                year=2024,
-                source_region="BRETAGNE",
-                username="test@example.com",
+                indice=1,
             )
 
             ae_final, cp_final = upload_session.finalize()
@@ -453,11 +418,7 @@ class TestUploadSessionService:
                 upload_session.register_file(
                     file_path=str(test_file),
                     upload_type=UploadType.FINANCIAL_AE.value,
-                    total_ae_files=1,
-                    total_cp_files=1,
-                    year=2025,
-                    source_region="NATIONAL",
-                    username="test@example.com",
+                    indice=0,
                 )
 
     def test_initialize_is_idempotent_with_same_parameters(self, service: UploadSessionService):
@@ -538,13 +499,9 @@ class TestUploadSessionService:
             state = upload_session.register_file(
                 file_path=str(test_file),
                 upload_type=UploadType.FINANCIAL_AE.value,
-                total_ae_files=1,
-                total_cp_files=1,
-                year=2025,
-                source_region="NATIONAL",
-                username="test@example.com",
+                indice=0,
             )
 
         assert state.total_received == 1
         assert len(state.received_ae_files) == 1
-        assert state.received_cp_files == []
+        assert state.received_cp_files == [None]
