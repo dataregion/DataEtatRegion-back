@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from models.value_objects.UploadType import UploadType
-from services.audits.upload_session import SessionState, UploadSessionService
+from services.audits.upload_session import MandatorySessionStateData, SessionState, UploadSessionService
 
 
 @pytest.fixture(scope="module")
@@ -104,6 +104,17 @@ class TestUploadSessionLock:
         with service.borrow_session("session-1") as session:
             assert session.id == "session-1"
             assert session.state is None
+            session.initialize(
+                MandatorySessionStateData(
+                    session_token="session-1",
+                    total_ae_files=2,
+                    total_cp_files=1,
+                    year=2024,
+                    source_region="BRETAGNE",
+                    username="user@example.com",
+                ),
+                client_id="budget-app",
+            )
             first_state = session.register_file(
                 file_path=ae_file_1,
                 upload_type=UploadType.FINANCIAL_AE.value,
@@ -337,6 +348,16 @@ class TestUploadSessionService:
         test_file.write_text("col1,col2\nval1,val2\n", encoding="utf-8")
 
         with service.borrow_session("test-session") as upload_session:
+            upload_session.initialize(
+                MandatorySessionStateData(
+                    session_token="test-session",
+                    total_ae_files=1,
+                    total_cp_files=1,
+                    year=2024,
+                    source_region="BRETAGNE",
+                    username="test@example.com",
+                )
+            )
             state = upload_session.register_file(
                 file_path=str(test_file),
                 upload_type="financial-ae",
@@ -366,6 +387,16 @@ class TestUploadSessionService:
 
         session_token = "complete-session"
         with service.borrow_session(session_token) as upload_session:
+            upload_session.initialize(
+                MandatorySessionStateData(
+                    session_token=session_token,
+                    total_ae_files=2,
+                    total_cp_files=2,
+                    year=2024,
+                    source_region="BRETAGNE",
+                    username="test@example.com",
+                )
+            )
             upload_session.register_file(
                 file_path=str(ae_file1),
                 upload_type="financial-ae",
@@ -411,3 +442,109 @@ class TestUploadSessionService:
         assert state.final_cp_file == cp_final
         assert Path(ae_final).exists()
         assert Path(cp_final).exists()
+
+    def test_register_file_requires_initialized_session(self, service: UploadSessionService, tmp_path):
+        """Test que register_file échoue si la session n'est pas initialisée."""
+        test_file = tmp_path / "test_requires_init.csv"
+        test_file.write_text("col1,col2\nval1,val2\n", encoding="utf-8")
+
+        with service.borrow_session("session-requires-init") as upload_session:
+            with pytest.raises(ValueError, match="not initialized"):
+                upload_session.register_file(
+                    file_path=str(test_file),
+                    upload_type=UploadType.FINANCIAL_AE.value,
+                    total_ae_files=1,
+                    total_cp_files=1,
+                    year=2025,
+                    source_region="NATIONAL",
+                    username="test@example.com",
+                )
+
+    def test_initialize_is_idempotent_with_same_parameters(self, service: UploadSessionService):
+        """Test que initialize est idempotente pour les mêmes paramètres."""
+        with service.borrow_session("session-idempotent") as upload_session:
+            first = upload_session.initialize(
+                MandatorySessionStateData(
+                    session_token="session-idempotent",
+                    total_ae_files=1,
+                    total_cp_files=1,
+                    year=2025,
+                    source_region="NATIONAL",
+                    username="test@example.com",
+                ),
+                client_id="client-a",
+            )
+            second = upload_session.initialize(
+                MandatorySessionStateData(
+                    session_token="session-idempotent",
+                    total_ae_files=1,
+                    total_cp_files=1,
+                    year=2025,
+                    source_region="NATIONAL",
+                    username="test@example.com",
+                ),
+                client_id="client-a",
+            )
+
+        assert first is second
+        saved = service.get_session_state("session-idempotent")
+        assert saved is not None
+        assert saved.client_id == "client-a"
+
+    def test_initialize_rejects_parameter_mismatch(self, service: UploadSessionService):
+        """Test que initialize rejette une ré-initialisation incohérente."""
+        with service.borrow_session("session-mismatch") as upload_session:
+            upload_session.initialize(
+                MandatorySessionStateData(
+                    session_token="session-mismatch",
+                    total_ae_files=1,
+                    total_cp_files=1,
+                    year=2025,
+                    source_region="NATIONAL",
+                    username="test@example.com",
+                )
+            )
+
+        with service.borrow_session("session-mismatch") as upload_session:
+            with pytest.raises(ValueError, match="already initialized"):
+                upload_session.initialize(
+                    MandatorySessionStateData(
+                        session_token="session-mismatch",
+                        total_ae_files=2,
+                        total_cp_files=1,
+                        year=2025,
+                        source_region="NATIONAL",
+                        username="test@example.com",
+                    )
+                )
+
+    def test_register_file_after_initialize_succeeds(self, service: UploadSessionService, tmp_path):
+        """Test que register_file fonctionne après initialize."""
+        test_file = tmp_path / "test_after_init.csv"
+        test_file.write_text("col1,col2\n1,2\n", encoding="utf-8")
+
+        with service.borrow_session("session-after-init") as upload_session:
+            upload_session.initialize(
+                MandatorySessionStateData(
+                    session_token="session-after-init",
+                    total_ae_files=1,
+                    total_cp_files=1,
+                    year=2025,
+                    source_region="NATIONAL",
+                    username="test@example.com",
+                )
+            )
+
+            state = upload_session.register_file(
+                file_path=str(test_file),
+                upload_type=UploadType.FINANCIAL_AE.value,
+                total_ae_files=1,
+                total_cp_files=1,
+                year=2025,
+                source_region="NATIONAL",
+                username="test@example.com",
+            )
+
+        assert state.total_received == 1
+        assert len(state.received_ae_files) == 1
+        assert state.received_cp_files == []

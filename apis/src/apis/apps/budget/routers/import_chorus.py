@@ -5,12 +5,13 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from tuspyserver import create_tus_router
-from apis.apps.budget.services.import_chorus import validate_metadata, upload_complete
+from apis.apps.budget.services.import_chorus import initialize_upload_session, validate_metadata, upload_complete
 from apis.config.current import get_config
 from apis.database import get_session_audit, session_audit_scope
 from models.connected_user import ConnectedUser
 from models.entities.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
 from models.exceptions import BadRequestError
+from services.audits.upload_session import InitializeSessionRequest
 
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 
@@ -68,6 +69,29 @@ tus_router = create_tus_router(
 )
 
 router = APIRouter(prefix="/import", tags=["Import Chorus"])
+
+
+@router.post(
+    "/session/{session_token}/initialize",
+    status_code=HTTPStatus.CREATED,
+    summary="Initialise et persiste l'état d'une session d'upload avant l'envoi des fichiers.",
+    responses={
+        201: {"description": "La session a été initialisée"},
+        400: {"description": "Payload invalide ou session incohérente"},
+    },
+)
+def initialize_session(
+    session_token: str,
+    payload: InitializeSessionRequest,
+    user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_admin_or_comptable()),
+) -> Response:
+
+    initialize_upload_session(
+        session_token=session_token,
+        initialize_request=payload,
+        user=user,
+    )
+    return Response(status_code=HTTPStatus.CREATED)
 
 
 @router.get(

@@ -8,7 +8,7 @@ from models.value_objects.UploadType import UploadType
 from sqlalchemy.orm import Session
 from models.connected_user import ConnectedUser
 from services.audits.import_chorus_task import ImportChorusTaskService
-from services.audits.upload_session import UploadSessionService
+from services.audits.upload_session import InitializeSessionRequest, MandatorySessionStateData, UploadSessionService
 
 
 logger = logging.getLogger(__name__)
@@ -82,6 +82,39 @@ def _get_upload_session_service() -> UploadSessionService:
         final_folder=config.upload.final_folder,
         db_session_factory=get_sesion_maker("main"),
     )
+
+
+def initialize_upload_session(
+    session_token: str,
+    initialize_request: InitializeSessionRequest,
+    user: ConnectedUser,
+) -> None:
+    """Initialise et persiste une session d'upload avant la réception des fichiers."""
+    if initialize_request.total_ae_files < 1 or initialize_request.total_cp_files < 1:
+        raise BadRequestError(api_message="total_ae_files and total_cp_files must be at least 1")
+
+    region = "NATIONAL" if user.current_region is None or user.current_region == "NAT" else user.current_region
+
+    session_service = _get_upload_session_service()
+    with session_service.borrow_session(session_token) as upload_session:
+        try:
+            upload_session.initialize(
+                MandatorySessionStateData(
+                    session_token=session_token,
+                    total_ae_files=initialize_request.total_ae_files,
+                    total_cp_files=initialize_request.total_cp_files,
+                    year=initialize_request.year,
+                    source_region=region,
+                    username=user.email,
+                ),
+                client_id=user.azp or None,
+            )
+        except ValueError as e:
+            logger.error(f"Failed to initialize upload session {session_token}: {e}", exc_info=e)
+            raise BadRequestError(api_message=str(e))
+        except Exception as e:
+            logger.error(f"Failed to initialize upload session {session_token}: {e}", exc_info=e)
+            raise ServerError(api_message=f"Failed to initialize upload session: {e}")
 
 
 def validate_metadata(metadata: dict):
@@ -172,8 +205,11 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
                 username=user.email,
                 client_id=user.azp or None,
             )
+        except ValueError as e:
+            logger.error(f"Failed to register file in session: {e}", exc_info=e)
+            raise BadRequestError(api_message=str(e))
         except Exception as e:
-            logger.error(f"Failed to register file in session: {e}")
+            logger.error(f"Failed to register file in session: {e}", exc_info=e)
             raise ServerError(api_message=f"Failed to register file in session: {e}")
 
         # Vérifier si la session est complète

@@ -62,7 +62,7 @@ import os
 import shutil
 import time
 from contextlib import contextmanager
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from typing import Any, Callable, Iterator, Optional
 
@@ -72,15 +72,27 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class SessionState:
-    """État d'une session d'upload"""
+class InitializeSessionRequest:
+    """Requête d'initialisation d'une session d'upload"""
 
-    session_token: str
     total_ae_files: int
     total_cp_files: int
     year: int
+
+
+@dataclass
+class MandatorySessionStateData(InitializeSessionRequest):
+    """Données obligatoires pour chaque fichier uploadé"""
+
+    session_token: str
     source_region: str
     username: str
+
+
+@dataclass
+class SessionState(MandatorySessionStateData):
+    """État d'une session d'upload"""
+
     client_id: Optional[str] = None
     received_ae_files: list[str] = field(default_factory=list)
     received_cp_files: list[str] = field(default_factory=list)
@@ -115,6 +127,13 @@ class SessionState:
     def from_dict(cls, data: dict) -> "SessionState":
         """Crée une instance depuis un dictionnaire"""
         return cls(**data)
+
+    @classmethod
+    def initialize(cls, data: MandatorySessionStateData, client_id: Optional[str] = None):
+        _dict = asdict(data)
+        if client_id is not None:
+            _dict["client_id"] = client_id
+        return SessionState.from_dict(_dict)
 
 
 class PgAdvisoryLock:
@@ -215,6 +234,36 @@ class UploadSession:
         """État courant de la session."""
         return self._state
 
+    def initialize(self, data: MandatorySessionStateData, client_id: Optional[str] = None) -> SessionState:
+        """Initialise et persiste l'état de session.
+
+        Si la session existe déjà avec les mêmes paramètres, l'opération est
+        idempotente et retourne l'état courant. En cas de paramètres
+        incompatibles, une exception est levée.
+        """
+        self._ensure_lock_is_active()
+
+        if self._state is None:
+            self._state = SessionState.initialize(data, client_id=client_id)
+            self._service._save_session_state(self._state)
+            logger.info(f"Initialized session state for {self.id}")
+            return self._state
+
+        current_state_data = MandatorySessionStateData(**asdict(self._state))
+
+        if current_state_data != data:
+            raise ValueError(
+                "Session already initialized with different parameters "
+                f"(session={self.id}, expected=AE:{self._state.total_ae_files}/CP:{self._state.total_cp_files}/"
+                f"year:{self._state.year}/region:{self._state.source_region})"
+            )
+
+        if self._state.client_id is None and client_id is not None:
+            self._state.client_id = client_id
+            self._service._save_session_state(self._state)
+
+        return self._state
+
     def register_file(
         self,
         file_path: str,
@@ -230,16 +279,18 @@ class UploadSession:
         self._ensure_lock_is_active()
 
         if self._state is None:
-            self._state = SessionState(
-                session_token=self.id,
-                total_ae_files=total_ae_files,
-                total_cp_files=total_cp_files,
-                year=year,
-                source_region=source_region,
-                username=username,
-                client_id=client_id,
+            raise ValueError(f"Session {self.id} is not initialized. Call initialize() before register_file().")
+
+        if (
+            self._state.total_ae_files != total_ae_files
+            or self._state.total_cp_files != total_cp_files
+            or self._state.year != year
+            or self._state.source_region != source_region
+        ):
+            raise ValueError(
+                "Session metadata mismatch during register_file "
+                f"(session={self.id}, received=AE:{total_ae_files}/CP:{total_cp_files}/year:{year}/region:{source_region})"
             )
-            logger.info(f"Created new session state for {self.id}")
 
         file_hash = self._service._calculate_file_hash(file_path)
         logger.info(f"Calculated hash for {file_path}: {file_hash}")
