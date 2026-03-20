@@ -7,7 +7,7 @@ from apis.apps.budget.routers.lignes_financieres import (
 from apis.apps.budget.routers.details_paiement import router as router_details_paiement
 from apis.apps.budget.routers.colonnes import router as router_colonnes
 
-from apis.apps.budget.routers.import_chorus import tus_router
+from apis.apps.budget.routers.import_chorus import router as router_import_chorus, tus_router
 
 
 app = FastAPI(
@@ -28,3 +28,4 @@ app.include_router(router_lignes_financieres, prefix="/lignes", tags=["Lignes fi
 app.include_router(router_details_paiement, prefix="/lignes", tags=["Détails paiement"])
 
 app.include_router(tus_router)
+app.include_router(router_import_chorus)

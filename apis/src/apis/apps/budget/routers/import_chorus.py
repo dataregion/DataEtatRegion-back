@@ -1,12 +1,15 @@
 from http import HTTPStatus
 import logging
-from fastapi import Depends
+from fastapi import APIRouter, Depends
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import Response
+from sqlalchemy.orm import Session
 from tuspyserver import create_tus_router
 from apis.apps.budget.services.import_chorus import validate_metadata, upload_complete
 from apis.config.current import get_config
-from apis.database import session_audit_scope
+from apis.database import get_session_audit, session_audit_scope
 from models.connected_user import ConnectedUser
+from models.entities.audit.AuditInsertFinancialTasks import AuditInsertFinancialTasks
 from models.exceptions import BadRequestError
 
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
@@ -63,3 +66,25 @@ tus_router = create_tus_router(
     prefix="import",
     tags=["Import Chorus"],
 )
+
+router = APIRouter(prefix="/import", tags=["Import Chorus"])
+
+
+@router.get(
+    "/session/{session_token}",
+    status_code=HTTPStatus.OK,
+    summary="Vérifie si une requête d'import a été enregistrée dans le système.",
+    responses={
+        200: {"description": "La session existe"},
+        404: {"description": "Session introuvable"},
+    },
+)
+def check_session(
+    session_token: str,
+    session_audit: Session = Depends(get_session_audit),
+    _user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_admin_or_comptable()),
+) -> Response:
+    exists = session_audit.query(AuditInsertFinancialTasks).filter_by(session_token=session_token).first() is not None
+    if not exists:
+        return Response(status_code=HTTPStatus.NOT_FOUND)
+    return Response(status_code=HTTPStatus.OK)
