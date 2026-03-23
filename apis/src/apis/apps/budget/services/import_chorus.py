@@ -1,13 +1,15 @@
 import logging
 import os
 import csv
+from uuid import uuid4
 from models.exceptions import BadRequestError, ServerError
 from apis.config.current import get_config
+from apis.database import get_sesion_maker
 from models.value_objects.UploadType import UploadType
 from sqlalchemy.orm import Session
 from models.connected_user import ConnectedUser
 from services.audits.import_chorus_task import ImportChorusTaskService
-from services.audits.upload_session import UploadSessionService
+from services.audits.upload_session import InitializeSessionRequest, MandatorySessionStateData, UploadSessionService
 
 
 logger = logging.getLogger(__name__)
@@ -79,7 +81,43 @@ def _get_upload_session_service() -> UploadSessionService:
     return UploadSessionService(
         sessions_folder=sessions_folder,
         final_folder=config.upload.final_folder,
+        db_session_factory=get_sesion_maker("main"),
     )
+
+
+def initialize_upload_session(
+    initialize_request: InitializeSessionRequest,
+    user: ConnectedUser,
+) -> str:
+    """Initialise et persiste une session d'upload avant la réception des fichiers."""
+    if initialize_request.total_ae_files < 1 or initialize_request.total_cp_files < 1:
+        raise BadRequestError(api_message="total_ae_files and total_cp_files must be at least 1")
+
+    session_token = str(uuid4())
+    region = "NATIONAL" if user.current_region is None or user.current_region == "NAT" else user.current_region
+
+    session_service = _get_upload_session_service()
+    with session_service.borrow_session(session_token) as upload_session:
+        try:
+            upload_session.initialize(
+                MandatorySessionStateData(
+                    session_token=session_token,
+                    total_ae_files=initialize_request.total_ae_files,
+                    total_cp_files=initialize_request.total_cp_files,
+                    year=initialize_request.year,
+                    source_region=region,
+                    username=user.email,
+                ),
+                client_id=user.azp or None,
+            )
+        except ValueError as e:
+            logger.error(f"Failed to initialize upload session {session_token}: {e}", exc_info=e)
+            raise BadRequestError(api_message=str(e))
+        except Exception as e:
+            logger.error(f"Failed to initialize upload session {session_token}: {e}", exc_info=e)
+            raise ServerError(api_message=f"Failed to initialize upload session: {e}")
+
+    return session_token
 
 
 def validate_metadata(metadata: dict):
@@ -110,36 +148,14 @@ def validate_metadata(metadata: dict):
     else:
         raise BadRequestError(api_message="Upload type is required")
 
-    # Vérifier la présence obligatoire du filetype
-    if "filetype" in metadata:
-        logger.info(f"File type found: {metadata['filetype']}")
-        allowed_types = [
-            "text/csv",
-        ]
-        if metadata["filetype"] not in allowed_types:
-            raise BadRequestError(
-                api_message=f"File type {metadata['filetype']} not allowed",
-            )
-    else:
-        raise BadRequestError(api_message="File type is required")
-
-    # Vérifier la présence obligatoire de total_ae_files et total_cp_files
-    total_ae_files = metadata.get("total_ae_files")
-    total_cp_files = metadata.get("total_cp_files")
-
-    if total_ae_files is None:
-        raise BadRequestError(api_message="total_ae_files is required")
-    if total_cp_files is None:
-        raise BadRequestError(api_message="total_cp_files is required")
-
+    # Vérifier la présence obligatoire de l'indice du fichier
+    indice = metadata.get("indice")
+    if indice is None:
+        raise BadRequestError(api_message="indice is required")
     try:
-        total_ae = int(total_ae_files)
-        total_cp = int(total_cp_files)
-        if total_ae < 1 or total_cp < 1:
-            raise BadRequestError(api_message="total_ae_files and total_cp_files must be at least 1")
-        logger.info(f"Expected files: AE={total_ae}, CP={total_cp}")
-    except ValueError:
-        raise BadRequestError(api_message="total_ae_files and total_cp_files must be integers")
+        int(indice)
+    except (ValueError, TypeError):
+        raise BadRequestError(api_message="indice must be an integer")
 
     logger.debug("Metadata validation passed")
 
@@ -160,64 +176,58 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
     logger.info(f"Validating CSV file content: {file_path}")
     validate_csv_file_content(file_path)
 
+    # Valider le contenu du fichier (vérifier que c'est bien un CSV)
+    logger.info(f"Validating CSV file content: {file_path}")
+    validate_csv_file_content(file_path)
+
     # Extraire les informations des metadata
     session_token = metadata.get("session_token")
     upload_type = metadata.get("uploadType")
-    total_ae_files = int(metadata.get("total_ae_files"))
-    total_cp_files = int(metadata.get("total_cp_files"))
-    year = int(metadata.get("year"))
-
-    region = "NATIONAL" if user.current_region is None or user.current_region == "NAT" else user.current_region
+    indice = int(metadata.get("indice"))
 
     # Enregistrer le fichier dans la session d'upload
     session_service = _get_upload_session_service()
-
-    try:
-        session_state = session_service.register_file(
-            file_path=file_path,
-            session_token=session_token,
-            upload_type=upload_type,
-            total_ae_files=total_ae_files,
-            total_cp_files=total_cp_files,
-            year=year,
-            source_region=region,
-            username=user.email,
-            client_id=user.azp or None,
-        )
-    except Exception as e:
-        logger.error(f"Failed to register file in session: {e}")
-        raise ServerError(api_message=f"Failed to register file in session: {e}")
-
-    # Vérifier si la session est complète
-    if session_state.is_complete:
-        logger.info(f"Session {session_token} is complete, finalizing...")
-
+    with session_service.borrow_session(session_token) as upload_session:
         try:
-            # Concaténer les fichiers
-            ae_final_path, cp_final_path = session_service.finalize_session(session_token)
-
-            # Insérer dans la table d'audit
-            ImportChorusTaskService.process_upload_audit_final(
-                db=db,
-                email=user.email,
-                ae_path=ae_final_path,
-                cp_path=cp_final_path,
-                session_token=session_token,
-                year=year,
-                source_region=region,
-                client_id=user.azp or None,
+            session_state = upload_session.register_file(
+                file_path=file_path,
+                upload_type=upload_type,
+                indice=indice,
             )
-
-            # Nettoyer les fichiers temporaires de la session
-            session_service.cleanup_session(session_token)
-
-            logger.info(f"Session {session_token} finalized successfully")
-
+        except ValueError as e:
+            logger.error(f"Failed to register file in session: {e}", exc_info=e)
+            raise BadRequestError(api_message=str(e))
         except Exception as e:
-            logger.error(f"Failed to finalize session: {e}")
-            raise ServerError(api_message=f"Failed to finalize session: {e}")
-    else:
-        logger.info(
-            f"Session {session_token}: waiting for more files "
-            f"({session_state.total_received}/{session_state.total_expected})"
-        )
+            logger.error(f"Failed to register file in session: {e}", exc_info=e)
+            raise ServerError(api_message=f"Failed to register file in session: {e}")
+
+        # Vérifier si la session est complète
+        if session_state.is_complete:
+            logger.info(f"Session {session_token} is complete, finalizing...")
+
+            try:
+                # Concaténer les fichiers
+                ae_final_path, cp_final_path = upload_session.finalize()
+
+                # Insérer dans la table d'audit
+                ImportChorusTaskService.process_upload_audit_final(
+                    db=db,
+                    email=user.email,
+                    ae_path=ae_final_path,
+                    cp_path=cp_final_path,
+                    session_token=session_token,
+                    year=session_state.year,
+                    source_region=session_state.source_region,
+                    client_id=user.azp or None,
+                )
+
+                logger.info(f"Session {session_token} finalized successfully")
+
+            except Exception as e:
+                logger.error(f"Failed to finalize session: {e}")
+                raise ServerError(api_message=f"Failed to finalize session: {e}")
+        else:
+            logger.info(
+                f"Session {session_token}: waiting for more files "
+                f"({session_state.total_received}/{session_state.total_expected})"
+            )

@@ -46,6 +46,7 @@ class UploadConfig(BaseModel):
 
 class Config(BaseModel):
     print_sql: bool
+    log_level: str = Field(default="INFO", description="Niveau de log pour l'application (ex: DEBUG, INFO, WARNING, ERROR, CRITICAL)")
     """Flag qui active le paramètre 'echo' de l'engine sqlalchemy"""
 
     sqlalchemy_database_uri: str
