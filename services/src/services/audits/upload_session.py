@@ -62,7 +62,7 @@ import os
 import shutil
 import time
 from contextlib import contextmanager
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, asdict, field, fields
 from pathlib import Path
 from typing import Any, Callable, Iterator, Optional
 
@@ -87,6 +87,13 @@ class MandatorySessionStateData(InitializeSessionRequest):
     session_token: str
     source_region: str
     username: str
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "MandatorySessionStateData":
+        """Crée une instance depuis un dictionnaire"""
+        allowed = {f.name for f in fields(cls)}
+        filtered = {k: v for k, v in data.items() if k in allowed}
+        return cls(**filtered)
 
 
 @dataclass
@@ -262,7 +269,8 @@ class UploadSession:
             logger.info(f"Initialized session state for {self.id}")
             return self._state
 
-        current_state_data = MandatorySessionStateData(**asdict(self._state))
+        dict_state = asdict(self._state)
+        current_state_data = MandatorySessionStateData.from_dict(dict_state)
 
         if current_state_data != data:
             raise ValueError(
