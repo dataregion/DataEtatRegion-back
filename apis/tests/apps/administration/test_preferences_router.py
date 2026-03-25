@@ -559,17 +559,30 @@ def test_delete_preference_not_found(client: TestClient):
 # ============================================================================
 
 
-@patch("apis.apps.administration.routers.preferences.get_keycloak_admin")
+@patch("apis.services.search_users.get_keycloak_admin")
 def test_search_users_success(mock_get_keycloak_admin, client: TestClient):
     """Test de recherche d'utilisateurs Keycloak avec succès.
 
     Vérifie que :
     - Les résultats de Keycloak sont retournés correctement
     - Le format de réponse est correct
+    - On ne récupère que les users de la même région
     """
     # Mock du client Keycloak
     mock_admin = MagicMock()
-    mock_admin.get_users.return_value = [
+    mock_admin.get_groups.return_value = [
+        {
+            "id": "11111111-1111-1111-1111-111111111111",
+            "name": "BRETAGNE",
+            "path": "/BRETAGNE",
+        },
+        {
+            "id": "22222222-2222-2222-2222-222222222222",
+            "name": "BRETAGNE.QPV",
+            "path": "/BRETAGNE.QPV",
+        },
+    ]
+    mock_admin.get_group_members.return_value = [
         {"username": "user1", "email": "user1@example.com"},
         {"username": "user2", "email": "user2@example.com"},
         {"username": "user123", "email": "user123@example.com"},
@@ -589,11 +602,15 @@ def test_search_users_success(mock_get_keycloak_admin, client: TestClient):
     assert data["data"][2]["username"] == "user123"
 
     # Vérifier l'appel à Keycloak
-    mock_admin.get_users.assert_called_once()
-    call_args = mock_admin.get_users.call_args[0][0]
-    assert call_args["search"] == "user"
-    assert call_args["enabled"] is True
-    assert call_args["briefRepresentation"] is True
+    mock_admin.get_groups.assert_called_once()
+    call_args = mock_admin.get_groups.call_args[0][0]
+    assert call_args["q"] == "region:53"
+
+    mock_admin.get_group_members.assert_called_once()
+    call_args = mock_admin.get_group_members.call_args
+    assert call_args[0][0] == mock_admin.get_groups.return_value[0]["id"]
+    assert call_args[0][1]["enabled"] is True
+    assert call_args[0][1]["briefRepresentation"] is True
 
 
 def test_search_users_too_short(client: TestClient):
@@ -609,9 +626,16 @@ def test_search_users_too_short(client: TestClient):
 
 def test_search_users_minimum_length(client: TestClient):
     """Test avec exactement 4 caractères (minimum accepté)."""
-    with patch("apis.apps.administration.routers.preferences.get_keycloak_admin") as mock_kc:
+    with patch("apis.services.search_users.get_keycloak_admin") as mock_kc:
         mock_admin = MagicMock()
-        mock_admin.get_users.return_value = [{"username": "test"}]
+        mock_admin.get_groups.return_value = [
+            {
+                "id": "11111111-1111-1111-1111-111111111111",
+                "name": "BRETAGNE",
+                "path": "/BRETAGNE",
+            },
+        ]
+        mock_admin.get_group_members.return_value = [{"username": "test"}]
         mock_kc.return_value = mock_admin
 
         response = client.get(f"{API_PREFIX}/users/preferences/search-user?username=test")
@@ -619,7 +643,7 @@ def test_search_users_minimum_length(client: TestClient):
         assert response.status_code == HTTPStatus.OK
 
 
-@patch("apis.apps.administration.routers.preferences.get_keycloak_admin")
+@patch("apis.services.search_users.get_keycloak_admin")
 def test_search_users_keycloak_error(mock_get_keycloak_admin, client: TestClient):
     """Test avec une erreur Keycloak.
 
@@ -627,7 +651,7 @@ def test_search_users_keycloak_error(mock_get_keycloak_admin, client: TestClient
     """
     # Simuler une erreur Keycloak
     mock_admin = MagicMock()
-    mock_admin.get_users.side_effect = KeycloakAdminError("Connection error")
+    mock_admin.get_groups.side_effect = KeycloakAdminError("Connection error")
     mock_get_keycloak_admin.return_value = mock_admin
 
     # Appeler l'endpoint
@@ -639,11 +663,20 @@ def test_search_users_keycloak_error(mock_get_keycloak_admin, client: TestClient
     assert "keycloak" in data["message"].lower()
 
 
-@patch("apis.apps.administration.routers.preferences.get_keycloak_admin")
+@patch("apis.services.search_users.get_keycloak_admin")
 def test_search_users_empty_result(mock_get_keycloak_admin, client: TestClient):
     """Test avec aucun résultat trouvé."""
+
+    # Mock du client Keycloak
     mock_admin = MagicMock()
-    mock_admin.get_users.return_value = []
+    mock_admin.get_groups.return_value = [
+        {
+            "id": "11111111-1111-1111-1111-111111111111",
+            "name": "BRETAGNE",
+            "path": "/BRETAGNE",
+        }
+    ]
+    mock_admin.get_group_members.return_value = []
     mock_get_keycloak_admin.return_value = mock_admin
 
     response = client.get(f"{API_PREFIX}/users/preferences/search-user?username=nonexistent")

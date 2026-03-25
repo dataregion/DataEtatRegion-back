@@ -12,6 +12,7 @@ Ce module expose les endpoints suivants :
 import logging
 from http import HTTPStatus
 
+from apis.services.search_users import search_by_region
 from fastapi import APIRouter, Depends, Request
 from fastapi.params import Query
 from prefect.deployments import arun_deployment
@@ -24,7 +25,7 @@ from apis.apps.administration.models.preferences import (
     PreferenceUpdateRequest,
     UserSearchResponse,
 )
-from apis.clients.keycloak_admin import get_keycloak_admin, KeycloakAdminError
+from apis.clients.keycloak_admin import KeycloakAdminError
 from apis.database import get_session_settings
 from apis.exception_handlers import error_responses
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
@@ -66,15 +67,7 @@ async def search_users(
     try:
         assert len(username) >= 4, "Le terme de recherche doit contenir au moins 4 caractères"
 
-        # Récupérer le client Keycloak Admin
-        keycloak_admin = get_keycloak_admin()
-
-        # Rechercher les utilisateurs
-        query = {"briefRepresentation": True, "enabled": True, "search": username}
-        users = keycloak_admin.get_users(query)
-
-        # Convertir en modèles de réponse
-        response_data = [UserSearchResponse(username=user["username"]) for user in users]
+        response_data = search_by_region(user.current_region, username)
 
         return APISuccess(
             code=HTTPStatus.OK,
