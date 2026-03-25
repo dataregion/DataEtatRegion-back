@@ -1,7 +1,8 @@
 import logging
 import json
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, BinaryIO, Generator
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -10,11 +11,51 @@ from pydantic import ValidationError
 from grist_plugins.settings import SettingsDep
 from models.value_objects.to_superset import ColumnIn
 from grist_plugins.services.to_superset import get_superset_service
+from grist_plugins.services.utils import async_wrap_sync_cm
+from services.antivirus import AntivirusService, VirusFoundError
 
 logger = logging.getLogger(__name__)
 templates_path = Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=templates_path)
 router = APIRouter()
+
+
+################################################################
+# Méthodes pour le scan antivirus sur les fichiers uploadés
+@contextmanager
+def _scan_file_stream_or_raise(
+    settings: SettingsDep,
+    file: UploadFile,
+    endpoint: str,
+    source: str,
+) -> Generator[BinaryIO, None, None]:
+    if not settings.antivirus.enabled:
+        logger.warning(
+            "Antivirus désactivé source=%s endpoint=%s filename=%s",
+            source,
+            endpoint,
+            file.filename,
+        )
+        yield file.file
+        return
+
+    av_service = AntivirusService(
+        host=settings.antivirus.host,
+        port=settings.antivirus.port,
+        timeout=settings.antivirus.timeout,
+        max_file_size_bytes=settings.antivirus.max_file_size_bytes,
+    )
+
+    context = {
+        "source": source,
+        "endpoint": endpoint,
+        "filename": file.filename or "upload.csv",
+    }
+    with av_service.scanned_binary_io(file.file, context=context) as scanned_input_io:
+        yield scanned_input_io
+
+
+################################################################
 
 
 @router.get("/callback", response_class=HTMLResponse)
@@ -86,13 +127,21 @@ async def publish(
     try:
         logger.info(f"Validation réussie pour la table : '{tableId}' avec {len(columns_list)} colonne(s)")
 
-        # Appel à l'API d'import distante
-        result = await superset_dataetat_service.import_table(
-            token=token,
+        cm = _scan_file_stream_or_raise(
+            settings=settings,
             file=file,
-            table_id=tableId,
-            columns_json=columns,
+            endpoint="/to-superset/publish",
+            source="grist_plugins.to_superset.publish",
         )
+        a_cm = async_wrap_sync_cm(cm)
+        async with a_cm as scanned_file_stream:
+            # Appel à l'API d'import distante
+            result = await superset_dataetat_service.import_table(
+                token=token,
+                file=scanned_file_stream,
+                table_id=tableId,
+                columns_json=columns,
+            )
         return {
             "success": True,
             "message": result.get("message", f"Table '{tableId}' importée avec succès"),
@@ -107,6 +156,15 @@ async def publish(
         return JSONResponse(
             {"success": False, "message": "Format JSON invalide pour les colonnes"},
             status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    except VirusFoundError as e:
+        logging.error("Fichier infecté détecté.", exc_info=e)
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "success": False,
+                "message": "Le fichier a été refusé car il est infecté par un virus.",
+            },
         )
     except Exception as err:
         logger.error(f"Erreur inattendue lors de la publication : {err}")

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from models.connected_user import ConnectedUser
 from services.audits.import_chorus_task import ImportChorusTaskService
 from services.audits.upload_session import InitializeSessionRequest, MandatorySessionStateData, UploadSessionService
+from services.antivirus import AntivirusService, AntivirusError, VirusFoundError
 
 
 logger = logging.getLogger(__name__)
@@ -160,6 +161,51 @@ def validate_metadata(metadata: dict):
     logger.debug("Metadata validation passed")
 
 
+def deal_with_viruses(file_path: str):
+    """
+    Scanne le fichier pour détecter les virus et tente de l'effacer s'il y a un problème.
+
+    Raises:
+        BadRequestError: Si un virus est trouvé ou si le scan échoue.
+    """
+    config_value = get_config()
+
+    if not config_value.antivirus or not config_value.antivirus.enabled:
+        logger.warning("Antivirus is not enabled in config, skipping virus scan")
+        return
+
+    timeout = config_value.antivirus.timeout
+    av_service = AntivirusService(
+        host=config_value.antivirus.host,
+        port=config_value.antivirus.port,
+        timeout=timeout,
+        max_file_size_bytes=config_value.antivirus.max_file_size_bytes,
+    )
+
+    try:
+        av_service.scan_file(
+            file_path=file_path,
+            context={
+                "filename": os.path.basename(file_path),
+            },
+        )
+        logger.info("No virus found in file")
+    except AntivirusError as e:
+        if isinstance(e, VirusFoundError):
+            api_message = "Virus found in uploaded file."
+            logger.error(f"Virus found in file {file_path}. Deleting file.")
+        else:
+            api_message = "Antivirus scan failed."
+            logger.error(f"Failed to scan for viruses in {file_path}. Deleting file.")
+
+        try:
+            os.remove(file_path)
+            logger.info(f"Deleted file {file_path} due to antivirus error")
+        except Exception as delete_error:
+            logger.error(f"Failed to delete file {file_path}: {delete_error}", exc_info=delete_error)
+        raise BadRequestError(api_message=f"{api_message} File has been deleted.")
+
+
 def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: dict):
     """Traite la fin d'un upload de fichier.
 
@@ -176,14 +222,13 @@ def upload_complete(db: Session, user: ConnectedUser, file_path: str, metadata: 
     logger.info(f"Validating CSV file content: {file_path}")
     validate_csv_file_content(file_path)
 
-    # Valider le contenu du fichier (vérifier que c'est bien un CSV)
-    logger.info(f"Validating CSV file content: {file_path}")
-    validate_csv_file_content(file_path)
-
     # Extraire les informations des metadata
     session_token = metadata.get("session_token")
     upload_type = metadata.get("uploadType")
     indice = int(metadata.get("indice"))
+
+    # Scan antivirus — obligatoire avant tout enregistrement (fail closed)
+    deal_with_viruses(file_path=file_path)
 
     # Enregistrer le fichier dans la session d'upload
     session_service = _get_upload_session_service()

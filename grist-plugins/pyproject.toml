@@ -22,6 +22,7 @@ where = ["src"]
 dev = [
   "import-linter ~= 2.3",
   "pytest ~=9.0",
+  "pytest-env ~=1.5.0",
   "pytest-cov ~=7.0",
   "mypy ~= 1.11",
   "pip-tools ~= 7.4",
@@ -55,3 +56,6 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.pytest.ini_options]
+env = [ "CONFIG_PATH=./tests/config/test-config.yml" ]

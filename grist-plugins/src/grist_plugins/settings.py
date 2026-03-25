@@ -1,6 +1,7 @@
 import os
 from fastapi.params import Depends
 from pydantic import BaseModel
+from models.value_objects.antivirus_config import AntivirusConfig
 from typing_extensions import Annotated
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
@@ -27,6 +28,7 @@ class Settings(BaseSettings):
     url_to_superset_api: str = "http://localhost:8050/grist-to-superset/api/v3/import/table"
     url_token_to_superset: str = "X-TOKEN-TO-SUPERSET"
     timeout_api_calls: int | None = 30  # secondes
+    antivirus: AntivirusConfig = AntivirusConfig()
 
     keycloak: KeycloakOpenIdConfig
     # Mode développement

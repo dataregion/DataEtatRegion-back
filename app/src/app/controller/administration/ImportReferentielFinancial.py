@@ -9,7 +9,7 @@ from flask_restx._http import HTTPStatus
 from werkzeug.datastructures import FileStorage
 
 from app.controller.Decorators import check_permission
-from app.exceptions.exceptions import FileNotAllowedException
+from app.exceptions.exceptions import FileNotAllowedException, InvalidFile
 from app.models.enums.AccountRole import AccountRole
 from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
 from app.services.import_refs import import_ref_calculette
@@ -38,5 +38,7 @@ class TaskRunImportRef(Resource):
         try:
             import_ref_calculette(file_ref, user.username)
             return jsonify({"status": "Fichier récupéré. Demande d`import du referentiel en cours"})
+        except InvalidFile as e:
+            return {"status": e.message}, HTTPStatus.BAD_REQUEST
         except FileNotAllowedException as e:
             return {"status": e.message}, HTTPStatus.BAD_REQUEST

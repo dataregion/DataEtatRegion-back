@@ -5,6 +5,7 @@ from pathlib import Path
 self_path: Path = Path(__file__).parent
 
 
+services_path: str = (self_path / ".." / "services").as_uri()
 models_path: str = (self_path / ".." / "models").as_uri()
 
 
@@ -14,6 +15,9 @@ def read_requirements(filename):
 
 
 requirements = read_requirements("requirements.external.in")
-requirements += [f"models @ {models_path}"]
+requirements += [
+    f"services @ {services_path}",
+    f"models @ {models_path}",
+]
 
 setup(install_requires=requirements)

@@ -1,7 +1,8 @@
 import logging
-from typing import Dict, Any
+from typing import BinaryIO, Dict, Any
+from fastapi.concurrency import run_in_threadpool
 import httpx
-from fastapi import HTTPException, status, UploadFile
+from fastapi import HTTPException, status
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ class SupersetDataEtatAPIService:
     async def import_table(
         self,
         token: str,
-        file: UploadFile,
+        file: BinaryIO,
         table_id: str,
         columns_json: str,
     ) -> Dict[str, Any]:
@@ -64,7 +65,6 @@ class SupersetDataEtatAPIService:
             token: Token d'authentification de l'utilisateur
             file: Fichier CSV à importer
             table_id: Identifiant de la table
-            columns: Liste des colonnes validées (objet Pydantic)
             columns_json: JSON brut des colonnes à transmettre
 
         Returns:
@@ -73,7 +73,7 @@ class SupersetDataEtatAPIService:
         Raises:
             HTTPException: En cas d'erreur lors de l'import
         """
-        file_content = await file.read()
+        file_content = await run_in_threadpool(file.read)
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             logger.info(f"Envoi de la table '{table_id}' vers {self.base_url}/import/table")
@@ -82,7 +82,7 @@ class SupersetDataEtatAPIService:
                 f"{self.base_url}/import/table",
                 files={
                     "file": (
-                        file.filename or f"{table_id}.csv",
+                        f"{table_id}.csv",
                         file_content,
                         "text/csv",
                     )

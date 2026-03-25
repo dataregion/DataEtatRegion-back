@@ -10,7 +10,7 @@ from app import db
 from app.exceptions.exceptions import FileNotAllowedException
 from models.entities.audit.AuditUpdateData import AuditUpdateData
 from models.value_objects.common import DataType
-from app.services.file_service import allowed_file
+from app.services.file_service import allowed_file, scan_av_and_reject_on_error
 
 
 class MissingCodeColumns(Exception):
@@ -96,6 +96,7 @@ def import_refs(file, data, username=""):
         filename = secure_filename(file.filename)
         save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
         file.save(save_path)
+        scan_av_and_reject_on_error(file_path=save_path, filename=filename)
 
         logging.info(
             f"[IMPORT REF] Maj referentiel {cls_name},columns {columns}, is_csv {is_csv},kwargs {other_args}, fichier {filename}"
@@ -125,6 +126,7 @@ def import_ref_calculette(file, username=""):
         filename = secure_filename(file.filename)
         save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
         file.save(save_path)
+        scan_av_and_reject_on_error(file_path=save_path, filename=filename)
         logging.info(f"[IMPORT REF][calculettre] Maj referentiel référentiel chorus fichier {filename}")
 
         from app.tasks.import_refs_tasks import import_refs_task

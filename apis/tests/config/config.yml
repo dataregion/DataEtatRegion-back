@@ -75,3 +75,11 @@ to_superset_config:
 upload :
   tus_folder: "/tmp/tus_files"
   final_folder: "/tmp"
+
+# ANTIVIRUS (désactivé par défaut dans les tests unitaires)
+antivirus:
+  enabled: false
+  host: "localhost"
+  port: 3310
+  timeout: 5
+  max_file_size_bytes: 26214400

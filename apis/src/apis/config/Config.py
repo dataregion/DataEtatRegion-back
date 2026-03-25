@@ -1,4 +1,5 @@
 from pathlib import Path
+from models.value_objects.antivirus_config import AntivirusConfig
 from models.value_objects.redis_connection_info import RedisConnectionInfo
 from models.value_objects.api_entreprise_info import ApiEntrepriseInfo
 from models.value_objects.api_data_subvention_info import ApiDataSubventionInfo
@@ -42,7 +43,7 @@ class UploadConfig(BaseModel):
     tus_folder: str = Field(required=True, description="Chemin du dossier de sauvegarde des fichiers uploadés")
     final_folder: str = Field(required=True, description="Dossier où seront mis les fichiers budgets chorus à traiter")
     max_size: int = Field(default=1_000_000_000, description="Taille maximale des fichiers uploadés (ex: 1G)")
-    
+
 
 class Config(BaseModel):
     print_sql: bool
@@ -82,3 +83,8 @@ class Config(BaseModel):
     to_superset_config: ToSupersetConfig
 
     upload: UploadConfig
+
+    antivirus: AntivirusConfig | None = Field(
+        default=None,
+        description="Configuration du service antivirus ClamAV (optionnel, désactivé si absent)",
+    )

@@ -1,0 +1,14 @@
+dev_mode: true
+url_to_superset_api: http://localhost:8050/grist-to-superset/api/v3/import/table
+url_token_to_superset: X-TOKEN-TO-SUPERSET
+url_superset: http://superset
+keycloak:
+  url: http://localhost:8080
+  realm: test-realm
+  client_id: test-client
+antivirus:
+  enabled: true
+  host: clamav
+  port: 3310
+  timeout: 60
+  max_file_size_bytes: 26214400

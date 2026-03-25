@@ -8,6 +8,7 @@ from app import celeryapp
 from app.models.enums.AccountRole import AccountRole
 from app.controller.Decorators import check_permission
 from app.servicesapp.authentication.connected_user import connected_user_from_current_token_identity
+from app.servicesapp.tags import InvalidFile
 
 from ...exceptions.exceptions import FileNotAllowedException
 from ...services.import_refs import ReferentielNotFound, import_refs
@@ -46,6 +47,8 @@ class TaskRunImportRef(Resource):
             )
         except ReferentielNotFound:
             return {"status": "Referentiel n'existe pas"}, 400
+        except InvalidFile as e:
+            return {"status": e.message}, 400
         except FileNotAllowedException as e:
             return {"status": e.message}, 400
 

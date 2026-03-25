@@ -80,6 +80,14 @@ API_DEMARCHE_SIMPLIFIE:
 
 FERNET_SECRET_KEY: "<fernet_secret_key>"
 
+# Configuration antivirus (ClamAV via clamd)
+ANTIVIRUS:
+  ENABLED: True
+  HOST: "<clamd_host>"
+  PORT: 3310
+  TIMEOUT: 60
+  MAX_FILE_SIZE_BYTES: 26214400  # 25 MiB
+
 # COnfiguration SMTP pour envoi de mail
 SMTP:
   server: ""
