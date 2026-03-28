@@ -57,7 +57,7 @@ colorama==0.4.6
     # via griffecli
 coolname==4.0.0
     # via prefect-client
-cryptography==46.0.5
+cryptography==46.0.6
     # via
     #   models (../models/pyproject.toml)
     #   authlib
