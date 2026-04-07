@@ -29,11 +29,11 @@ def save_qpv_lieu_action(values: list, chunk_index: int):
     stmt = insert(QpvLieuAction).values(values)
 
     stmt = stmt.on_conflict_do_update(
-        index_elements=["annee_exercice", "ref_action", "ej", "code_qpv"],
+        index_elements=["annee_exercice", "ej", "code_qpv", "libelle_action"],
         set_={
+            "ref_action": stmt.excluded.ref_action,
             "siret": stmt.excluded.siret,
             "montant_ventille": stmt.excluded.montant_ventille,
-            "libelle_action": stmt.excluded.libelle_action,
             "file_import_taskid": stmt.excluded.file_import_taskid,
             "file_import_lineno": stmt.excluded.file_import_lineno,
         },

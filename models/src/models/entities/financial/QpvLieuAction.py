@@ -11,20 +11,20 @@ class QpvLieuAction(_Audit, _PersistenceBaseModelInstance()):
     __table_args__ = (
         UniqueConstraint(
             "annee_exercice",
-            "ref_action",
             "ej",
             "code_qpv",
+            "libelle_action",
             name="uq_qpv_lieu_action_metier",
         ),
     )
 
     id = Column(Integer, primary_key=True)
     annee_exercice: Column[int] = Column(Integer, nullable=False, autoincrement=False)
-    ref_action: Column[str] = Column(String, nullable=False)
+    ref_action: Column[str] = Column(String, nullable=True)
     ej: Column[str] = Column(String, nullable=False)
     code_qpv: Column[str] = Column(String, ForeignKey("ref_qpv.code"), nullable=False)
     montant_ventille: Column[float] = Column(Float(decimal_return_scale=2), nullable=False, autoincrement=False)
-    libelle_action: Column[str] = Column(String, nullable=True)
+    libelle_action: Column[str] = Column(String, nullable=False)
     siret: Column[str] = Column(String, nullable=True)
 
     # Données techniques
