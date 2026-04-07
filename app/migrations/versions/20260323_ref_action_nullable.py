@@ -1,7 +1,7 @@
 """empty message
 
 Revision ID: 20260323_ref_action_nullable
-Revises: 20260302_update_views_add_cdpt
+Revises: 20260306_add_grist_columns
 Create Date: 2026-03-23 13:26:03.047707
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20260323_ref_action_nullable'
-down_revision = '20260302_update_views_add_cdpt'
+down_revision = '20260306_add_grist_columns'
 branch_labels = None
 depends_on = None
 
