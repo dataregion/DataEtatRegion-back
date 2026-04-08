@@ -208,7 +208,7 @@ def step(ctx: _Ctx) -> _Ctx:
         return ctx
 
 
-@task(timeout_seconds=120, log_prints=True, cache_policy=NO_CACHE)
+@task(timeout_seconds=300, log_prints=True, cache_policy=NO_CACHE)
 def convert_to_final_format(ctx: _Ctx) -> _Ctx:
     """Convertit le CSV vers le format final (Excel ou ODS) si nécessaire."""
     if not ctx.needs_conversion:
