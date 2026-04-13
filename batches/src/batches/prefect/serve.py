@@ -22,7 +22,7 @@ def main():
     )
     update_all_sirets_deploiement = update_all_sirets.to_deployment(
         name="update_all_sirets",
-        cron="0 2 * * *",  # Tous les jours à 2h du matin
+        cron="0 22 * * *",  # Tous les jours à 22h
     )
     serve(
         export_recherche_deploiement,  # type: ignore
