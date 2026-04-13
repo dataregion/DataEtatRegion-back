@@ -23,7 +23,6 @@ from models.value_objects.api_entreprise_info import ApiEntrepriseInfo  # noqa: 
 # Constantes
 # ──────────────────────────────────────────────
 UPDATE_SIRET_CONCURRENCY_ID = "update_all_siret"
-"""Nombre maximum de SIRETs à traiter par exécution du flow."""
 
 
 def _get_logger():
