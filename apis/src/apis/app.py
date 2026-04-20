@@ -2,7 +2,7 @@ import asyncio
 import logging
 from apis.clients import RedisClientHolder
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.middleware.cors import CORSMiddleware
 from models import init as init_persistence_module
@@ -95,5 +95,12 @@ def create_app():
             "Content-Disposition",
         ],
     )
+
+    @app.middleware("http")
+    async def no_cache(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["Cache-Control"] = "no-cache, no-store, private"
+        response.headers["Pragma"] = "no-cache"
+        return response
 
     return app

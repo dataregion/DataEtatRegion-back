@@ -99,6 +99,13 @@ def create_app_base(
         _expose_endpoint(app)
 
     _post_create_app_base(app)
+
+    @app.after_request
+    def no_cache(response):
+        response.headers["Cache-Control"] = "no-cache, no-store, private"
+        response.headers["Pragma"] = "no-cache"
+        return response
+
     return app
 
 
