@@ -99,7 +99,7 @@ def create_app():
     @app.middleware("http")
     async def no_cache(request: Request, call_next):
         response = await call_next(request)
-        response.headers["Cache-Control"] = "no-cache, no-store, private"
+        response.headers["Cache-Control"] = "no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         return response
 

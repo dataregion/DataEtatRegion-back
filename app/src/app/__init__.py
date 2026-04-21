@@ -102,7 +102,7 @@ def create_app_base(
 
     @app.after_request
     def no_cache(response):
-        response.headers["Cache-Control"] = "no-cache, no-store, private"
+        response.headers["Cache-Control"] = "no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         return response
 
