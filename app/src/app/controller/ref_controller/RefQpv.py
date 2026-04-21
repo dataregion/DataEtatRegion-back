@@ -120,7 +120,6 @@ class RefQpv(Resource):
         @api.response(200, "Success", model_qpv_with_commune)
         def get(self, code_region):
 
-            """Recupère les lignes de données budgetaires génériques"""
             user = connected_user_from_current_token_identity()
             if user.current_region != "NAT" and int(user.current_region) != int(code_region):
                 return "", HTTPStatus.FORBIDDEN
