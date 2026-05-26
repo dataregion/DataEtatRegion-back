@@ -1,11 +1,12 @@
 <h1 align="center" style="border-bottom: none">
-        API Regate Num Data Etat
-    </div>
+    API Regate Num Data Etat
 </h1>
 
 <p align="center">
     Gestion des API pour le projet Regate Num Data Etat<br/>
 </p>
+
+> ⚠️ **DÉPRÉCIÉ** — ce projet est en cours de transposition vers [`apis/`](../apis/). Toute nouvelle logique métier doit être ajoutée dans `apis/`, pas ici. Maintenance bugfix uniquement.
 
 # Description
 
@@ -46,7 +47,7 @@ Pour lancer le projet Flask en mode développement :
     flask --app app:create_app_api run -h 0.0.0.0
     ```
 
-L'API sera alors accessible sur http://localhost:5000
+L'API sera alors accessible sur http://localhost:5000 (port Flask par défaut).
 
 
 ## Mettre à jour les dépendances

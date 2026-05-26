@@ -18,10 +18,19 @@ Puis lancez le serveur avec :
 
 
 ```bash
-source .venv/bin/activate && uvicorn src.apis.main:app --reload --host 0.0.0.0 --port 8000
+source .venv/bin/activate && uvicorn src.apis.main:app --reload --host 0.0.0.0 --port 8050
 ```
 
-Vous pouvez ensuite accéder à la documentation interactive sur http://localhost:8000/docs
+Vous pouvez ensuite accéder à la documentation interactive sur http://localhost:8050/docs
+
+## Conventions
+
+- **Sessions DB** : utiliser obligatoirement l'injection FastAPI `Depends(get_session_main)` ou `Depends(get_session_audit)` (depuis `apis.database`). Ne jamais instancier de session manuellement.
+- **Préfixe `afn_`** pour toute fonction `async def` qui retourne une coroutine.
+- **Logs d'exception** : `logger.error("msg", exc_info=e)` pour conserver la stack trace.
+- **Accès données** : toujours via `models/` + `services/`, jamais de SQL inline.
+
+Voir `CLAUDE.md` à la racine pour la liste complète et `/check-backend apis` pour le lint local.
 
 > **Note** : Adaptez le chemin du module (`src.apis.main:app`) si la structure change.
 

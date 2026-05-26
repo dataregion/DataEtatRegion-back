@@ -1,6 +1,8 @@
 # Batches
 
-Projet qui accueille les opérations en batch et en tâches de fond avec Prefect.
+Projet qui accueille les opérations en batch et tâches de fond, orchestrées par **Prefect 3**.
+
+Les flows définissent les imports planifiés, les enrichissements et les pipelines de fond du backend Data Etat (régionaux, nationaux, ADEME, QPV, etc.).
 
 | Variable d'environnement | Description                        |
 | ------------------------ | ---------------------------------- |
@@ -64,6 +66,8 @@ prefect deployment run sync_referentiel_grist/sync_referentiel_grist \
 ```
 
 ---
+
+Voir la skill `prefect` (`.claude/skills/prefect/SKILL.md`) pour les patterns `@flow`, `@task`, retries, deployments.
 
 ## Mettre à jour les dépendances
 

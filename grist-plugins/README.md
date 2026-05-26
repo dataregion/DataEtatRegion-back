@@ -41,7 +41,13 @@ rm requirements.external.txt # à supprimer pour des montées des version plus a
 Se placer à la racine du dossier `grist-plugins` puis activer le venv Python :
 
 ```bash
-uvicorn src.grist_plugins.main:app --reload --host 0.0.0.0
+uvicorn src.grist_plugins.main:app --reload --host 0.0.0.0 --port 8051
 ```
 
 L'API sera accessible sur http://localhost:8051 et la documentation interactive sur http://localhost:8051/docs
+
+## Widgets Grist
+
+Chaque plugin est un widget Grist intégré dans un iframe et communique avec le document parent via `postMessage` (API JS `grist.ready()`, `grist.onRecord`, `grist.docApi`). Le manifest Grist déclare permissions (read table / full access), point d'entrée HTML et options de configuration.
+
+Les vues sont rendues côté serveur via Jinja2 (échappement par défaut activé — ne pas désactiver sans raison).

@@ -7,11 +7,42 @@ Le projet est organisé en sous-projets:
 | [app](./app/)                     | application  | application principale contenant les tâches asynchrone et les API Rest en Flask |
 | [grist-plugins](./grist-plugins/) | application  | les IHM plugins pour Grist                                                      |
 | [apis](./apis/)                   | application  | Nouvelles APIs de Data Etat (v3+)                                               |
-| [services](./models/)             | bibliothèque | Les services DRN                                                                |
+| [services](./services/)           | bibliothèque | Les services DRN                                                                |
 | [models](./models/)               | bibliothèque | Les modèles DRN                                                                 |
-| [gristcli](.gristcli/)            | bibliothèque | contient une API pour intéragir avec Grist                                      |
-| [supersercli](.supersercli/)      | bibliothèque | contient une API pour intéragir avec Superset                                   |
+| [gristcli](./gristcli/)           | bibliothèque | contient une API pour intéragir avec Grist                                      |
+| [supersetcli](./supersetcli/)     | bibliothèque | contient une API pour intéragir avec Superset                                   |
 | [tests_e2e](./tests_e2e/)         | utilitaire   | pour les tests d'intégrations                                                   |
+
+## 🚀 Démarrage rapide
+
+| Sous-projet     | Port  | Commande                                                                                        |
+| --------------- | ----- | ----------------------------------------------------------------------------------------------- |
+| `apis/`         | 8050  | `cd apis && source .venv/bin/activate && uvicorn src.apis.main:app --reload --host 0.0.0.0 --port 8050` |
+| `grist-plugins/`| 8051  | `cd grist-plugins && source .venv/bin/activate && uvicorn src.grist_plugins.main:app --reload --host 0.0.0.0` |
+| `app/` (legacy) | 5000  | `cd app && source .venv/bin/activate && flask --app app:create_app_api run -h 0.0.0.0`          |
+
+Voir `CLAUDE.md` pour les conventions et la commande `/check-backend` (analyse statique locale).
+
+## 🧪 Lancer les tests
+
+Chaque sous-projet a son propre venv et ses propres tests.
+
+```bash
+# Tests unitaires d'un sous-projet
+cd <apis|app|batches|grist-plugins|services|models> && source .venv/bin/activate && pytest
+
+# Tests d'intégration (apis)
+cd apis && source .venv/bin/activate && pytest -m integration
+
+# Tests avec couverture (miroir CI)
+cd <sous-projet> && source .venv/bin/activate && coverage run -m pytest && coverage report
+
+# Reproductibilité des tests utilisant faker (app/)
+cd app && source .venv/bin/activate && pytest --seed 1234
+
+# Tests E2E
+cd tests_e2e && source .venv/bin/activate && pytest
+```
 
 ## 📊 Flux des données financières (import -> exposition)
 
