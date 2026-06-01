@@ -8,6 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 from models import init as init_persistence_module
 
 from apis.exception_handlers import setup_exception_handlers
+from apis.fastapi_runtime_detailed_metrics import setup_metrics as setup_runtime_details_metrics
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 
 from models.value_objects.redis_events import MAT_VIEWS_REFRESHED_EVENT_CHANNEL
@@ -37,9 +38,11 @@ async def lifespan(app: FastAPI):
 
     channels = [MAT_VIEWS_REFRESHED_EVENT_CHANNEL]
     app.state.listener_task = asyncio.create_task(listens(channels))
+    app.state.metrics_task = setup_runtime_details_metrics()
 
     yield
 
+    app.state.metrics_task.cancel()
     app.state.listener_task.cancel()
     try:
         await app.state.listener_task

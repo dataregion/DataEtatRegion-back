@@ -10,6 +10,7 @@ annotated-types==0.7.0
     # via pydantic
 anyio==4.12.1
     # via
+    #   fastapi-runtime-details-collector
     #   httpx
     #   prefect-client
     #   starlette
@@ -83,6 +84,8 @@ fastapi-cli==0.0.24
     # via fastapi
 fastapi-cloud-cli==0.15.0
     # via fastapi-cli
+fastapi-runtime-details-collector==1.0.0
+    # via -r requirements.external.in
 fastar==0.8.0
     # via fastapi-cloud-cli
 fsspec==2026.2.0
@@ -208,6 +211,7 @@ prefect-client==3.6.22
 prometheus-client==0.23.1
     # via
     #   services (../services/pyproject.toml)
+    #   fastapi-runtime-details-collector
     #   prefect-client
     #   prometheus-fastapi-instrumentator
 prometheus-fastapi-instrumentator==7.1.0
