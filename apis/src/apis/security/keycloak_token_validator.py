@@ -50,7 +50,7 @@ class KeycloakTokenValidator:
                     "exp": {"essential": True},
                 },
             )
-            claims.validate()
+            claims.validate(leeway=30)
         except Exception as e:
             _ex = InvalidTokenError(api_message="Token validation failed")
             raise _ex from e

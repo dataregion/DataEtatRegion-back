@@ -21,6 +21,7 @@ class KeycloakIntrospectTokenValidator(IntrospectTokenValidator):
                 signing_key.key,
                 algorithms=["RS256"],
                 audience=self.client_id,
+                leeway=30,
             )
             if "username" not in valid_token and "preferred_username" in valid_token:
                 valid_token["username"] = valid_token["preferred_username"]
