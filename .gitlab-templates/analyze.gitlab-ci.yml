@@ -46,6 +46,7 @@ update-pinned-dependencies:
     - |
 
       for folder in app apis batches grist-plugins; do
+        echo >&2 "Updating $folder"
         cd $folder/ && ./.build-helper-scripts/update-requirements-external.sh
         cd ..
         git add $folder/requirements.external.txt # Pour supporter le rafraichissement des dépendances via suppression du requirements.external.txt
