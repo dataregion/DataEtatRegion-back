@@ -23,11 +23,11 @@ where = ["src"]
 dev = [
   "import-linter ~= 2.3",
   "pytest ~=9.0",
-  "pytest-env ~=1.6.0",
+  "pytest-env ~=1.7.0",
   "pytest-cov ~=7.0",
   "ruff ~= 0.6",
   "testcontainers ~=4.14",
-  "prefect==3.6.28",
+  "prefect==3.6.29",
 ]
 
 [tool.pytest.ini_options]
