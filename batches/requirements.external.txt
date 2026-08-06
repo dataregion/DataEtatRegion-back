@@ -156,7 +156,7 @@ pandas==2.3.3
     #   geopandas
 pathspec==1.1.1
     # via prefect-client
-prefect-client==3.6.29
+prefect-client==3.8.1
     # via -r requirements.external.in
 prometheus-client==0.23.1
     # via
@@ -248,7 +248,9 @@ sqlalchemy==2.0.51
 sqlparse==0.5.5
     # via services (../services/pyproject.toml)
 starlette==1.3.1
-    # via fastapi
+    # via
+    #   fastapi
+    #   prefect-client
 text-unidecode==1.3
     # via python-slugify
 toml==0.10.2
