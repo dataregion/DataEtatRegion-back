@@ -117,6 +117,8 @@ run-loadtests:
 .default-analyze: &default-analyze
   stage: ☢️ analyze
   image: "${REGISTRY}nocode/dev:${CI_PIPELINE_ID}-snapshot"
+  before_script:
+    - uv pip install ruff===0.15.17 --system
   rules:
     - if: '$DO_ANALYZE == "✅"'
       needs:
@@ -158,8 +160,6 @@ run-loadtests:
 
 "Analyse syntaxique":
   <<: *default-analyze
-  before_script:
-    - uv pip install ruff --system
   script:
     - ruff format --check app/
     - ruff format --check apis/
@@ -173,8 +173,6 @@ run-loadtests:
 
 "Analyse ruff":
   <<: *default-analyze
-  before_script:
-    - uv pip install ruff --system
   script:
     - ruff check app/
     - ruff check apis/
