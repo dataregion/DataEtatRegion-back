@@ -1,7 +1,7 @@
 # Data Transform — Backend monorepo
 
 ## Stack
-- Python 3.12.6, uv
+- Python 3.14.7, uv
 - **apis/** (cible) : FastAPI 0.115.5 + SQLAlchemy
 - **batches/** : Prefect
 - **grist-plugins/** : FastAPI + Jinja2 (widgets Grist)

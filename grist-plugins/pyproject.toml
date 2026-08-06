@@ -28,7 +28,7 @@ dev = [
   "pip-tools ~= 7.4",
   "pre-commit ~=4.1",
   "faker ~=40.1",
-  "ruff ~= 0.6",
+  "ruff ~= 0.15.17",
   "testcontainers ~=4.9",
 ]
 

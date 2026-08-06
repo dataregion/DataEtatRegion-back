@@ -30,7 +30,7 @@ Remplacer la synchronisation des référentiels Grist (actuellement via plugin G
 ### Technologies
 - **Prefect** : orchestration des flows (voir `batches/README.md`)
 - **FastAPI** : APIs si nécessaire dans `apis/`
-- **Python 3.13**
+- **Python 3.14**
 - **SQLAlchemy** : modèles dans `models/src/models/entities/refs/`
 - **Grist CLI** : `gristcli/src/gristcli/gristservices/grist_api.py`
 

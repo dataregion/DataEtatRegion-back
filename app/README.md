@@ -10,7 +10,7 @@
 
 # Description
 
-Ce projet contient une suite d'API REST développées avec Flask-RESTx et Python 3.12. 
+Ce projet contient une suite d'API REST développées avec Flask-RESTx et Python 3.14. 
 Ces API permettent de gérer des utilisateurs Keycloak, en les activant ou en les désactivant. 
 Elles permettent également d'intégrer les fichiers Chorus de l'état pour recouper les données.
 

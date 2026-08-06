@@ -17,7 +17,7 @@ COPY grist-plugins/src/grist_plugins ./
 RUN npm run build
 
 #stage 2 : build  backend
-FROM ghcr.io/astral-sh/uv:0.11.32-python3.13-trixie-slim@sha256:fb576a1ff0c6b967e8b466695af934e34161c4a99c2fbfb859261d4a24d4a8d3  as backend-builder
+FROM ghcr.io/astral-sh/uv:0.11.32-python3.14-trixie-slim@sha256:c2971e36c3f826c5d0c59f009ecc5c2c5e90fe2ad2087d258b711cb7a453697f  as backend-builder
 
 WORKDIR /build
 
@@ -43,7 +43,7 @@ RUN uv pip install \
   --python /venv/bin/python
 
 # # Stage 3: Image finale
-FROM ghcr.io/astral-sh/uv:0.11.32-python3.13-trixie-slim@sha256:fb576a1ff0c6b967e8b466695af934e34161c4a99c2fbfb859261d4a24d4a8d3
+FROM ghcr.io/astral-sh/uv:0.11.32-python3.14-trixie-slim@sha256:c2971e36c3f826c5d0c59f009ecc5c2c5e90fe2ad2087d258b711cb7a453697f
 
 EXPOSE 8000
 

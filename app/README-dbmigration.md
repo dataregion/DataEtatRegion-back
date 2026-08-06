@@ -27,15 +27,17 @@ env FLASK_APP=app:create_app_migrate flask db downgrade "20240304_indices_for_ae
 ```python
 ...
 
+
 def create_app_migrate():
     import app.models
 
     app = create_app_base(oidc_enable=False, expose_endpoint=False)
-    #migrate = Migrate() # XXX: On pointe vers les anciennes migrations
+    # migrate = Migrate() # XXX: On pointe vers les anciennes migrations
     migrate = Migrate(directory="migrations.old")
 
     migrate.init_app(app, db)
     return app
+
 
 ...
 ```

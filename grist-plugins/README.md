@@ -10,7 +10,7 @@
 
 <div align="center">
  
-[![Python version](https://img.shields.io/badge/python-3.12.6-blue?logo=python)](https://www.python.org/downloads/release/python-3126/)
+[![Python version](https://img.shields.io/badge/python-3.14.7-blue?logo=python)](https://www.python.org/downloads/release/python-3147/)
 [![FastApi](https://img.shields.io/badge/FastAPI-0.115.5-blue?logo=fastapi)](https://fastapi.tiangolo.com/)
 
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-green.svg)](https://conventionalcommits.org)

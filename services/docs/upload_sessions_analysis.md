@@ -156,10 +156,7 @@ En cas de perte des fichiers finaux, les hashs permettent de :
 ```python
 from services.audits.upload_session import UploadSessionService, SessionState
 
-service = UploadSessionService(
-    sessions_folder="/data/tus/sessions",
-    final_folder="/data/final"
-)
+service = UploadSessionService(sessions_folder="/data/tus/sessions", final_folder="/data/final")
 
 # Charger une session
 state = service.get_session_state("550e8400-e29b-41d4-a716-446655440000")
@@ -171,7 +168,7 @@ if state:
     print(f"Fichiers CP: {len(state.received_cp_files)}")
     print(f"Fichier final AE: {state.final_ae_file}")
     print(f"Fichier final CP: {state.final_cp_file}")
-    
+
     # Vérifier les hashs
     for file_path, file_hash in state.file_hashes.items():
         print(f"{file_path}: {file_hash}")
