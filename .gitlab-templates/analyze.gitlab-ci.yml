@@ -118,7 +118,7 @@ run-loadtests:
   stage: ☢️ analyze
   image: "${REGISTRY}nocode/dev:${CI_PIPELINE_ID}-snapshot"
   before_script:
-    - uv pip install "ruff~=0.15.17" --system
+    - uv pip install "ruff~=0.16.1" --system
   rules:
     - if: '$DO_ANALYZE == "✅"'
       needs:
