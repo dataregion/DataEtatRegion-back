@@ -1,5 +1,5 @@
 # Stage 1: Build frontend avec Node.js
-FROM node:24.18.0@sha256:5711a0d445a1af54af9589066c646df387d1831a608226f4cd694fc59e745059 AS frontend-builder
+FROM node:24.19.0@sha256:934240a162082fd8b8a2f90cd5114446443f1eba1c5378f6687167ca405e6584 AS frontend-builder
 
 WORKDIR /build/frontend
 
@@ -17,7 +17,7 @@ COPY grist-plugins/src/grist_plugins ./
 RUN npm run build
 
 #stage 2 : build  backend
-FROM ghcr.io/astral-sh/uv:0.11.32-python3.14-trixie-slim@sha256:c2971e36c3f826c5d0c59f009ecc5c2c5e90fe2ad2087d258b711cb7a453697f  as backend-builder
+FROM ghcr.io/astral-sh/uv:0.12.2-python3.14-trixie-slim@sha256:d6e6a4de8d48bb4e64bcc2e2bd1e2291fb00ee4fd07a5dcfdc4c621afddcfe75  as backend-builder
 
 WORKDIR /build
 
@@ -43,7 +43,7 @@ RUN uv pip install \
   --python /venv/bin/python
 
 # # Stage 3: Image finale
-FROM ghcr.io/astral-sh/uv:0.11.32-python3.14-trixie-slim@sha256:c2971e36c3f826c5d0c59f009ecc5c2c5e90fe2ad2087d258b711cb7a453697f
+FROM ghcr.io/astral-sh/uv:0.12.2-python3.14-trixie-slim@sha256:d6e6a4de8d48bb4e64bcc2e2bd1e2291fb00ee4fd07a5dcfdc4c621afddcfe75
 
 EXPOSE 8000
 
