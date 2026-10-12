@@ -1,4 +1,6 @@
 from prefect import serve
+from batches.prefect.import_file_communes import import_file_acv_from_website
+from batches.prefect.import_file_communes import import_file_pvd_from_website
 from batches.prefect.sync_referentiel_grist import sync_referentiel_grist_flow
 from batches.prefect.exporte_une_recherche import exporte_une_recherche
 from batches.prefect.import_file_qpv_lieu_action import import_file_qpv_lieu_action
@@ -9,6 +11,20 @@ from batches.prefect.update_siret import update_all_sirets
 
 def main():
     export_recherche_deploiement = exporte_une_recherche.to_deployment(name="exporte_une_recherche")
+    import_file_pvd_from_website_deploiement = import_file_pvd_from_website.to_deployment(
+        name="import_file_pvd_from_website",
+        cron="0 0 1 * *",
+        parameters={
+            "url": "https://www.data.gouv.fr/api/1/datasets/r/1fa831ec-d912-4277-8b95-a8b998bf951e",
+        },
+    )
+    import_file_acv_from_website_deploiement = import_file_acv_from_website.to_deployment(
+        name="import_file_acv_from_website",
+        cron="0 0 1 * *",
+        parameters={
+            "url": "https://www.data.gouv.fr/api/1/datasets/r/8b6f422b-cbdf-459a-9a16-d6be4b92d91a",
+        },
+    )
     import_file_qpv_lieu_action_deploiement = import_file_qpv_lieu_action.to_deployment(
         name="import_file_qpv_lieu_action"
     )
@@ -26,6 +42,8 @@ def main():
     )
     serve(
         export_recherche_deploiement,  # type: ignore
+        import_file_pvd_from_website_deploiement,  # type: ignore
+        import_file_acv_from_website_deploiement,  # type: ignore
         import_file_qpv_lieu_action_deploiement,  # type: ignore
         share_filter_user_deploiement,  # type: ignore
         update_link_siret_qpv_from_url_deploiement,  # type: ignore
