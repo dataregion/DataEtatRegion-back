@@ -48,6 +48,12 @@ async function gristApiRequest(endpoint, method = 'GET', body = null) {
   return response.json();
 }
 
+// Récupère l'identifiant complet du document Grist (22 caractères, avec « ~ » pour une copie de travail).
+// Ne pas le lire dans getAccessToken().baseUrl : l'URL porte l'identifiant court du document (urlId).
+async function getGristDocId() {
+  return await grist.docApi.getDocName();
+}
+
 /**
  * Récupère les colonnes de la table.
  * @returns 
@@ -57,4 +63,4 @@ async function getColumnTable(tableId) {
 }
 
 // Exporte la fonction pour l'utiliser ailleurs
-export { getGristAuthInfo, gristApiRequest, getColumnTable };
+export { getGristAuthInfo, getGristDocId, gristApiRequest, getColumnTable };

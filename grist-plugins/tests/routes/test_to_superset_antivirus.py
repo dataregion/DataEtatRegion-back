@@ -29,6 +29,7 @@ def client() -> TestClient:
 
 def _payload() -> dict[str, str]:
     return {
+        "docId": "mXq3vB7kPz9WcR2aLtN4Ue",
         "tableId": "ma_table",
         "columns": json.dumps(
             [

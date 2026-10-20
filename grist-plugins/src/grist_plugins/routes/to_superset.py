@@ -92,6 +92,7 @@ async def publish(
     settings: SettingsDep,
     authorization: Annotated[str | None, Header()] = None,
     file: UploadFile = File(...),
+    docId: str = Form(...),
     tableId: str = Form(...),
     columns: str = Form(...),
 ):
@@ -139,6 +140,7 @@ async def publish(
             result = await superset_dataetat_service.import_table(
                 token=token,
                 file=scanned_file_stream,
+                doc_id=docId,
                 table_id=tableId,
                 columns_json=columns,
             )
@@ -181,6 +183,7 @@ async def publish(
 async def link(
     settings: SettingsDep,
     authorization: Annotated[str | None, Header()] = None,
+    docId: str = Form(...),
     tableId: str = Form(...),
 ):
     if not authorization:
@@ -192,6 +195,7 @@ async def link(
 
         await superset_dataetat_service.link_to_superset(
             token=token,
+            doc_id=docId,
             table_id=tableId,
         )
         return {

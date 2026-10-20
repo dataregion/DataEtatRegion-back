@@ -55,6 +55,7 @@ class SupersetDataEtatAPIService:
         self,
         token: str,
         file: BinaryIO,
+        doc_id: str,
         table_id: str,
         columns_json: str,
     ) -> Dict[str, Any]:
@@ -64,6 +65,7 @@ class SupersetDataEtatAPIService:
         Args:
             token: Token d'authentification de l'utilisateur
             file: Fichier CSV à importer
+            doc_id: Identifiant du document Grist
             table_id: Identifiant de la table
             columns_json: JSON brut des colonnes à transmettre
 
@@ -88,6 +90,7 @@ class SupersetDataEtatAPIService:
                     )
                 },
                 data={
+                    "doc_id": doc_id,
                     "table_id": table_id,
                     "columns": columns_json,
                 },
@@ -127,12 +130,13 @@ class SupersetDataEtatAPIService:
 
             return result
 
-    async def link_to_superset(self, token: str, table_id: str):
+    async def link_to_superset(self, token: str, doc_id: str, table_id: str):
         """
         Construit le liens avec Superset
 
         Args:
             token: Token d'authentification de l'utilisateur
+            doc_id: Identifiant du document Grist
             table_id: Identifiant de la table
 
         Returns:
@@ -148,6 +152,7 @@ class SupersetDataEtatAPIService:
             response = await client.post(
                 f"{self.base_url}/link-superset",
                 data={
+                    "doc_id": doc_id,
                     "table_id": table_id,
                 },
                 headers=self._get_headers(token),

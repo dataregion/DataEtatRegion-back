@@ -7,6 +7,8 @@ from tests import _assert_can_jsonize
 
 
 # Données de test
+DOC_ID = "mXq3vB7kPz9WcR2aLtN4Ue"
+
 VALID_COLUMNS = [
     {"id": "name", "type": "Text", "is_index": True},
     {"id": "age", "type": "Numeric", "is_index": False},
@@ -60,7 +62,7 @@ def test_publish_response_is_serializable():
 def test_import_without_token(client):
     """Test sans token API - doit retourner 403."""
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
-    data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post("grist-to-superset/api/v3/import/table", data=data, files=files)
     assert response.status_code == 403
@@ -69,7 +71,7 @@ def test_import_without_token(client):
 def test_import_with_invalid_token(client):
     """Test avec un token invalide - doit retourner 401."""
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
-    data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table", data=data, files=files, headers={"X-API-Key": "invalid_token"}
@@ -81,7 +83,7 @@ def test_import_with_invalid_token(client):
 def test_import_with_empty_token(client):
     """Test avec un token vide - doit retourner 403."""
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
-    data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post("grist-to-superset/api/v3/import/table", data=data, files=files, headers={"X-API-Key": ""})
     assert response.status_code == 403
@@ -95,7 +97,7 @@ def test_import_with_empty_token(client):
 def test_import_with_non_csv_file(client, config):
     """Test avec un fichier non-CSV - doit retourner 400."""
     files = {"file": ("test.txt", io.BytesIO(b"not a csv"), "text/plain")}
-    data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",
@@ -110,7 +112,7 @@ def test_import_with_non_csv_file(client, config):
 def test_import_with_empty_csv(client, config):
     """Test avec un CSV vide - doit retourner une erreur."""
     files = {"file": ("empty.csv", create_csv_file(""), "text/csv")}
-    data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",
@@ -130,7 +132,7 @@ def test_import_with_empty_csv(client, config):
 def test_import_with_invalid_json_columns(client, config):
     """Test avec un JSON invalide pour les colonnes - doit retourner 422."""
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
-    data = {"table_id": "test_table", "columns": "invalid json {["}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": "invalid json {["}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",
@@ -149,7 +151,7 @@ def test_import_with_missing_columns_in_csv(client, config):
         {"id": "missing_column", "type": "Text", "is_index": False},
     ]
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
-    data = {"table_id": "test_table", "columns": json.dumps(columns_with_missing)}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(columns_with_missing)}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",
@@ -165,7 +167,7 @@ def test_import_with_invalid_column_type(client, config):
     """Test avec un type de colonne invalide."""
     invalid_columns = [{"id": "name", "type": "invalid_type", "is_index": True}]
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
-    data = {"table_id": "test_table", "columns": json.dumps(invalid_columns)}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(invalid_columns)}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",
@@ -179,7 +181,7 @@ def test_import_with_invalid_column_type(client, config):
 def test_integrity_error_index(client, config):
     """Test d'import réussi avec données valides."""
     files = {"file": ("test.csv", create_csv_file(INTEGRITY_CSV_CONTENT), "text/csv")}
-    data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",
@@ -216,7 +218,7 @@ def test_import_missing_table_id(client, config):
 def test_import_missing_columns(client, config):
     """Test sans columns - doit retourner 422."""
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
-    data = {"table_id": "test_table"}
+    data = {"doc_id": DOC_ID, "table_id": "test_table"}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",
@@ -229,7 +231,7 @@ def test_import_missing_columns(client, config):
 
 def test_import_missing_file(client, config):
     """Test sans fichier - doit retourner 422."""
-    data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",
@@ -247,7 +249,7 @@ def test_import_missing_file(client, config):
 def test_import_successful(client, config):
     """Test d'import réussi avec données valides."""
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
-    data = {"table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
+    data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",
@@ -267,7 +269,7 @@ def test_import_single_row(client, config):
 Alice,30,alice@example.com"""
 
     files = {"file": ("test.csv", create_csv_file(single_row_csv), "text/csv")}
-    data = {"table_id": "single_table", "columns": json.dumps(VALID_COLUMNS)}
+    data = {"doc_id": DOC_ID, "table_id": "single_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",
@@ -287,7 +289,7 @@ def test_import_subset_columns(client, config):
     ]
 
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
-    data = {"table_id": "subset_table", "columns": json.dumps(subset_columns)}
+    data = {"doc_id": DOC_ID, "table_id": "subset_table", "columns": json.dumps(subset_columns)}
 
     response = client.post(
         "grist-to-superset/api/v3/import/table",

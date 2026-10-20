@@ -77,7 +77,7 @@ async function _parseError(response) {
   throw new Error(errorMessage);
 }
 
-export async function publishDataGrist(tableId, colIndex, token) {
+export async function publishDataGrist(docId, tableId, colIndex, token) {
   // récupérer les colonnes
   const tableInfo = await getColumnTable(tableId);
   const columns = filterColumns(tableInfo.columns);
@@ -116,6 +116,7 @@ export async function publishDataGrist(tableId, colIndex, token) {
   // Préparer FormData
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('docId', docId);
   formData.append('tableId', tableId);
   formData.append('columns', JSON.stringify(colsClean));
 
@@ -149,10 +150,11 @@ export async function publishDataGrist(tableId, colIndex, token) {
 }
 
 
-export async function linkWithSuperset(tableId, token) {
+export async function linkWithSuperset(docId, tableId, token) {
   // Envoyer à l'endpoint
   try {
     const formData = new FormData();
+    formData.append('docId', docId);
     formData.append('tableId', tableId);
     const response = await fetch('/to-superset/link', {
       method: 'POST',

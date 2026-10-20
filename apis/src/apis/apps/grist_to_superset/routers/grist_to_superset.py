@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from apis.apps.grist_to_superset.exceptions.import_data_exceptions import UserNotFoundException
 from apis.apps.grist_to_superset.models.publish_response import PublishResponse
 from apis.apps.grist_to_superset.services.import_data_from_grist import ImportService
+from apis.apps.grist_to_superset.services.published_table import build_published_table_name
 from apis.database import get_session_main
 from apis.security.keycloak_token_validator import KeycloakTokenValidator
 from apis.security.security_header import verify_api_key
@@ -88,6 +89,7 @@ async def check_user_exists(
 )
 async def link_superset(
     table_id: str = Form(..., description="Identifiant de la table cible"),
+    doc_id: str = Form(..., description="Identifiant du document Grist"),
     user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_for_m2m()),
 ):
     """
@@ -95,8 +97,9 @@ async def link_superset(
 
     Requiert un token API valide dans le header X-API-Key.
     """
+    published_table_name = build_published_table_name(table_id=table_id, doc_id=doc_id)
 
-    logger.info(f"Link Superset requested by user '{user.email}' for the table '{table_id}'")
+    logger.info(f"Link Superset requested by user '{user.email}' for the table '{published_table_name}'")
     try:
         config = get_config()
         superset_config = config.to_superset_config
@@ -112,7 +115,7 @@ async def link_superset(
             dataset_id = superset_service.get_or_create_dataset(
                 database_id=superset_config.superset_database_id,
                 schema=superset_config.db_schema_export,
-                table_name=table_id,
+                table_name=published_table_name,
                 catalog=superset_config.superset_catalog,
             )
             superset_service.set_dataset_owners(dataset_id=dataset_id, owner_ids=[user_id])
@@ -137,6 +140,7 @@ async def link_superset(
 async def import_table_data(
     file: UploadFile = File(..., description="Fichier CSV à importer contenant les données"),
     table_id: str = Form(..., description="Identifiant de la table cible"),
+    doc_id: str = Form(..., description="Identifiant du document Grist"),
     columns: str = Form(..., description="Schéma des colonnes au format JSON"),
     session: Session = Depends(get_session_main),
     user: ConnectedUser = Depends(keycloak_validator.afn_get_connected_user_for_m2m()),
@@ -146,6 +150,8 @@ async def import_table_data(
 
     Requiert un token API valide dans le header X-API-Key.
     """
+    published_table_name = build_published_table_name(table_id=table_id, doc_id=doc_id)
+
     # Vérifier que c'est bien un CSV
     if file.filename and not file.filename.endswith(".csv"):
         raise HTTPException(
@@ -158,7 +164,7 @@ async def import_table_data(
     columns_schema = [ColumnIn(**col) for col in columns_list]
 
     logger.info(
-        f"Import de l'utilisateur '{user.email}' demandé pour la table '{table_id}' avec {len(columns_schema)} colonnes"
+        f"Import de l'utilisateur '{user.email}' demandé pour la table '{published_table_name}' avec {len(columns_schema)} colonnes"
     )
 
     # Lire le CSV
@@ -185,7 +191,7 @@ async def import_table_data(
     import_service = ImportService(session)
 
     rows_imported = import_service.import_table(
-        table_id=table_id,
+        table_id=published_table_name,
         dataframe=df_filtered,
         columns_schema=columns_schema,
         schema_name=get_config().to_superset_config.db_schema_export,

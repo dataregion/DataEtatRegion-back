@@ -6,6 +6,9 @@ import pandas
 from apis.apps.grist_to_superset.exceptions.import_data_exceptions import (
     DataInsertException,
     DataInsertIndexException,
+    InvalidGristDocIdException,
+    InvalidTableIdException,
+    PublishedTableNameTooLongException,
     UserNotFoundException,
 )
 from apis.shared.exceptions import BadRequestError
@@ -51,6 +54,12 @@ def setup_exception_handlers(app: FastAPI):
             code=HTTPStatus.BAD_REQUEST,
             api_message="L'utilisateur n'est pas présent dans Superset",
         )
+
+    @app.exception_handler(InvalidGristDocIdException)
+    @app.exception_handler(InvalidTableIdException)
+    @app.exception_handler(PublishedTableNameTooLongException)
+    async def invalid_published_table_name(request: FastAPI, e: Exception):
+        raise BadRequestError(code=HTTPStatus.BAD_REQUEST, api_message=str(e))
 
     @app.exception_handler(ValidationError)
     async def validation_error(request: FastAPI, e: ValidationError):

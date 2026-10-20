@@ -1,10 +1,25 @@
 import { publishDataGrist, linkWithSuperset } from './modules/dataEtat.js';
 import { login } from './modules/login.js';
-import { getColumnTable } from './grist-client.js';
+import { getColumnTable, getGristDocId } from './grist-client.js';
 
 const oidcConfig = window.OIDC_CONFIG;
 
 const TYPE_INDEX_AUTHORIZE = ['Numeric', 'Text', 'Int'];
+
+// La table publiée s'appelle <tableId>_<docId> : 63 caractères au plus (limite PostgreSQL)
+const PUBLISHED_TABLE_NAME_MAX_LENGTH = 63;
+
+/**
+ * Renvoie le message expliquant pourquoi la table ne peut pas être publiée, ou null si elle peut l'être.
+ */
+function checkPublishable(docId, tableId) {
+  const maxTableIdLength = PUBLISHED_TABLE_NAME_MAX_LENGTH - docId.length - 1;
+  if (tableId.length > maxTableIdLength) {
+    return `Le nom de la table « ${tableId} » est trop long pour être publié depuis ce document `
+      + `(${maxTableIdLength} caractères au plus). Renommez la table pour la publier.`;
+  }
+  return null;
+}
 
 function completeColumnIndex(columns) {
   const select = document.getElementById("column");
@@ -100,10 +115,19 @@ async function initGrist() {
   const hasIndexYes = document.getElementById("has-index-yes");
   const hasIndexNo = document.getElementById("has-index-no");
 
-  // Récupère une seule fois l'id de la table
+  // Récupère une seule fois l'id du document et de la table
+  let docId;
   let tableId;
   try {
+    docId = await getGristDocId();
     tableId = await grist.getSelectedTableId();
+    const blockingReason = checkPublishable(docId, tableId);
+    if (blockingReason) {
+      displayErrorFeedback(blockingReason);
+      hidePart("loading-plugins");
+      hidePart("back-btn"); // rien à corriger dans le formulaire : il faut renommer la table dans Grist
+      return;
+    }
     // Utilise l'identifiant de la table dans le label
     if (label && tableId) {
       label.textContent = `Sélectionner un index pour la table « ${tableId} »`;
@@ -145,9 +169,9 @@ async function initGrist() {
     
     if (tableId) {
       try {
-        await publishDataGrist(tableId, indexCol, token);
+        await publishDataGrist(docId, tableId, indexCol, token);
         linkToSupersetInProgress()
-        await linkWithSuperset(tableId, token);
+        await linkWithSuperset(docId, tableId, token);
         hidePart("loading");
         showPart("success");
       } catch(err) {
