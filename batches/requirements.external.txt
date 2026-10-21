@@ -25,6 +25,7 @@ certifi==2026.10.19
     # via
     #   httpcore
     #   httpx
+    #   prefect-client
     #   pyogrio
     #   pyproj
     #   requests
@@ -43,7 +44,9 @@ colorama==0.4.6
 coolname==5.0.0
     # via prefect-client
 cryptography==49.0.0
-    # via models (../models/pyproject.toml)
+    # via
+    #   models (../models/pyproject.toml)
+    #   models
 dateparser==1.4.3
     # via prefect-client
 defusedxml==0.7.1
@@ -52,14 +55,18 @@ et-xmlfile==2.0.0
     # via openpyxl
 exceptiongroup==1.3.1
     # via prefect-client
-fastapi==0.156.8
+fastapi==0.150.0
     # via prefect-client
 fsspec==2026.9.0
     # via prefect-client
 geoalchemy2==0.20.0
-    # via models (../models/pyproject.toml)
+    # via
+    #   models (../models/pyproject.toml)
+    #   models
 geopandas==1.1.4
-    # via models (../models/pyproject.toml)
+    # via
+    #   models (../models/pyproject.toml)
+    #   models
 graphviz==0.21
     # via prefect-client
 greenlet==3.5.6
@@ -116,16 +123,21 @@ marshmallow-dataclass==8.7.1
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
     #   api-entreprise
+    #   models
 marshmallow-jsonschema @ git+https://github.com/gautierrog/marshmallow-jsonschema.git@47fa28df153b2147ff6ab05dc38237873b85dba8
     # via
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
+    #   models
 marshmallow-sqlalchemy==1.5.0
     # via
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
+    #   models
 mdurl==0.1.2
     # via markdown-it-py
+models @ file:///home/rog/DEV_SGAR/data-transform/models
+    # via services (../services/pyproject.toml)
 mypy-extensions==1.1.0
     # via typing-inspect
 numpy==2.5.4
@@ -156,9 +168,10 @@ pandas==2.3.3
     #   gristcli (../gristcli/pyproject.toml)
     #   models (../models/pyproject.toml)
     #   geopandas
+    #   models
 pathspec==1.1.1
     # via prefect-client
-prefect-client==3.8.8
+prefect-client==3.9.0
     # via -r requirements.external.in
 prometheus-client==0.23.1
     # via
@@ -176,6 +189,7 @@ pydantic==2.14.1
     # via
     #   models (../models/pyproject.toml)
     #   fastapi
+    #   models
     #   prefect-client
     #   pydantic-extra-types
     #   pydantic-settings
@@ -229,8 +243,6 @@ rpds-py==2026.9.1
     #   referencing
 ruamel-yaml==0.19.1
     # via prefect-client
-ruamel-yaml-clib==0.2.15
-    # via prefect-client
 shapely==2.2.0
     # via geopandas
 six==1.17.0
@@ -247,6 +259,7 @@ sqlalchemy==2.0.55
     #   models (../models/pyproject.toml)
     #   geoalchemy2
     #   marshmallow-sqlalchemy
+    #   models
 sqlparse==0.6.0
     # via services (../services/pyproject.toml)
 starlette==1.9.0
