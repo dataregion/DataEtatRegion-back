@@ -20,6 +20,6 @@ fastapi-runtime-details-collector == 1.0.0
 
 sqlparse ~= 0.4
 
-prefect-client ~= 3.6.5
+prefect-client ~= 3.9.0
 
 tuspyserver ~= 4.2.3
