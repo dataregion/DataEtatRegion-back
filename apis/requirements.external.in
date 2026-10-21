@@ -1,5 +1,5 @@
 cachetools ~= 6.2.1
-fastapi[standard] ~= 0.116.1
+fastapi[standard] ~= 0.150.0
 sqlalchemy ~= 2.0.43
 
 redis ~= 7.3.0
@@ -15,7 +15,7 @@ requests ~= 2.32
 python-keycloak ~= 5.8
 api-entreprise>=31,<32
 
-prometheus-fastapi-instrumentator ~= 7.1.0
+prometheus-fastapi-instrumentator ~= 8.1.0
 fastapi-runtime-details-collector == 1.0.0
 
 sqlparse ~= 0.4

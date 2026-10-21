@@ -1,4 +1,5 @@
 from fastapi.security import OAuth2PasswordBearer
+from starlette.requests import HTTPConnection
 import copy
 import pytest
 
@@ -115,7 +116,7 @@ def keycloak_validator_patch_fn():
         original_validate_token = KeycloakTokenValidator.validate_token
         original_oauth2_call = OAuth2PasswordBearer.__call__
 
-        async def stub_oauth_call(self, request):
+        async def stub_oauth_call(self, request: HTTPConnection) -> str | None:
             return None
 
         async def mocked_validate_token(self, token):

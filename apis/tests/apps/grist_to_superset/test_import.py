@@ -60,12 +60,12 @@ def test_publish_response_is_serializable():
 
 
 def test_import_without_token(client):
-    """Test sans token API - doit retourner 403."""
+    """Test sans token API - doit retourner 401."""
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
     data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post("grist-to-superset/api/v3/import/table", data=data, files=files)
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 def test_import_with_invalid_token(client):
@@ -81,12 +81,12 @@ def test_import_with_invalid_token(client):
 
 
 def test_import_with_empty_token(client):
-    """Test avec un token vide - doit retourner 403."""
+    """Test avec un token vide - doit retourner 401."""
     files = {"file": ("test.csv", create_csv_file(VALID_CSV_CONTENT), "text/csv")}
     data = {"doc_id": DOC_ID, "table_id": "test_table", "columns": json.dumps(VALID_COLUMNS)}
 
     response = client.post("grist-to-superset/api/v3/import/table", data=data, files=files, headers={"X-API-Key": ""})
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 # ============================================================================
