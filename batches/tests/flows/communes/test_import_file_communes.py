@@ -1,5 +1,5 @@
 import re
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import pytest
@@ -23,6 +23,7 @@ def test_import_file_pvd_from_website(session, clean_communes, mock_download):
             Commune(code="56061", label_commune="La Gacilly", code_departement="56", is_pvd=False),
             Commune(code="29284", label_commune="Treffiagat", code_departement="29", is_pvd=False),
             Commune(code="99999", label_commune="Hors fichier", is_pvd=True, date_pvd=date(2020, 1, 1)),
+            Commune(code="88888", label_commune="Non PVD", is_pvd=False, updated_at=datetime(2020, 1, 1)),
         ]
     )
     session.commit()
@@ -47,6 +48,10 @@ def test_import_file_pvd_from_website(session, clean_communes, mock_download):
     commune_hors_fichier = _get_commune(session, "99999")
     assert commune_hors_fichier.is_pvd is False
     assert commune_hors_fichier.date_pvd is None
+
+    # Les communes non PVD absentes du fichier ne sont pas réécrites
+    commune_non_pvd = _get_commune(session, "88888")
+    assert commune_non_pvd.updated_at == datetime(2020, 1, 1)
 
 
 def test_import_file_acv_from_website(session, clean_communes, mock_download):
