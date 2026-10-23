@@ -3,6 +3,7 @@ from __future__ import annotations
 import shutil
 import tempfile
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 import requests
@@ -122,6 +123,9 @@ def import_file_pvd_from_website(url: str) -> str:
     except Exception:
         logger.exception("Erreur lors de l'import PVD", extra={"url": url, "filepath": filepath})
         raise
+    finally:
+        # Une fois archivé, le fichier n'est plus là : on ne supprime que le téléchargement non archivé
+        Path(filepath).unlink(missing_ok=True)
 
 
 @flow(name="import_file_acv_from_website", log_prints=True)
@@ -143,3 +147,6 @@ def import_file_acv_from_website(url: str) -> str:
     except Exception:
         logger.exception("Erreur lors de l'import ACV", extra={"url": url, "filepath": filepath})
         raise
+    finally:
+        # Une fois archivé, le fichier n'est plus là : on ne supprime que le téléchargement non archivé
+        Path(filepath).unlink(missing_ok=True)

@@ -2,6 +2,7 @@ import re
 from datetime import date
 from pathlib import Path
 
+import pytest
 from sqlalchemy import select
 
 from models.entities.refs.Commune import Commune
@@ -82,3 +83,25 @@ def test_import_file_acv_from_website(session, clean_communes, mock_download):
     commune_hors_fichier = _get_commune(session, "99999")
     assert commune_hors_fichier.is_acv is False
     assert commune_hors_fichier.date_acv is None
+
+
+def test_import_file_pvd_from_website_en_erreur(session, clean_communes, mock_download, tmp_path):
+    # XXX: important de delayer l'import pour attendre que la fixture prefect soit appliquée
+    # avant la lecture du flow.
+    from batches.prefect.import_file_communes import import_file_pvd_from_website
+
+    session.add(Commune(code="56061", label_commune="La Gacilly", is_pvd=True, date_pvd=date(2020, 1, 1)))
+    session.commit()
+    mock_download("pvd_date_invalide.csv")
+
+    with pytest.raises(ValueError):
+        import_file_pvd_from_website("http://fake-url/pvd.csv")
+
+    # Le fichier téléchargé est supprimé et rien n'est archivé
+    assert not (tmp_path / "pvd_date_invalide.csv").exists()
+    assert not (tmp_path / "imports" / "communes").exists()
+
+    # La remise à zéro est annulée avec le reste de la transaction
+    commune = _get_commune(session, "56061")
+    assert commune.is_pvd is True
+    assert commune.date_pvd == date(2020, 1, 1)
