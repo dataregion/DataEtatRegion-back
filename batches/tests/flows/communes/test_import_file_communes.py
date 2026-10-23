@@ -1,3 +1,4 @@
+import re
 from datetime import date
 from pathlib import Path
 
@@ -26,9 +27,11 @@ def test_import_file_pvd_from_website(session, clean_communes, mock_download):
     session.commit()
     mock_download("pvd.csv")
 
-    archived = import_file_pvd_from_website("http://fake-url/pvd.csv")
+    archived = Path(import_file_pvd_from_website("http://fake-url/pvd.csv"))
 
-    assert Path(archived).exists()
+    assert archived.exists()
+    assert archived.parent.name == "communes"
+    assert re.fullmatch(r"pvd_\d{14}\.csv", archived.name)
 
     commune = _get_commune(session, "56061")
     assert commune.is_pvd is True
@@ -60,9 +63,11 @@ def test_import_file_acv_from_website(session, clean_communes, mock_download):
     session.commit()
     mock_download("acv.csv")
 
-    archived = import_file_acv_from_website("http://fake-url/acv.csv")
+    archived = Path(import_file_acv_from_website("http://fake-url/acv.csv"))
 
-    assert Path(archived).exists()
+    assert archived.exists()
+    assert archived.parent.name == "communes"
+    assert re.fullmatch(r"acv_\d{14}\.csv", archived.name)
 
     commune = _get_commune(session, "35288")
     assert commune.is_acv is True

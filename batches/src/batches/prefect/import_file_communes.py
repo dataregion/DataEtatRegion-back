@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-import os
 import shutil
 import tempfile
 from datetime import datetime
-from pathlib import Path
 
 import pandas as pd
 import requests
 from prefect import flow, get_run_logger, task
 from prefect.cache_policies import NO_CACHE
 
+from batches.config.current import get_config
 from batches.database import init_persistence_module, session_scope
 
 init_persistence_module()
@@ -24,16 +23,13 @@ from services.refs.communes import (  # noqa: E402
 )
 
 
-ARCHIVE_ROOT = Path(os.getenv("BATCHES_ARCHIVE_DIR", "/tmp/data-transform-archives"))
-
-
 def _archive_file(filepath: str, archive_label: str) -> str:
-    archive_dir = ARCHIVE_ROOT / archive_label
+    archive_dir = get_config().dossier_des_imports / "communes"
     archive_dir.mkdir(parents=True, exist_ok=True)
 
-    source_path = Path(filepath)
-    archived_path = archive_dir / source_path.name
-    shutil.move(str(source_path), archived_path)
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    archived_path = archive_dir / f"{archive_label}_{timestamp}.csv"
+    shutil.move(filepath, archived_path)
     return str(archived_path)
 
 

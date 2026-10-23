@@ -41,7 +41,8 @@ def mock_download(tmp_path, monkeypatch):
     """
     import batches.prefect.import_file_communes as import_mod
 
-    monkeypatch.setattr(import_mod, "ARCHIVE_ROOT", tmp_path / "archives")
+    config = import_mod.get_config()
+    monkeypatch.setattr(config, "dossier_des_imports", tmp_path / "imports")
 
     def _mock(filename: str):
         def _download(url: str) -> str:
