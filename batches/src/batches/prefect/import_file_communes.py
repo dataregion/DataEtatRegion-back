@@ -104,7 +104,7 @@ def download_file_from_website(url: str) -> str:
     return temp_file.name
 
 
-@flow(name="import_file_pvd_from_website", log_prints=True)
+@flow(log_prints=True)
 def import_file_pvd_from_website(url: str) -> str:
     logger = get_run_logger()
     filepath = download_file_from_website(url)
@@ -128,7 +128,7 @@ def import_file_pvd_from_website(url: str) -> str:
         Path(filepath).unlink(missing_ok=True)
 
 
-@flow(name="import_file_acv_from_website", log_prints=True)
+@flow(log_prints=True)
 def import_file_acv_from_website(url: str) -> str:
     logger = get_run_logger()
     filepath = download_file_from_website(url)
