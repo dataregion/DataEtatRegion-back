@@ -15,6 +15,10 @@ from odf.text import P
 def convert_csv_to_excel(csv_path: Path, target_path: Path, chunk_size: int = 1000) -> None:
     """Convertit un fichier CSV en Excel (.xlsx) en streaming.
 
+    Mode write-only d'openpyxl : chaque ligne est écrite sur disque dès l'ajout,
+    au lieu d'accumuler tout le classeur en RAM jusqu'au save(). La mémoire
+    reste constante quel que soit le nombre de lignes.
+
     Args:
         csv_path: Chemin du fichier CSV source
         target_path: Chemin du fichier Excel cible
@@ -29,31 +33,17 @@ def convert_csv_to_excel(csv_path: Path, target_path: Path, chunk_size: int = 10
 
     print(f"Conversion CSV → Excel: {csv_path} → {target_path}")
 
-    wb = Workbook()
-    ws = wb.active
+    wb = Workbook(write_only=True)
+    ws = wb.create_sheet()
 
     total_rows = 0
 
     with open(csv_path, "r", encoding="utf-8", newline="") as f:
-        reader = csv.reader(f)
-
-        # Traiter les lignes par chunks pour minimiser l'usage mémoire
-        chunk = []
-        for row in reader:
-            chunk.append(row)
+        for row in csv.reader(f):
+            ws.append(row)
             total_rows += 1
-
-            if len(chunk) >= chunk_size:
-                for row_data in chunk:
-                    ws.append(row_data)
-                chunk = []
-                print(f"  → {total_rows} lignes converties...")
-
-        # Traiter les lignes restantes
-        if chunk:
-            for row_data in chunk:
-                ws.append(row_data)
-            print(f"  → {total_rows} lignes converties...")
+            if total_rows % chunk_size == 0:
+                print(f"  → {total_rows} rows converted...")
 
     if total_rows == 0:
         raise ValueError(f"Le fichier CSV {csv_path} est vide")
