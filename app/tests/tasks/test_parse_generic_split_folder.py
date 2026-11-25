@@ -22,15 +22,11 @@ def fichier(tmp_path):
     return f
 
 
-def _parse(fichier, move_folder):
-    return _parse_generic(
-        DataType.FINANCIAL_DATA_AE, str(fichier), "53", 2026, json.dumps({"sep": ","}), str(move_folder), {}, {}
-    )
+def _parse(fichier):
+    return _parse_generic(DataType.FINANCIAL_DATA_AE, str(fichier), "53", 2026, json.dumps({"sep": ","}), {}, {})
 
 
-def test_split_dans_dossier_temporaire_supprime_et_archive(upload_folder, fichier, tmp_path):
-    move_folder = tmp_path / "save"
-    move_folder.mkdir()
+def test_split_dans_dossier_temporaire_supprime(upload_folder, fichier):
     chunks_lus = []
 
     def _fake_parse_ae(output_file, ae_list, *args):
@@ -38,17 +34,16 @@ def test_split_dans_dossier_temporaire_supprime_et_archive(upload_folder, fichie
         return ae_list
 
     with patch("app.tasks.files.file_task._parse_ae", side_effect=_fake_parse_ae):
-        _parse(fichier, move_folder)
+        _parse(fichier)
 
     assert len(chunks_lus) == 2
     assert all(f.startswith(str(upload_folder / "split_")) for f in chunks_lus)
     assert list(upload_folder.iterdir()) == []
-    assert sorted(p.name for p in move_folder.iterdir()) == ["AE_TEST_1.csv", "AE_TEST_2.csv"]
 
 
-def test_split_dossier_temporaire_supprime_en_cas_d_erreur(upload_folder, fichier, tmp_path):
+def test_split_dossier_temporaire_supprime_en_cas_d_erreur(upload_folder, fichier):
     with patch("app.tasks.files.file_task._parse_ae", side_effect=ValueError("boom")):
         with pytest.raises(ValueError):
-            _parse(fichier, tmp_path)
+            _parse(fichier)
 
     assert list(upload_folder.iterdir()) == []

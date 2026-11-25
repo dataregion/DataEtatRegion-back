@@ -139,10 +139,6 @@ def _clean_up_ae_files(fichierAe: str, csv_options: str, pos_col_montant, pos_co
 
 @celery.task(bind=True, name="read_csv_and_import_fichier_nat_ae_cp")
 def read_csv_and_import_fichier_nat_ae_cp(self, fichierAe: str, fichierCp: str, csv_options: str, annee: int):
-    move_folder = os.path.join(current_app.config["UPLOAD_FOLDER"], "save", datetime.datetime.now().strftime("%Y%m%d"))
-    if not os.path.exists(move_folder):
-        os.makedirs(move_folder)
-
     # Calcul dynamique des positions des colonnes basé sur get_columns_fichier_nat_ae
     columns_nat_ae = FinancialAe.get_columns_fichier_nat_ae()
     try:
@@ -156,10 +152,10 @@ def read_csv_and_import_fichier_nat_ae_cp(self, fichierAe: str, fichierCp: str, 
 
     # Parsing des fichiers
     ae_list, cp_list = _parse_generic(
-        DataType.FINANCIAL_DATA_AE, fileCleanAe, None, annee, csv_options, move_folder, {}, {}, is_national=True
+        DataType.FINANCIAL_DATA_AE, fileCleanAe, None, annee, csv_options, {}, {}, is_national=True
     )
     ae_list, cp_list = _parse_generic(
-        DataType.FINANCIAL_DATA_CP, fichierCp, None, annee, csv_options, move_folder, ae_list, cp_list, is_national=True
+        DataType.FINANCIAL_DATA_CP, fichierCp, None, annee, csv_options, ae_list, cp_list, is_national=True
     )
 
     # La purge n'a lieu qu'une fois les deux fichiers lus : un fichier absent ne doit pas vider la base
@@ -176,10 +172,6 @@ def read_csv_and_import_fichier_nat_ae_cp(self, fichierAe: str, fichierCp: str, 
 
 @celery.task(bind=True, name="read_csv_and_import_ae_cp")
 def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options: str, source_region: str, annee: int):
-    move_folder = os.path.join(current_app.config["UPLOAD_FOLDER"], "save", datetime.datetime.now().strftime("%Y%m%d"))
-    if not os.path.exists(move_folder):
-        os.makedirs(move_folder)
-
     # Calcul dynamique des positions des colonnes basé sur get_columns_fichier_nat_ae
     columns_nat_ae = FinancialAe.get_columns_files_ae()
     try:
@@ -198,7 +190,6 @@ def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options:
         source_region,
         annee,
         json.dumps({"sep": ";", "quotechar": '"'}),
-        move_folder,
         {},
         {},
         is_national=False,
@@ -209,7 +200,6 @@ def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options:
         source_region,
         annee,
         csv_options,
-        move_folder,
         ae_list,
         cp_list,
         is_national=False,
@@ -268,7 +258,6 @@ def _parse_generic(
     source_region: str | None,
     annee: int | None,
     csv_options: str,
-    move_folder: str,
     ae_list: dict,
     cp_list: dict,
     is_national: bool = False,
@@ -297,7 +286,6 @@ def _parse_generic(
                     ae_list, cp_list = _parse_cp(
                         output_file, chunk_index, max_lines, ae_list, cp_list, source_region, annee, is_national
                     )
-                shutil.copy(output_file, move_folder)
             except Exception as e:
                 logging.exception(
                     f"[IMPORT][FINANCIAL][{data_type}] Error lors de l'import du fichier {output_file}: {e}"
