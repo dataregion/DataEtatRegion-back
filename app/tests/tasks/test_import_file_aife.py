@@ -114,3 +114,41 @@ def test_split_file_aife(mock_subtask, tmp_path):
     )
 
     assert 2 == mock_subtask.call_count
+
+
+@pytest.mark.parametrize("fichier_absent", ["ae", "cp"])
+@patch("app.tasks.financial.import_financial.subtask")
+@patch("app.tasks.files.file_task.delete_ae_no_cp_annee_national")
+@patch("app.tasks.files.file_task.delete_cp_annee_national")
+def test_import_nat_fichier_absent_ne_purge_pas(mock_delete_cp, mock_delete_ae, mock_subtask, fichier_absent, tmp_path):
+    fichier_ae = shutil.copy(_chorus_national / "aife_ae_double_ej.csv", tmp_path)
+    fichier_cp = shutil.copy(_chorus_national / "aife_cp.csv", tmp_path)
+    if fichier_absent == "ae":
+        fichier_ae = str(tmp_path / "absent_ae.csv")
+    else:
+        fichier_cp = str(tmp_path / "absent_cp.csv")
+
+    with pytest.raises(FileNotFoundError):
+        read_csv_and_import_fichier_nat_ae_cp.run(
+            fichier_ae, fichier_cp, json.dumps({"sep": '";"', "skiprows": 0, "dtype": "str"}), 2025
+        )
+
+    mock_delete_cp.assert_not_called()
+    mock_delete_ae.assert_not_called()
+    mock_subtask.assert_not_called()
+
+
+@patch("app.tasks.financial.import_financial.subtask")
+@patch("app.tasks.files.file_task.delete_ae_no_cp_annee_national")
+@patch("app.tasks.files.file_task.delete_cp_annee_national")
+def test_import_nat_purge_apres_lecture(mock_delete_cp, mock_delete_ae, _mock_subtask, tmp_path):
+    fichier_ae = shutil.copy(_chorus_national / "aife_ae_double_ej.csv", tmp_path)
+    fichier_cp = shutil.copy(_chorus_national / "aife_cp.csv", tmp_path)
+
+    with patch("shutil.move", return_value=None):
+        read_csv_and_import_fichier_nat_ae_cp.run(
+            fichier_ae, fichier_cp, json.dumps({"sep": '";"', "skiprows": 0, "dtype": "str"}), 2025
+        )
+
+    mock_delete_cp.assert_called_once_with(2025)
+    mock_delete_ae.assert_called_once_with(2025)

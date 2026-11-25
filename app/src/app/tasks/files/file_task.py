@@ -62,10 +62,6 @@ def delayed_inserts(self):
 
         if region != "NATIONAL":
             logging.info(f"[DELAYED] Delayed Insert sur region {region}")
-            # Nettoyage de la BDD
-            delete_cp_annee_region(task.annee, task.source_region)  # type: ignore
-            delete_ae_no_cp_annee_region(task.annee, task.source_region)  # type: ignore
-            # Tâche d'import des AE et des CP
             read_csv_and_import_ae_cp.delay(
                 task.fichier_ae,
                 task.fichier_cp,
@@ -76,9 +72,6 @@ def delayed_inserts(self):
         else:
             logging.info("[DELAYED] Delayed Insert sur NATIONAL")
             csv_options = json.dumps({"sep": '";"', "skiprows": 0, "dtype": "str"})
-            # Nettoyage de la BDD
-            delete_cp_annee_national(task.annee)  # type: ignore
-            delete_ae_no_cp_annee_national(task.annee)  # type: ignore
             read_csv_and_import_fichier_nat_ae_cp.delay(task.fichier_ae, task.fichier_cp, csv_options, task.annee)
 
         # Historique de chargement des données
@@ -169,6 +162,10 @@ def read_csv_and_import_fichier_nat_ae_cp(self, fichierAe: str, fichierCp: str, 
         DataType.FINANCIAL_DATA_CP, fichierCp, None, annee, csv_options, move_folder, ae_list, cp_list, is_national=True
     )
 
+    # La purge n'a lieu qu'une fois les deux fichiers lus : un fichier absent ne doit pas vider la base
+    delete_cp_annee_national(annee)
+    delete_ae_no_cp_annee_national(annee)
+
     # Sauvegarde des fichiers complets
     _move_file(fichierAe, current_app.config["UPLOAD_FOLDER"] + "/save/")
     _move_file(fileCleanAe, current_app.config["UPLOAD_FOLDER"] + "/save/")
@@ -217,6 +214,10 @@ def read_csv_and_import_ae_cp(self, fichierAe: str, fichierCp: str, csv_options:
         cp_list,
         is_national=False,
     )
+
+    # La purge n'a lieu qu'une fois les deux fichiers lus : un fichier absent ne doit pas vider la base
+    delete_cp_annee_region(annee, source_region)
+    delete_ae_no_cp_annee_region(annee, source_region)
 
     # Sauvegarde des fichiers complets
     _move_file(fichierAe, current_app.config["UPLOAD_FOLDER"] + "/save/")

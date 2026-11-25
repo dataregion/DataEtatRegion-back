@@ -29,6 +29,44 @@ _chorus = TESTS_PATH / "data" / "chorus"
 
 
 @patch("app.tasks.financial.import_financial.subtask")
+@patch("app.tasks.files.file_task.delete_ae_no_cp_annee_region")
+@patch("app.tasks.files.file_task.delete_cp_annee_region")
+def test_read_csv_and_import_ae_cp_purge_la_region_apres_lecture(
+    mock_delete_cp, mock_delete_ae, _mock_subtask, tmp_path
+):
+    fichier_ae = shutil.copy(_chorus / "chorus_ae.csv", tmp_path)
+    fichier_cp = shutil.copy(_chorus / "financial_cp.csv", tmp_path)
+
+    with patch("shutil.move", return_value=None):
+        read_csv_and_import_ae_cp.run(fichier_ae, fichier_cp, json.dumps({"sep": ",", "skiprows": 7}), "32", 2022)
+
+    mock_delete_cp.assert_called_once_with(2022, "32")
+    mock_delete_ae.assert_called_once_with(2022, "32")
+
+
+@pytest.mark.parametrize("fichier_absent", ["ae", "cp"])
+@patch("app.tasks.financial.import_financial.subtask")
+@patch("app.tasks.files.file_task.delete_ae_no_cp_annee_region")
+@patch("app.tasks.files.file_task.delete_cp_annee_region")
+def test_read_csv_and_import_ae_cp_fichier_absent_ne_purge_pas(
+    mock_delete_cp, mock_delete_ae, mock_subtask, fichier_absent, tmp_path
+):
+    fichier_ae = shutil.copy(_chorus / "chorus_ae.csv", tmp_path)
+    fichier_cp = shutil.copy(_chorus / "financial_cp.csv", tmp_path)
+    if fichier_absent == "ae":
+        fichier_ae = str(tmp_path / "absent_ae.csv")
+    else:
+        fichier_cp = str(tmp_path / "absent_cp.csv")
+
+    with pytest.raises(FileNotFoundError):
+        read_csv_and_import_ae_cp.run(fichier_ae, fichier_cp, json.dumps({"sep": ",", "skiprows": 7}), "32", 2022)
+
+    mock_delete_cp.assert_not_called()
+    mock_delete_ae.assert_not_called()
+    mock_subtask.assert_not_called()
+
+
+@patch("app.tasks.financial.import_financial.subtask")
 def test_read_csv_and_import_ae_cp_fusionne_ae_et_envoie_lots(mock_subtask, tmp_path):
     # La tâche écrit le fichier fusion_ à côté du fichier AE
     fichier_ae = shutil.copy(_chorus / "chorus_ae.csv", tmp_path)

@@ -49,9 +49,9 @@ def test_delayed_insert_region(insert_audit_region, database, session):
     ):
         delayed_inserts.run()
 
-        # Vérification que les fonctions de suppression ont bien été appelées avec les bons arguments
-        mock_delete_cp.assert_called_once_with(2024, "53")
-        mock_delete_ae.assert_called_once_with(2024, "53")
+        # La purge est faite par la tâche d'import, pas par delayed_inserts
+        mock_delete_cp.assert_not_called()
+        mock_delete_ae.assert_not_called()
 
         # Vérification que la tâche Celery a été appelée une fois avec les bons arguments
         mock_task.assert_called_once_with(
@@ -72,12 +72,12 @@ def test_delayed_insert_region(insert_audit_region, database, session):
 
 
 def test_delayed_insert_national(insert_audit_national, database, session):
-    """Teste que delayed_inserts ne supprime pas de données et ne déclenche pas d'import pour la région NATIONAL."""
+    """Teste que delayed_inserts ne supprime pas de données et déclenche l'import national."""
 
     with (
         patch("app.tasks.files.file_task.read_csv_and_import_ae_cp.delay") as mock_task,
-        patch("app.tasks.files.file_task.delete_cp_annee_region") as mock_delete_cp,
-        patch("app.tasks.files.file_task.delete_ae_no_cp_annee_region") as mock_delete_ae,
+        patch("app.tasks.files.file_task.delete_cp_annee_national") as mock_delete_cp,
+        patch("app.tasks.files.file_task.delete_ae_no_cp_annee_national") as mock_delete_ae,
         patch("app.tasks.files.file_task.read_csv_and_import_fichier_nat_ae_cp.delay") as mock_import_nationals,
     ):
         # Exécution de la fonction testée
@@ -88,7 +88,7 @@ def test_delayed_insert_national(insert_audit_national, database, session):
             "/path/ae", "/path/cp", '{"sep": "\\";\\"", "skiprows": 0, "dtype": "str"}', 2025
         )
 
-        # Vérifier que les fonctions de suppression ae cp ne sont PAS appelées
+        # La purge est faite par la tâche d'import, pas par delayed_inserts
         mock_delete_cp.assert_not_called()
         mock_delete_ae.assert_not_called()
 
