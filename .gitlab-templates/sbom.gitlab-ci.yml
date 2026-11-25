@@ -1,0 +1,89 @@
+# SBOM CycloneDX + Dependency-Track (pipelines de tag uniquement). Deux familles :
+# - sources : dépendances Python épinglées de chaque application livrée
+#   (requirements.external.txt, sans extras dev ; inclut models, services et gristcli),
+#   plus le package-lock.json du front de grist-plugins (devDependencies exclues) ;
+# - images : contenu de chaque image publiée (paquets OS, venv Python).
+# Chaque SBOM devient le projet enfant "dataEtat - <nom>" dans Dependency-Track.
+include:
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/sbom-dir@5.2.0
+    inputs:
+      name: src-data-transform
+      path: app
+      exclude: "./**/node_modules/** ./**/.venv/** ./requirements.editable.txt"
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/sbom-dir@5.2.0
+    inputs:
+      name: src-apis
+      path: apis
+      exclude: "./**/node_modules/** ./**/.venv/** ./requirements.editable.txt"
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/sbom-dir@5.2.0
+    inputs:
+      name: src-batches
+      path: batches
+      exclude: "./**/node_modules/** ./**/.venv/** ./requirements.editable.txt"
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/sbom-dir@5.2.0
+    inputs:
+      name: src-grist-plugins
+      path: grist-plugins
+      exclude: "./**/node_modules/** ./**/.venv/** ./requirements.editable.txt ./build/**"
+
+  # IMAGE_NAME : parallel:matrix du job "📋 sbom images", résolu à l'exécution.
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/sbom-image@5.2.0
+    inputs:
+      name: images
+      image-ref: "${REGISTRY}${IMAGE_NAME}:${CI_COMMIT_TAG}"
+      sbom-name: "img-${IMAGE_NAME##*/}"
+      do-login: true
+      registry: ${REGISTRY}
+      registry-login: ${REGISTRY_USER}
+
+  - component: $CI_SERVER_FQDN/csm/gitlab-components/dependency-track@5.2.0
+    inputs:
+      parent-name: "dataEtat"
+
+.sbom-rules:
+  stage: "📋 sbom"
+  rules:
+    - if: "$CI_COMMIT_TAG"
+
+"📋 sbom src-data-transform":
+  extends: [".sbom-rules", ".sbom-dir-src-data-transform"]
+  needs: []
+
+"📋 sbom src-apis":
+  extends: [".sbom-rules", ".sbom-dir-src-apis"]
+  needs: []
+
+"📋 sbom src-batches":
+  extends: [".sbom-rules", ".sbom-dir-src-batches"]
+  needs: []
+
+"📋 sbom src-grist-plugins":
+  extends: [".sbom-rules", ".sbom-dir-src-grist-plugins"]
+  needs: []
+
+"📋 sbom images":
+  extends: [".sbom-rules", ".sbom-image-images"]
+  needs:
+    - job: "🐳 dockerizing data-transform"
+    - job: "🐳 dockerizing apis"
+    - job: "🐳 dockerizing batches"
+    - job: "🐳 dockerizing grist-plugins-dataEtat"
+  parallel:
+    matrix:
+      - IMAGE_NAME:
+          - "nocode/data-transform"
+          - "nocode/apis"
+          - "nocode/batches"
+          - "nocode/grist-plugins"
+
+"🛡️ dependency-track upload":
+  extends: ".dependency-track-upload"
+  stage: "🛡️ dependency-track"
+  rules:
+    - if: "$CI_COMMIT_TAG"
+  needs:
+    - "📋 sbom src-data-transform"
+    - "📋 sbom src-apis"
+    - "📋 sbom src-batches"
+    - "📋 sbom src-grist-plugins"
+    - "📋 sbom images"
