@@ -7,7 +7,7 @@ import tempfile
 import datetime
 from models.entities.refs.Region import get_code_region_by_code_comp
 import pandas
-from celery import subtask, current_task
+from celery import current_task
 from flask import current_app
 from sqlalchemy import delete, select, asc
 from app import celeryapp, db
@@ -450,28 +450,6 @@ def get_data_chunk(output_file, columns_names, columns_types):
         na_values=[],
         converters={"tax_numb": str},
     )
-
-
-@celery.task(bind=True, name="split_csv_files_and_run_task")
-def split_csv_files_and_run_task(self, fichier: str, task_name: str, csv_options: str, **kwargs):
-    max_lines = current_app.config.get("SPLIT_FILE_LINE", DEFAULT_MAX_ROW)
-    file_name = os.path.splitext(os.path.basename(fichier))[0]
-
-    logging.info(f"[SPLIT] Start split file for task {task_name} in {max_lines} lines")
-
-    chunks = pandas.read_csv(fichier, chunksize=max_lines, **json.loads(csv_options))
-    index = 1
-    for df in chunks:
-        # Construire le nom de fichier de sortie
-        output_file = os.path.join(current_app.config["UPLOAD_FOLDER"], f"{file_name}_{index}.csv")
-        df.to_csv(output_file, index=False)
-        logging.info(f"[SPLIT] Send task {task_name} with file {output_file} with param {kwargs}")
-
-        subtask(task_name).delay(output_file, **kwargs)
-        index += 1
-
-    _move_file(fichier, current_app.config["UPLOAD_FOLDER"] + "/save/")
-    logging.info(f"[SPLIT] End split file for task {task_name}")
 
 
 def _move_file(fichier: str, move_folder: str):

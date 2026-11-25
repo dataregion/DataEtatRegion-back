@@ -51,7 +51,6 @@ def create_celery_app(_app=None) -> Celery:
             "update_one_fifth_of_sirets": {"queue": "file"},
             "maj_materialized_view": {"queue": "file"},
             "update_link_*": {"queue": "file"},
-            "split_csv_*": {"queue": "file"},
             "read_csv_*": {"queue": "file"},
             "sync_referentiels_with_grist": {"queue": "file"},
             "delayed_inserts": {"queue": "file"},
