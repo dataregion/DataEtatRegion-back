@@ -452,8 +452,6 @@ vine==5.1.0
     #   kombu
 waitress==3.0.2
     # via -r requirements.external.in
-watchdog==6.0.0
-    # via -r requirements.external.in
 wcwidth==0.9.3
     # via prompt-toolkit
 websockets==16.1.1

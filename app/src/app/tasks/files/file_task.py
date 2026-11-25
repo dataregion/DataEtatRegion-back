@@ -461,9 +461,3 @@ def _move_file(fichier: str, move_folder: str):
 
     logging.info(f"[FILE] Sauvegarde du fichier {fichier} dans le dossier {move_folder}")
     shutil.move(fichier, move_folder)
-
-
-@celery.task(bind=True, name="raise_watcher_exception")
-def raise_watcher_exception(self, error_message):
-    logging.error(error_message)
-    raise Exception(error_message)

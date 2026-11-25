@@ -54,7 +54,6 @@ def create_celery_app(_app=None) -> Celery:
             "read_csv_*": {"queue": "file"},
             "sync_referentiels_with_grist": {"queue": "file"},
             "delayed_inserts": {"queue": "file"},
-            "raise_watcher_exception": {"queue": "file"},
         }
     ]
 
