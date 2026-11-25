@@ -138,7 +138,7 @@ def _clean_up_ae_files(fichierAe: str, csv_options: str, pos_col_montant, pos_co
     # 3. Filtrage des lignes avec montant != 0
     df_montant_non_zero = df_ej_fusion[df_ej_fusion[col_name_montant] != 0]
 
-    name_file = current_app.config["UPLOAD_FOLDER"] + "/fusion_" + os.path.basename(fichierAe)
+    name_file = os.path.join(os.path.dirname(fichierAe), "fusion_" + os.path.basename(fichierAe))
     df_montant_non_zero.to_csv(name_file, index=False, sep=";", quoting=csv.QUOTE_ALL, encoding="utf-8")
     return name_file
 

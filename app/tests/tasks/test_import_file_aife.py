@@ -1,5 +1,6 @@
 from unittest.mock import call, patch
 import json
+import shutil
 from app.tasks.financial import LineImportTechInfo
 import pytest
 
@@ -23,12 +24,16 @@ _chorus_national = _chorus / "national"
 
 
 @patch("app.tasks.financial.import_financial.subtask")
-def test_fusion_ae_nat(mock_subtask):
+def test_fusion_ae_nat(mock_subtask, tmp_path):
+    # La tâche écrit le fichier fusion_ à côté du fichier AE
+    fichier_ae = shutil.copy(_chorus_national / "aife_ae_double_ej.csv", tmp_path)
+    fichier_cp = shutil.copy(_chorus_national / "aife_cp.csv", tmp_path)
+
     # DO
-    with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
+    with patch("shutil.move", return_value=None):
         read_csv_and_import_fichier_nat_ae_cp.run(
-            _chorus_national / "aife_ae_double_ej.csv",
-            _chorus_national / "aife_cp.csv",
+            fichier_ae,
+            fichier_cp,
             json.dumps({"sep": '";"', "skiprows": 0, "dtype": "str"}),
             2025,
         )
@@ -71,12 +76,16 @@ def test_fusion_ae_nat(mock_subtask):
 
 
 @patch("app.tasks.financial.import_financial.subtask")
-def test_split_file_aife(mock_subtask):
+def test_split_file_aife(mock_subtask, tmp_path):
+    # La tâche écrit le fichier fusion_ à côté du fichier AE
+    fichier_ae = shutil.copy(_chorus_national / "aife_ae.csv", tmp_path)
+    fichier_cp = shutil.copy(_chorus_national / "aife_cp.csv", tmp_path)
+
     # DO
-    with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
+    with patch("shutil.move", return_value=None):
         read_csv_and_import_fichier_nat_ae_cp.run(
-            _chorus_national / "aife_ae.csv",
-            _chorus_national / "aife_cp.csv",
+            fichier_ae,
+            fichier_cp,
             json.dumps({"sep": '";"', "skiprows": 0, "dtype": "str"}),
             2024,
         )

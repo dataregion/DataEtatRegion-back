@@ -1,5 +1,6 @@
 from unittest.mock import patch, call, ANY
 import json
+import shutil
 import time
 
 import pytest
@@ -28,12 +29,14 @@ _chorus = TESTS_PATH / "data" / "chorus"
 
 
 @patch("app.tasks.financial.import_financial.subtask")
-def test_split_csv_and_import_ae_and_cp(mock_subtask):
+def test_split_csv_and_import_ae_and_cp(mock_subtask, tmp_path):
+    # La tâche écrit le fichier fusion_ à côté du fichier AE
+    fichier_ae = shutil.copy(_chorus / "chorus_ae.csv", tmp_path)
+    fichier_cp = shutil.copy(_chorus / "financial_cp.csv", tmp_path)
+
     # DO
-    with patch("shutil.move", return_value=None):  # ne pas supprimer le fichier de tests :)
-        read_csv_and_import_ae_cp.run(
-            _chorus / "chorus_ae.csv", _chorus / "financial_cp.csv", json.dumps({"sep": ",", "skiprows": 7}), "32", 2022
-        )
+    with patch("shutil.move", return_value=None):
+        read_csv_and_import_ae_cp.run(fichier_ae, fichier_cp, json.dumps({"sep": ",", "skiprows": 7}), "32", 2022)
 
     # Vérification des appels détaillés au mock_subtask
     mock_subtask.assert_has_calls(

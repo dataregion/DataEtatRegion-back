@@ -53,8 +53,8 @@ def import_financial_data(
     # Sanitize des paramètres
     _source_region = app_layer_sanitize_region(source_region, "REGION")
     # Validation des fichiers
-    save_path_ae = check_file_and_save(file_ae)
-    save_path_cp = check_file_and_save(file_cp)
+    save_path_ae = check_file_and_save(file_ae, in_unique_folder=True)
+    save_path_cp = check_file_and_save(file_cp, in_unique_folder=True)
     _check_file(save_path_ae, FinancialAe.get_columns_files_ae())
     _check_file(save_path_cp, FinancialCp.get_columns_files_cp())
 
@@ -80,8 +80,8 @@ def import_national_data(
     Pour l'import national, ajout dans la table Audit Insert avec source_region = "NATIONAL" et annee =0
     """
     # Validation des fichiers
-    save_path_ae = check_file_and_save(file_ae)
-    save_path_cp = check_file_and_save(file_cp)
+    save_path_ae = check_file_and_save(file_ae, in_unique_folder=True)
+    save_path_cp = check_file_and_save(file_cp, in_unique_folder=True)
     db.session.add(
         AuditInsertFinancialTasks(
             fichier_ae=save_path_ae,  # type: ignore
