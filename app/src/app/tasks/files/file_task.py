@@ -3,6 +3,7 @@ import logging
 import os
 import json
 import shutil
+import tempfile
 import datetime
 from models.entities.refs.Region import get_code_region_by_code_comp
 import pandas
@@ -279,11 +280,12 @@ def _parse_generic(
     max_lines = current_app.config.get("SPLIT_FILE_LINE", DEFAULT_MAX_ROW)
     logging.info(f"[IMPORT][SPLIT][{data_type}] Split du fichier en chunk de {max_lines} lignes")
 
+    split_folder = tempfile.mkdtemp(dir=current_app.config["UPLOAD_FOLDER"], prefix="split_")
     try:
         chunk_index = 1
         chunks = pandas.read_csv(fichier, chunksize=max_lines, **json.loads(csv_options))
         for df in chunks:
-            output_file = os.path.join(current_app.config["UPLOAD_FOLDER"], f"{filename}_{chunk_index}.csv")
+            output_file = os.path.join(split_folder, f"{filename}_{chunk_index}.csv")
             df.to_csv(output_file, index=False)
             logging.info(f"[IMPORT][SPLIT] Création du fichier {output_file} de {min(max_lines, len(df.index))} lignes")
 
@@ -305,6 +307,8 @@ def _parse_generic(
     except Exception as e:
         logging.exception(f"[IMPORT][FINANCIAL][{data_type}] Error lors de l'import du fichier {fichier}: {e}")
         raise e
+    finally:
+        shutil.rmtree(split_folder, ignore_errors=True)
 
     return ae_list, cp_list
 
