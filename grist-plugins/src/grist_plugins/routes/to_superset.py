@@ -65,7 +65,7 @@ async def callback_oidc(request: Request, settings: SettingsDep):
     js_path = (
         "http://localhost:5173/static/js/to-superset.js" if settings.dev_mode else "/static/dist/js/to-superset.min.js"
     )
-    return templates.TemplateResponse("/login/callback_oidc.html", {"request": request, "jsPath": js_path})
+    return templates.TemplateResponse(request, "/login/callback_oidc.html", {"jsPath": js_path})
 
 
 @router.get("/to-superset", response_class=HTMLResponse)
@@ -82,8 +82,9 @@ async def to_superset_page(request: Request, settings: SettingsDep):
         "clientId": settings.keycloak.client_id,
     }
     return templates.TemplateResponse(
+        request,
         "/to_superset.html",
-        {"request": request, "jsPath": js_path, "oidc": oidc_config, "url_superset": settings.url_superset},
+        {"jsPath": js_path, "oidc": oidc_config, "url_superset": settings.url_superset},
     )
 
 
